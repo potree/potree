@@ -131,7 +131,7 @@
       }
 
   </script>
-
+ 
 
 
 
@@ -149,7 +149,7 @@
 		import { loadRem } from "../demo/remLoader.js";
 		import { loadVelo2Rtk, loadRtk2Vehicle, storeCalibration } from "../demo/calibrationManager.js";
 		import { updateSidebar, togglePointClass } from "../common/custom-sidebar.js";
-		import { getLoadingBar, getLoadingBarTotal } from "../common/overlay.js";
+		import { getLoadingBar, getLoadingBarTotal, numberTasks, pause } from "../common/overlay.js"
 		// import {  } from "../common/overlay.js";
 		import { setLoadingScreen, removeLoadingScreen } from "../common/overlay.js";
 		import { PointAttributeNames } from "../src/loader/PointAttributes.js";
@@ -342,7 +342,7 @@
 
 
 			// Load Data Sources in loadRtkCallback:
-			loadRtkCallback(s3, bucket, name, () => {
+			loadRtkCallback(s3, bucket, name, async () => {
 
                 let loadingBar = getLoadingBar()
                 let loadingBarTotal = getLoadingBarTotal()
@@ -383,10 +383,11 @@
 
 				// Load Lanes:
 				try {
-					loadLanesCallback(s3, bucket, name, () => {
+					await loadLanesCallback(s3, bucket, name, async () => {
                         if (loadingBarTotal.value >= 100) {
                             removeLoadingScreen()
                         }
+						await pause();
                     });
 				} catch (e) {
 					console.error("Could not load Lanes: ", e);
@@ -396,7 +397,7 @@
 				try {
 					// TODO shaderMaterial
 					let trackShaderMaterial = shaderMaterial.clone();
-					loadTracksCallback(s3, bucket, name, trackShaderMaterial, animationEngine, () => {
+					await loadTracksCallback(s3, bucket, name, trackShaderMaterial, animationEngine, () => {
                         if (loadingBarTotal.value >= 100) {
                             removeLoadingScreen()
                         }
@@ -406,7 +407,7 @@
 				}
 
 				try {
-					loadRemCallback(s3, bucket, name, animationEngine, () => {
+					await loadRemCallback(s3, bucket, name, animationEngine, () => {
                         if (loadingBarTotal.value >= 100) {
                             removeLoadingScreen()
                         }
@@ -441,47 +442,21 @@
 
 
 
-		// Load RTK: TODO REFACTOR THIS (a lot of stuff happenning here, break it up if possible)
-		function loadRtkCallback(s3, bucket, name, callback) {
-			// loadRtk(s3, bucket, name, (pos, rot, timestamps, t_init, t_range) => {
-			loadRtkFlatbuffer(s3, bucket, name, (pos, rot, timestamps, t_init, t_range) => {
-				window.timeframe = {"tstart": t_init, "tend": t_init+t_range};
+			// Load RTK: TODO REFACTOR THIS (a lot of stuff happenning here, break it up if possible)
+			async function loadRtkCallback(s3, bucket, name, callback) {
+				// loadRtk(s3, bucket, name, (pos, rot, timestamps, t_init, t_range) => {
+				loadRtkFlatbuffer(s3, bucket, name, (pos, rot, timestamps, t_init, t_range) => {
+					window.timeframe = {"tstart": t_init, "tend": t_init+t_range};
 
-				// TODO Move this into main loader function:
-				let tstart = window.timeframe.tstart;	// Set in loadRtkCallback
-				let tend = window.timeframe.tend;			// Set in loadRtkCallback
-				let playbackRate = 1.0;
-				animationEngine.configure(tstart, tend, playbackRate);
-				animationEngine.launch();
+				// first chunk of data -see rtkLoaderFlatbuffer.js
+				await loadRtkFlatbuffer(s3, bucket, name,
+					async (pos, rot, timestamps, t_init, t_range) => {
+						setupFullTimeInterval({ start: t_init, end: t_init + t_range })
 
-				if (callback) {
-					// load lanes, tracks, calibrations, radar, rem points
-					callback();
-				}
-
-				let loadingBar = getLoadingBar()
-				let currProgress = loadingBar.value
-	      		const path = pos.map(v => new THREE.Vector3(...v));
-	      		const orientations = rot.map(v => new THREE.Vector3(...v));
-				const samplingFreq = 100; // Hertz TODO hardcoded
-				const rtkTrajectory = new RtkTrajectory(path, orientations, timestamps, samplingFreq);
-				const closedPath = false;
-
-				// CREATE VEHICLE OBJECT:
-				// NOTE for Mustang: {texture: models/bodybkgd.JPG, mesh: models/1967-shelby-ford-mustang.obj}
-				// NOTE for Volt: {texture: models/Chevy_Volt_Segmented/Chevrolet_Volt_v1_exterior.png, mesh: resources/models/Chevy_Volt_Segmented/Chevy_Volt_2016.obj}
-				let manager = new THREE.LoadingManager();
-				let numItemsLoaded = 0, numIncrements = 0
-				manager.onProgress = function ( item, loaded, total ) {
-					console.log( item, loaded, total );
-					// progress of first item cannot be tracked 
-					numItemsLoaded++;
-				};
-				// when done loading everything
-				manager.onLoad = function () {
-					loadingBar.set(100)
-					removeLoadingScreen()
-				}
+					if (callback) {
+						// load lanes, tracks, rem points
+						await callback()
+					}
 
 					let loadingBar = getLoadingBar()
 					let loadingBarTotal = getLoadingBarTotal()
@@ -497,22 +472,31 @@
 					// NOTE for Mustang: {texture: models/bodybkgd.JPG, mesh: models/1967-shelby-ford-mustang.obj}
 					// NOTE for Volt: {texture: models/Chevy_Volt_Segmented/Chevrolet_Volt_v1_exterior.png, mesh: resources/models/Chevy_Volt_Segmented/Chevy_Volt_2016.obj}
 					let manager = new THREE.LoadingManager()
-					manager.onProgress = function (item, loaded, total) {
+					manager.onProgress = async function (item, loaded, total) {
 						console.log(item, loaded, total)
-				        loadingBarTotal.set(Math.min(Math.ceil(loadingBarTotal.value + (100/numberDownloads))), 100);
+				        loadingBarTotal.set(Math.min(Math.ceil(loadingBarTotal.value + (100/numberTasks))), 100);
                         loadingBar.set(0)
+						await pause()
 					}
 
 					// check if done loading everything and screen is ready
-					manager.onLoad = function () {
+					manager.onLoad = async function () {
                         if (loadingBarTotal.value >= 100) {
                             removeLoadingScreen()
                         }
 					}
 
+					// let texture = textureLoader.load(`${Potree.resourcePath}/models/bodybkgd.JPG`);
+					let onProgress = async function (xhr) {
+						if (xhr.lengthComputable) {
+							// update progress
+                            let percentLoaded = xhr.loaded / xhr.total
+                            loadingBar.set(percentLoaded * 100)
+							await pause()
+						}
 					}
 					let textureLoader = new THREE.TextureLoader(manager)
-					let texture = textureLoader.load(
+					let texture = await textureLoader.load(
 						`${Potree.resourcePath}/models/Chevy_Volt_Segmented/reflection_1.png`, ()=>{
 							// onLoad
 						})
@@ -602,9 +586,9 @@
 					viewer.scene.scene.add( vehicleGroup );
 								viewer.scene.dispatchEvent({"type": "vehicle_layer_added", "vehicleLayer": object });
 
-								viewer.setFilterGPSTimeRange(0, 0); // Size 0 Time Window at start of timeline
-					}, onProgress, onError );
-				}
+								viewer.setFilterGPSTimeRange(0, 0) // Size 0 Time Window at start of timeline
+							}, await onProgress, onError)
+					}
 
 	      // ANIMATION:
 	      { // create Animation Path & make light follow it
@@ -863,7 +847,7 @@ $(document).ready(() => {
 
 			let filename, tmpSupplierNum;
 			tmpSupplierNum = -1;
-			await loadLanes(s3, bucket, name, filename, tmpSupplierNum, window.annotateLanesModeActive, viewer.scene.volumes, (laneGeometries) => {
+			await loadLanes(s3, bucket, name, filename, tmpSupplierNum, window.annotateLanesModeActive, viewer.scene.volumes, async (laneGeometries) => {
 
 				// need to have Annoted Lanes layer, so that can have original and edited lanes layers
 				let lanesLayer = new THREE.Group();
@@ -877,7 +861,7 @@ $(document).ready(() => {
 					"truthLayer": lanesLayer
 				});
 				if (callback) {
-					callback();
+					await callback();
 				}
 			});
 

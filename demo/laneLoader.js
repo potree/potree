@@ -1,6 +1,6 @@
 import { Measure } from "../src/utils/Measure.js";
 import { LaneSegments } from "./LaneSegments.js"
-import { getLoadingBar, getLoadingBarTotal, numberDownloads, removeLoadingScreen } from "../common/overlay.js";
+import { getLoadingBar, getLoadingBarTotal, numberTasks, removeLoadingScreen, pause } from "../common/overlay.js";
 
 
 export async function loadLanes(s3, bucket, name, fname, supplierNum, annotationMode, volumes, callback) {
@@ -31,26 +31,34 @@ export async function loadLanes(s3, bucket, name, fname, supplierNum, annotation
         Key: schemaFile
       });
 
-      const request = s3.getObject({Bucket: bucket,
+      const request = await s3.getObject({Bucket: bucket,
                     Key: objectName},
                    async (err, data) => {
                      if (err) {
                        console.log(err, err.stack);
-                     } else {
+                       loadingBarTotal.set(Math.min(Math.ceil(loadingBarTotal.value + (100/numberTasks))), 100);
+                      } else {
                        const FlatbufferModule = await import(schemaUrl);
-                       const laneGeometries = parseLanes(data.Body, FlatbufferModule, resolvedSupplierNum, annotationMode, volumes);
-                       callback( laneGeometries );
+                       const laneGeometries = await parseLanes(data.Body, FlatbufferModule, resolvedSupplierNum, annotationMode, volumes);
+                       loadingBarTotal.set(Math.min(Math.ceil(loadingBarTotal.value + (100/numberTasks))), 100);
+                       loadingBar.set(0);
+                       if (loadingBarTotal.value >= 100) {
+                         removeLoadingScreen();
+                       }
+                       await pause();
+                       await callback( laneGeometries );
                      }});
-      request.on("httpDownloadProgress", (e) => {
+      request.on("httpDownloadProgress", async (e) => {
         let val = e.loaded/e.total * 100;  
         val = Math.max(lastLoaded, val);
         loadingBar.set(val);
         lastLoaded = val;
+        await pause();
       });
 
-      request.on("complete", () => {
+      request.on("complete", async () => {
         if (!annotationMode) {
-          loadingBarTotal.set(Math.min(Math.ceil(loadingBarTotal.value + (100/numberDownloads))), 100);
+          loadingBarTotal.set(Math.min(Math.ceil(loadingBarTotal.value + (100/numberTasks))), 100);
           loadingBar.set(0);
           if (loadingBarTotal.value >= 100) {
             removeLoadingScreen();
@@ -60,6 +68,7 @@ export async function loadLanes(s3, bucket, name, fname, supplierNum, annotation
           loadingBarTotal.set(100);
           removeLoadingScreen();
         }
+      await pause();
     });
     })();
 
@@ -88,8 +97,8 @@ export async function loadLanes(s3, bucket, name, fname, supplierNum, annotation
       }
 
       let bytesArray = new Uint8Array(response);
-      const laneGeometries = parseLanes(bytesArray, FlatbufferModule, resolvedSupplierNum, annotationMode, volumes);
-      callback( laneGeometries );
+      const laneGeometries = await parseLanes(bytesArray, FlatbufferModule, resolvedSupplierNum, annotationMode, volumes);
+      await callback( laneGeometries );
     };
 
     t0 = performance.now();
@@ -99,7 +108,7 @@ export async function loadLanes(s3, bucket, name, fname, supplierNum, annotation
 
 
 
-function parseLanes(bytesArray, FlatbufferModule, supplierNum, annotationMode, volumes) {
+async function parseLanes(bytesArray, FlatbufferModule, supplierNum, annotationMode, volumes) {
 
   let numBytes = bytesArray.length;
   let lanes = [];
@@ -121,7 +130,7 @@ function parseLanes(bytesArray, FlatbufferModule, supplierNum, annotationMode, v
     lanes.push(lane);
     segOffset += segSize;
   }
-  return createLaneGeometriesOld(lanes, supplierNum, annotationMode, volumes);
+  return await createLaneGeometriesOld(lanes, supplierNum, annotationMode, volumes);
 }
 
 
@@ -233,7 +242,9 @@ function createLaneGeometries(vertexGroups, material) {
 }
 
 
-function createLaneGeometriesOld(lanes, supplierNum, annotationMode, volumes) {
+// async function in order to enable a real time loading bar (caller functions must also use async/await)
+// without it the javascript code will run and block the UI that needs to update the loading bar (remove at your own risk)
+async function createLaneGeometriesOld(lanes, supplierNum, annotationMode, volumes) {
 
   let materialLeft, materialSpine, materialRight;
   switch (supplierNum) {
@@ -291,7 +302,15 @@ function createLaneGeometriesOld(lanes, supplierNum, annotationMode, volumes) {
   let spines = [];
   let all = [];
   let allBoxes = new THREE.Geometry();
+  
+  let loadingBar = getLoadingBar();
+  let loadingBarTotal = getLoadingBarTotal();
   for(let ii=0, len=lanes.length; ii<len; ii++) {
+    loadingBar.set(ii/len * 100); // update progress
+    // put in pause so running javascript can hand over temp control to the UI
+    // gives it an opportunity to repaint the UI for the loading bar element
+    await pause();
+
     lane = lanes[ii];
 
     var geometryLeft = new THREE.Geometry();

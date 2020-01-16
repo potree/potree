@@ -48,14 +48,25 @@ $(document).ready(function () {
 
 });
 
-export const numberDownloads = 6; // TODO: find a way to make this dynamic 
+
+// 6 downloads:  loadRtkFlatbuffer, loadRtkCallback(car texture and object), loadLanesCallback, loadTracksCallback, loadRemCallback
+// 4 loadings: 	parseRTK, parseLanes, parseTracks, parseControlPoints(remLoader.js)
+export const numberTasks = 10; // TODO: find a way to make this dynamic 
+
+/* 
+ * Function that hands back control of the thread to the window such that it can update the progress bar.
+ * Without using it whenever setting the loading bar, the javascript code will run and block the UI that 
+ * needs to update the loading bar  
+ * CURRENTLY: even though everything should be 
+*/
+export async function pause(name) {
+  // argument for debugging if user wants to log what is currently trying to set the progress bar
+  if (name) { console.log("pause " + name);}
+  return new Promise(resolve => setTimeout(() => {resolve()}, 0.5));
+}
 
 export function setLoadingScreen() {
   // set style of loading screen
-  console.log("test: ") ;
-  console.log(document.head.getElementsByTagName('style'));
-  console.log("fonts: " + fonts);
-  console.log("Theme: " + theme);
   $("#loading-bar-total")[0].style.display = "inline-block";
   $("#loading-bar")[0].style.display = "inline-block";
   document.getElementById("loading_overlay").style.display = "flex";

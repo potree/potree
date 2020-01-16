@@ -37,7 +37,7 @@
 }
 
 #loading-bar::before {
-  content: "Individual Download";
+  content: "Download/Loading Progress";
 }
 
 #loading-bar-total::before {

@@ -1,6 +1,6 @@
 //import { Vec3 } from "../schemas/BasicTypes_generated.js";
 //import { Flatbuffer } from "../schemas/VisualizationPrimitives_generated.js";
-import { getLoadingBar, getLoadingBarTotal, numberDownloads, removeLoadingScreen } from "../common/overlay.js";
+import { getLoadingBar, getLoadingBarTotal, numberTasks, removeLoadingScreen } from "../common/overlay.js";
 
 
 export async function loadGaps(s3, bucket, name, shaderMaterial, animationEngine, callback) {
@@ -193,6 +193,9 @@ function createGapGeometries(vertexGroups, material) {
 
 
 function createGapGeometriesOld(gaps, shaderMaterial, FlatbufferModule, animationEngine) {
+  console.log("gaps loader")
+  let loadingBar = getLoadingBar();
+  let loadingBarTotal = getLoadingBarTotal(); 
 
   let gap;
   let lefts = [];
@@ -201,6 +204,7 @@ function createGapGeometriesOld(gaps, shaderMaterial, FlatbufferModule, animatio
   let allBoxes = new THREE.Geometry();
   let gapTimes = [];
   for(let ii=0, len=gaps.length; ii<len; ii++) {
+    loadingBar.set(ii/len * 100); // update individual task progress
     // if (ii > 1000) {
     //   continue;
     // }
@@ -301,5 +305,8 @@ function createGapGeometriesOld(gaps, shaderMaterial, FlatbufferModule, animatio
   const output = {
     left: all
   }
+  // update total progress
+  loadingBarTotal.set(Math.min(Math.ceil(loadingBarTotal.value + (100/numberTasks))), 100);
+  loadingBar.set(0);
   return output;
 }

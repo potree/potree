@@ -1,9 +1,9 @@
 // import { Flatbuffer } from "../schemas/GroundTruth_generated.js";
 // import { Flatbuffer } from "http://localhost:1234/schemas/GroundTruth_generated.js";
-import { getLoadingBar, getLoadingBarTotal, numberDownloads, removeLoadingScreen } from "../common/overlay.js";
+import { getLoadingBar, getLoadingBarTotal, numberTasks, removeLoadingScreen, pause} from "../common/overlay.js";
 
 
-export function loadTracks(s3, bucket, name, shaderMaterial, animationEngine, callback) {
+export async function loadTracks(s3, bucket, name, shaderMaterial, animationEngine, callback) {
   let loadingBar = getLoadingBar();
   let loadingBarTotal = getLoadingBarTotal(); 
   let lastLoaded = 0;
@@ -17,32 +17,39 @@ export function loadTracks(s3, bucket, name, shaderMaterial, animationEngine, ca
         Bucket: bucket,
         Key: schemaFile
       });
-
-      const request = s3.getObject({Bucket: bucket,
+      const request = await s3.getObject({Bucket: bucket,
                     Key: objectName},
                    async (err, data) => {
                      if (err) {
                         console.log(err, err.stack);
                         // error, but everything else is loaded, then ok to proceed
-                        if (loadingBarTotal.value  >= 100 - (100/numberDownloads)) {
+                        if (loadingBarTotal.value  >= 100 - (100/numberTasks)) {
                           removeLoadingScreen();
                         }
                      } else {
                        const FlatbufferModule = await import(schemaUrl);
-                       const trackGeometries = parseTracks(data.Body, shaderMaterial, FlatbufferModule, animationEngine);
-                       callback(trackGeometries, );
+                       const trackGeometries = await parseTracks(data.Body, shaderMaterial, FlatbufferModule, animationEngine);
+                       loadingBarTotal.set(Math.min(Math.ceil(loadingBarTotal.value + (100/numberTasks))), 100);
+                       loadingBar.set(0);
+                       if (loadingBarTotal.value >= 100) {
+                         removeLoadingScreen();
+                       }
+                       await pause();
+                       await callback(trackGeometries, );
                      }});
-      request.on("httpDownloadProgress", (e) => {
+      request.on("httpDownloadProgress", async (e) => {
         let val = e.loaded/e.total * 100; 
         val = Math.max(lastLoaded, val);
         loadingBar.set(val);
         lastLoaded = val;
+        await pause();
       });
 
-      request.on("complete", () => {
+      request.on("complete", async () => {
         // Don't check for 100% when done loading tracks because callback still has work to do
-        loadingBarTotal.set(Math.min(Math.ceil(loadingBarTotal.value + (100/numberDownloads))), 100);
+        loadingBarTotal.set(Math.min(Math.ceil(loadingBarTotal.value + (100/numberTasks))), 100);
         loadingBar.set(0);
+        await pause();
       });
     })();
 
@@ -72,7 +79,7 @@ export function loadTracks(s3, bucket, name, shaderMaterial, animationEngine, ca
 
       let bytesArray = new Uint8Array(response);
       const trackGeometries = parseTracks(bytesArray, shaderMaterial, FlatbufferModule, animationEngine);
-      callback(trackGeometries, );
+      await callback(trackGeometries, );
     };
 
     t0 = performance.now();
@@ -103,7 +110,7 @@ export function loadTracks(s3, bucket, name, shaderMaterial, animationEngine, ca
 //   xhr.send();
 // }
 
-function parseTracks(bytesArray, shaderMaterial, FlatbufferModule, animationEngine) {
+async function parseTracks(bytesArray, shaderMaterial, FlatbufferModule, animationEngine) {
 
   let numBytes = bytesArray.length;
   let tracks = [];
@@ -127,11 +134,11 @@ function parseTracks(bytesArray, shaderMaterial, FlatbufferModule, animationEngi
     segOffset += segSize;
   }
 
-  return createTrackGeometries(shaderMaterial, tracks, animationEngine);
+  return await createTrackGeometries(shaderMaterial, tracks, animationEngine);
   // callback(trackGeometries, );
 }
 
-function createTrackGeometries(shaderMaterial, tracks, animationEngine) {
+async function createTrackGeometries(shaderMaterial, tracks, animationEngine) {
 
   let lineMaterial = new THREE.LineBasicMaterial({
     color: 0x00ff00,
@@ -155,8 +162,13 @@ function createTrackGeometries(shaderMaterial, tracks, animationEngine) {
   let allBoxes = new THREE.Geometry();
   let stateTimes = [];
   let all = [];
+  let loadingBar = getLoadingBar()
   for (let ss=0, numTracks=tracks.length; ss<numTracks; ss++) {
     let track = tracks[ss];
+    loadingBar.set(ss/numTracks * 100);
+    // put in pause so running javascript can hand over temp control to the UI
+    // gives it an opportunity to repaint the UI for the loading bar element
+    await pause(); 
 
     for (let ii=0, len=track.statesLength(); ii<len; ii++) {
 

@@ -57,9 +57,7 @@ export class ScreenBoxSelectTool extends EventDispatcher{
 			selectionBox.css("height", `${box2D.max.y - box2D.min.y}px`);
 
 			let camera = e.viewer.scene.getActiveCamera();
-			let size = new THREE.Vector2(
-				e.viewer.renderer.getSize().width,
-				e.viewer.renderer.getSize().height);
+			let size = e.viewer.renderer.getSize(new THREE.Vector2());
 			let frustumSize = new THREE.Vector2(
 				camera.right - camera.left, 
 				camera.top - camera.bottom);
@@ -87,9 +85,7 @@ export class ScreenBoxSelectTool extends EventDispatcher{
 			this.viewer.inputHandler.toggleSelection(volume);
 
 			let camera = e.viewer.scene.getActiveCamera();
-			let size = new THREE.Vector2(
-				e.viewer.renderer.getSize().width,
-				e.viewer.renderer.getSize().height);
+			let size = e.viewer.renderer.getSize(new THREE.Vector2());
 			let screenCentroid = new THREE.Vector2().addVectors(e.drag.end, e.drag.start).multiplyScalar(0.5);
 			let ray = Utils.mouseToRay(screenCentroid, camera, size.width, size.height);
 

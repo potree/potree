@@ -1,4 +1,5 @@
 import {PointCloudTreeNode} from "./PointCloudTree.js";
+import {PointAttributes, PointAttribute, PointAttributeTypes} from "./loader/PointAttributes.js";
 
 class U {
 	static toVector3(v, offset) {
@@ -62,25 +63,43 @@ export class PointCloudEptGeometry {
 			else this.fallbackProjection = info.srs.wkt;
 		}
 
-		this.pointAttributes = 'LAZ';
+		
+		{
+			const attributes = new PointAttributes();
+
+			attributes.add(PointAttribute.POSITION_CARTESIAN);
+			attributes.add(new PointAttribute("RGBA", PointAttributeTypes.DATA_TYPE_UINT8, 4));
+			attributes.add(new PointAttribute("intensity", PointAttributeTypes.DATA_TYPE_UINT16, 1));
+			attributes.add(new PointAttribute("classification", PointAttributeTypes.DATA_TYPE_UINT8, 1));
+			attributes.add(new PointAttribute("gps-time", PointAttributeTypes.DATA_TYPE_DOUBLE, 1));
+			attributes.add(new PointAttribute("returnNumber", PointAttributeTypes.DATA_TYPE_UINT8, 1));
+			attributes.add(new PointAttribute("number of returns", PointAttributeTypes.DATA_TYPE_UINT8, 1));
+			attributes.add(new PointAttribute("return number", PointAttributeTypes.DATA_TYPE_UINT8, 1));
+			attributes.add(new PointAttribute("source id", PointAttributeTypes.DATA_TYPE_UINT16, 1));
+
+			this.pointAttributes = attributes;
+		}
+
+
+
 		this.spacing =
 			(this.boundingBox.max.x - this.boundingBox.min.x) / this.span;
 
 		let hierarchyType = info.hierarchyType || 'json';
 
-        const dataType = info.dataType;
-        if (dataType == 'laszip') {
-            this.loader = new Potree.EptLaszipLoader();
-        }
-        else if (dataType == 'binary') {
+		const dataType = info.dataType;
+		if (dataType == 'laszip') {
+			this.loader = new Potree.EptLaszipLoader();
+		}
+		else if (dataType == 'binary') {
 			this.loader = new Potree.EptBinaryLoader();
-        }
-        else if (dataType == 'zstandard') {
-            this.loader = new Potree.EptZstandardLoader();
-        }
-        else {
-            throw new Error('Could not read data type: ' + dataType);
-        }
+		}
+		else if (dataType == 'zstandard') {
+			this.loader = new Potree.EptZstandardLoader();
+		}
+		else {
+			throw new Error('Could not read data type: ' + dataType);
+		}
 	}
 };
 

@@ -475,6 +475,12 @@ export class InputHandler extends EventDispatcher {
 
 		}
 		
+		// for (let inputListener of this.getSortedListeners()) {
+		// 	inputListener.dispatchEvent({
+		// 		type: 'mousemove',
+		// 		object: null
+		// 	});
+		// }
 		
 
 		this.hoveredElements = hoveredElements;

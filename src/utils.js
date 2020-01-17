@@ -4,7 +4,6 @@ import {Volume} from "./utils/Volume.js";
 import {Profile} from "./utils/Profile.js";
 import {Measure} from "./utils/Measure.js";
 import {PolygonClipVolume} from "./utils/PolygonClipVolume.js";
-import {PointColorType} from "./defines.js";
 
 
 export class Utils {
@@ -72,10 +71,50 @@ export class Utils {
 	}
 
 	static debugLine(parent, start, end, color){
+
 		let material = new THREE.LineBasicMaterial({ color: color }); 
-		let geometry = new THREE.Geometry(); 
-		geometry.vertices.push( start, end); 
+		let geometry = new THREE.Geometry();
+
+		const p1 = new THREE.Vector3(0, 0, 0);
+		const p2 = end.clone().sub(start);
+
+		geometry.vertices.push(p1, p2);
+
+		let tl = new THREE.Line( geometry, material );
+		tl.position.copy(start);
+
+		parent.add(tl);
+	}
+
+	static debugCircle(parent, center, radius, normal, color){
+		let material = new THREE.LineBasicMaterial({ color: color });
+
+		let geometry = new THREE.Geometry();
+
+		let n = 32;
+		for(let i = 0; i <= n; i++){
+			let u0 = 2 * Math.PI * (i / n);
+			let u1 = 2 * Math.PI * (i + 1) / n;
+
+			let p0 = new THREE.Vector3(
+				Math.cos(u0), 
+				Math.sin(u0), 
+				0
+			);
+
+			let p1 = new THREE.Vector3(
+				Math.cos(u1), 
+				Math.sin(u1), 
+				0
+			);
+
+			geometry.vertices.push(p0, p1); 
+		}
+
 		let tl = new THREE.Line( geometry, material ); 
+		tl.position.copy(center);
+		tl.scale.set(radius, radius, radius);
+
 		parent.add(tl);
 	}
 
@@ -555,6 +594,75 @@ export class Utils {
 		camera.zoomTo(node, 1);
 	}
 
+	
+	static findClosestGpsTime(target, viewer){
+		const start = performance.now();
+
+		const nodes = [];
+		for(const pc of viewer.scene.pointclouds){
+			nodes.push(pc.root);
+
+			for(const child of pc.root.children){
+				if(child){
+					nodes.push(child);
+				}
+			}
+		}
+
+		let closestNode = null;
+		let closestIndex = Infinity;
+		let closestDistance = Infinity;
+		let closestValue = 0;
+
+		for(const node of nodes){
+
+			const isOkay = node.geometryNode != null 
+				&& node.geometryNode.geometry != null
+				&& node.sceneNode != null;
+
+			if(!isOkay){
+				continue;
+			}
+
+			let geometry = node.geometryNode.geometry;
+			let gpsTime = geometry.attributes["gps-time"];
+			let range = gpsTime.potree.range;
+
+			for(let i = 0; i < gpsTime.array.length; i++){
+				let value = gpsTime.array[i];
+				value = value * (range[1] - range[0]) + range[0];
+				const distance = Math.abs(target - value);
+
+				if(distance < closestDistance){
+					closestIndex = i;
+					closestDistance = distance;
+					closestValue = value;
+					closestNode = node;
+					//console.log("found a closer one: " + value);
+				}
+			}
+		}
+
+		const geometry = closestNode.geometryNode.geometry;
+		const position = new THREE.Vector3(
+			geometry.attributes.position.array[3 * closestIndex + 0],
+			geometry.attributes.position.array[3 * closestIndex + 1],
+			geometry.attributes.position.array[3 * closestIndex + 2],
+		);
+
+		position.applyMatrix4(closestNode.sceneNode.matrixWorld);
+
+		const end = performance.now();
+		const duration = (end - start);
+		console.log(`duration: ${duration.toFixed(3)}ms`);
+
+		return {
+			node: closestNode,
+			index: closestIndex,
+			position: position,
+		};
+	}
+
 	/**
 	 *
 	 * 0: no intersection
@@ -725,80 +833,223 @@ export class Utils {
 		}
 	}
 
-	static toMaterialID(materialName){
-		if (materialName === 'RGB'){
-			return PointColorType.RGB;
-		} else if (materialName === 'Color') {
-			return PointColorType.COLOR;
-		} else if (materialName === 'Elevation') {
-			return PointColorType.HEIGHT;
-		} else if (materialName === 'Intensity') {
-			return PointColorType.INTENSITY;
-		} else if (materialName === 'Intensity Gradient') {
-			return PointColorType.INTENSITY_GRADIENT;
-		} else if (materialName === 'Classification') {
-			return PointColorType.CLASSIFICATION;
-		} else if (materialName === 'Return Number') {
-			return PointColorType.RETURN_NUMBER;
-		} else if (materialName === 'Source') {
-			return PointColorType.SOURCE;
-		} else if (materialName === 'Level of Detail') {
-			return PointColorType.LOD;
-		} else if (materialName === 'Point Index') {
-			return PointColorType.POINT_INDEX;
-		} else if (materialName === 'Normal') {
-			return PointColorType.NORMAL;
-		} else if (materialName === 'Phong') {
-			return PointColorType.PHONG;
-		} else if (materialName === 'Index') {
-			return PointColorType.POINT_INDEX;
-		} else if (materialName === 'RGB and Elevation') {
-			return PointColorType.RGB_HEIGHT;
-		} else if (materialName === 'Composite') {
-			return PointColorType.COMPOSITE;
-		} else if (materialName === 'GPS Time') {
-			return PointColorType.GPS_TIME;
-		} else if (materialName === 'Matcap') {
-			return PointColorType.MATCAP;
-		}
-	};
+	static lineToLineIntersection(P0, P1, P2, P3){
+
+		const P = [P0, P1, P2, P3];
+
+		const d = (m, n, o, p) => {
+			let result =  
+				  (P[m].x - P[n].x) * (P[o].x - P[p].x)
+				+ (P[m].y - P[n].y) * (P[o].y - P[p].y)
+				+ (P[m].z - P[n].z) * (P[o].z - P[p].z);
+
+			return result;
+		};
 
 
-	static toMaterialName(materialID) {
-		if (materialID === PointColorType.RGB) {
-			return 'RGB';
-		} else if (materialID === PointColorType.COLOR) {
-			return 'Color';
-		} else if (materialID === PointColorType.HEIGHT) {
-			return 'Elevation';
-		} else if (materialID === PointColorType.INTENSITY) {
-			return 'Intensity';
-		} else if (materialID === PointColorType.INTENSITY_GRADIENT) {
-			return 'Intensity Gradient';
-		} else if (materialID === PointColorType.CLASSIFICATION) {
-			return 'Classification';
-		} else if (materialID === PointColorType.RETURN_NUMBER) {
-			return 'Return Number';
-		} else if (materialID === PointColorType.SOURCE) {
-			return 'Source';
-		} else if (materialID === PointColorType.LOD) {
-			return 'Level of Detail';
-		} else if (materialID === PointColorType.NORMAL) {
-			return 'Normal';
-		} else if (materialID === PointColorType.PHONG) {
-			return 'Phong';
-		} else if (materialID === PointColorType.POINT_INDEX) {
-			return 'Index';
-		} else if (materialID === PointColorType.RGB_HEIGHT) {
-			return 'RGB and Elevation';
-		} else if (materialID === PointColorType.COMPOSITE) {
-			return 'Composite';
-		} else if (materialID === PointColorType.GPS_TIME) {
-			return 'GPS Time';
-		} else if (materialID === PointColorType.MATCAP) {
-			return 'Matcap';
+		const mua = (d(0, 2, 3, 2) * d(3, 2, 1, 0) - d(0, 2, 1, 0) * d(3, 2, 3, 2))
+		        /**-----------------------------------------------------------------**/ /
+		            (d(1, 0, 1, 0) * d(3, 2, 3, 2) - d(3, 2, 1, 0) * d(3, 2, 1, 0));
+
+
+		const mub = (d(0, 2, 3, 2) + mua * d(3, 2, 1, 0))
+		        /**--------------------------------------**/ /
+		                       d(3, 2, 3, 2);
+
+
+		const P01 = P1.clone().sub(P0);
+		const P23 = P3.clone().sub(P2);
+		
+		const Pa = P0.clone().add(P01.multiplyScalar(mua));
+		const Pb = P2.clone().add(P23.multiplyScalar(mub));
+
+		const center = Pa.clone().add(Pb).multiplyScalar(0.5);
+
+		return center;
+	}
+
+	static computeCircleCenter(A, B, C){
+		const AB = B.clone().sub(A);
+		const AC = C.clone().sub(A);
+
+		const N = AC.clone().cross(AB).normalize();
+
+		const ab_dir = AB.clone().cross(N).normalize();
+		const ac_dir = AC.clone().cross(N).normalize();
+
+		const ab_origin = A.clone().add(B).multiplyScalar(0.5);
+		const ac_origin = A.clone().add(C).multiplyScalar(0.5);
+
+		const P0 = ab_origin;
+		const P1 = ab_origin.clone().add(ab_dir);
+
+		const P2 = ac_origin;
+		const P3 = ac_origin.clone().add(ac_dir);
+
+		const center = Utils.lineToLineIntersection(P0, P1, P2, P3);
+
+		return center;
+
+		// Potree.Utils.debugLine(viewer.scene.scene, P0, P1, 0x00ff00);
+		// Potree.Utils.debugLine(viewer.scene.scene, P2, P3, 0x0000ff);
+
+		// Potree.Utils.debugSphere(viewer.scene.scene, center, 0.03, 0xff00ff);
+
+		// const radius = center.distanceTo(A);
+		// Potree.Utils.debugCircle(viewer.scene.scene, center, radius, new THREE.Vector3(0, 0, 1), 0xff00ff);
+	}
+
+	static getNorthVec(p1, distance, projection){
+		if(projection){
+			// if there is a projection, transform coordinates to WGS84
+			// and compute angle to north there
+
+			proj4.defs("pointcloud", projection);
+			const transform = proj4("pointcloud", "WGS84");
+
+			const llP1 = transform.forward(p1.toArray());
+			let llP2 = transform.forward([p1.x, p1.y + distance]);
+			const polarRadius = Math.sqrt((llP2[0] - llP1[0]) ** 2 + (llP2[1] - llP1[1]) ** 2);
+			llP2 = [llP1[0], llP1[1] + polarRadius];
+
+			const northVec = transform.inverse(llP2);
+			
+			return new THREE.Vector3(...northVec, p1.z).sub(p1);
+		}else{
+			// if there is no projection, assume [0, 1, 0] as north direction
+
+			const vec = p1.clone().add(new THREE.Vector3(0, 1, 0).multiplyScalar(distance));
+			
+			return vec;
 		}
-	};
+	}
+
+	static computeAzimuth(p1, p2, projection){
+
+		let azimuth = 0;
+
+		if(projection){
+			// if there is a projection, transform coordinates to WGS84
+			// and compute angle to north there
+
+			proj4.defs("pointcloud", projection);
+			const transform = proj4("pointcloud", "WGS84");
+
+			const llP1 = transform.forward(p1.toArray());
+			const llP2 = transform.forward(p2.toArray());
+			const dir = [
+				llP2[0] - llP1[0],
+				llP2[1] - llP1[1],
+			];
+			azimuth = Math.atan2(dir[1], dir[0]) - Math.PI / 2;
+		}else{
+			// if there is no projection, assume [0, 1, 0] as north direction
+
+			const dir = [p2.x - p1.x, p2.y - p1.y];
+			azimuth = Math.atan2(dir[1], dir[0]) - Math.PI / 2;
+		}
+
+		// make clockwise
+		azimuth = -azimuth;
+
+		return azimuth;
+	}
+
+	static async loadScript(url){
+
+		return new Promise( resolve => {
+
+			const element = document.getElementById(url);
+
+			if(element){
+				resolve();
+			}else{
+				const script = document.createElement("script");
+
+				script.id = url;
+
+				script.onload = () => {
+					resolve();
+				};
+				script.src = url;
+
+				document.body.appendChild(script);
+			}
+		});
+	}
+
+	static createSvgGradient(scheme){
+
+		// this is what we are creating:
+		//
+		//<svg width="1em" height="3em"  xmlns="http://www.w3.org/2000/svg">
+		//	<defs>
+		//		<linearGradient id="gradientID" gradientTransform="rotate(90)">
+		//		<stop offset="0%"  stop-color="rgb(93, 78, 162)" />
+		//		...
+		//		<stop offset="100%"  stop-color="rgb(157, 0, 65)" />
+		//		</linearGradient>
+		//	</defs>
+		//	
+		//	<rect width="100%" height="100%" fill="url('#myGradient')" stroke="black" stroke-width="0.1em"/>
+		//</svg>
+
+
+		const gradientId = `${Math.random()}_${Date.now()}`;
+		
+		const svgn = "http://www.w3.org/2000/svg";
+		const svg = document.createElementNS(svgn, "svg");
+		svg.setAttributeNS(null, "width", "2em");
+		svg.setAttributeNS(null, "height", "3em");
+		
+		{ // <defs>
+			const defs = document.createElementNS(svgn, "defs");
+			
+			const linearGradient = document.createElementNS(svgn, "linearGradient");
+			linearGradient.setAttributeNS(null, "id", gradientId);
+			linearGradient.setAttributeNS(null, "gradientTransform", "rotate(90)");
+
+			for(let i = scheme.length - 1; i >= 0; i--){
+				const stopVal = scheme[i];
+				const percent = parseInt(100 - stopVal[0] * 100);
+				const [r, g, b] = stopVal[1].toArray().map(v => parseInt(v * 255));
+
+				const stop = document.createElementNS(svgn, "stop");
+				stop.setAttributeNS(null, "offset", `${percent}%`);
+				stop.setAttributeNS(null, "stop-color", `rgb(${r}, ${g}, ${b})`);
+
+				linearGradient.appendChild(stop);
+			}
+
+			defs.appendChild(linearGradient);
+			svg.appendChild(defs);
+		}
+
+		const rect = document.createElementNS(svgn, "rect");
+		rect.setAttributeNS(null, "width", `100%`);
+		rect.setAttributeNS(null, "height", `100%`);
+		rect.setAttributeNS(null, "fill", `url("#${gradientId}")`);
+		rect.setAttributeNS(null, "stroke", `black`);
+		rect.setAttributeNS(null, "stroke-width", `0.1em`);
+
+		svg.appendChild(rect);
+		
+		return svg;
+	}
+
+	static async waitAny(promises){
+		
+		return new Promise( (resolve) => {
+
+			promises.map( promise => {
+				promise.then( () => {
+					resolve();
+				});
+			});
+
+		});
+
+	}
 
 }
 

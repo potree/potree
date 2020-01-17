@@ -16,6 +16,7 @@ attribute vec4 indices;
 attribute float spacing;
 attribute float gpsTime;
 attribute vec3 normal;
+attribute float aExtra;
 
 uniform mat4 modelMatrix;
 uniform mat4 modelViewMatrix;
@@ -34,7 +35,6 @@ uniform bool uDebug;
 uniform bool uUseOrthographicCamera;
 uniform float uOrthoWidth;
 uniform float uOrthoHeight;
-
 
 #define CLIPTASK_NONE 0
 #define CLIPTASK_HIGHLIGHT 1
@@ -83,15 +83,15 @@ uniform vec2 intensityRange;
 uniform vec2 uFilterReturnNumberRange;
 uniform vec2 uFilterNumberOfReturnsRange;
 uniform vec2 uFilterGPSTimeClipRange;
+uniform float uGpsScale;
+uniform float uGpsOffset;
 
-uniform float uGPSOffset;
-uniform float uGPSRange;
-uniform float intensityGamma;
-uniform float intensityContrast;
-uniform float intensityBrightness;
-uniform float rgbGamma;
-uniform float rgbContrast;
-uniform float rgbBrightness;
+uniform vec2 uNormalizedGpsBufferRange;
+
+uniform vec3 uIntensity_gbc;
+uniform vec3 uRGB_gbc;
+uniform vec3 uExtra_gbc;
+
 uniform float uTransition;
 uniform float wRGB;
 uniform float wIntensity;
@@ -99,6 +99,9 @@ uniform float wElevation;
 uniform float wClassification;
 uniform float wReturnNumber;
 uniform float wSourceID;
+
+uniform vec2 uExtraNormalizedRange;
+uniform vec2 uExtraRange;
 
 uniform vec3 uShadowColor;
 
@@ -388,33 +391,34 @@ float getContrastFactor(float contrast){
 vec3 getRGB(){
 	vec3 rgb = color;
 	
-	rgb = pow(rgb, vec3(rgbGamma));
-	rgb = rgb + rgbBrightness;
-	//rgb = (rgb - 0.5) * getContrastFactor(rgbContrast) + 0.5;
+	rgb = pow(rgb, vec3(uRGB_gbc.x));
+	rgb = rgb + uRGB_gbc.y;
+	rgb = (rgb - 0.5) * getContrastFactor(uRGB_gbc.z) + 0.5;
 	rgb = clamp(rgb, 0.0, 1.0);
 
-		//rgb = indices.rgb;
-	//rgb.b = pcIndex / 255.0;
-	
-	
 	return rgb;
 }
 
 float getIntensity(){
 	float w = (intensity - intensityRange.x) / (intensityRange.y - intensityRange.x);
-	w = pow(w, intensityGamma);
-	w = w + intensityBrightness;
-	w = (w - 0.5) * getContrastFactor(intensityContrast) + 0.5;
+	w = pow(w, uIntensity_gbc.x);
+	w = w + uIntensity_gbc.y;
+	w = (w - 0.5) * getContrastFactor(uIntensity_gbc.z) + 0.5;
 	w = clamp(w, 0.0, 1.0);
 
 	return w;
 }
 
-float getGpsTime(){
-	float w = (gpsTime + uGPSOffset) / uGPSRange;
+vec3 getGpsTime(){
+	vec2 r = uNormalizedGpsBufferRange;
+
+	float w = gpsTime * (r.y - r.x) + r.x;
+
 	w = clamp(w, 0.0, 1.0);
 
-	return w;
+	vec3 c = texture2D(gradient, vec2(w,1.0-w)).rgb;
+	
+	return c;
 }
 
 vec3 getElevation(){
@@ -444,6 +448,16 @@ vec3 getReturnNumber(){
 			return vec3(0.0, 1.0, 0.0);
 		}
 	}
+}
+
+vec3 getNumberOfReturns(){
+	float value = numberOfReturns;
+
+	float w = value / 6.0;
+
+	vec3 color = texture2D(gradient, vec2(w, 1.0 - w)).rgb;
+
+	return color;
 }
 
 vec3 getSourceID(){
@@ -516,24 +530,26 @@ vec3 getMatcap(){
 }
 #endif
 
-// 
-//  ######  ##       #### ########  ########  #### ##    ##  ######   
-// ##    ## ##        ##  ##     ## ##     ##  ##  ###   ## ##    ##  
-// ##       ##        ##  ##     ## ##     ##  ##  ####  ## ##        
-// ##       ##        ##  ########  ########   ##  ## ## ## ##   #### 
-// ##       ##        ##  ##        ##         ##  ##  #### ##    ##  
-// ##    ## ##        ##  ##        ##         ##  ##   ### ##    ##  
-//  ######  ######## #### ##        ##        #### ##    ##  ######                                                          
-// 
+vec3 getExtra(){
+	vec2 r = uExtraNormalizedRange;
 
+	float w = aExtra * (r.y - r.x) + r.x;
 
+	w = (w - uExtraRange.x) / (uExtraRange.y - uExtraRange.x);
+
+	w = clamp(w, 0.0, 1.0);
+
+	vec3 color = texture2D(gradient, vec2(w,1.0-w)).rgb;
+
+	return color;
+}
 
 vec3 getColor(){
 	vec3 color;
 	
-	#ifdef color_type_rgb
+	#ifdef color_type_RGBA
 		color = getRGB();
-	#elif defined color_type_height
+	#elif defined color_type_height || defined color_type_elevation
 		color = getElevation();
 	#elif defined color_type_rgb_height
 		vec3 cHeight = getElevation();
@@ -542,29 +558,31 @@ vec3 getColor(){
 		float linearDepth = gl_Position.w;
 		float expDepth = (gl_Position.z / gl_Position.w) * 0.5 + 0.5;
 		color = vec3(linearDepth, expDepth, 0.0);
+		//color = vec3(1.0, 0.5, 0.3);
 	#elif defined color_type_intensity
 		float w = getIntensity();
 		color = vec3(w, w, w);
-	#elif defined color_type_gpstime
-		float w = getGpsTime();
-		color = vec3(w, w, w);
+	#elif defined color_type_gps_time
+		color = getGpsTime();
 	#elif defined color_type_intensity_gradient
 		float w = getIntensity();
 		color = texture2D(gradient, vec2(w,1.0-w)).rgb;
 	#elif defined color_type_color
 		color = uColor;
-	#elif defined color_type_lod
+	#elif defined color_type_level_of_detail
 		float depth = getLOD();
 		float w = depth / 10.0;
 		color = texture2D(gradient, vec2(w,1.0-w)).rgb;
-	#elif defined color_type_point_index
+	#elif defined color_type_indices
 		color = indices.rgb;
 	#elif defined color_type_classification
 		vec4 cl = getClassification(); 
 		color = cl.rgb;
 	#elif defined color_type_return_number
 		color = getReturnNumber();
-	#elif defined color_type_source
+	#elif defined color_type_number_of_returns
+		color = getNumberOfReturns();
+	#elif defined color_type_source_id
 		color = getSourceID();
 	#elif defined color_type_normal
 		color = (modelMatrix * vec4(normal, 0.0)).xyz;
@@ -574,6 +592,8 @@ vec3 getColor(){
 		color = getCompositeColor();
 	#elif defined color_type_matcap
 		color = getMatcap();
+	#else 
+		color = getExtra();
 	#endif
 	
 	if (backfaceCulling && applyBackfaceCulling()) {
@@ -698,7 +718,8 @@ void doClipping(){
 
 	#if defined(clip_gps_enabled)
 	{ // GPS time filter
-		float time = gpsTime + uGPSOffset;
+		//float time = gpsTime + uGPSOffset;
+		float time = gpsTime / uGpsScale + uGpsOffset;
 		vec2 range = uFilterGPSTimeClipRange;
 
 		if(time < range.x || time > range.y){
@@ -865,16 +886,16 @@ void main() {
 				//vColor = vec3(1.0, 1.0, 1.0) * visibility + vec3(1.0, 1.0, 1.0) * vec3(0.5, 0.0, 0.0) * (1.0 - visibility);
 				vColor = vColor * visibility + vColor * uShadowColor * (1.0 - visibility);
 			}
+
+			{ // debug
+				vec4 depthMapValue = texture2D(uShadowMap[i], vec2(u, v) + sampleLocations[0]);
+
+				float t = depthMapValue.x * 20.0;
+				vColor = vec3(t, t, t);
+
+			}
+
 		}
 
 	#endif
-
-	//vColor = vec3(1.0, 0.0, 0.0);
-
-	//if(uDebug){
-	//	vColor.b = (vColor.r + vColor.g + vColor.b) / 3.0;
-	//	vColor.r = 1.0;
-	//	vColor.g = 1.0;
-	//}
-
 }

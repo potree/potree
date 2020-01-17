@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<meta name="description" content="">
+	<meta name="author" content="">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+	<title>Potree Viewer</title>
+
+	<link rel="stylesheet" type="text/css" href="../build/potree/potree.css">
+	<link rel="stylesheet" type="text/css" href="../libs/jquery-ui/jquery-ui.min.css">
+	<link rel="stylesheet" type="text/css" href="../libs/openlayers3/ol.css">
+	<link rel="stylesheet" type="text/css" href="../libs/spectrum/spectrum.css">
+	<link rel="stylesheet" type="text/css" href="../libs/jstree/themes/mixed/style.css">
+</head>
+
+<body>
+	<script src="../libs/jquery/jquery-3.1.1.min.js"></script>
+	<script src="../libs/spectrum/spectrum.js"></script>
+	<script src="../libs/jquery-ui/jquery-ui.min.js"></script>
+	<script src="../libs/three.js/build/three.js"></script>
+	<script src="../libs/other/BinaryHeap.js"></script>
+	<script src="../libs/tween/tween.min.js"></script>
+	<script src="../libs/d3/d3.js"></script>
+	<script src="../libs/proj4/proj4.js"></script>
+	<script src="../libs/openlayers3/ol.js"></script>
+	<script src="../libs/i18next/i18next.js"></script>
+	<script src="../libs/jstree/jstree.js"></script>
+	<script src="../build/potree/potree.js"></script>
+	<script src="../libs/plasio/js/laslaz.js"></script>
+
+	<script src="../libs/three.js/extra/lines.js"></script>
+	
+	<!-- INCLUDE ADDITIONAL DEPENDENCIES HERE -->
+	<!-- INCLUDE SETTINGS HERE -->
+	
+	<div class="potree_container" style="position: absolute; width: 100%; height: 100%; left: 0px; top: 0px; ">
+		<div id="potree_render_area" style="background-image: url('../build/potree/resources/images/background.jpg');">
+
+			<span style="position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%); z-index: 10000">
+
+				<input type="button" value="Default Scheme" onclick="setDefaultScheme()"/>
+				<input type="button" value="Tree Scheme" onclick="setTreeScheme()"/>
+				<input type="button" value="Random Scheme" onclick="setRandomScheme()"/>
+
+			</span>
+
+		</div>
+		<div id="potree_sidebar_container"> </div>
+	</div>
+	
+	<script>
+	
+		window.viewer = new Potree.Viewer(document.getElementById("potree_render_area"));
+
+		viewer.setDescription(`
+		Classification schemes can be changed at runtime via viewer.setClassifications(...). <br>
+		<br>
+		Point cloud courtesy of <a target='_blank' href='https://www.pge.com/'>PG&E</a>, 
+		hosted by <a target='_blank' href='http://opentopo.sdsc.edu/lidarDataset?opentopoID=OTLAS.032013.26910.2'>Open Topography</a>`);
+		
+		viewer.setEDLEnabled(true);
+		viewer.setFOV(60);
+		viewer.setPointBudget(2 * 1000 * 1000);
+		
+		viewer.loadGUI(() => {
+			$("#menu_filters").next().show();
+			viewer.toggleSidebar();
+		});
+		
+		// Sigeom
+		//Potree.loadPointCloud("../pointclouds/morro_bay_converted/cloud.js", "CA13", function(e){
+		Potree.loadPointCloud("http://5.9.65.151/mschuetz/potree/resources/pointclouds/opentopography/CA13_1.4/cloud.js", "CA13", function(e){
+			viewer.scene.addPointCloud(e.pointcloud);
+			e.pointcloud.position.z = 0;
+			let material = e.pointcloud.material;
+			material.size = 3;
+			material.pointSizeType = Potree.PointSizeType.FIXED;
+			material.activeAttributeName = "classification";
+			
+			viewer.scene.view.position.set(694274.518, 3916261.987, 348.732);
+			viewer.scene.view.lookAt(694683.097, 3916386.916, 30.879);
+		});
+		
+	</script>
+
+	<script>
+
+		function setDefaultScheme(){
+
+			viewer.setClassifications(Potree.ClassificationScheme.DEFAULT);
+
+		}
+
+		function setTreeScheme(){
+
+			viewer.setClassifications({
+				5:       { visible: true, name: 'trees'        , color: [0.0, 1.0, 0.0, 1.0] },
+				DEFAULT: { visible: false, name: 'other' , color: [0.0, 0.0, 0.0, 1.0] },
+			});
+
+		}
+
+		function setRandomScheme(){
+
+			const scheme = {};
+
+			for(let i = 0; i < 32; i++){
+				scheme[i] = { visible: true, name: `random:_${i}`, color: [Math.random(), Math.random(), Math.random(), 1.0] };
+			}
+
+			viewer.setClassifications(scheme);
+		}
+
+	</script>
+	
+	
+  </body>
+</html>

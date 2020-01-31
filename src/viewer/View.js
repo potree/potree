@@ -179,7 +179,9 @@ export class View{
 			tween.start();
 
 			tween.onComplete(() => {
-				callback();
+				if(callback){
+					callback();
+				}
 			});
 		}
 

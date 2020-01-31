@@ -789,7 +789,7 @@ void doClipping(){
 //
 
 void main() {
-	vec4 mvPosition = modelViewMatrix * vec4( position, 1.0 );
+	vec4 mvPosition = modelViewMatrix * vec4(position, 1.0 );
 	vViewPosition = mvPosition.xyz;
 	gl_Position = projectionMatrix * mvPosition;
 	vLogDepth = log2(-mvPosition.z);
@@ -801,6 +801,12 @@ void main() {
 
 	// COLOR
 	vColor = getColor();
+
+	//gl_Position = vec4(0.0, 0.0, 0.0, 1.0);
+	//gl_Position = vec4(position.xzy / 1000.0, 1.0 );
+
+	//gl_PointSize = 5.0;
+	//vColor = vec3(1.0, 1.0, 1.0);
 
 
 	#if defined hq_depth_pass

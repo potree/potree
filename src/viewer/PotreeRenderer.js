@@ -3,6 +3,7 @@ export class PotreeRenderer {
 
 	constructor (viewer) {
 		this.viewer = viewer;
+		this.renderer = viewer.renderer;
 	}
 
 	clearTargets(){
@@ -10,8 +11,7 @@ export class PotreeRenderer {
 	}
 
 	clear(){
-		const viewer = this.viewer;
-		const {renderer, skybox, background, scene} = viewer;
+		let {viewer, renderer} = this;
 
 		// render skybox
 		if(viewer.background === "skybox"){
@@ -33,9 +33,9 @@ export class PotreeRenderer {
 	}
  
 	render(params){
-		const viewer = this.viewer;
+		let {viewer, renderer} = this;
+
 		const camera = params.camera ? params.camera : viewer.scene.getActiveCamera();
-		const {renderer} = viewer;
 
 		viewer.dispatchEvent({type: "render.pass.begin",viewer: viewer});
 

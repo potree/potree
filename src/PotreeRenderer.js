@@ -609,7 +609,6 @@ export class Renderer {
 		for(let attributeName in geometry.attributes){
 			let bufferAttribute = geometry.attributes[attributeName];
 
-			let attributeLocation = attributeLocations[attributeName].location;
 			let normalized = bufferAttribute.normalized;
 			let type = this.glTypeMapping.get(bufferAttribute.array.constructor);
 
@@ -632,8 +631,15 @@ export class Renderer {
 
 			gl.bindBuffer(gl.ARRAY_BUFFER, vbo);
 			gl.bufferData(gl.ARRAY_BUFFER, bufferAttribute.array, gl.STATIC_DRAW);
-			gl.vertexAttribPointer(attributeLocation, bufferAttribute.itemSize, type, normalized, 0, 0);
-			gl.enableVertexAttribArray(attributeLocation);
+
+			if(attributeLocations[attributeName] === undefined){
+				//attributeLocation = attributeLocations["aExtra"];
+			}else{
+				let attributeLocation = attributeLocations[attributeName].location;
+				
+				gl.vertexAttribPointer(attributeLocation, bufferAttribute.itemSize, type, normalized, 0, 0);
+				gl.enableVertexAttribArray(attributeLocation);
+			}
 		}
 
 		gl.bindBuffer(gl.ARRAY_BUFFER, null);
@@ -708,7 +714,7 @@ export class Renderer {
 				shader.setUniform("uDebug", false);
 			}
 
-			let isLeaf;
+			let isLeaf = false;
 			if(node instanceof PointCloudOctreeNode){
 				isLeaf = Object.keys(node.children).length === 0;
 			}else if(node instanceof PointCloudArena4DNode){

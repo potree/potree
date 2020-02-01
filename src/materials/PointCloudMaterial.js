@@ -1065,12 +1065,17 @@ export class PointCloudMaterial extends THREE.RawShaderMaterial {
 		this._hiddenListeners = undefined;
 	};
 
-	copyFrom(from){
+	// copyFrom(from){
 
-		for(let name of this.uniforms){
-			this.uniforms[name].value = from.uniforms[name].value;
-		}
+	// 	var a = 10;
 
-	}
+	// 	for(let name of Object.keys(this.uniforms)){
+	// 		this.uniforms[name].value = from.uniforms[name].value;
+	// 	}
+	// }
+
+	// copy(from){
+	// 	this.copyFrom(from);
+	// }
 
 }

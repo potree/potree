@@ -7,6 +7,26 @@ import {LASExporter} from "../exporter/LASExporter.js";
 import { EventDispatcher } from "../EventDispatcher.js";
 import {PointCloudTree} from "../PointCloudTree.js";
 import {Renderer} from "../PotreeRenderer.js";
+import {PointCloudMaterial} from "../materials/PointCloudMaterial.js";
+import {PointSizeType} from "../defines.js";
+
+
+function copyMaterial(source, target){
+
+	for(let name of Object.keys(target.uniforms)){
+		target.uniforms[name].value = source.uniforms[name].value;
+	}
+
+	target.gradientTexture = source.gradientTexture;
+	target.visibleNodesTexture = source.visibleNodesTexture;
+	target.classificationTexture = source.classificationTexture;
+	target.matcapTexture = source.matcapTexture;
+
+	target.activeAttributeName = source.activeAttributeName;
+
+	//target.updateShaderSource();
+}
+
 
 class Batch{
 
@@ -37,7 +57,12 @@ class ProfileFakeOctree extends PointCloudTree{
 		this.pcoGeometry = octree.pcoGeometry;
 		this.points = [];
 		this.visibleNodes = [];
-		this.material = this.trueOctree.material;
+		
+		//this.material = this.trueOctree.material;
+		this.material = new PointCloudMaterial();
+		//this.material.copy(this.trueOctree.material);
+		copyMaterial(this.trueOctree.material, this.material);
+		this.material.pointSizeType = PointSizeType.FIXED;
 
 		this.batchSize = 100 * 1000;
 		this.currentBatch = null
@@ -827,32 +852,15 @@ export class ProfileWindow extends EventDispatcher {
 		renderer.setClearColor(0x000000, 0);
 		renderer.clear(true, true, false);
 
-		let states = new Map();
 		for(let pointcloud of this.pointclouds.keys()){
-			let material = pointcloud.material;
+			let source = pointcloud.material;
+			let target = this.pointclouds.get(pointcloud).material;
 			
-			let state = {
-				useEDL: material.useEDL,
-				pointSizeType: material.pointSizeType,
-			};
-			states.set(pointcloud, state);
-
-			material.useEDL = false;
-			material.pointSizeType = Potree.PointSizeType.FIXED;
+			copyMaterial(source, target);
+			target.size = 2;
 		}
 		
 		pRenderer.render(profileScene, camera, null);
-
-		for(let pointcloud of this.pointclouds.keys()){
-			let material = pointcloud.material;
-			
-			let state = states.get(pointcloud);
-
-			material.useEDL = state.useEDL;
-			material.pointSizeType = state.pointSizeType;
-		}
-
-
 
 		let radius = Math.abs(scaleX.invert(0) - scaleX.invert(5));
 		pickSphere.scale.set(radius, radius, radius);

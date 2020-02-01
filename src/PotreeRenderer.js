@@ -1285,10 +1285,12 @@ export class Renderer {
 			shader.setUniform("backfaceCulling", material.uniforms.backfaceCulling.value);
 
 			let vnWebGLTexture = this.textures.get(material.visibleNodesTexture);
-			shader.setUniform1i("visibleNodesTexture", currentTextureBindingPoint);
-			gl.activeTexture(gl.TEXTURE0 + currentTextureBindingPoint);
-			gl.bindTexture(vnWebGLTexture.target, vnWebGLTexture.id);
-			currentTextureBindingPoint++;
+			if(vnWebGLTexture){
+				shader.setUniform1i("visibleNodesTexture", currentTextureBindingPoint);
+				gl.activeTexture(gl.TEXTURE0 + currentTextureBindingPoint);
+				gl.bindTexture(vnWebGLTexture.target, vnWebGLTexture.id);
+				currentTextureBindingPoint++;
+			}
 
 			let gradientTexture = this.textures.get(material.gradientTexture);
 			shader.setUniform1i("gradient", currentTextureBindingPoint);

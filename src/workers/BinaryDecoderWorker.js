@@ -51,6 +51,19 @@ function CustomView (buffer) {
 	};
 }
 
+const typedArrayMapping = {
+	"int8":   Int8Array,
+	"int16":  Int16Array,
+	"int32":  Int32Array,
+	"int64":  Float64Array,
+	"uint8":  Uint8Array,
+	"uint16": Uint16Array,
+	"uint32": Uint32Array,
+	"uint64": Float64Array,
+	"float":  Float32Array,
+	"double": Float64Array,
+};
+
 Potree = {};
 
 onmessage = function (event) {
@@ -207,6 +220,9 @@ onmessage = function (event) {
 			let buff = new ArrayBuffer(numPoints * 4);
 			let f32 = new Float32Array(buff);
 
+			let TypedArray = typedArrayMapping[pointAttribute.type.name];
+			preciseBuffer = new TypedArray(numPoints);
+
 			let [min, max] = [Infinity, -Infinity];
 			let [offset, scale] = [0, 1];
 
@@ -235,9 +251,18 @@ onmessage = function (event) {
 					}
 				}
 
-				offset = min;
-				scale = 1 / (max - min);
+				
+
+				if(pointAttribute.initialRange != null){
+					offset = pointAttribute.initialRange[0];
+					scale = 1 / (pointAttribute.initialRange[1] - pointAttribute.initialRange[0]);
+				}else{
+					offset = min;
+					scale = 1 / (max - min);
+				}
 			}
+
+			
 
 			for(let j = 0; j < numPoints; j++){
 				let value = getter(inOffset + j * pointAttributes.byteSize);
@@ -248,12 +273,14 @@ onmessage = function (event) {
 				}
 
 				f32[j] = (value - offset) * scale;
+				preciseBuffer[j] = value;
 			}
 
 			pointAttribute.range = [min, max];
 
 			attributeBuffers[pointAttribute.name] = { 
-				buffer: buff, 
+				buffer: buff,
+				preciseBuffer: preciseBuffer,
 				attribute: pointAttribute,
 				offset: offset,
 				scale: scale,
@@ -293,21 +320,6 @@ onmessage = function (event) {
 				let {offset, scale} = sourceBuffer;
 				let cv = new CustomView(sourceBuffer.buffer);
 
-				// const getterMap = {
-				// 	"int8":   cv.getInt8,
-				// 	"int16":  cv.getInt16,
-				// 	"int32":  cv.getInt32,
-				// 	"int64":  cv.getInt64,
-				// 	"uint8":  cv.getUint8,
-				// 	"uint16": cv.getUint16,
-				// 	"uint32": cv.getUint32,
-				// 	"uint64": cv.getUint64,
-				// 	"float":  cv.getFloat32,
-				// 	"double": cv.getFloat64,
-				// };
-
-				let sourceAttribute = pointAttributes.attributes.find(a => a.name === sourceName);
-				// const getter = getterMap[sourceAttribute.type.name].bind(cv);
 				const getter = cv.getFloat32.bind(cv);
 
 				for(let j = 0; j < numPoints; j++){

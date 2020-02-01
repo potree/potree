@@ -410,13 +410,17 @@ float getIntensity(){
 }
 
 vec3 getGpsTime(){
-	vec2 r = uNormalizedGpsBufferRange;
 
-	float w = gpsTime * (r.y - r.x) + r.x;
+	float w = (gpsTime + uGpsOffset) * uGpsScale;
 
-	w = clamp(w, 0.0, 1.0);
 
-	vec3 c = texture2D(gradient, vec2(w,1.0-w)).rgb;
+	vec3 c = texture2D(gradient, vec2(w, 1.0 - w)).rgb;
+
+
+	// vec2 r = uNormalizedGpsBufferRange;
+	// float w = gpsTime * (r.y - r.x) + r.x;
+	// w = clamp(w, 0.0, 1.0);
+	// vec3 c = texture2D(gradient, vec2(w,1.0-w)).rgb;
 	
 	return c;
 }
@@ -718,8 +722,7 @@ void doClipping(){
 
 	#if defined(clip_gps_enabled)
 	{ // GPS time filter
-		//float time = gpsTime + uGPSOffset;
-		float time = gpsTime / uGpsScale + uGpsOffset;
+		float time = (gpsTime + uGpsOffset) * uGpsScale;
 		vec2 range = uFilterGPSTimeClipRange;
 
 		if(time < range.x || time > range.y){

@@ -622,17 +622,6 @@ export class PropertiesPanel{
 				slide: (event, ui) => {material.extraContrast = ui.value}
 			});
 
-			panel.find('#sldExtraRange').slider({
-				range: true,
-				min: 0, max: 1000, step: 0.01,
-				values: [0, 1000],
-				slide: (event, ui) => {
-					let min = ui.values[0];
-					let max = ui.values[1];
-					material.extraRange = [min, max];
-				}
-			});
-
 			panel.find('#sldHeightRange').slider({
 				range: true,
 				min: 0, max: 1000, step: 0.01,

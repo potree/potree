@@ -98,9 +98,11 @@ export class BinaryLoader{
 					geometry.addAttribute('spacing', bufferAttribute);
 				} else {
 					const bufferAttribute = new THREE.BufferAttribute(new Float32Array(buffer), 1);
+
 					bufferAttribute.potree = {
 						offset: buffers[property].offset,
 						scale: buffers[property].scale,
+						preciseBuffer: buffers[property].preciseBuffer,
 						range: batchAttribute.range,
 					};
 
@@ -109,6 +111,11 @@ export class BinaryLoader{
 					const attribute = pointAttributes.attributes.find(a => a.name === batchAttribute.name);
 					attribute.range[0] = Math.min(attribute.range[0], batchAttribute.range[0]);
 					attribute.range[1] = Math.max(attribute.range[1], batchAttribute.range[1]);
+
+					if(node.getLevel() === 0){
+						attribute.initialRange = batchAttribute.range;
+					}
+
 				}
 			}
 

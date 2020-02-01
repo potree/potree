@@ -233,7 +233,6 @@ export class ProfileWindow extends EventDispatcher {
 		this.initSVG();
 		this.initListeners();
 
-		//this.pRenderer = new PotreeRenderer(this.viewer, this.renderer);
 		this.pRenderer = new Renderer(this.renderer);
 
 		this.elRoot.i18n();
@@ -290,9 +289,11 @@ export class ProfileWindow extends EventDispatcher {
 				let mileage = this.scaleX.invert(newMouse.x);
 				let elevation = this.scaleY.invert(newMouse.y);
 
-				let point = this.selectPoint(mileage, elevation, radius);
+				let closest = this.selectPoint(mileage, elevation, radius);
 
-				if (point) {
+				if (closest) {
+					let point = closest.point;
+
 					this.elRoot.find('#profileSelectionProperties').fadeIn(200);
 					this.pickSphere.visible = true;
 					this.pickSphere.scale.set(0.5 * radius, 0.5 * radius, 0.5 * radius);
@@ -310,9 +311,25 @@ export class ProfileWindow extends EventDispatcher {
 
 					let info = this.elRoot.find('#profileSelectionProperties');
 					let html = '<table>';
-					for (let attribute of Object.keys(point)) {
-						let value = point[attribute];
-						if (attribute === 'position') {
+
+					for (let attributeName of Object.keys(point)) {
+
+						let value = point[attributeName];
+						let attribute = closest.pointcloud.getAttribute(attributeName);
+
+						let transform = value => value;
+						if(attribute && attribute.type.size > 4){
+							let range = attribute.initialRange;
+							let scale = 1 / (range[1] - range[0]);
+							let offset = range[0];
+							transform = value => value / scale + offset;
+						}
+
+						
+
+						
+
+						if (attributeName === 'position') {
 							let values = [...value].map(v => Utils.addCommas(v.toFixed(3)));
 							html += `
 								<tr>
@@ -327,25 +344,25 @@ export class ProfileWindow extends EventDispatcher {
 									<td>z</td>
 									<td>${values[2]}</td>
 								</tr>`;
-						} else if (attribute === 'color') {
+						} else if (attributeName === 'color') {
 							html += `
 								<tr>
-									<td>${attribute}</td>
+									<td>${attributeName}</td>
 									<td>${value.join(', ')}</td>
 								</tr>`;
-						} else if (attribute === 'normal') {
+						} else if (attributeName === 'normal') {
 							continue;
-						} else if (attribute === 'mileage') {
+						} else if (attributeName === 'mileage') {
 							html += `
 								<tr>
-									<td>${attribute}</td>
+									<td>${attributeName}</td>
 									<td>${value.toFixed(3)}</td>
 								</tr>`;
 						} else {
 							html += `
 								<tr>
-									<td>${attribute}</td>
-									<td>${value}</td>
+									<td>${attributeName}</td>
+									<td>${transform(value)}</td>
 								</tr>`;
 						}
 					}
@@ -535,7 +552,9 @@ export class ProfileWindow extends EventDispatcher {
 				}
 			}
 
-			return point;
+			closest.point = point;
+
+			return closest;
 		} else {
 			return null;
 		}
@@ -805,10 +824,35 @@ export class ProfileWindow extends EventDispatcher {
 
 		renderer.setSize(width, height);
 
-		renderer.setClearColor(0x445566, 1);
+		renderer.setClearColor(0x000000, 0);
 		renderer.clear(true, true, false);
 
+		let states = new Map();
+		for(let pointcloud of this.pointclouds.keys()){
+			let material = pointcloud.material;
+			
+			let state = {
+				useEDL: material.useEDL,
+				pointSizeType: material.pointSizeType,
+			};
+			states.set(pointcloud, state);
+
+			material.useEDL = false;
+			material.pointSizeType = Potree.PointSizeType.FIXED;
+		}
+		
 		pRenderer.render(profileScene, camera, null);
+
+		for(let pointcloud of this.pointclouds.keys()){
+			let material = pointcloud.material;
+			
+			let state = states.get(pointcloud);
+
+			material.useEDL = state.useEDL;
+			material.pointSizeType = state.pointSizeType;
+		}
+
+
 
 		let radius = Math.abs(scaleX.invert(0) - scaleX.invert(5));
 		pickSphere.scale.set(radius, radius, radius);

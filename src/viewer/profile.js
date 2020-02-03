@@ -23,6 +23,7 @@ function copyMaterial(source, target){
 	target.matcapTexture = source.matcapTexture;
 
 	target.activeAttributeName = source.activeAttributeName;
+	target.ranges = source.ranges;
 
 	//target.updateShaderSource();
 }

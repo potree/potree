@@ -4,8 +4,47 @@ import {Annotation} from "../Annotation.js";
 import {Measure} from "../utils/Measure.js";
 import {CameraAnimation} from "../modules/CameraAnimation/CameraAnimation.js";
 import {Utils} from "../utils.js";
+import {PointSizeType} from "../defines.js";
 
 function loadPointCloud(viewer, data){
+
+	let loadMaterial = (target) => {
+
+		if(data.material){
+
+			if(data.material.activeAttributeName != null){
+				target.activeAttributeName = data.material.activeAttributeName;
+			}
+
+			if(data.material.ranges != null){
+				for(let range of data.material.ranges){
+					target.setRange(range.name, range.value);
+				}
+			}
+
+			if(data.material.size != null){
+				target.size = data.material.size;
+			}
+
+			if(data.material.minSize != null){
+				target.minSize = data.material.minSize;
+			}
+
+			if(data.material.pointSizeType != null){
+				target.pointSizeType = PointSizeType[data.material.pointSizeType];
+			}
+
+			if(data.material.matcap != null){
+				target.matcap = data.material.matcap;
+			}
+
+		}else if(data.activeAttributeName != null){
+			target.activeAttributeName = data.activeAttributeName;
+		}else{
+			// no material data
+		}
+
+	};
 
 	const promise = new Promise((resolve) => {
 
@@ -23,6 +62,8 @@ function loadPointCloud(viewer, data){
 			pointcloud.position.set(...data.position);
 			pointcloud.rotation.set(...data.rotation);
 			pointcloud.scale.set(...data.scale);
+
+			loadMaterial(pointcloud.material);
 
 			viewer.scene.addPointCloud(pointcloud);
 

@@ -102,6 +102,8 @@ uniform float wSourceID;
 
 uniform vec2 uExtraNormalizedRange;
 uniform vec2 uExtraRange;
+uniform float uExtraScale;
+uniform float uExtraOffset;
 
 uniform vec3 uShadowColor;
 
@@ -535,15 +537,21 @@ vec3 getMatcap(){
 #endif
 
 vec3 getExtra(){
-	vec2 r = uExtraNormalizedRange;
 
-	float w = aExtra * (r.y - r.x) + r.x;
-
-	w = (w - uExtraRange.x) / (uExtraRange.y - uExtraRange.x);
-
+	float w = (aExtra + uExtraOffset) * uExtraScale;
 	w = clamp(w, 0.0, 1.0);
 
 	vec3 color = texture2D(gradient, vec2(w,1.0-w)).rgb;
+
+	// vec2 r = uExtraNormalizedRange;
+
+	// float w = aExtra * (r.y - r.x) + r.x;
+
+	// w = (w - uExtraRange.x) / (uExtraRange.y - uExtraRange.x);
+
+	// w = clamp(w, 0.0, 1.0);
+
+	// vec3 color = texture2D(gradient, vec2(w,1.0-w)).rgb;
 
 	return color;
 }

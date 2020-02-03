@@ -49,6 +49,8 @@ export class PointCloudMaterial extends THREE.RawShaderMaterial {
 		this._useEDL = false;
 		this.defines = new Map();
 
+		this.ranges = new Map();
+
 		this._activeAttributeName = null;
 
 		this._defaultIntensityRangeChanged = false;
@@ -136,6 +138,8 @@ export class PointCloudMaterial extends THREE.RawShaderMaterial {
 			clipMethod:			{ type: "i", value: 1 },
 			uShadowColor:		{ type: "3fv", value: [0, 0, 0] },
 
+			uExtraScale:		{ type: "f", value: 1},
+			uExtraOffset:		{ type: "f", value: 0},
 			uExtraRange:		{ type: "2fv", value: [0, 1] },
 			uExtraGammaBrightContr:	{ type: "3fv", value: [1, 0, 0] },
 
@@ -880,6 +884,32 @@ export class PointCloudMaterial extends THREE.RawShaderMaterial {
 	set extraContrast (value) {
 		if (this.uniforms.uExtraGammaBrightContr.value[2] !== value) {
 			this.uniforms.uExtraGammaBrightContr.value[2] = value;
+			this.dispatchEvent({
+				type: 'material_property_changed',
+				target: this
+			});
+		}
+	}
+
+	getRange(attributeName){
+		return this.ranges.get(attributeName);
+	}
+
+	setRange(attributeName, newRange){
+
+		let rangeChanged = false;
+
+		let oldRange = this.ranges.get(attributeName);
+
+		if(oldRange != null && newRange != null){
+			rangeChanged = oldRange[0] !== newRange[0] || oldRange[1] !== newRange[1];
+		}else{
+			rangeChanged = true;
+		}
+
+		this.ranges.set(attributeName, newRange);
+
+		if(rangeChanged){
 			this.dispatchEvent({
 				type: 'material_property_changed',
 				target: this

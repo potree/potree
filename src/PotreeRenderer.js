@@ -942,32 +942,30 @@ export class Renderer {
 
 
 				{
-
 					const attExtra = octree.pcoGeometry.pointAttributes.attributes
 						.find(a => a.name === attName);
 
-					const globalRange = attExtra.initialRange;
-					const globalWidth = globalRange[1] - globalRange[0];
-					const normalizedBufferRange = [0, 1];
+					let range = material.getRange(attName);
+					if(!range){
+						range = attExtra.range;
+					}
 
-					shader.setUniform2f("uExtraNormalizedRange", normalizedBufferRange);
+					if(!range){
+						range = [0, 1];
+					}
 
-					const extraRange = [
-						(material.extraRange[0] - globalRange[0]) / globalWidth,
-						(material.extraRange[1] - globalRange[0]) / globalWidth,
-					];
-					shader.setUniform2f("uExtraRange", extraRange);
+					let initialRange = attExtra.initialRange;
+					let initialRangeSize = initialRange[1] - initialRange[0];
 
+					let globalRange = range;
+					let globalRangeSize = globalRange[1] - globalRange[0];
 
-					
+					let scale = initialRangeSize / globalRangeSize;
+					let offset = -(globalRange[0] - initialRange[0]) / initialRangeSize;
+
+					shader.setUniform1f("uExtraScale", scale);
+					shader.setUniform1f("uExtraOffset", offset);					
 				}
-
-
-
-
-
-
-
 
 			}else{
 

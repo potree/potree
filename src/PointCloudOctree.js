@@ -175,6 +175,10 @@ export class PointCloudOctree extends PointCloudTree {
 		}
 	}
 
+	getAttributes(){
+		return this.pcoGeometry.pointAttributes;
+	}
+
 	toTreeNode (geometryNode, parent) {
 		let node = new PointCloudOctreeNode();
 

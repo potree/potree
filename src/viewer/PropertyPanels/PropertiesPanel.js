@@ -437,18 +437,26 @@ export class PropertiesPanel{
 				} else if(attribute){
 					const [min, max] = attribute.range;
 
+					let selectedRange = material.getRange(attribute.name);
+
+					if(!selectedRange){
+						selectedRange = [...attribute.range];
+					}
+
 					panel.find('#sldExtraRange').slider({
 						range: true,
-						min: min, max: max, step: 0.01,
-						values: [min, max],
+						min: min, 
+						max: max, 
+						step: 0.01,
+						values: selectedRange,
 						slide: (event, ui) => {
-							let min = ui.values[0];
-							let max = ui.values[1];
-							material.extraRange = [min, max];
+							let [a, b] = ui.values;
+
+							material.setRange(attribute.name, [a, b]);
 						}
 					});
 
-					material.extraRange = [min, max];
+					// material.extraRange = [min, max];
 				}
 
 				let blockWeights = $('#materials\\.composite_weight_container');
@@ -499,6 +507,12 @@ export class PropertiesPanel{
 					// add classification color selctor?
 				} else if (selectedValue === "gps-time" ){
 					blockGps.css('display', 'block');
+				} else if(selectedValue === "number of returns"){
+					
+				} else if(selectedValue === "return number"){
+					
+				} else if(selectedValue === "source id"){
+					
 				} else{
 					blockExtra.css('display', 'block');
 				}
@@ -622,17 +636,6 @@ export class PropertiesPanel{
 				slide: (event, ui) => {material.extraContrast = ui.value}
 			});
 
-			panel.find('#sldExtraRange').slider({
-				range: true,
-				min: 0, max: 1000, step: 0.01,
-				values: [0, 1000],
-				slide: (event, ui) => {
-					let min = ui.values[0];
-					let max = ui.values[1];
-					material.extraRange = [min, max];
-				}
-			});
-
 			panel.find('#sldHeightRange').slider({
 				range: true,
 				min: 0, max: 1000, step: 0.01,
@@ -739,10 +742,27 @@ export class PropertiesPanel{
 			};
 
 			let updateExtraRange = function () {
-				let range = material.extraRange;
 
-				panel.find('#lblExtraRange').html(`${range[0].toFixed(2)} to ${range[1].toFixed(2)}`);
-				//panel.find('#sldHeightRange').slider({min: bMin, max: bMax, values: range});
+				let attributeName = material.activeAttributeName;
+				let attribute = pointcloud.getAttribute(attributeName);
+
+				if(attribute == null){
+					return;
+				}
+
+				
+				let range = material.getRange(attributeName);
+
+				if(range == null){
+					range = attribute.range;
+				}
+
+				if(range){
+					let msg = `${range[0].toFixed(2)} to ${range[1].toFixed(2)}`;
+					panel.find('#lblExtraRange').html(msg);
+				}else{
+					panel.find("could not deduce range");
+				}
 			};
 
 			let updateIntensityRange = function () {

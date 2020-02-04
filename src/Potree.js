@@ -62,6 +62,7 @@ export * from "./viewer/viewer.js";
 export * from "./viewer/Scene.js";
 
 export * from "./modules/OrientedImages/OrientedImages.js";
+export * from "./modules/Images360/Images360.js";
 export * from "./modules/CameraAnimation/CameraAnimation.js";
 
 export * from "./modules/Loader_1.8/OctreeLoader_1_8.js";

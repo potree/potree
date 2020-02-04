@@ -212,6 +212,8 @@ export class ProfileRequest {
 				mileage[numAccepted] = localMileage + totalMileage;
 				points.boundingBox.expandByPoint(pos);
 
+				pos.sub(this.pointcloud.position);
+
 				acceptedPositions[3 * numAccepted + 0] = pos.x;
 				acceptedPositions[3 * numAccepted + 1] = pos.y;
 				acceptedPositions[3 * numAccepted + 2] = pos.z;

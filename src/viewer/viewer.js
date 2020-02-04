@@ -926,7 +926,7 @@ export class Viewer extends EventDispatcher{
 			Potree.loadProject(viewer, json);
 		}
 
-		Potree.loadProject(this, url);
+		//Potree.loadProject(this, url);
 	}
 
 	saveProject(){
@@ -1098,6 +1098,18 @@ export class Viewer extends EventDispatcher{
 		}
 	}
 
+	promiseGuiLoaded(){
+		return new Promise( resolve => {
+
+			if(this.guiLoaded){
+				resolve();
+			}else{
+				this.guiLoadTasks.push(resolve);
+			}
+		
+		});
+	}
+
 	loadGUI(callback){
 
 		this.onGUILoaded(callback);
@@ -1176,6 +1188,8 @@ export class Viewer extends EventDispatcher{
 
 			
 		});
+
+		return this.promiseGuiLoaded();
 	}
 
 	setLanguage (lang) {
@@ -1498,10 +1512,20 @@ export class Viewer extends EventDispatcher{
 
 		const material = pointcloud.material;
 
-		const attIntensity = pointcloud.getAttribute("intensity");
-		if(attIntensity && material.intensityRange[0] === Infinity){
-			material.intensityRange = [...attIntensity.range];
-		}
+		// const attIntensity = pointcloud.getAttribute("intensity");
+		// if(attIntensity && material.intensityRange[0] === Infinity){
+		// 	material.intensityRange = [...attIntensity.range];
+		// }
+
+		// let attributes = pointcloud.getAttributes();
+
+		// for(let attribute of attributes.attributes){
+		// 	if(attribute.range){
+		// 		let range = [...attribute.range];
+		// 		material.computedRange.set(attribute.name, range);
+		// 		//material.setRange(attribute.name, range);
+		// 	}
+		// }
 
 
 	}

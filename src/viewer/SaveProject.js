@@ -2,13 +2,35 @@
 
 function createPointcloudData(pointcloud) {
 
+	let material = pointcloud.material;
+
+	let ranges = [];
+	
+	for(let [name, value] of material.ranges){
+		ranges.push({
+			name: name,
+			value: value,
+		});
+	}
+
+	let pointSizeTypeName = Object.entries(Potree.PointSizeType).find(e => e[1] === material.pointSizeType)[0];
+
+	let jsonMaterial = {
+		activeAttributeName: material.activeAttributeName,
+		ranges: ranges,
+		size: material.size,
+		minSize: material.minSize,
+		pointSizeType: pointSizeTypeName,
+		matcap: material.matcap,
+	};
+
 	const pcdata = {
 		name: pointcloud.name,
 		url: pointcloud.pcoGeometry.url,
 		position: pointcloud.position.toArray(),
 		rotation: pointcloud.rotation.toArray(),
 		scale: pointcloud.scale.toArray(),
-		activeAttributeName: pointcloud.material.activeAttributeName,
+		material: jsonMaterial,
 	};
 
 	return pcdata;

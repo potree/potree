@@ -102,6 +102,8 @@ uniform float wSourceID;
 
 uniform vec2 uExtraNormalizedRange;
 uniform vec2 uExtraRange;
+uniform float uExtraScale;
+uniform float uExtraOffset;
 
 uniform vec3 uShadowColor;
 
@@ -410,13 +412,17 @@ float getIntensity(){
 }
 
 vec3 getGpsTime(){
-	vec2 r = uNormalizedGpsBufferRange;
 
-	float w = gpsTime * (r.y - r.x) + r.x;
+	float w = (gpsTime + uGpsOffset) * uGpsScale;
 
-	w = clamp(w, 0.0, 1.0);
 
-	vec3 c = texture2D(gradient, vec2(w,1.0-w)).rgb;
+	vec3 c = texture2D(gradient, vec2(w, 1.0 - w)).rgb;
+
+
+	// vec2 r = uNormalizedGpsBufferRange;
+	// float w = gpsTime * (r.y - r.x) + r.x;
+	// w = clamp(w, 0.0, 1.0);
+	// vec3 c = texture2D(gradient, vec2(w,1.0-w)).rgb;
 	
 	return c;
 }
@@ -531,15 +537,21 @@ vec3 getMatcap(){
 #endif
 
 vec3 getExtra(){
-	vec2 r = uExtraNormalizedRange;
 
-	float w = aExtra * (r.y - r.x) + r.x;
-
-	w = (w - uExtraRange.x) / (uExtraRange.y - uExtraRange.x);
-
+	float w = (aExtra + uExtraOffset) * uExtraScale;
 	w = clamp(w, 0.0, 1.0);
 
 	vec3 color = texture2D(gradient, vec2(w,1.0-w)).rgb;
+
+	// vec2 r = uExtraNormalizedRange;
+
+	// float w = aExtra * (r.y - r.x) + r.x;
+
+	// w = (w - uExtraRange.x) / (uExtraRange.y - uExtraRange.x);
+
+	// w = clamp(w, 0.0, 1.0);
+
+	// vec3 color = texture2D(gradient, vec2(w,1.0-w)).rgb;
 
 	return color;
 }
@@ -718,8 +730,7 @@ void doClipping(){
 
 	#if defined(clip_gps_enabled)
 	{ // GPS time filter
-		//float time = gpsTime + uGPSOffset;
-		float time = gpsTime / uGpsScale + uGpsOffset;
+		float time = (gpsTime + uGpsOffset) * uGpsScale;
 		vec2 range = uFilterGPSTimeClipRange;
 
 		if(time < range.x || time > range.y){
@@ -789,7 +800,7 @@ void doClipping(){
 //
 
 void main() {
-	vec4 mvPosition = modelViewMatrix * vec4( position, 1.0 );
+	vec4 mvPosition = modelViewMatrix * vec4(position, 1.0 );
 	vViewPosition = mvPosition.xyz;
 	gl_Position = projectionMatrix * mvPosition;
 	vLogDepth = log2(-mvPosition.z);
@@ -801,6 +812,12 @@ void main() {
 
 	// COLOR
 	vColor = getColor();
+
+	//gl_Position = vec4(0.0, 0.0, 0.0, 1.0);
+	//gl_Position = vec4(position.xzy / 1000.0, 1.0 );
+
+	//gl_PointSize = 5.0;
+	//vColor = vec3(1.0, 1.0, 1.0);
 
 
 	#if defined hq_depth_pass

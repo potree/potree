@@ -1,191 +1,217 @@
 
-import {PointCloudMaterial} from "../materials/PointCloudMaterial.js";
+
 import {Utils} from "../utils.js";
 import {Points} from "../Points.js";
 import {CSVExporter} from "../exporter/CSVExporter.js";
 import {LASExporter} from "../exporter/LASExporter.js";
 import { EventDispatcher } from "../EventDispatcher.js";
+import {PointCloudTree} from "../PointCloudTree.js";
+import {Renderer} from "../PotreeRenderer.js";
+import {PointCloudMaterial} from "../materials/PointCloudMaterial.js";
+import {PointSizeType} from "../defines.js";
 
-class ProfilePointCloudEntry{
 
-	constructor(){
+function copyMaterial(source, target){
 
-		this.points = [];
+	for(let name of Object.keys(target.uniforms)){
+		target.uniforms[name].value = source.uniforms[name].value;
+	}
 
-		//let geometry = new THREE.BufferGeometry();
-		let material = ProfilePointCloudEntry.getMaterialInstance();
-		material.uniforms.minSize.value = 2;
-		material.uniforms.maxSize.value = 2;
-		material.activeAttributeName = "RGBA";
-		material.opacity = 1.0;
+	target.gradientTexture = source.gradientTexture;
+	target.visibleNodesTexture = source.visibleNodesTexture;
+	target.classificationTexture = source.classificationTexture;
+	target.matcapTexture = source.matcapTexture;
 
+	target.activeAttributeName = source.activeAttributeName;
+	target.ranges = source.ranges;
+
+	//target.updateShaderSource();
+}
+
+
+class Batch{
+
+	constructor(geometry, material){
+		this.geometry = geometry;
 		this.material = material;
 
-		this.sceneNode = new THREE.Object3D();
-		//this.sceneNode = new THREE.Points(geometry, material);
+		this.sceneNode = new THREE.Points(geometry, material);
+
+		this.geometryNode = {
+			estimatedSpacing: 1.0,
+			geometry: geometry,
+		};
 	}
 
-	static releaseMaterialInstance(instance){
-		ProfilePointCloudEntry.materialPool.add(instance);
+	getLevel(){
+		return 0;
 	}
 
-	static getMaterialInstance(){
+}
 
-		let instance = ProfilePointCloudEntry.materialPool.values().next().value;
-		if(!instance){
-			instance = new PointCloudMaterial();
-		}else{
-			ProfilePointCloudEntry.materialPool.delete(instance);
-		}
+class ProfileFakeOctree extends PointCloudTree{
 
-		return instance;
+	constructor(octree){
+		super();
+
+		this.trueOctree = octree;
+		this.pcoGeometry = octree.pcoGeometry;
+		this.points = [];
+		this.visibleNodes = [];
+		
+		//this.material = this.trueOctree.material;
+		this.material = new PointCloudMaterial();
+		//this.material.copy(this.trueOctree.material);
+		copyMaterial(this.trueOctree.material, this.material);
+		this.material.pointSizeType = PointSizeType.FIXED;
+
+		this.batchSize = 100 * 1000;
+		this.currentBatch = null
+	}
+
+	getAttribute(name){
+		return this.trueOctree.getAttribute(name);
 	}
 
 	dispose(){
-
-		for(let child of this.sceneNode.children){
-			ProfilePointCloudEntry.releaseMaterialInstance(child.material);
-			child.geometry.dispose();
+		for(let node of this.visibleNodes){
+			node.geometry.dispose();
 		}
 
-		this.sceneNode.children = [];		
+		this.visibleNodes = [];
+		this.currentBatch = null;
+		this.points = [];
 	}
 
 	addPoints(data){
+		// since each call to addPoints can deliver very very few points,
+		// we're going to batch them into larger buffers for efficiency.
+
+		if(this.currentBatch === null){
+			this.currentBatch = this.createNewBatch(data);
+		}
 
 		this.points.push(data);
 
-		let batchSize = 10*1000;
 
-		let createNewBatch = () => {
-			let geometry = new THREE.BufferGeometry();
+		let updateRange = {
+			start: this.currentBatch.geometry.drawRange.count,
+			count: 0
+		};
+		let projectedBox = new THREE.Box3();
 
-			let buffers = {
-				position: new Float32Array(3 * batchSize),
-				color: new Uint8Array(4 * batchSize),
-				intensity: new Uint16Array(batchSize),
-				classification: new Uint8Array(batchSize),
-				returnNumber: new Uint8Array(batchSize),
-				numberOfReturns: new Uint8Array(batchSize),
-				pointSourceID: new Uint16Array(batchSize)
-			};
+		for(let i = 0; i < data.numPoints; i++){
 
-			geometry.addAttribute('position', new THREE.BufferAttribute(buffers.position, 3));
-			geometry.addAttribute('color', new THREE.BufferAttribute(buffers.color, 4, true));
-			geometry.addAttribute('intensity', new THREE.BufferAttribute(buffers.intensity, 1, false));
-			geometry.addAttribute('classification', new THREE.BufferAttribute(buffers.classification, 1, false));
-			geometry.addAttribute('returnNumber', new THREE.BufferAttribute(buffers.returnNumber, 1, false));
-			geometry.addAttribute('numberOfReturns', new THREE.BufferAttribute(buffers.numberOfReturns, 1, false));
-			geometry.addAttribute('pointSourceID', new THREE.BufferAttribute(buffers.pointSourceID, 1, false));
+			if(updateRange.start + updateRange.count >= this.batchSize){
+				// current batch full, start new batch
 
-			geometry.drawRange.start = 0;
-			geometry.drawRange.count = 0;
-
-			this.currentBatch = new THREE.Points(geometry, this.material);
-			this.sceneNode.add(this.currentBatch);
-		}
-
-		if(!this.currentBatch){
-			createNewBatch();
-		}
-		
-		{ // REBUILD MODEL
-
-			let pointsProcessed = 0;
-			let updateRange = {
-				start: this.currentBatch.geometry.drawRange.count,
-				count: 0
-			};
-
-			let projectedBox = new THREE.Box3();
-			
-			for(let i = 0; i < data.numPoints; i++){
-
-				if(updateRange.start + updateRange.count >= batchSize){
-					// finalize current batch, start new batch
-
-					for(let key of Object.keys(this.currentBatch.geometry.attributes)){
-						let attribute = this.currentBatch.geometry.attributes[key];
-						attribute.updateRange.offset = updateRange.start;
-						attribute.updateRange.count = updateRange.count;
-						attribute.needsUpdate = true;
-					}
-					this.currentBatch.geometry.computeBoundingBox();
-					this.currentBatch.geometry.computeBoundingSphere();
-
-					createNewBatch();
-					updateRange = {
-						start: 0,
-						count: 0
-					};
+				for(let key of Object.keys(this.currentBatch.geometry.attributes)){
+					let attribute = this.currentBatch.geometry.attributes[key];
+					attribute.updateRange.offset = updateRange.start;
+					attribute.updateRange.count = updateRange.count;
+					attribute.needsUpdate = true;
 				}
 
+				this.currentBatch.geometry.computeBoundingBox();
+				this.currentBatch.geometry.computeBoundingSphere();
 
-				let x = data.data.mileage[i];
-				let y = 0;
-				let z = data.data.position[3 * i + 2];
-
-				projectedBox.expandByPoint(new THREE.Vector3(x, y, z));
-
-				let currentIndex = updateRange.start + updateRange.count;
-
-				let attributes = this.currentBatch.geometry.attributes;
-
-				{
-					attributes.position.array[3 * currentIndex + 0] = x;
-					attributes.position.array[3 * currentIndex + 1] = y;
-					attributes.position.array[3 * currentIndex + 2] = z;
-				}
-
-				if(data.data.color){
-					attributes.color.array[4 * currentIndex + 0] = data.data.color[4 * i + 0];
-					attributes.color.array[4 * currentIndex + 1] = data.data.color[4 * i + 1];
-					attributes.color.array[4 * currentIndex + 2] = data.data.color[4 * i + 2];
-					attributes.color.array[4 * currentIndex + 3] = 255;
-				}
-
-				if(data.data.intensity){
-					attributes.intensity.array[currentIndex] = data.data.intensity[i];
-				}
-
-				if(data.data.classification){
-					attributes.classification.array[currentIndex] = data.data.classification[i];
-				}
-
-				if(data.data.returnNumber){
-					attributes.returnNumber.array[currentIndex] = data.data.returnNumber[i];
-				}
-
-				if(data.data.numberOfReturns){
-					attributes.numberOfReturns.array[currentIndex] = data.data.numberOfReturns[i];
-				}
-
-				if(data.data.pointSourceID){
-					attributes.pointSourceID.array[currentIndex] = data.data.pointSourceID[i];
-				}
-
-				updateRange.count++;
-				this.currentBatch.geometry.drawRange.count++;
+				this.currentBatch = this.createNewBatch();
+				updateRange = {
+					start: 0,
+					count: 0
+				};
 			}
 
-			for(let key of Object.keys(this.currentBatch.geometry.attributes)){
-				let attribute = this.currentBatch.geometry.attributes[key];
-				attribute.updateRange.offset = updateRange.start;
-				attribute.updateRange.count = updateRange.count;
-				attribute.needsUpdate = true;
+			let x = data.data.mileage[i];
+			let y = 0;
+			let z = data.data.position[3 * i + 2];
+
+			projectedBox.expandByPoint(new THREE.Vector3(x, y, z));
+
+			let index = updateRange.start + updateRange.count;
+			let geometry = this.currentBatch.geometry;
+
+			for(let attributeName of Object.keys(data.data)){
+				let source = data.data[attributeName];
+				let target = geometry.attributes[attributeName];
+				let numElements = target.itemSize;
+				
+				for(let item = 0; item < numElements; item++){
+					target.array[numElements * index + item] = source[numElements * i + item];
+				}
 			}
 
-			data.projectedBox = projectedBox;
-			
-			this.projectedBox = this.points.reduce( (a, i) => a.union(i.projectedBox), new THREE.Box3());
+			{
+				let position = geometry.attributes.position;
+
+				position.array[3 * index + 0] = x;
+				position.array[3 * index + 1] = y;
+				position.array[3 * index + 2] = z;
+			}
+
+			updateRange.count++;
+			this.currentBatch.geometry.drawRange.count++;
 		}
 
+		for(let key of Object.keys(this.currentBatch.geometry.attributes)){
+			let attribute = this.currentBatch.geometry.attributes[key];
+			attribute.updateRange.offset = updateRange.start;
+			attribute.updateRange.count = updateRange.count;
+			attribute.needsUpdate = true;
+		}
 
+		data.projectedBox = projectedBox;
+
+		this.projectedBox = this.points.reduce( (a, i) => a.union(i.projectedBox), new THREE.Box3());
 	}
 
-};
+	createNewBatch(data){
+		let geometry = new THREE.BufferGeometry();
 
-ProfilePointCloudEntry.materialPool = new Set();
+		// create new batches with batch_size elements of the same type as the attribute
+		for(let attributeName of Object.keys(data.data)){
+			let buffer = data.data[attributeName];
+			let numElements = buffer.length / data.numPoints; // 3 for pos, 4 for col, 1 for scalars
+			let constructor = buffer.constructor;
+
+			let batchBuffer = new constructor(numElements * this.batchSize);
+
+			let bufferAttribute = new THREE.BufferAttribute(batchBuffer, numElements);
+			bufferAttribute.potree = {
+				range: [0, 1],
+			};
+
+			geometry.addAttribute(attributeName, bufferAttribute);
+		}
+
+		geometry.drawRange.start = 0;
+		geometry.drawRange.count = 0;
+
+		let batch = new Batch(geometry, this.material);
+
+		this.visibleNodes.push(batch);
+
+		return batch;
+	}
+	
+	computeVisibilityTextureData(){
+		let data = new Uint8Array(this.visibleNodes.length * 4);
+		let offsets = new Map();
+
+		for(let i = 0; i < this.visibleNodes.length; i++){
+			let node = this.visibleNodes[i];
+
+			offsets[node] = i;
+		}
+
+
+		return {
+			data: data,
+			offsets: offsets,
+		};
+	}
+
+}
 
 export class ProfileWindow extends EventDispatcher {
 	constructor (viewer) {
@@ -232,6 +258,8 @@ export class ProfileWindow extends EventDispatcher {
 		this.initTHREE();
 		this.initSVG();
 		this.initListeners();
+
+		this.pRenderer = new Renderer(this.renderer);
 
 		this.elRoot.i18n();
 	}
@@ -287,15 +315,23 @@ export class ProfileWindow extends EventDispatcher {
 				let mileage = this.scaleX.invert(newMouse.x);
 				let elevation = this.scaleY.invert(newMouse.y);
 
-				let point = this.selectPoint(mileage, elevation, radius);
+				let closest = this.selectPoint(mileage, elevation, radius);
 
-				if (point) {
+				if (closest) {
+					let point = closest.point;
+
+					let position = new Float64Array([
+						point.position[0] + closest.pointcloud.position.x,
+						point.position[1] + closest.pointcloud.position.y,
+						point.position[2] + closest.pointcloud.position.z
+					]);
+
 					this.elRoot.find('#profileSelectionProperties').fadeIn(200);
 					this.pickSphere.visible = true;
 					this.pickSphere.scale.set(0.5 * radius, 0.5 * radius, 0.5 * radius);
 					this.pickSphere.position.set(point.mileage, 0, point.position[2]);
 
-					this.viewerPickSphere.position.set(...point.position);
+					this.viewerPickSphere.position.set(...position);
 					
 					if(!this.viewer.scene.scene.children.includes(this.viewerPickSphere)){
 						this.viewer.scene.scene.add(this.viewerPickSphere);
@@ -307,10 +343,26 @@ export class ProfileWindow extends EventDispatcher {
 
 					let info = this.elRoot.find('#profileSelectionProperties');
 					let html = '<table>';
-					for (let attribute of Object.keys(point)) {
-						let value = point[attribute];
-						if (attribute === 'position') {
-							let values = [...value].map(v => Utils.addCommas(v.toFixed(3)));
+
+					for (let attributeName of Object.keys(point)) {
+
+						let value = point[attributeName];
+						let attribute = closest.pointcloud.getAttribute(attributeName);
+
+						let transform = value => value;
+						if(attribute && attribute.type.size > 4){
+							let range = attribute.initialRange;
+							let scale = 1 / (range[1] - range[0]);
+							let offset = range[0];
+							transform = value => value / scale + offset;
+						}
+
+						
+
+						
+
+						if (attributeName === 'position') {
+							let values = [...position].map(v => Utils.addCommas(v.toFixed(3)));
 							html += `
 								<tr>
 									<td>x</td>
@@ -324,25 +376,25 @@ export class ProfileWindow extends EventDispatcher {
 									<td>z</td>
 									<td>${values[2]}</td>
 								</tr>`;
-						} else if (attribute === 'color') {
+						} else if (attributeName === 'color') {
 							html += `
 								<tr>
-									<td>${attribute}</td>
+									<td>${attributeName}</td>
 									<td>${value.join(', ')}</td>
 								</tr>`;
-						} else if (attribute === 'normal') {
+						} else if (attributeName === 'normal') {
 							continue;
-						} else if (attribute === 'mileage') {
+						} else if (attributeName === 'mileage') {
 							html += `
 								<tr>
-									<td>${attribute}</td>
+									<td>${attributeName}</td>
 									<td>${value.toFixed(3)}</td>
 								</tr>`;
 						} else {
 							html += `
 								<tr>
-									<td>${attribute}</td>
-									<td>${value}</td>
+									<td>${attributeName}</td>
+									<td>${transform(value)}</td>
 								</tr>`;
 						}
 					}
@@ -440,15 +492,6 @@ export class ProfileWindow extends EventDispatcher {
 
 			let blob = new Blob([buffer], {type: "application/octet-binary"});
 			$('#potree_download_profile_link').attr('href', URL.createObjectURL(blob));
-
-			//let u8view = new Uint8Array(buffer);
-			//let binString = '';
-			//for (let i = 0; i < u8view.length; i++) {
-			//	binString += String.fromCharCode(u8view[i]);
-			//}
-			//
-			//let uri = 'data:application/octet-stream;base64,' + btoa(binString);
-			//$('#potree_download_profile_link').attr('href', uri);
 		});
 	}
 
@@ -541,7 +584,9 @@ export class ProfileWindow extends EventDispatcher {
 				}
 			}
 
-			return point;
+			closest.point = point;
+
+			return closest;
 		} else {
 			return null;
 		}
@@ -551,21 +596,37 @@ export class ProfileWindow extends EventDispatcher {
 		this.renderer = new THREE.WebGLRenderer({alpha: true, premultipliedAlpha: false});
 		this.renderer.setClearColor(0x000000, 0);
 		this.renderer.setSize(10, 10);
-		this.renderer.autoClear = true;
+		this.renderer.autoClear = false;
 		this.renderArea.append($(this.renderer.domElement));
 		this.renderer.domElement.tabIndex = '2222';
 		this.renderer.getContext().getExtension('EXT_frag_depth');
 		$(this.renderer.domElement).css('width', '100%');
 		$(this.renderer.domElement).css('height', '100%');
 
+
+		{
+			let gl = this.renderer.getContext();
+			gl.getExtension('EXT_frag_depth');
+			gl.getExtension('WEBGL_depth_texture');
+
+			let extVAO = gl.getExtension('OES_vertex_array_object');
+
+			if(!extVAO){
+				throw new Error("OES_vertex_array_object extension not supported");
+			}
+
+			gl.createVertexArray = extVAO.createVertexArrayOES.bind(extVAO);
+			gl.bindVertexArray = extVAO.bindVertexArrayOES.bind(extVAO);
+		}
+
 		this.camera = new THREE.OrthographicCamera(-1000, 1000, 1000, -1000, -1000, 1000);
 		this.camera.up.set(0, 0, 1);
 		this.camera.rotation.order = "ZXY";
 		this.camera.rotation.x = Math.PI / 2.0;
-		
-
+	
 
 		this.scene = new THREE.Scene();
+		this.profileScene = new THREE.Scene();
 
 		let sg = new THREE.SphereGeometry(1, 16, 16);
 		let sm = new THREE.MeshNormalMaterial();
@@ -583,9 +644,6 @@ export class ProfileWindow extends EventDispatcher {
 		}
 
 		this.viewerPickSphere = new THREE.Mesh(sg, sm);
-
-		this.pointCloudRoot = new THREE.Object3D();
-		this.scene.add(this.pointCloudRoot);
 	}
 
 	initSVG () {
@@ -635,19 +693,13 @@ export class ProfileWindow extends EventDispatcher {
 
 	addPoints (pointcloud, points) {
 
-		//this.lastAddPointsTimestamp = new Date().getTime();
-
 		let entry = this.pointclouds.get(pointcloud);
 		if(!entry){
-			entry = new ProfilePointCloudEntry();
+			entry = new ProfileFakeOctree(pointcloud);
 			this.pointclouds.set(pointcloud, entry);
+			this.profileScene.add(entry);
 
 			let materialChanged = () => {
-				const mSource = pointcloud.material;
-				const mTarget = entry.material;
-
-				mTarget.classification = mSource.classification;
-
 				this.render();
 			};
 
@@ -660,10 +712,7 @@ export class ProfileWindow extends EventDispatcher {
 		}
 
 		entry.addPoints(points);
-		this.pointCloudRoot.add(entry.sceneNode);
 		this.projectedBox.union(entry.projectedBox);
-		//console.log(this.projectedBox.min.toArray().map(v => v.toFixed(2)).join(", "));
-		//console.log(this.projectedBox.getSize().toArray().map(v => v.toFixed(2)).join(", "));
 
 		if (this.autoFit && this.autoFitEnabled) { 
 			let width = this.renderArea[0].clientWidth;
@@ -715,8 +764,6 @@ export class ProfileWindow extends EventDispatcher {
 			this.scale.set(1, 1, 1);
 		}
 		this.pickSphere.visible = false;
-
-		this.pointCloudRoot.children = [];
 
 		this.elRoot.find('#profileSelectionProperties').hide();
 
@@ -804,49 +851,28 @@ export class ProfileWindow extends EventDispatcher {
 		let width = this.renderArea[0].clientWidth;
 		let height = this.renderArea[0].clientHeight;
 
-		//this.updateScales();
+		let {renderer, pRenderer, camera, profileScene, scene} = this;
+		let {scaleX, pickSphere} = this;
 
-		{ // THREEJS
-			let radius = Math.abs(this.scaleX.invert(0) - this.scaleX.invert(5));
-			this.pickSphere.scale.set(radius, radius, radius);
-			//this.pickSphere.position.z = this.camera.far - radius;
-			//this.pickSphere.position.y = 0;
+		renderer.setSize(width, height);
 
-			for (let [pointcloud, entry] of this.pointclouds) {
-				let material = entry.material;
+		renderer.setClearColor(0x000000, 0);
+		renderer.clear(true, true, false);
+
+		for(let pointcloud of this.pointclouds.keys()){
+			let source = pointcloud.material;
+			let target = this.pointclouds.get(pointcloud).material;
 			
-				material.activeAttributeName = pointcloud.material.activeAttributeName;
-				material.uniforms.uColor = pointcloud.material.uniforms.uColor;
-				material.uniforms.intensityRange.value = pointcloud.material.uniforms.intensityRange.value;
-				material.elevationRange = pointcloud.material.elevationRange;
-
-				material.rgbGamma = pointcloud.material.rgbGamma;
-				material.rgbContrast = pointcloud.material.rgbContrast;
-				material.rgbBrightness = pointcloud.material.rgbBrightness;
-
-				material.intensityRange = pointcloud.material.intensityRange;
-				material.intensityGamma = pointcloud.material.intensityGamma;
-				material.intensityContrast = pointcloud.material.intensityContrast;
-				material.intensityBrightness = pointcloud.material.intensityBrightness;
-
-				material.uniforms.wRGB.value = pointcloud.material.uniforms.wRGB.value;
-				material.uniforms.wIntensity.value = pointcloud.material.uniforms.wIntensity.value;
-				material.uniforms.wElevation.value = pointcloud.material.uniforms.wElevation.value;
-				material.uniforms.wClassification.value = pointcloud.material.uniforms.wClassification.value;
-				material.uniforms.wReturnNumber.value = pointcloud.material.uniforms.wReturnNumber.value;
-				material.uniforms.wSourceID.value = pointcloud.material.uniforms.wSourceID.value;
-
-				material.classification = pointcloud.material.classification;
-				material.uniforms.classificationLUT.value.image.data = pointcloud.material.uniforms.classificationLUT.value.image.data;
-				material.classificationTexture.needsUpdate = true;
-			}
-
-			this.pickSphere.visible = true;
-
-			this.renderer.setSize(width, height);
-
-			this.renderer.render(this.scene, this.camera);
+			copyMaterial(source, target);
+			target.size = 2;
 		}
+		
+		pRenderer.render(profileScene, camera, null);
+
+		let radius = Math.abs(scaleX.invert(0) - scaleX.invert(5));
+		pickSphere.scale.set(radius, radius, radius);
+		pickSphere.visible = true;
+		renderer.render(scene, camera);
 
 		this.requestScaleUpdate();
 	}

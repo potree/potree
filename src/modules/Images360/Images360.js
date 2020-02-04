@@ -13,17 +13,39 @@ class Image360{
 		this.course = course;
 		this.pitch = pitch;
 		this.roll = roll;
-		this.mesh = null;
 	}
 };
 
 export class Images360{
 
-	constructor(){
+	constructor(viewer){
+		this.viewer = viewer;
+
 		this.images = [];
 		this.node = new THREE.Object3D();
 
+		this.sphere = new THREE.Mesh(sgHigh, sm);
+		this.sphere.visible = false;
+		this.sphere.scale.set(1000, 1000, 1000);
+		this.node.add(this.sphere);
+
 		this.focusedImage = null;
+
+		let elUnfocus = document.createElement("input");
+		elUnfocus.type = "button";
+		elUnfocus.value = "unfocus";
+		elUnfocus.style.position = "absolute";
+		elUnfocus.style.right = "10px";
+		elUnfocus.style.bottom = "10px";
+		elUnfocus.style.zIndex = "10000";
+		elUnfocus.style.fontSize = "2em";
+		elUnfocus.addEventListener("click", () => this.unfocus());
+		this.elUnfocus = elUnfocus;
+
+		this.domRoot = viewer.renderer.domElement.parentElement;
+		this.domRoot.appendChild(elUnfocus);
+		this.elUnfocus.style.display = "none";
+		
 	};
 
 	focus(image360){
@@ -31,21 +53,27 @@ export class Images360{
 			this.unfocus();
 		}
 
-		this.load(image360);
+		this.sphere.visible = false;
 
-		for(let image of this.images){
-			image.mesh.visible = false;
+		this.load(image360).then( () => {
+			this.sphere.visible = true;
+			this.sphere.material.map = image360.texture;
+			this.sphere.material.needsUpdate = true;
+		});
+
+		{ // orientation
+			let {course, pitch, roll} = image360;
+			this.sphere.rotation.set(
+				THREE.Math.degToRad(+roll + 90),
+				THREE.Math.degToRad(-pitch),
+				THREE.Math.degToRad(-course + 90),
+				"ZYX"
+			);
 		}
 
-		image360.mesh.visible = true;
-		image360.mesh.geometry = sgHigh;
+		this.sphere.position.set(...image360.position);
 
-		image360.mesh.scale.set(1000, 1000, 1000);
-
-		//viewer.scene.view.position.copy(image360.mesh.position);
-		//viewer.scene.view.radius = 0.0001;
-
-		let target = image360.mesh.position;
+		let target = new THREE.Vector3(...image360.position);
 		let dir = target.clone().sub(viewer.scene.view.position).normalize();
 		let move = dir.multiplyScalar(0.00001);
 		let newCamPos = target.clone().sub(move);
@@ -57,6 +85,8 @@ export class Images360{
 		);
 
 		this.focusedImage = image360;
+
+		this.elUnfocus.style.display = "";
 	}
 
 	unfocus(){
@@ -66,16 +96,9 @@ export class Images360{
 			return;
 		}
 
-		for(let image of this.images){
-			image.mesh.visible = true;
-		}
-
-		image.mesh.geometry = sg;
-		image.mesh.scale.set(1, 1, 1);
-		image.mesh.material.map = null;
-		image.mesh.material.needsUpdate = true;
-
-		//viewer.scene.view.radius = 5.0; // TODO BAD!!
+		this.sphere.material.map = null;
+		this.sphere.material.needsUpdate = true;
+		this.sphere.visible = false;
 
 		let pos = viewer.scene.view.position;
 		let target = viewer.scene.view.getPivot();
@@ -91,17 +114,20 @@ export class Images360{
 
 
 		this.focusedImage = null;
+
+		this.elUnfocus.style.display = "none";
 	}
 
 	load(image360){
-		let {mesh} = image360;
 
-		let texture = new THREE.TextureLoader().load(image360.file);
-		texture.wrapS = THREE.RepeatWrapping;
-		texture.repeat.x = -1;
+		return new Promise(resolve => {
+			let texture = new THREE.TextureLoader().load(image360.file, resolve);
+			texture.wrapS = THREE.RepeatWrapping;
+			texture.repeat.x = -1;
 
-		mesh.material.map = texture;
-		mesh.material.needsUpdate = true;
+			image360.texture = texture;
+		});
+
 	}
 
 };
@@ -109,7 +135,7 @@ export class Images360{
 
 export class Images360Loader{
 
-	static async load(url, params = {}){
+	static async load(url, viewer, params = {}){
 
 		if(!params.transform){
 			params.transform = {
@@ -123,7 +149,7 @@ export class Images360Loader{
 		let lines = text.split(/\r?\n/);
 		let coordinateLines = lines.slice(1);
 
-		let images360 = new Images360();
+		let images360 = new Images360(viewer);
 
 		for(let line of coordinateLines){
 			let tokens = line.split(/\t/);
@@ -142,42 +168,19 @@ export class Images360Loader{
 
 			let image360 = new Image360(file, time, long, lat, alt, course, pitch, roll);
 
+			let xy = params.transform.forward([long, lat]);
+			let position = [...xy, alt];
+			image360.position = position;
+
 			images360.images.push(image360);
 		}
 
-		Images360Loader.createSceneNodes(images360, params.transform);
+		// Images360Loader.createSceneNodes(images360, params.transform);
 
 		return images360;
 
 	}
 
-	static createSceneNodes(images360, transform){
-
-		for(let image360 of images360.images){
-			let {longitude, latitude, altitude} = image360;
-			let xy = transform.forward([longitude, latitude]);
-
-			let mesh = new THREE.Mesh(sg, sm);
-			mesh.position.set(...xy, altitude);
-			mesh.scale.set(1, 1, 1);
-			mesh.material.transparent = true;
-			mesh.material.opacity = 0.75;
-
-			{ // orientation
-				var {course, pitch, roll} = image360;
-				mesh.rotation.set(
-					THREE.Math.degToRad(+roll + 90),
-					THREE.Math.degToRad(-pitch),
-					THREE.Math.degToRad(-course + 90),
-					"ZYX"
-				);
-			}
-
-			images360.node.add(mesh);
-
-			image360.mesh = mesh;
-		}
-	}
-
-
 };
+
+

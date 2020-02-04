@@ -320,7 +320,7 @@ function loadClassification(viewer, data){
 	viewer.setClassifications(classifications);
 }
 
-export function loadProject(viewer, data){
+export async function loadProject(viewer, data){
 
 	if(data.type !== "Potree"){
 		console.error("not a valid Potree project");
@@ -363,10 +363,12 @@ export function loadProject(viewer, data){
 
 	// need to load at least one point cloud that defines the scene projection,
 	// before we can load stuff in other projections such as geopackages
-	// await Promise.any(pointcloudPromises); // (not yet supported)
+	//await Promise.any(pointcloudPromises); // (not yet supported)
 	Utils.waitAny(pointcloudPromises).then( () => {
 		for(const geopackage of data.geopackages){
 			loadGeopackage(viewer, geopackage);
 		}
 	});
+
+	await Promise.all(pointcloudPromises);
 }

@@ -320,12 +320,18 @@ export class ProfileWindow extends EventDispatcher {
 				if (closest) {
 					let point = closest.point;
 
+					let position = new Float64Array([
+						point.position[0] + closest.pointcloud.position.x,
+						point.position[1] + closest.pointcloud.position.y,
+						point.position[2] + closest.pointcloud.position.z
+					]);
+
 					this.elRoot.find('#profileSelectionProperties').fadeIn(200);
 					this.pickSphere.visible = true;
 					this.pickSphere.scale.set(0.5 * radius, 0.5 * radius, 0.5 * radius);
 					this.pickSphere.position.set(point.mileage, 0, point.position[2]);
 
-					this.viewerPickSphere.position.set(...point.position);
+					this.viewerPickSphere.position.set(...position);
 					
 					if(!this.viewer.scene.scene.children.includes(this.viewerPickSphere)){
 						this.viewer.scene.scene.add(this.viewerPickSphere);
@@ -356,7 +362,7 @@ export class ProfileWindow extends EventDispatcher {
 						
 
 						if (attributeName === 'position') {
-							let values = [...value].map(v => Utils.addCommas(v.toFixed(3)));
+							let values = [...position].map(v => Utils.addCommas(v.toFixed(3)));
 							html += `
 								<tr>
 									<td>x</td>

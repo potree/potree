@@ -1098,6 +1098,18 @@ export class Viewer extends EventDispatcher{
 		}
 	}
 
+	promiseGuiLoaded(){
+		return new Promise( resolve => {
+
+			if(this.guiLoaded){
+				resolve();
+			}else{
+				this.guiLoadTasks.push(resolve);
+			}
+		
+		});
+	}
+
 	loadGUI(callback){
 
 		this.onGUILoaded(callback);
@@ -1176,6 +1188,8 @@ export class Viewer extends EventDispatcher{
 
 			
 		});
+
+		return this.promiseGuiLoaded();
 	}
 
 	setLanguage (lang) {

@@ -507,6 +507,12 @@ export class PropertiesPanel{
 					// add classification color selctor?
 				} else if (selectedValue === "gps-time" ){
 					blockGps.css('display', 'block');
+				} else if(selectedValue === "number of returns"){
+					
+				} else if(selectedValue === "return number"){
+					
+				} else if(selectedValue === "source id"){
+					
 				} else{
 					blockExtra.css('display', 'block');
 				}

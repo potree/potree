@@ -135,9 +135,9 @@ onmessage = function (event) {
 			}
 
 			attributeBuffers[pointAttribute.name] = { buffer: buff, attribute: pointAttribute };
-		} else if (pointAttribute.name === PointAttribute.RTK_POSE.name) {
+		} else if (pointAttribute.name === PointAttribute.RTK_POSITION.name) {
 			let buff = new ArrayBuffer(numPoints * 4 * 3);
-			let rtk_poses = new Float32Array(buff);
+			let rtk_positions = new Float32Array(buff);
 			let view = new DataView(buffer);
 
 			for (let j = 0; j < numPoints; j++) {
@@ -145,24 +145,24 @@ onmessage = function (event) {
 				y = view.getFloat64(inOffset + j * pointAttributes.byteSize + 8, true);
 				z = view.getFloat64(inOffset + j * pointAttributes.byteSize + 16, true);
 
-				rtk_poses[3 * j + 0] = x;
-				rtk_poses[3 * j + 1] = y;
-				rtk_poses[3 * j + 2] = z;
+				rtk_positions[3 * j + 0] = x;
+				rtk_positions[3 * j + 1] = y;
+				rtk_positions[3 * j + 2] = z;
 			}
 
 			attributeBuffers[pointAttribute.name] = { buffer: buff, attribute: pointAttribute };
-		} else if (pointAttribute.name === PointAttribute.RTK_ORIENT.name) {
+		} else if (pointAttribute.name === PointAttribute.RTK_ORIENTATION.name) {
 			let buff = new ArrayBuffer(numPoints * 4 * 3);
-			let rtk_orients = new Float32Array(buff);
+			let rtk_orientations = new Float32Array(buff);
 
 			for (let j = 0; j < numPoints; j++) {
 				x = cv.getFloat64(inOffset + j * pointAttributes.byteSize + 0, true);
 				y = cv.getFloat64(inOffset + j * pointAttributes.byteSize + 8, true);
 				z = cv.getFloat64(inOffset + j * pointAttributes.byteSize + 16, true);
 
-				rtk_orients[3 * j + 0] = x;
-				rtk_orients[3 * j + 1] = y;
-				rtk_orients[3 * j + 2] = z;
+				rtk_orientations[3 * j + 0] = x;
+				rtk_orientations[3 * j + 1] = y;
+				rtk_orientations[3 * j + 2] = z;
 			}
 
 			attributeBuffers[pointAttribute.name] = { buffer: buff, attribute: pointAttribute };

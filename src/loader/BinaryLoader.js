@@ -95,9 +95,9 @@ export class BinaryLoader{
 						offset: buffers[property].offset,
 						range: buffers[property].range,
 					};
-				} else if (parseInt(property) === PointAttributeNames.RTK_POSE) {
+				} else if (parseInt(property) === PointAttributeNames.RTK_POSITION) {
 					geometry.addAttribute('originalRtkPosition', new THREE.BufferAttribute(new Float32Array(buffer), 3, false));
-				} else if (parseInt(property) === PointAttributeNames.RTK_ORIENT) {
+				} else if (parseInt(property) === PointAttributeNames.RTK_ORIENTATION) {
 					geometry.addAttribute('originalRtkOrientation', new THREE.BufferAttribute(new Float32Array(buffer), 3, false));
 				}
 			}

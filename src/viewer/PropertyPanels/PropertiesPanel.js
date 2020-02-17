@@ -491,7 +491,7 @@ export class PropertiesPanel{
 				} else if (selectedValue === 'RGB and Elevation') {
 					blockRGB.css('display', 'block');
 					blockElevation.css('display', 'block');
-				} else if (selectedValue === 'RGBA') {
+				} else if (selectedValue === 'rgba') {
 					blockRGB.css('display', 'block');
 				} else if (selectedValue === 'color') {
 					blockColor.css('display', 'block');

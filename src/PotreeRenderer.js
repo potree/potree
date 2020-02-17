@@ -134,7 +134,7 @@ function paramThreeToGL(_gl, p) {
 let attributeLocations = {
 	"position": {name: "position", location: 0},
 	"color": {name: "color", location: 1},
-	"RGBA": {name: "color", location: 1},
+	"rgba": {name: "color", location: 1},
 	"intensity": {name: "intensity", location: 2},
 	"classification": {name: "classification", location: 3},
 	"returnNumber": {name: "returnNumber", location: 4},

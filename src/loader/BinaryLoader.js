@@ -81,8 +81,8 @@ export class BinaryLoader{
 
 				if (property === "POSITION_CARTESIAN") {
 					geometry.addAttribute('position', new THREE.BufferAttribute(new Float32Array(buffer), 3));
-				} else if (property === "RGBA") {
-					geometry.addAttribute('color', new THREE.BufferAttribute(new Uint8Array(buffer), 4, true));
+				} else if (property === "rgba") {
+					geometry.addAttribute("rgba", new THREE.BufferAttribute(new Uint8Array(buffer), 4, true));
 				} else if (property === "NORMAL_SPHEREMAPPED") {
 					geometry.addAttribute('normal', new THREE.BufferAttribute(new Float32Array(buffer), 3));
 				} else if (property === "NORMAL_OCT16") {

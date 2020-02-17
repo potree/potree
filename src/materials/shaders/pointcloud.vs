@@ -559,7 +559,7 @@ vec3 getExtra(){
 vec3 getColor(){
 	vec3 color;
 	
-	#ifdef color_type_RGBA
+	#ifdef color_type_rgba
 		color = getRGB();
 	#elif defined color_type_height || defined color_type_elevation
 		color = getElevation();

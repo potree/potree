@@ -173,10 +173,18 @@ class ProfileFakeOctree extends PointCloudTree{
 			let buffer = data.data[attributeName];
 			let numElements = buffer.length / data.numPoints; // 3 for pos, 4 for col, 1 for scalars
 			let constructor = buffer.constructor;
+			let normalized = false;
+			
+			if(this.trueOctree.root.sceneNode){
+				if(this.trueOctree.root.sceneNode.geometry.attributes[attributeName]){
+					normalized = this.trueOctree.root.sceneNode.geometry.attributes[attributeName].normalized;
+				}
+			}
+			
 
 			let batchBuffer = new constructor(numElements * this.batchSize);
 
-			let bufferAttribute = new THREE.BufferAttribute(batchBuffer, numElements);
+			let bufferAttribute = new THREE.BufferAttribute(batchBuffer, numElements, normalized);
 			bufferAttribute.potree = {
 				range: [0, 1],
 			};
@@ -376,7 +384,7 @@ export class ProfileWindow extends EventDispatcher {
 									<td>z</td>
 									<td>${values[2]}</td>
 								</tr>`;
-						} else if (attributeName === 'color') {
+						} else if (attributeName === 'rgba') {
 							html += `
 								<tr>
 									<td>${attributeName}</td>

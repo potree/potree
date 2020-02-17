@@ -115,7 +115,7 @@ export class PointCloudOctree extends PointCloudTree {
 		this.updateMatrix();
 
 		{
-			let attributeName = "color";
+			let attributeName = "rgba";
 			if(this.pcoGeometry.pointAttributes.attributes.length > 1){
 				attributeName = this.pcoGeometry.pointAttributes.attributes[1].name;
 			}

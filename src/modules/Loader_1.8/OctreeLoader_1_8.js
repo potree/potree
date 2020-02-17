@@ -44,7 +44,7 @@ export class NodeLoader{
 				if(property === "POSITION_CARTESIAN"){
 					geometry.addAttribute('position', new THREE.BufferAttribute(new Float32Array(buffer), 3));
 				}else if(property === "RGBA"){
-					geometry.addAttribute('color', new THREE.BufferAttribute(new Uint8Array(buffer), 4, true));
+					geometry.addAttribute('rgba', new THREE.BufferAttribute(new Uint8Array(buffer), 4, true));
 				}
 
 			}
@@ -116,7 +116,7 @@ export class OctreeLoader_1_8{
 
 		let cloudJsPath = url;
 		let hierarchyPath = `${url}/../hierarchy.json`;
-		let dataPath = `${url}/../octree.data`;
+		let dataPath = `${url}/../octree.bin`;
 
 		let cloudJsResponse = fetch(cloudJsPath);
 		let hierarchyResponse = fetch(hierarchyPath);

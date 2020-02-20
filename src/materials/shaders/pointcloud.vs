@@ -803,19 +803,22 @@ void doClipping(vec4 correctedPosition){
 			//return;
 		//}
 
-		if(!uExtrinsicsMode && (time > range.x && time < range.y)) {
-			// Set color to red: (r,g,b) --> (1.0, 0.0, 0.0)
-			vColor.r = 1.0;
-			vColor.b = 0.0;
-			vColor.g = 0.0;
-		}	else if (uExtrinsicsMode && (!(time > range.x && time < range.y))) {	// NOTE added not to this condition
-			gl_Position = vec4(100.0, 100.0, 100.0, 0.0);
-			return;
-		} else {
-			if (classification == 3.0) {	// Corresponds to NonRoad point class currently (should eventually be any dynamic object class)
+		if (!uExtrinsicsMode) {
+			if (time > range.x && time < range.y) { // favor this first
+				vColor.r = 1.0;
+				vColor.b = 0.0;
+				vColor.g = 0.0;
+			}
+			else if (classification == 3.0) { // then, for non road class outside of the window
 				gl_Position = vec4(100.0, 100.0, 100.0, 0.0);
 			}
+		} else {
+			if (!(time > range.x && time < range.y)) {
+				gl_Position = vec4(100.0, 100.0, 100.0, 0.0);
+				return;
+			}
 		}
+
 
 	}
 	#endif

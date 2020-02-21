@@ -82,6 +82,7 @@ uniform vec2 intensityRange;
 
 uniform vec2 uFilterReturnNumberRange;
 uniform vec2 uFilterNumberOfReturnsRange;
+uniform vec2 uFilterPointSourceIDClipRange;
 uniform vec2 uFilterGPSTimeClipRange;
 uniform float uGpsScale;
 uniform float uGpsOffset;
@@ -734,6 +735,17 @@ void doClipping(){
 		vec2 range = uFilterGPSTimeClipRange;
 
 		if(time < range.x || time > range.y){
+			gl_Position = vec4(100.0, 100.0, 100.0, 0.0);
+			
+			return;
+		}
+	}
+	#endif
+
+	#if defined(clip_point_source_id_enabled)
+	{ // point source id filter
+		vec2 range = uFilterPointSourceIDRange;
+		if(pointSourceID < range.x || pointSourceID > range.y){
 			gl_Position = vec4(100.0, 100.0, 100.0, 0.0);
 			
 			return;

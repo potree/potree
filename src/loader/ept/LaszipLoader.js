@@ -139,7 +139,7 @@ export class EptLazBatcher {
 					new THREE.BufferAttribute(indices, 4));
 			g.addAttribute('gpsTime',
 					new THREE.BufferAttribute(gpsTime, 1));
-            this.node.gpsTime = e.data. gpsMeta
+			this.node.gpsTime = e.data.gpsMeta;
 
 			g.attributes.indices.normalized = true;
 

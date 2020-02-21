@@ -6,9 +6,9 @@ function readUsingDataView(event) {
 	let pointSize = event.data.pointSize;
 	let pointFormat = event.data.pointFormatID;
 
-    // gps time byte offsets from LAS specification
+	// gps time byte offsets from LAS specification
 	let gpsOffsets = [null, 20, null, 20, 20, 20, 22, 22, 22, 22, 22] 
-    let gpsOffset = gpsOffsets[pointFormat];
+	let gpsOffset = gpsOffsets[pointFormat];
 
 	let scale = event.data.scale;
 	let offset = event.data.offset;

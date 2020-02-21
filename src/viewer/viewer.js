@@ -115,7 +115,7 @@ export class Viewer extends EventDispatcher{
 		this.filterReturnNumberRange = [0, 7];
 		this.filterNumberOfReturnsRange = [0, 7];
 		this.filterGPSTimeRange = [-Infinity, Infinity];
-        this.filterPointSourceIDRange = [0, 65535]
+		this.filterPointSourceIDRange = [0, 65535]
 
 		this.potreeRenderer = null;
 		this.edlRenderer = null;
@@ -663,10 +663,10 @@ export class Viewer extends EventDispatcher{
 		this.dispatchEvent({'type': 'filter_gps_time_range_changed', 'viewer': this});
 	}
 
-    setFilterPointSourceIDRange(from, to){
-        this.filterPointSourceIDRange = [from, to]
-        this.dispatchEvent({'type': 'filter_point_source_id_range_changed', 'viewer': this});
-    }
+	setFilterPointSourceIDRange(from, to){
+		this.filterPointSourceIDRange = [from, to]
+		this.dispatchEvent({'type': 'filter_point_source_id_range_changed', 'viewer': this});
+	}
 
 	setLengthUnit (value) {
 		switch (value) {

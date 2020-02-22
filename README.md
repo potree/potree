@@ -20,23 +20,19 @@ Reference: [Potree: Rendering Large Point Clouds in Web Browsers](https://www.cg
 
 Make sure you have [node.js](http://nodejs.org/) installed
 
-Install all dependencies, as specified in package.json, 
-then, install the gulp build tool:
+Install all dependencies, as specified in package.json: 
 
-    cd <potree_directory>
-    npm install
-    npm install -g gulp
-    npm install -g rollup
+```bash
+npm install
+```
 
-Use the ```gulp watch``` command to 
+Use the `npm run build` command to 
 
 * create ./build/potree 
 * watch for changes to the source code and automatically create a new build on change
 * start a web server at localhost:1234. 
 
-```
-gulp watch
-```
+Use `npm start` to start a development server with automatic reloading whenever code changes.
 
 Go to http://localhost:1234/examples/ to test the examples.
 

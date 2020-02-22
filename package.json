@@ -3,11 +3,16 @@
   "private": true,
   "version": "0.0.1",
   "description": "WebGL point cloud viewer",
+  "scripts": {
+    "start": "gulp watch",
+    "build": "gulp build pack"
+  },
   "dependencies": {
     "gulp": "^4.0.2",
     "gulp-concat": "^2.6.1",
     "gulp-connect": "^5.7.0",
     "gulp-util": "^3.0.8",
+    "rollup": "^1.27.14",
     "through": "~2.3.4"
   },
   "author": "Markus Schütz",

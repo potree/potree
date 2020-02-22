@@ -885,13 +885,13 @@ export class Renderer {
 			{
 				let uFilterReturnNumberRange = material.uniforms.uFilterReturnNumberRange.value;
 				let uFilterNumberOfReturnsRange = material.uniforms.uFilterNumberOfReturnsRange.value;
-				let uFilterPointSourceIDRange = material.uniforms.uFilterPointSourceIDRange.value;
+				let uFilterPointSourceIDClipRange = material.uniforms.uFilterPointSourceIDClipRange.value;
 				
 				
 				
 				shader.setUniform2f("uFilterReturnNumberRange", uFilterReturnNumberRange);
 				shader.setUniform2f("uFilterNumberOfReturnsRange", uFilterNumberOfReturnsRange);
-				shader.setUniform2f("uFilterPointSourceIDRange", uFilterPointSourceIDRange);
+				shader.setUniform2f("uFilterPointSourceIDClipRange", uFilterPointSourceIDClipRange);
 			}
 
 			let webglBuffer = null;

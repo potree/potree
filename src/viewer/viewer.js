@@ -1563,7 +1563,7 @@ export class Viewer extends EventDispatcher{
 			material.uniforms.uFilterReturnNumberRange.value = this.filterReturnNumberRange;
 			material.uniforms.uFilterNumberOfReturnsRange.value = this.filterNumberOfReturnsRange;
 			material.uniforms.uFilterGPSTimeClipRange.value = this.filterGPSTimeRange;
-			material.uniforms.uFilterPointSourceIDRange.value = this.filterPointSourceIDRange;
+			material.uniforms.uFilterPointSourceIDClipRange.value = this.filterPointSourceIDRange;
 
 			material.classification = this.classifications;
 			material.recomputeClassification();

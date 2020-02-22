@@ -744,7 +744,7 @@ void doClipping(){
 
 	#if defined(clip_point_source_id_enabled)
 	{ // point source id filter
-		vec2 range = uFilterPointSourceIDRange;
+		vec2 range = uFilterPointSourceIDClipRange;
 		if(pointSourceID < range.x || pointSourceID > range.y){
 			gl_Position = vec4(100.0, 100.0, 100.0, 0.0);
 			

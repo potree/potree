@@ -20,7 +20,7 @@
 		
 		<span class="pv-main-color" style="height: 100%; width: 100%; padding: 5px; display:flex; flex-direction: column; box-sizing: border-box;">
 			<div style=" width: 100%; color: #9d9d9d; margin: 5px; display: flex; flex-direction: row; box-sizing: border-box;">
-				<span data-i18n="profile.nb_points"></span>: 
+				<span data-i18n="profile.nb_points"></span>: &nbsp;
 				<span id="profile_num_points">-</span>
 				<!--<span id="profile_threshold" style="width: 300px">
 					Threshold: <span id="potree_profile_threshold_label">123</span> <div id="potree_profile_threshold_slider"></div>
@@ -28,14 +28,32 @@
 				<span style="flex-grow: 1;"></span>
 				<span>
 				
+					<!-- <span contenteditable="true" style="display: inline-block; 
+						width: 24px; height: 24px; 
+						vertical-align: top; 
+						background: white; color:black"></span> -->
+
+					<input id="potree_profile_rotate_amount" 
+						type="text" maxlength="4" value="10" style="
+						display: inline-block; 
+						width: 2.5em; 
+						vertical-align: top; 
+						background: white;
+						margin: 2px;
+						"></span>
+					
+					<img id="potree_profile_rotate_cw" class="text-icon"/>
+					<img id="potree_profile_rotate_ccw" class="text-icon"/>
+
+					<img id="potree_profile_move_forward" class="text-icon"/>
+					<img id="potree_profile_move_backward" class="text-icon"/>
+
 					<a id="potree_download_profile_ortho_link" href="#" download="profile.csv">
 						<img id="potree_download_csv_icon" class="text-icon"/>
-						<!-- <input id="potree_download_profile_ortho_button" type="button" data-i18n="[value]profile.save_ortho"> -->
 					</a>
 					
 					<a id="potree_download_profile_link" href="#" download="profile.las">
 						<img id="potree_download_las_icon" class="text-icon"/>
-						<!-- <input id="potree_download_profile_button" type="button" data-i18n="[value]profile.save_las"> -->
 					</a>
 					
 				</span>
@@ -82,7 +100,7 @@
 					opacity: 0.7;
 					padding: 5px;
 					border: 1px solid white;
-					user-select: auto;
+					user-select: text;
 					">
 					position: asdsadf asdf<br>
 					rgb: 123 423 123

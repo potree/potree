@@ -73,6 +73,10 @@ export class NavigationCube extends THREE.Object3D {
 		this.camera.rotation.order = "ZXY";
 
 		let onMouseDown = (event) => {
+			if (!this.visible) {
+				return;
+			}
+			
 			this.pickedFace = null;
 			let mouse = new THREE.Vector2();
 			mouse.x = event.clientX - (window.innerWidth - this.width);
@@ -96,6 +100,7 @@ export class NavigationCube extends THREE.Object3D {
 					minDistance = intersects[i].distance;
 				}
 			}
+			
 			if(this.pickedFace) {
 				this.viewer.setView(this.pickedFace);
 			}

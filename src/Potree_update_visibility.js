@@ -180,14 +180,6 @@ export function updateVisibility(pointclouds, camera, renderer){
 		visible = visible && level < maxLevel;
 		//visible = visible && node.name !== "r613";
 
-		
-
-
-		if(!window.warned125){
-			console.log("TODO");
-			window.warned125 = true;
-		}
-
 		let clipBoxes = pointcloud.material.clipBoxes;
 		if(true && clipBoxes.length > 0){
 

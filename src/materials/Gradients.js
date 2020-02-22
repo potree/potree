@@ -36,15 +36,6 @@
 //	print(rgb)
 
 let Gradients = {
-	RAINBOW: [
-		[0, new THREE.Color(0.278, 0, 0.714)],
-		[1 / 6, new THREE.Color(0, 0, 1)],
-		[2 / 6, new THREE.Color(0, 1, 1)],
-		[3 / 6, new THREE.Color(0, 1, 0)],
-		[4 / 6, new THREE.Color(1, 1, 0)],
-		[5 / 6, new THREE.Color(1, 0.64, 0)],
-		[1, new THREE.Color(1, 0, 0)]
-	],
 	// From chroma spectral http://gka.github.io/chroma.js/
 	SPECTRAL: [
 		[0, new THREE.Color(0.3686, 0.3098, 0.6353)],
@@ -114,7 +105,43 @@ let Gradients = {
 	GRAYSCALE: [
 		[0, new THREE.Color(0, 0, 0)],
 		[1, new THREE.Color(1, 1, 1)]
-	]
+	],
+	// 16 samples of the TURBU color scheme
+	// values taken from: https://gist.github.com/mikhailov-work/ee72ba4191942acecc03fe6da94fc73f
+	// original file licensed under Apache-2.0
+	TURBO: [
+		[0.00, new THREE.Color(0.18995, 0.07176, 0.23217)],
+		[0.07, new THREE.Color(0.25107, 0.25237, 0.63374)],
+		[0.13, new THREE.Color(0.27628, 0.42118, 0.89123)],
+		[0.20, new THREE.Color(0.25862, 0.57958, 0.99876)],
+		[0.27, new THREE.Color(0.15844, 0.73551, 0.92305)],
+		[0.33, new THREE.Color(0.09267, 0.86554, 0.7623)],
+		[0.40, new THREE.Color(0.19659, 0.94901, 0.59466)],
+		[0.47, new THREE.Color(0.42778, 0.99419, 0.38575)],
+		[0.53, new THREE.Color(0.64362, 0.98999, 0.23356)],
+		[0.60, new THREE.Color(0.80473, 0.92452, 0.20459)],
+		[0.67, new THREE.Color(0.93301, 0.81236, 0.22667)],
+		[0.73, new THREE.Color(0.99314, 0.67408, 0.20348)],
+		[0.80, new THREE.Color(0.9836, 0.49291, 0.12849)],
+		[0.87, new THREE.Color(0.92105, 0.31489, 0.05475)],
+		[0.93, new THREE.Color(0.81608, 0.18462, 0.01809)],
+		[1.00, new THREE.Color(0.66449, 0.08436, 0.00424)],
+	],
+	RAINBOW: [
+		[0, new THREE.Color(0.278, 0, 0.714)],
+		[1 / 6, new THREE.Color(0, 0, 1)],
+		[2 / 6, new THREE.Color(0, 1, 1)],
+		[3 / 6, new THREE.Color(0, 1, 0)],
+		[4 / 6, new THREE.Color(1, 1, 0)],
+		[5 / 6, new THREE.Color(1, 0.64, 0)],
+		[1, new THREE.Color(1, 0, 0)]
+	],
+	CONTOUR: [
+		[0.00, new THREE.Color(0, 0, 0)],
+		[0.03, new THREE.Color(0, 0, 0)],
+		[0.04, new THREE.Color(1, 1, 1)],
+		[1.00, new THREE.Color(1, 1, 1)]
+	],
 };
 
 

@@ -52,7 +52,7 @@ void main() {
 		}
 	#endif
 		
-	#if defined color_type_point_index
+	#if defined color_type_indices
 		gl_FragColor = vec4(color, uPCIndex / 255.0);
 	#else
 		gl_FragColor = vec4(color, uOpacity);
@@ -92,6 +92,8 @@ void main() {
 		gl_FragColor.a = weight;
 		gl_FragColor.xyz = gl_FragColor.xyz * weight;
 	#endif
+
+	//gl_FragColor = vec4(0.0, 0.7, 0.0, 1.0);
 	
 }
 

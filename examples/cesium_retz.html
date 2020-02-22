@@ -108,6 +108,8 @@
 		material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
 		material.size = 0.7;
 		material.elevationRange = [0, 70];
+		material.weightRGB = 1.0;
+		material.weightElevation = 1.0;
 		
 		scene.view.position.set(570975.577, 5398630.521, 1659.311);
 		scene.view.lookAt(570115.285, 5400866.092, 30.009);
@@ -145,7 +147,7 @@
 					scene.pointclouds.forEach( pc => pc.material.activeAttributeName = "elevation" );
 				});
 				elTitle.find("img[name=action_rgb]").click( () => {
-					scene.pointclouds.forEach( pc => pc.material.activeAttributeName = "RGBA" );
+					scene.pointclouds.forEach( pc => pc.material.activeAttributeName = "rgba" );
 				});
 				elTitle.find("img[name=action_both]").click( () => {
 					scene.pointclouds.forEach( pc => pc.material.activeAttributeName = "composite" );

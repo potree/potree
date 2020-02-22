@@ -49,7 +49,7 @@
 		
 		viewer.setDescription("Point cloud courtesy of <a target='_blank' href='https://www.sigeom.ch/'>sigeom sa</a>");
 		
-		viewer.loadGUI(() => {
+		viewer.loadGUI().then( () => {
 
 			console.log("gui loaded task");
 

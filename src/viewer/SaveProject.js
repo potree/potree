@@ -141,11 +141,11 @@ function createAnnotationData(annotation){
 	}
 
 	if(annotation.cameraTarget){
-		annotation.cameraTarget = annotation.cameraTarget.toArray();
+		data.cameraTarget = annotation.cameraTarget.toArray();
 	}
 
 	if(typeof annotation.radius !== "undefined"){
-		annotation.radius = annotation.radius;
+		data.radius = annotation.radius;
 	}
 
 	return data;

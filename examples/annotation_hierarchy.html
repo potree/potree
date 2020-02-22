@@ -214,7 +214,7 @@
 				
 				elTitle.find("img[name=action_rgb]").click( () => {
 					event.stopPropagation();
-					material.activeAttributeName = "RGBA";
+					material.activeAttributeName = "rgba";
 					material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
 					material.size = 1;
 					potreeViewer.setClipTask(Potree.ClipTask.HIGHLIGHT);

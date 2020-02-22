@@ -41,14 +41,15 @@
 		
 		viewer.setDescription("Potree projects that were exported (Scene → Export → Potree) can be loaded with viewer.loadProject(url). ");
 		
-		viewer.loadGUI(() => {
+		viewer.loadGUI().then( () => {
 			viewer.setLanguage('en');
 			$("#menu_tools").next().show();
-			$("#menu_clipping").next().show();
 			viewer.toggleSidebar();
 		});
 		
-		viewer.loadProject("./resources/sorvilier.json");
+		viewer.loadProject("./resources/sorvilier.json").then( () => {
+			console.log("project loaded");
+		});
 		
 	</script>
 	

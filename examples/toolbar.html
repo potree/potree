@@ -196,7 +196,7 @@
 		});
 
 		elToolbar.find("img[name=action_rgb]").click( () => {
-			viewer.scene.pointclouds.forEach( pc => pc.material.activeAttributeName = "RGBA" );
+			viewer.scene.pointclouds.forEach( pc => pc.material.activeAttributeName = "rgba" );
 		});
 	}
 
@@ -265,7 +265,7 @@
 
 	{ // MATERIAL
 		let options = [
-			"RGBA", 
+			"rgba", 
 			"elevation",
 			"level of detail",
 			"indices",

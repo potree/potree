@@ -619,7 +619,7 @@ export class MapView{
 		}
 	}
 
-	load (pointcloud) {
+	async load (pointcloud) {
 		if (!pointcloud) {
 			return;
 		}
@@ -667,9 +667,16 @@ export class MapView{
 			constrainResolution: false
 		});
 
-		if (pointcloud.pcoGeometry.type == 'ept') return;
-		let url = pointcloud.pcoGeometry.url + '/../sources.json';
-		$.getJSON(url, (data) => {
+		if (pointcloud.pcoGeometry.type == 'ept'){ 
+			return;
+		}
+
+		let url = `${pointcloud.pcoGeometry.url}/../sources.json`;
+		//let response = await fetch(url);
+
+		fetch(url).then(async (response) => {
+			let data = await response.json();
+		
 			let sources = data.sources;
 
 			for (let i = 0; i < sources.length; i++) {
@@ -708,7 +715,10 @@ export class MapView{
 				feature.setStyle(this.createLabelStyle(name));
 				this.sourcesLabelLayer.getSource().addFeature(feature);
 			}
+		}).catch(() => {
+			
 		});
+
 	}
 
 	toggle () {

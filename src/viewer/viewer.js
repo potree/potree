@@ -1118,7 +1118,9 @@ export class Viewer extends EventDispatcher{
 
 	loadGUI(callback){
 
-		this.onGUILoaded(callback);
+		if(callback){
+			this.onGUILoaded(callback);
+		}
 
 		let viewer = this;
 		let sidebarContainer = $('#potree_sidebar_container');

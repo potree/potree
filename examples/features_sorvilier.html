@@ -237,7 +237,7 @@
 					"icon": Potree.resourcePath + "/icons/rgb.png",
 					"onclick": function(){
 						for(let pointcloud of viewer.scene.pointclouds){
-							pointcloud.material.activeAttributeName = "RGBA";
+							pointcloud.material.activeAttributeName = "rgba";
 							pointcloud.material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
 						}
 					}

@@ -77,14 +77,25 @@
 				589711.88, 231445.56, 768.16,
 				589702.04, 231336.49, 772.91
 			];
-			
-			let geometry = new THREE.BufferGeometry();
-			let material = new THREE.LineBasicMaterial({ color: 0xff0000 });
-			let buffer = new Float32Array(path);
-			geometry.addAttribute('position', new THREE.BufferAttribute(buffer, 3));
-			geometry.computeBoundingSphere();
-			
-			let line = new THREE.Line(geometry, material);
+
+			let lineGeometry = new THREE.LineGeometry();
+
+			lineGeometry.setPositions(path);
+
+			let lineMaterial = new THREE.LineMaterial({ 
+				color: 0x00ff00, 
+				dashSize: 5, 
+				gapSize: 2,
+				linewidth: 2, 
+				resolution:  new THREE.Vector2(1000, 1000),
+			});
+
+			viewer.addEventListener("update", () => {
+				viewer.renderer.getSize(lineMaterial.resolution);
+				
+			});
+
+			const line = new THREE.Line2(lineGeometry, lineMaterial);
 			viewer.scene.scene.add(line);
 		}
 		

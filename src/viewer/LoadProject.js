@@ -217,10 +217,17 @@ function loadAnnotationItem(item){
 	const annotation = new Annotation({
 		position: item.position,
 		title: item.title,
+		cameraPosition: item.cameraPosition,
+		cameraTarget: item.cameraTarget,
 	});
 
+
+	annotation.description = item.description;
 	annotation.uuid = item.uuid;
-	annotation.offset.set(...item.offset);
+
+	if(item.offset){
+		annotation.offset.set(...item.offset);
+	}
 
 	return annotation;
 }
@@ -231,60 +238,60 @@ function loadAnnotations(viewer, data){
 		return;
 	}
 
-	const findDuplicate = (item) => {
+	// const findDuplicate = (item) => {
 
-		let duplicate = null;
+	// 	let duplicate = null;
 
-		viewer.scene.annotations.traverse( a => {
-			if(a.uuid === item.uuid){
-				duplicate = a;
-			}
-		});
+	// 	viewer.scene.annotations.traverse( a => {
+	// 		if(a.uuid === item.uuid){
+	// 			duplicate = a;
+	// 		}
+	// 	});
 
-		return duplicate;
-	};
+	// 	return duplicate;
+	// };
 
-	const traverse = (item, parent) => {
+	// const traverse = (item, parent) => {
 
-		const duplicate = findDuplicate(item);
-		if(duplicate){
-			return;
-		}
-
-		const annotation = loadAnnotationItem(item);
-
-		for(const childItem of item.children){
-			traverse(childItem, annotation);
-		}
-
-		parent.add(annotation);
-
-	};
-
-	for(const item of data){
-		traverse(item, viewer.scene.annotations);
-		// viewer.scene.annotations.add(annotation);
-	}
-
-
-
-	// const {items, hierarchy} = data;
-
-	// const existingAnnotations = [];
-	// viewer.scene.annotations.traverseDescendants(annotation => {
-	// 	existingAnnotations.push(annotation);
-	// });
-
-	// for(const item of items){
-
-	// 	const duplicate = existingAnnotations.find(ann => ann.uuid === item.uuid);
+	// 	const duplicate = findDuplicate(item);
 	// 	if(duplicate){
-	// 		continue;
+	// 		return;
 	// 	}
 
 	// 	const annotation = loadAnnotationItem(item);
-	// 	viewer.scene.annotations.add(annotation);
+
+	// 	for(const childItem of item.children){
+	// 		traverse(childItem, annotation);
+	// 	}
+
+	// 	parent.add(annotation);
+
+	// };
+
+	// for(const item of data.items){
+	// 	traverse(item, viewer.scene.annotations);
+	// 	// viewer.scene.annotations.add(annotation);
 	// }
+
+
+
+	const {items, hierarchy} = data;
+
+	const existingAnnotations = [];
+	viewer.scene.annotations.traverseDescendants(annotation => {
+		existingAnnotations.push(annotation);
+	});
+
+	for(const item of items){
+
+		const duplicate = existingAnnotations.find(ann => ann.uuid === item.uuid);
+		if(duplicate){
+			continue;
+		}
+
+		const annotation = loadAnnotationItem(item);
+		viewer.scene.annotations.add(annotation);
+	}
 
 }
 
@@ -353,8 +360,10 @@ export async function loadProject(viewer, data){
 		loadProfile(viewer, profile);
 	}
 
-	for(const images of data.orientedImages){
-		loadOrientedImages(viewer, images);
+	if(data.orientedImages){
+		for(const images of data.orientedImages){
+			loadOrientedImages(viewer, images);
+		}
 	}
 
 	loadAnnotations(viewer, data.annotations);
@@ -365,8 +374,10 @@ export async function loadProject(viewer, data){
 	// before we can load stuff in other projections such as geopackages
 	//await Promise.any(pointcloudPromises); // (not yet supported)
 	Utils.waitAny(pointcloudPromises).then( () => {
-		for(const geopackage of data.geopackages){
-			loadGeopackage(viewer, geopackage);
+		if(data.geopackages){
+			for(const geopackage of data.geopackages){
+				loadGeopackage(viewer, geopackage);
+			}
 		}
 	});
 

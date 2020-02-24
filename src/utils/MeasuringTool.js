@@ -23,7 +23,13 @@ function updateAzimuth(viewer, measure){
 	
 	const [p0, p1] = measure.points;
 	const r = p0.position.distanceTo(p1.position);
-	const northVec = Utils.getNorthVec(p0.position, r, viewer.getProjection());
+	var projection = viewer.getProjection();
+	try {
+		proj.def("pointcloud", projection);
+	} catch (e) {
+		projection = viewer.getFallbackProjection();
+	}
+	const northVec = Utils.getNorthVec(p0.position, r, projection);
 	const northPos = p0.position.clone().add(northVec);
 
 	azimuth.center.position.copy(p0.position);
@@ -98,7 +104,13 @@ function updateAzimuth(viewer, measure){
 	azimuth.centerToNorth.material.resolution.set(width, height);
 
 	// label
-	const radians = Utils.computeAzimuth(p0.position, p1.position, viewer.getProjection());
+	var projection = viewer.getProjection();
+	try {
+		proj.def("pointcloud", projection);
+	} catch (e) {
+		projection = viewer.getFallbackProjection();
+	}
+	const radians = Utils.computeAzimuth(p0.position, p1.position, projection);
 	let degrees = THREE.Math.radToDeg(radians);
 	if(degrees < 0){
 		degrees = 360 + degrees;

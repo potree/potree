@@ -916,13 +916,6 @@ void main() {
 				vColor = vColor * visibility + vColor * uShadowColor * (1.0 - visibility);
 			}
 
-			{ // debug
-				vec4 depthMapValue = texture2D(uShadowMap[i], vec2(u, v) + sampleLocations[0]);
-
-				float t = depthMapValue.x * 20.0;
-				vColor = vec3(t, t, t);
-
-			}
 
 		}
 

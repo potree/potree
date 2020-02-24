@@ -41,7 +41,7 @@ export class PointCloudSM{
 		this.camera.up.set(0, 0, 1);
 		this.camera.position.copy(light.position);
 
-		let target = new THREE.Vector3().addVectors(light.position, light.getWorldDirection(new THREE.Vector3()));
+		let target = new THREE.Vector3().subVectors(light.position, light.getWorldDirection(new THREE.Vector3()));
 		this.camera.lookAt(target);
 
 		this.camera.updateProjectionMatrix();
@@ -65,10 +65,10 @@ export class PointCloudSM{
 
 		this.threeRenderer.setRenderTarget(this.target);
 		this.threeRenderer.clear(true, true, true);
-		this.threeRenderer.setRenderTarget(oldTarget);
 
 		this.potreeRenderer.render(scene, this.camera, this.target, {});
 
+		this.threeRenderer.setRenderTarget(oldTarget);
 	}
 
 

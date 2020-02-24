@@ -50,7 +50,11 @@
 		viewer.setFOV(60);
 		viewer.setPointBudget(2 * 1000 * 1000);
 		viewer.setDescription(`
-		If your browser supports WebVR, a VR button will appear on the bottom right. (Tested on HTC Vive + Firefox and Oculus Quest) <br>
+		If your browser supports WebVR, a VR button will appear on the bottom right. <br>
+		(Tested on HTC Vive + Firefox 73 (<font style="color: #88ff88">works</font>),
+		Oculus Quest (<font style="color: #88ff88">works</font>),
+		Chrome 80 (<font style="color: #ff8888">(didn't work) </font>)
+		<br>
 		Controls: Point right controller in desired direction, then push the right joystick forward
 		to fly in that direction.
 		Pushing the left youstick in addition to the right one modifies speed by up to 4x.
@@ -122,10 +126,14 @@
 			return;
 		}
 
-		const displays = await navigator.getVRDisplays();;
+		const displays = await navigator.getVRDisplays();
 		console.log(displays);
 
 		if(displays.length > 0){
+
+			const controls = new Potree.VRControlls(viewer);
+			viewer.addEventListener("update", (e) => controls.update(e.delta));
+
 		
 			const elVR = document.createElement("div");
 			elVR.innerHTML = `

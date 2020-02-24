@@ -54,12 +54,10 @@
 		
 		viewer.setDescription("");
 		
-		viewer.loadGUI(() => {
+		viewer.loadGUI().then(() => {
 			viewer.setLanguage('en');
 			$("#menu_appearance").next().show();
-			$("#menu_tools").next().show();
-			$("#menu_scene").next().show();
-			viewer.toggleSidebar();
+			// viewer.toggleSidebar();
 		});
 
 		let light = new THREE.SpotLight();

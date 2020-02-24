@@ -50,6 +50,14 @@
 		viewer.setFOV(60);
 		viewer.setPointBudget(0.3 * 1000 * 1000);
 		viewer.loadSettingsFromURL();
+		viewer.setDescription(`
+		If your browser supports WebVR, a VR button will appear on the bottom right. <br>
+		(Tested on HTC Vive + Firefox 73 (<font style="color: #88ff88">works</font>),
+		Oculus Quest (<font style="color: #88ff88">works</font>),
+		Chrome 80 (<font style="color: #ff8888">(didn't work) </font>)
+		<br>
+		Heidentor point cloud courtesy of <a href="http://archpro.lbg.ac.at/" target="_blank">Ludwig Boltzmann Institute - Archeological Prospection and Virtual Archeology</a> (26M points)
+		`);
 		
 		viewer.loadGUI(() => {
 			viewer.setLanguage('en');

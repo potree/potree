@@ -5,8 +5,8 @@
  */
 
 
-import {KeyCodes} from "../KeyCodes";
-import {Utils} from "../utils";
+import {KeyCodes} from "../KeyCodes.js";
+import {Utils} from "../utils.js";
 import {EventDispatcher} from "../EventDispatcher.js";
 
 export class InputHandler extends EventDispatcher {

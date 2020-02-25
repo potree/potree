@@ -1071,15 +1071,15 @@ export class Renderer {
 						defines.push("#define clip_gps_enabled");
 					}
 
-					if(attributes.returnNumber){
+					if(attributes["return number"]){
 						defines.push("#define clip_return_number_enabled");
 					}
 
-					if(attributes.numberOfReturns){
+					if(attributes["number of returns"]){
 						defines.push("#define clip_number_of_returns_enabled");
 					}
 
-					if(attributes.pointSourceID){
+					if(attributes["source id"]){
 						defines.push("#define clip_point_source_id_enabled");
 					}
 

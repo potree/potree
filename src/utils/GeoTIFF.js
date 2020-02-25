@@ -1,5 +1,5 @@
 
-import {Enum} from "../Enum";
+import {Enum} from "../Enum.js";
 
 var GeoTIFF = (function (exports) {
 'use strict';

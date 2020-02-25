@@ -115,7 +115,7 @@ export class Viewer extends EventDispatcher{
 		this.filterReturnNumberRange = [0, 7];
 		this.filterNumberOfReturnsRange = [0, 7];
 		this.filterGPSTimeRange = [-Infinity, Infinity];
-		this.filterPointSourceIDRange = [0, 65535]
+		this.filterPointSourceIDRange = [0, 65535];
 
 		this.potreeRenderer = null;
 		this.edlRenderer = null;

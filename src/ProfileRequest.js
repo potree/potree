@@ -1,5 +1,5 @@
 
-import {Points} from "./Points";
+import {Points} from "./Points.js";
 
 export class ProfileData {
 	constructor (profile) {

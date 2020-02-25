@@ -16,4 +16,5 @@
 	"editor.acceptSuggestionOnCommitCharacter": false,
 	"editor.mouseWheelZoom": true,
 	"editor.renderWhitespace": "all",
+	"workbench.tree.indent": 30,
 }

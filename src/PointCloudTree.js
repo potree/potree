@@ -1,6 +1,6 @@
 
 
-import { EventDispatcher } from "./EventDispatcher";
+import { EventDispatcher } from "./EventDispatcher.js";
 
 
 export class PointCloudTreeNode extends EventDispatcher{

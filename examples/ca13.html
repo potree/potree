@@ -39,6 +39,8 @@
 	</div>
 	
 	<script>
+
+		// import * as Potree from "../src/Potree.js";
 	
 		window.viewer = new Potree.Viewer(document.getElementById("potree_render_area"));
 		
@@ -49,12 +51,9 @@
 		
 		viewer.setDescription("");
 		
-		viewer.loadGUI(() => {
+		viewer.loadGUI().then( () => {
 			viewer.setLanguage('en');
-			//$("#menu_appearance").next().show();
-			$("#menu_tools").next().show();
-			$("#menu_scene").next().show();
-			$("#menu_filters").next().show();
+			// $("#menu_filters").next().show();
 			viewer.toggleSidebar();
 		});
 		

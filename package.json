@@ -12,7 +12,7 @@
     "gulp-concat": "^2.6.1",
     "gulp-connect": "^5.7.0",
     "gulp-util": "^3.0.8",
-    "rollup": "^1.27.14",
+    "rollup": "^1.31.1",
     "through": "~2.3.4"
   },
   "author": "Markus Schütz",

@@ -60,6 +60,7 @@ export * from "./utils/Compass.js";
 
 export * from "./viewer/viewer.js";
 export * from "./viewer/Scene.js";
+export * from "./viewer/HierarchicalSlider.js";
 
 export * from "./modules/OrientedImages/OrientedImages.js";
 export * from "./modules/Images360/Images360.js";
@@ -77,12 +78,11 @@ import "./extensions/OrthographicCamera.js";
 import "./extensions/PerspectiveCamera.js";
 import "./extensions/Ray.js";
 
-import {Enum} from "./Enum";
-import {LRU} from "./LRU";
-import {POCLoader} from "./loader/POCLoader";
-import {EptLoader} from "./loader/EptLoader";
-import {PointCloudOctree} from "./PointCloudOctree";
-import {WorkerPool} from "./WorkerPool";
+import {LRU} from "./LRU.js";
+import {POCLoader} from "./loader/POCLoader.js";
+import {EptLoader} from "./loader/EptLoader.js";
+import {PointCloudOctree} from "./PointCloudOctree.js";
+import {WorkerPool} from "./WorkerPool.js";
 
 export const workerPool = new WorkerPool();
 
@@ -104,12 +104,18 @@ export let maxNodesLoading = 4;
 export const debug = {};
 
 let scriptPath = "";
-if (document.currentScript.src) {
+
+if (document.currentScript && document.currentScript.src) {
 	scriptPath = new URL(document.currentScript.src + '/..').href;
 	if (scriptPath.slice(-1) === '/') {
 		scriptPath = scriptPath.slice(0, -1);
 	}
-} else {
+} else if(import.meta){
+	scriptPath = new URL(import.meta.url + "/..").href;
+	if (scriptPath.slice(-1) === '/') {
+		scriptPath = scriptPath.slice(0, -1);
+	}
+}else {
 	console.error('Potree was unable to find its script path using document.currentScript. Is Potree included with a script tag? Does your browser support this function?');
 }
 

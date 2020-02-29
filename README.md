@@ -18,7 +18,7 @@ Reference: [Potree: Rendering Large Point Clouds in Web Browsers](https://www.cg
 
 ### Build and Run
 
-Make sure you have [node.js](http://nodejs.org/) installed
+Install [node.js](http://nodejs.org/)
 
 Install all dependencies, as specified in package.json: 
 
@@ -26,13 +26,13 @@ Install all dependencies, as specified in package.json:
 npm install
 ```
 
-Use the `npm run build` command to 
+Use `npm run build` to create ./build/potree.
+
+Use the `npm start` command to 
 
 * create ./build/potree 
 * watch for changes to the source code and automatically create a new build on change
 * start a web server at localhost:1234. 
-
-Use `npm start` to start a development server with automatic reloading whenever code changes.
 
 Go to http://localhost:1234/examples/ to test the examples.
 

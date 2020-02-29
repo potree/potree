@@ -17,59 +17,63 @@ export class NodeLoader{
 		let byteOffset = node.byteOffset;
 		let byteSize = node.byteSize;
 
-		let response = await fetch(this.url, {
-			headers: {
-				'content-type': 'multipart/byteranges',
-				'Range': `bytes=${byteOffset}-${byteOffset + byteSize}`,
-			},
-		});
+		try{
+			let response = await fetch(this.url, {
+				headers: {
+					'content-type': 'multipart/byteranges',
+					'Range': `bytes=${byteOffset}-${byteOffset + byteSize}`,
+				},
+			});
 
-		let workerPath = Potree.scriptPath + '/workers/OctreeDecoderWorker.js';
-		let worker = Potree.workerPool.getWorker(workerPath);
+			let workerPath = Potree.scriptPath + '/workers/OctreeDecoderWorker.js';
+			let worker = Potree.workerPool.getWorker(workerPath);
 
-		worker.onmessage = function (e) {
+			worker.onmessage = function (e) {
 
-			let data = e.data;
-			let buffers = data.attributeBuffers;
+				let data = e.data;
+				let buffers = data.attributeBuffers;
 
-			Potree.workerPool.returnWorker(workerPath, worker);
+				Potree.workerPool.returnWorker(workerPath, worker);
 
 
-			let geometry = new THREE.BufferGeometry();
-			
-			for(let property in buffers){
+				let geometry = new THREE.BufferGeometry();
+				
+				for(let property in buffers){
 
-				let buffer = buffers[property].buffer;
+					let buffer = buffers[property].buffer;
 
-				if(property === "POSITION_CARTESIAN"){
-					geometry.addAttribute('position', new THREE.BufferAttribute(new Float32Array(buffer), 3));
-				}else if(property === "RGBA"){
-					geometry.addAttribute('rgba', new THREE.BufferAttribute(new Uint8Array(buffer), 4, true));
+					if(property === "POSITION_CARTESIAN"){
+						geometry.addAttribute('position', new THREE.BufferAttribute(new Float32Array(buffer), 3));
+					}else if(property === "RGBA"){
+						geometry.addAttribute('rgba', new THREE.BufferAttribute(new Uint8Array(buffer), 4, true));
+					}
+
 				}
+				// indices ??
 
-			}
-			// indices ??
+				node.geometry = geometry;
+				node.loaded = true;
+				node.loading = false;
+				Potree.numNodesLoading--;
+			};
 
-			node.geometry = geometry;
-			node.loaded = true;
-			node.loading = false;
-			Potree.numNodesLoading--;
-		};
+			let buffer = await response.arrayBuffer();
 
-		let buffer = await response.arrayBuffer();
+			let pointAttributes = node.octreeGeometry.pointAttributes;
+			let scale = node.octreeGeometry.scale;
 
-		let pointAttributes = node.octreeGeometry.pointAttributes;
-		let scale = node.octreeGeometry.scale;
+			let message = {
+				buffer: buffer,
+				pointAttributes: pointAttributes,
+				scale: scale,
+				min: node.boundingBox.min,
+			};
 
-		let message = {
-			buffer: buffer,
-			pointAttributes: pointAttributes,
-			scale: scale,
-			min: node.boundingBox.min,
-		};
-
-		worker.postMessage(message, [message.buffer]);
-
+			worker.postMessage(message, [message.buffer]);
+		}catch(e){
+			console.log(`failed to load ${node.name}`);
+			console.log(`trying again!`);
+		}
 	}
 
 }

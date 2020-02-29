@@ -1,6 +1,6 @@
 {
 	"examples": [
-		{"thumb": "thumbnails/vr.jpg", "label": "Virtual Reality", "url": "vr.html"},
+		{"thumb": "thumbnails/viewer.png", "label": "Basic Viewer", "url": "viewer.html"},
 		{"thumb": "thumbnails/oriented_images.jpg", "label": "Oriented Images", "url": "oriented_images.html"},
 		{"thumb": "thumbnails/geopackage.jpg", "label": "Geopackage", "url": "geopackage.html"},
 		{"thumb": "thumbnails/classifications.jpg", "label": "Classifications", "url": "classifications.html"},
@@ -9,7 +9,7 @@
 		{"thumb": "thumbnails/toolbar.jpg", "label": "Toolbar", "url": "toolbar.html"},
 
 		{"thumb": "thumbnails/matcap.jpg", "label": "Matcap", "url": "matcap.html"},
-		{"thumb": "thumbnails/viewer.png", "label": "Basic Viewer", "url": "viewer.html"},
+		{"thumb": "thumbnails/vr.jpg", "label": "Virtual Reality", "url": "vr.html"},
 		{"thumb": "thumbnails/heidentor.png", "label": "Heidentor", "url": "heidentor.html"},
 		{"thumb": "thumbnails/lion.png", "label": "Lion", "url": "lion.html"},
 		{"thumb": "thumbnails/lion_las.png", "label": "Lion LAS", "url": "lion_las.html"},

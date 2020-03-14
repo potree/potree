@@ -3,29 +3,26 @@
   "private": true,
   "version": "0.0.1",
   "description": "WebGL point cloud viewer",
+  "scripts": {
+    "start": "gulp watch",
+    "build": "gulp build pack"
+  },
   "dependencies": {
     "@material/slider": "^0.42.1",
     "flatbuffers": "^1.10.2",
-    "glob-watcher": "^5.0.1",
-    "gulp": "^3.9.1",
     "gulp-concat": "^2.6.1",
-    "gulp-connect": "^5.6.1",
+    "gulp-connect": "^5.7.0",
     "gulp-util": "^3.0.8",
     "material-design-icons": "^3.0.1",
     "natives": "^1.1.6",
     "papaparse": "^4.6.2",
     "three.meshline": "^1.1.0",
+    "rollup": "^1.31.1",
     "through": "~2.3.4"
   },
   "author": "Markus Schütz",
-  "license": "SEE LICENSE IN LICENSE",
-  "main": "gulpfile.js",
-  "directories": {
-    "doc": "docs",
-    "example": "examples"
-  },
-  "devDependencies": {},
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+  "license": "BSD-2-CLAUSE",
+  "devDependencies": {
+    "gulp": "^4.0.2"
   }
 }

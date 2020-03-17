@@ -39,6 +39,7 @@ Use the ```gulp watch``` command to
 ```
 gulp watch
 ```
+Note: If you use Visual Studio Code, to avoid a potential conflict with VSC exceeding the file watch limit and preventing potree from starting, run `echo fs.inotify.max_user_watches=524288 | sudo tee -a /etc/sysctl.conf && sudo sysctl -p`.
 
 ## Deploy
 

@@ -8,21 +8,15 @@
     "build": "gulp build pack"
   },
   "dependencies": {
-    "@material/slider": "^0.42.1",
     "flatbuffers": "^1.10.2",
+    "gulp": "^4.0.2",
     "gulp-concat": "^2.6.1",
     "gulp-connect": "^5.7.0",
     "gulp-util": "^3.0.8",
-    "material-design-icons": "^3.0.1",
-    "natives": "^1.1.6",
-    "papaparse": "^4.6.2",
-    "three.meshline": "^1.1.0",
     "rollup": "^1.31.1",
+    "three.meshline": "^1.1.0",
     "through": "~2.3.4"
   },
   "author": "Markus Schütz",
-  "license": "BSD-2-CLAUSE",
-  "devDependencies": {
-    "gulp": "^4.0.2"
-  }
+  "license": "BSD-2-CLAUSE"
 }

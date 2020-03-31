@@ -18,17 +18,17 @@ export class DXFExporter {
 		}
 
 		let dxfSection = `0
-CIRCLE
+POINT
 8
 layer_point
+62
+1
 10
 ${position.x}
 20
 ${position.y}
 30
 ${position.z}
-40
-1.0
 `;
 
 		return dxfSection;

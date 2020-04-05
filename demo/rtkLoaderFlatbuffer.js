@@ -1,5 +1,9 @@
+'use strict';
 import { getLoadingBar, getLoadingBarTotal, numberTasks, removeLoadingScreen, pause } from "../common/overlay.js";
-
+import { RtkTrajectory } from "../demo/RtkTrajectory.js";
+import { animateRTK } from "../demo/rtkLoader.js";
+import { } from  "../demo/paramLoader.js"; 
+import { loadTexturedCar } from "../demo/textureLoader.js";
 
 export async function loadRtkFlatbuffer(s3, bucket, name, callback) {
   let loadingBar = getLoadingBar();
@@ -163,4 +167,33 @@ async function parseRTK(bytesArray, FlatbufferModule) {
   }
   await pause()
   return {mpos, orientations, timestamps, t_init, t_range};
+}
+
+// Load RTK: utilizes loadRtkFlatbuffer and adds callbacks to it
+export function loadRtkCallback(s3, bucket, name, callback) {
+	// loadRtk(s3, bucket, name, (pos, rot, timestamps, t_init, t_range) => {
+	loadRtkFlatbuffer(s3, bucket, name, (pos, rot, timestamps, t_init, t_range) => {
+		window.timeframe = { "tstart": t_init, "tend": t_init + t_range };
+
+		let tstart = window.timeframe.tstart;	// Set in loadRtkCallback
+		let tend = window.timeframe.tend;			// Set in loadRtkCallback
+		let playbackRate = 1.0;
+		animationEngine.configure(tstart, tend, playbackRate);
+		animationEngine.launch();
+
+		if (callback) {
+			callback();
+		}
+
+		const path = pos.map(v => new THREE.Vector3(...v));
+		const orientations = rot.map(v => new THREE.Vector3(...v));
+		const samplingFreq = 100; // Hertz TODO hardcoded
+		const rtkTrajectory = new RtkTrajectory(path, orientations, timestamps, samplingFreq);
+
+		// load the car's object into the viewer with texture
+		loadTexturedCar(rtkTrajectory, pos, rot);
+
+		// RTK TweenTarget Callback:
+		animateRTK();
+	});
 }

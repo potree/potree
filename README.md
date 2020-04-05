@@ -25,10 +25,10 @@ Make sure you have [node.js](http://nodejs.org/) installed
 Install all dependencies, as specified in package.json,
 then, install the gulp build tool:
 
+    sudo npm install -g gulp
+    sudo npm install -g rollup
     cd <potree_directory>
     npm install --save
-    npm install -g gulp
-    npm install -g rollup
 
 Use the ```gulp watch``` command to
 
@@ -45,12 +45,12 @@ Note: If you use Visual Studio Code, to avoid a potential conflict with VSC exce
 
 Deploy potree to the EC2 instances serving the Veritas sites:
 
-Active EC2 instances (as of 2019-05-16):
+Active EC2 instances (as of 2020-04-02):
 
 | Name                        | IPv4 Public IP | DNS Address              | Keypair            | Potree Location                                  | Description |
 | --------------------------- | -------------- | ------------------------ | ------------------ | ------------------------------------------------ | ----------- |
-| (prod) PotreeServer)         | 18.208.171.218 | `prod.viz.nextdroid.com` | `NextDroidDev.pem` | `~/git/GroundTruthVisualization/external/potree` | "Production" server - runs  runs everywhere right now (but should be just for prod and maybe demo) (2019-10-03) |
-| (dev) PotreeServer         | 34.207.247.239 |  `dev.viz.nextdroid.com` | `NextDroidDev.pem` | `/usr/share/nginx/html/potree`                   | "Development" server - intended to run on dev and test sites but not running anywhere right now (does have latest develop as of Oct. 03, 2019) |
+| (prod) PotreeServer)         | 18.208.171.218 | `prod.viz.nextdroid.com` | `NextDroidDev.pem` | `~/git/GroundTruthVisualization/external/potree` | "Production" server - runs everywhere right now, except |
+|                             | 35.168.112.209 |  `dev.viz.nextdroid.com` | `NextDroidDev.pem` | `/var/www/potree`                   | "Development" server - running on dev, demo, and sites |
 
 Steps for deploying (primarily for Veritas Dev server):   
 1. ssh into the desired EC2 instance with the appropriate keypair  

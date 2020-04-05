@@ -1,3 +1,5 @@
+'use strict';
+import { getShaderMaterial } from "../demo/paramLoader.js"
 import { getLoadingBar, getLoadingBarTotal, numberTasks, removeLoadingScreen, pause } from "../common/overlay.js";
 
 export async function loadRem(s3, bucket, name, remShaderMaterial, animationEngine, callback) {
@@ -153,4 +155,34 @@ async function createControlMeshes(controlPoints, remShaderMaterial, FlatbufferM
   }
   await pause()
   return allSpheres;
+}
+
+
+
+//load REM control points
+export async function loadRemCallback(s3, bucket, name, animationEngine) {
+	let shaderMaterial = getShaderMaterial();
+	let remShaderMaterial = shaderMaterial.clone();
+
+	await loadRem(s3, bucket, name, remShaderMaterial, animationEngine, (sphereMeshes) => {
+		let remLayer = new THREE.Group();
+		remLayer.name = "REM Control Points";
+		for (let ii=0, len=sphereMeshes.length; ii<len; ii++) {
+			remLayer.add(sphereMeshes[ii]);
+		}
+
+		viewer.scene.scene.add(remLayer);
+		let e = new CustomEvent("truth_layer_added", {detail: remLayer, writable: true});
+		viewer.scene.dispatchEvent({
+			"type": "sensor_layer_added",
+			"sensorLayer": remLayer
+		});
+
+		// TODO check if group works as expected, then trigger "truth_layer_added" event
+		animationEngine.tweenTargets.push((gpsTime) => {
+			let currentTime = gpsTime - animationEngine.tstart;
+			remShaderMaterial.uniforms.minGpsTime.value = currentTime - animationEngine.activeWindow.backward;
+			remShaderMaterial.uniforms.maxGpsTime.value = currentTime + animationEngine.activeWindow.forward;
+		});
+	});
 }

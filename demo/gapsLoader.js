@@ -1,7 +1,6 @@
-//import { Vec3 } from "../schemas/BasicTypes_generated.js";
-//import { Flatbuffer } from "../schemas/VisualizationPrimitives_generated.js";
-import { getLoadingBar, getLoadingBarTotal, numberTasks, removeLoadingScreen } from "../common/overlay.js";
-
+'use strict';
+import { getShaderMaterial, s3, bucket, name } from "../demo/paramLoader.js"
+import { getLoadingBar, getLoadingBarTotal, numberTasks, setLoadingScreen, removeLoadingScreen } from "../common/overlay.js";
 
 export async function loadGaps(s3, bucket, name, shaderMaterial, animationEngine, callback) {
   let loadingBar = getLoadingBar();
@@ -310,3 +309,45 @@ function createGapGeometriesOld(gaps, shaderMaterial, FlatbufferModule, animatio
   loadingBar.set(0);
   return output;
 }
+
+// creates the button and adds event listeners for it
+export function addLoadGapsButton() {
+	window.gapsLoaded = false; // initialize to false
+
+	$("#load_gaps_button")[0].style.display = "block"
+	let loadGapsButton = $("#load_gaps_button")[0];
+	loadGapsButton.addEventListener("mousedown", () => {
+
+		if (!window.gapsLoaded) {
+			$("#loading-bar")[0].style.display = "none";
+			setLoadingScreen();
+
+			let shaderMaterial = getShaderMaterial();
+			let gapShaderMaterial = shaderMaterial.clone();
+			gapShaderMaterial.uniforms.color.value = new THREE.Color(0x0000ff);
+			gapShaderMaterial.depthWrite = false;
+			loadGaps(s3, bucket, name, gapShaderMaterial, animationEngine, (gapGeometries) => {
+				let gapsLayer = new THREE.Group();
+				gapsLayer.name = "Vehicle Gaps";
+				for (let ii = 0, len = gapGeometries.left.length; ii < len; ii++) {
+					// if (ii < 1000) {
+					gapsLayer.add(gapGeometries.left[ii]);
+					// }
+				}
+				viewer.scene.scene.add(gapsLayer);
+				viewer.scene.dispatchEvent({
+					"type": "assessments_layer_added",
+					"assessmentsLayer": gapsLayer
+				});
+				animationEngine.tweenTargets.push((gpsTime) => {
+					let currentTime = gpsTime - animationEngine.tstart;
+					gapShaderMaterial.uniforms.minGpsTime.value = currentTime - animationEngine.activeWindow.backward;
+					gapShaderMaterial.uniforms.maxGpsTime.value = currentTime + animationEngine.activeWindow.forward;
+				});
+				window.gapsLoaded = true;
+				loadGapsButton.disabled = true;
+			});
+			removeLoadingScreen();
+		}
+	});
+} // end of Load Gaps Button

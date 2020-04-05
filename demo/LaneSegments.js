@@ -1,3 +1,4 @@
+"use strict"
 import { Measure } from "../src/utils/Measure.js";
 
 export class LaneSegments extends THREE.Object3D {

@@ -149,7 +149,7 @@
 		import { loadRem } from "../demo/remLoader.js";
 		import { loadVelo2Rtk, loadRtk2Vehicle, storeCalibration } from "../demo/calibrationManager.js";
 		import { updateSidebar, togglePointClass } from "../common/custom-sidebar.js";
-		import { getLoadingBar } from "../common/overlay.js";
+		import { getLoadingBar, getLoadingBarTotal, numberTasks, pause } from "../common/overlay.js"
 		// import {  } from "../common/overlay.js";
 		import { setLoadingScreen, removeLoadingScreen } from "../common/overlay.js";
 		import { PointAttributeNames } from "../src/loader/PointAttributes.js";
@@ -193,12 +193,13 @@
 			head.appendChild(style);
 		}
 
-    const s3 = bucket && region && name && accessKeyId && secretAccessKey &&
-				new AWS.S3({region: region,
-							 accessKeyId: accessKeyId,
-							 secretAccessKey: secretAccessKey,
-							 sessionToken: sessionToken,
-							});
+		const s3 = bucket && region && name && accessKeyId && secretAccessKey &&
+			new AWS.S3({
+				region: region,
+				accessKeyId: accessKeyId,
+				secretAccessKey: secretAccessKey,
+				sessionToken: sessionToken,
+			});
 
     if (!(s3 || window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) { window.history.back() };
     // We really want this, but it doesn't work in the browser. Only on a server.
@@ -288,6 +289,7 @@
 			document.getElementById("playbar_tmin").disabled = false;
 			document.getElementById("elevation_max").display = false;
 			document.getElementById("elevation_min").disabled = false;
+			let loadingBarTotal = getLoadingBarTotal()
 
 			window.truthAnnotationMode = 0;	// 0: None, 1: Delete, 2: Add
 			let annotationScreen = $(`<div id="annotationScreen"><p id="annotation-label">ANNOTATION MODE: <b id="annotation-mode-text"></b></p></div>`);
@@ -339,7 +341,10 @@
 
 
 			// Load Data Sources in loadRtkCallback:
-			loadRtkCallback(s3, bucket, name, () => {
+			loadRtkCallback(s3, bucket, name, async () => {
+
+				let loadingBar = getLoadingBar()
+				let loadingBarTotal = getLoadingBarTotal()
 
 				// Load Extrinsics:
 				window.extrinsics = {rtk2Vehicle: null, velo2Rtk: {}};
@@ -377,7 +382,12 @@
 
 				// Load Lanes:
 				try {
-					loadLanesCallback(s3, bucket, name);
+					await loadLanesCallback(s3, bucket, name, async () => {
+						if (loadingBarTotal.value >= 100) {
+							removeLoadingScreen()
+						}
+					await pause();
+					});
 				} catch (e) {
 					console.error("Could not load Lanes: ", e);
 				}
@@ -386,13 +396,21 @@
 				try {
 					// TODO shaderMaterial
 					let trackShaderMaterial = shaderMaterial.clone();
-					loadTracksCallback(s3, bucket, name, trackShaderMaterial, animationEngine);
+					await loadTracksCallback(s3, bucket, name, trackShaderMaterial, animationEngine, () => {
+					if (loadingBarTotal.value >= 100) {
+						removeLoadingScreen()
+					}
+					});
 				} catch (e) {
 					console.error("Could not load Tracks: ", e);
 				}
 
-				try{
-					loadRemCallback(s3, bucket, name, animationEngine);
+				try {
+					await loadRemCallback(s3, bucket, name, animationEngine, () => {
+                        if (loadingBarTotal.value >= 100) {
+                            removeLoadingScreen()
+                        }
+                    });
 				} catch (e) {
 					console.error("No rem points: ", e);
 				}
@@ -423,141 +441,163 @@
 
 
 
-		// Load RTK: TODO REFACTOR THIS (a lot of stuff happenning here, break it up if possible)
-		function loadRtkCallback(s3, bucket, name, callback) {
-			// loadRtk(s3, bucket, name, (pos, rot, timestamps, t_init, t_range) => {
-			loadRtkFlatbuffer(s3, bucket, name, (pos, rot, timestamps, t_init, t_range) => {
-				window.timeframe = {"tstart": t_init, "tend": t_init+t_range};
+			// Load RTK: TODO REFACTOR THIS (a lot of stuff happenning here, break it up if possible)
+			async function loadRtkCallback(s3, bucket, name, callback) {
+				// loadRtk(s3, bucket, name, (pos, rot, timestamps, t_init, t_range) => {
+				await loadRtkFlatbuffer(s3, bucket, name, async (pos, rot, timestamps, t_init, t_range) => {
+					window.timeframe = {"tstart": t_init, "tend": t_init+t_range};
 
-				// TODO Move this into main loader function:
-				let tstart = window.timeframe.tstart;	// Set in loadRtkCallback
-				let tend = window.timeframe.tend;			// Set in loadRtkCallback
-				let playbackRate = 1.0;
-				animationEngine.configure(tstart, tend, playbackRate);
-				animationEngine.launch();
+					// TODO Move this into main loader function:
+					let tstart = window.timeframe.tstart;	// Set in loadRtkCallback
+					let tend = window.timeframe.tend;			// Set in loadRtkCallback
+					let playbackRate = 1.0;
+					animationEngine.configure(tstart, tend, playbackRate);
+					animationEngine.launch();
 
-				if (callback) {
-					callback();
-				}
+					if (callback) {
+						// load lanes, tracks, rem points
+						await callback()
+					}
 
-	      const path = pos.map(v => new THREE.Vector3(...v));
-	      const orientations = rot.map(v => new THREE.Vector3(...v));
-				const samplingFreq = 100; // Hertz TODO hardcoded
-				const rtkTrajectory = new RtkTrajectory(path, orientations, timestamps, samplingFreq);
-				const closedPath = false;
+					let loadingBar = getLoadingBar()
+					let loadingBarTotal = getLoadingBarTotal()
 
-	      // CREATE VEHICLE OBJECT:
-	      // NOTE for Mustang: {texture: models/bodybkgd.JPG, mesh: models/1967-shelby-ford-mustang.obj}
-	      // NOTE for Volt: {texture: models/Chevy_Volt_Segmented/Chevrolet_Volt_v1_exterior.png, mesh: resources/models/Chevy_Volt_Segmented/Chevy_Volt_2016.obj}
-	      let manager = new THREE.LoadingManager();
-	      manager.onProgress = function ( item, loaded, total ) {
-	        console.log( item, loaded, total );
-	      };
-	      let textureLoader = new THREE.TextureLoader( manager );
-	      let texture = textureLoader.load(`${Potree.resourcePath}/models/Chevy_Volt_Segmented/reflection_1.png`);
-	      // let texture = textureLoader.load(`${Potree.resourcePath}/models/bodybkgd.JPG`);
-	      let onProgress = function ( xhr ) {
-	        if ( xhr.lengthComputable ) {
-	          let percentComplete = xhr.loaded / xhr.total * 100;
-	        }
-	      };
-	      texture.wrapS = THREE.RepeatWrapping;
-	      texture.wrapT = THREE.RepeatWrapping;
+					const path = pos.map(v => new THREE.Vector3(...v))
+					const orientations = rot.map(v => new THREE.Vector3(...v))
+					const samplingFreq = 100 // Hertz TODO hardcoded
+					const rtkTrajectory = new RtkTrajectory(path, orientations,
+						timestamps, samplingFreq)
+					const closedPath = false
 
-	      let geometry = new THREE.SphereGeometry( 2, 32, 32 );
-	      let material = new THREE.MeshNormalMaterial( {side: THREE.DoubleSide, opacity: 0.92,transparent:true});
-	      let sphere = new THREE.Mesh( geometry, material );
-	      sphere.position.copy(new THREE.Vector3(...pos[0]));
-	      // viewer.scene.scene.add( sphere );
+					// CREATE VEHICLE OBJECT:
+					// NOTE for Mustang: {texture: models/bodybkgd.JPG, mesh: models/1967-shelby-ford-mustang.obj}
+					// NOTE for Volt: {texture: models/Chevy_Volt_Segmented/Chevrolet_Volt_v1_exterior.png, mesh: resources/models/Chevy_Volt_Segmented/Chevy_Volt_2016.obj}
+					let manager = new THREE.LoadingManager()
+					manager.onProgress = async function (item, loaded, total) {
+						console.log(item, loaded, total)
+				        loadingBarTotal.set(Math.min(Math.ceil(loadingBarTotal.value + (100/numberTasks))), 100);
+                        loadingBar.set(0)
+						await pause()
+					}
 
+					// check if done loading everything and screen is ready
+					manager.onLoad = async function () {
+                        if (loadingBarTotal.value >= 100) {
+                            removeLoadingScreen()
+                        }
+					}
 
-	      { // Load Textured vehicle from obj
-	        let onError = function ( xhr ) {};
-	        let loader = new THREE.OBJLoader( manager );
-	        loader.load(`${Potree.resourcePath}/models/Chevy_Volt_Segmented/volt_reduce.obj`,
-	        // loader.load(`${Potree.resourcePath}/models/Chevy_Volt_Segmented/Chevy_Volt_2016.obj`,
-	                    function ( object ) {
-	          object.traverse( function ( child ) {
-	            if ( child instanceof THREE.Mesh ) {
-	              child.material.map = texture;
-	            }
-	          } );
+					// let texture = textureLoader.load(`${Potree.resourcePath}/models/bodybkgd.JPG`);
+					let onProgress = async function (xhr) {
+						if (xhr.lengthComputable) {
+							// update progress
+                            let percentLoaded = xhr.loaded / xhr.total
+                            loadingBar.set(Math.max(percentLoaded * 100, loadingBar.value))
+							await pause()
+						}
+					}
+					let textureLoader = new THREE.TextureLoader(manager)
+					let texture = await textureLoader.load(
+						`${Potree.resourcePath}/models/Chevy_Volt_Segmented/reflection_1.png`, ()=>{
+							// onLoad
+						})
+					texture.wrapS = THREE.RepeatWrapping
+					texture.wrapT = THREE.RepeatWrapping
 
-						const vehicleGroup = new THREE.Group();
-						vehicleGroup.name = "Vehicle";
+					let geometry = new THREE.SphereGeometry(2, 32, 32)
+					let material = new THREE.MeshNormalMaterial(
+						{ side: THREE.DoubleSide, opacity: 0.92, transparent: true })
+					let sphere = new THREE.Mesh(geometry, material)
+					sphere.position.copy(new THREE.Vector3(...pos[0]))
+					// viewer.scene.scene.add( sphere );
 
-			      { // render the path
-							let geometry = new THREE.Geometry();
-							for (let ii = 0; ii < rtkTrajectory.numStates; ii++) {
-								geometry.vertices[ii] = rtkTrajectory.states[ii].pose.clone();
+					{ // Load Textured vehicle from obj
+						let onError = function (xhr) {
+						}
+						let loader = new THREE.OBJLoader( manager );
+						loader.load(`${Potree.resourcePath}/models/Chevy_Volt_Segmented/volt_reduce.obj`,
+						// loader.load(`${Potree.resourcePath}/models/Chevy_Volt_Segmented/Chevy_Volt_2016.obj`,
+									function ( object ) {
+						object.traverse( function ( child ) {
+							if ( child instanceof THREE.Mesh ) {
+							child.material.map = texture;
 							}
-			        let material = new THREE.LineBasicMaterial({color: new THREE.Color(0x00ff00)});
-			        material.uniforms = {initialTime:{value:t_init}};
-							// material.opacity = 0.0;
-							// material.transparent = true;
-			        let line = new THREE.Line(geometry, material, {closed: closedPath});
-			        line.name = "RTK Trajectory";
-							line.visible = false;
-							viewer.scene.scene.add( line );
-							viewer.scene.dispatchEvent({"type": "vehicle_layer_added", "vehicleLayer": line });
-			      }
+						} );
 
-						// Add Polar Grid Helper:
-						const gridRadius = 100; // meters
-						const gridSpacing = 5; // meters
-						const scaleFactor = 1; // HACK for now because attached to vehicle mesh which is 1/100th scale
-						const gridHelper = new THREE.GridHelper( scaleFactor*2*gridRadius, 2*gridRadius/gridSpacing, 0x0000ff, 0x808080 );
-						gridHelper.name = "Cartesian Grid";
-						gridHelper.rotateOnAxis(new THREE.Vector3(1,0,0), Math.PI/2);
-						gridHelper.position.z -= 2;
-						gridHelper.visible = false;
-						viewer.scene.dispatchEvent({"type": "vehicle_layer_added", "vehicleLayer": gridHelper });
-						const polarGridHelper = new THREE.PolarGridHelper( scaleFactor*gridRadius, 16, gridRadius/gridSpacing, 64, 0x0000ff, 0x808080 );
-						polarGridHelper.name = "Polar Grid";
-						polarGridHelper.rotateOnAxis(new THREE.Vector3(1,0,0), Math.PI/2);
-						polarGridHelper.position.z -= 2;
-						polarGridHelper.visible = false;
-						viewer.scene.dispatchEvent({"type": "vehicle_layer_added", "vehicleLayer": polarGridHelper });
-						const axesHelper = new THREE.AxesHelper(scaleFactor*gridSpacing);
-						axesHelper.name = "3D Axes";
-						axesHelper.position.z -= 2;
-						// axesHelper.rotateOnAxis(new THREE.Vector3(0,0,1), -Math.PI/2);
-						axesHelper.visible = false;
-						viewer.scene.dispatchEvent({"type": "vehicle_layer_added", "vehicleLayer": axesHelper });
+									const vehicleGroup = new THREE.Group();
+									vehicleGroup.name = "Vehicle";
+
+							{ // render the path
+									let geometry = new THREE.Geometry();
+									for (let ii = 0; ii < rtkTrajectory.numStates; ii++) {
+										geometry.vertices[ii] = rtkTrajectory.states[ii].pose.clone();
+									}
+							let material = new THREE.LineBasicMaterial({color: new THREE.Color(0x00ff00)});
+							material.uniforms = {initialTime:{value:t_init}};
+									// material.opacity = 0.0;
+									// material.transparent = true;
+							let line = new THREE.Line(geometry, material, {closed: closedPath});
+							line.name = "RTK Trajectory";
+									line.visible = false;
+									viewer.scene.scene.add( line );
+									viewer.scene.dispatchEvent({"type": "vehicle_layer_added", "vehicleLayer": line });
+							}
+
+								// Add Polar Grid Helper:
+								const gridRadius = 100; // meters
+								const gridSpacing = 5; // meters
+								const scaleFactor = 1; // HACK for now because attached to vehicle mesh which is 1/100th scale
+								const gridHelper = new THREE.GridHelper( scaleFactor*2*gridRadius, 2*gridRadius/gridSpacing, 0x0000ff, 0x808080 );
+								gridHelper.name = "Cartesian Grid";
+								gridHelper.rotateOnAxis(new THREE.Vector3(1,0,0), Math.PI/2);
+								gridHelper.position.z -= 2;
+								gridHelper.visible = false;
+								viewer.scene.dispatchEvent({"type": "vehicle_layer_added", "vehicleLayer": gridHelper });
+								const polarGridHelper = new THREE.PolarGridHelper( scaleFactor*gridRadius, 16, gridRadius/gridSpacing, 64, 0x0000ff, 0x808080 );
+								polarGridHelper.name = "Polar Grid";
+								polarGridHelper.rotateOnAxis(new THREE.Vector3(1,0,0), Math.PI/2);
+								polarGridHelper.position.z -= 2;
+								polarGridHelper.visible = false;
+								viewer.scene.dispatchEvent({"type": "vehicle_layer_added", "vehicleLayer": polarGridHelper });
+								const axesHelper = new THREE.AxesHelper(scaleFactor*gridSpacing);
+								axesHelper.name = "3D Axes";
+								axesHelper.position.z -= 2;
+								// axesHelper.rotateOnAxis(new THREE.Vector3(0,0,1), -Math.PI/2);
+								axesHelper.visible = false;
+								viewer.scene.dispatchEvent({"type": "vehicle_layer_added", "vehicleLayer": axesHelper });
 
 
-						vehicleGroup.add( gridHelper );
-						vehicleGroup.add( polarGridHelper );
-						vehicleGroup.add( axesHelper );
+								vehicleGroup.add( gridHelper );
+								vehicleGroup.add( polarGridHelper );
+								vehicleGroup.add( axesHelper );
 
-						// Apply RTK to Vehicle Mesh Extrinsics:
-	          object.name = "Vehicle Mesh";
-	          object.scale.multiplyScalar(.01);
-						object.rotation.set(0*Math.PI / 2, 0*Math.PI/2., 1*Math.PI/2.0); // Chevy Volt
-						object.position.sub(new THREE.Vector3(0, 0, 2)); // Chevy Volt
+								// Apply RTK to Vehicle Mesh Extrinsics:
+					object.name = "Vehicle Mesh";
+					object.scale.multiplyScalar(.01);
+								object.rotation.set(0*Math.PI / 2, 0*Math.PI/2., 1*Math.PI/2.0); // Chevy Volt
+								object.position.sub(new THREE.Vector3(0, 0, 2)); // Chevy Volt
 
-						// Initialize Vehicle Group:
-						vehicleGroup.position.set(...pos[0]);
-						applyRotation(vehicleGroup, rot[0][0], rot[0][1], rot[0][2]);
-						vehicleGroup.rotation.set(...rot[0]);
-						vehicleGroup.rtkTrajectory = rtkTrajectory;
-						vehicleGroup.add( object );
+								// Initialize Vehicle Group:
+								vehicleGroup.position.set(...pos[0]);
+								applyRotation(vehicleGroup, rot[0][0], rot[0][1], rot[0][2]);
+								vehicleGroup.rotation.set(...rot[0]);
+								vehicleGroup.rtkTrajectory = rtkTrajectory;
+								vehicleGroup.add( object );
 
-						// TODO New Camera Initialization:
-						let box = new THREE.Box3().setFromObject(vehicleGroup);
-						let node = new THREE.Object3D();
-						node.boundingBox = box;
-						viewer.zoomTo(node, 0.1, 500);
-						// viewer.scene.view.lookAt(object.position);
+								// TODO New Camera Initialization:
+								let box = new THREE.Box3().setFromObject(vehicleGroup);
+								let node = new THREE.Object3D();
+								node.boundingBox = box;
+								viewer.zoomTo(node, 0.1, 500);
+								// viewer.scene.view.lookAt(object.position);
 
-	          // viewer.scene.scene.add( object );
-	          viewer.scene.scene.add( vehicleGroup );
-						viewer.scene.dispatchEvent({"type": "vehicle_layer_added", "vehicleLayer": object });
+					// viewer.scene.scene.add( object );
+					viewer.scene.scene.add( vehicleGroup );
+								viewer.scene.dispatchEvent({"type": "vehicle_layer_added", "vehicleLayer": object });
 
-						viewer.setFilterGPSTimeRange(0, 0); // Size 0 Time Window at start of timeline
-						removeLoadingScreen();
-	        }, onProgress, onError );
-	      }
+								viewer.setFilterGPSTimeRange(0, 0) // Size 0 Time Window at start of timeline
+							}, await onProgress, onError)
+					}
 
 	      // ANIMATION:
 	      { // create Animation Path & make light follow it
@@ -763,7 +803,7 @@ $(document).ready(() => {
 	// Configure Playbar
 	$("#reload_lanes_button")[0].style.display="block"
 	let reloadLanesButton = $("#reload_lanes_button")[0];
-	reloadLanesButton.addEventListener("mousedown", () => {
+	reloadLanesButton.addEventListener("mousedown", async () => {
 
 		let proceed = true;
 		if (window.annotateLanesModeActive) {
@@ -788,9 +828,8 @@ $(document).ready(() => {
 			reloadLanesButton.disabled = true;
 
 			{
-				$("#loading-bar")[0].style.display = "none";
 				setLoadingScreen();
-				loadLanesCallback(s3, bucket, name, () => {
+				await loadLanesCallback(s3, bucket, name, () => {
 					removeLoadingScreen();
 
 					// TOGGLE BUTTON TEXT
@@ -817,7 +856,7 @@ $(document).ready(() => {
 
 			let filename, tmpSupplierNum;
 			tmpSupplierNum = -1;
-			await loadLanes(s3, bucket, name, filename, tmpSupplierNum, window.annotateLanesModeActive, viewer.scene.volumes, (laneGeometries) => {
+			await loadLanes(s3, bucket, name, filename, tmpSupplierNum, window.annotateLanesModeActive, viewer.scene.volumes, async (laneGeometries) => {
 
 				// need to have Annoted Lanes layer, so that can have original and edited lanes layers
 				let lanesLayer = new THREE.Group();
@@ -831,7 +870,7 @@ $(document).ready(() => {
 					"truthLayer": lanesLayer
 				});
 				if (callback) {
-					callback();
+					await callback();
 				}
 			});
 
@@ -980,8 +1019,7 @@ async function loadRemCallback(s3, bucket, name, animationEngine) {
 		// TODO Move this somewhere else
 		let trackShaderMaterial = shaderMaterial.clone();
 
-		async function loadTracksCallback(s3, bucket, name, trackShaderMaterial, animationEngine) {
-
+		async function loadTracksCallback(s3, bucket, name, trackShaderMaterial, animationEngine, callback) {
 			await loadTracks(s3, bucket, name, trackShaderMaterial, animationEngine, (trackGeometries) => {
 				let trackLayer = new THREE.Group();
 				trackLayer.name = "Tracked Objects";
@@ -989,7 +1027,6 @@ async function loadRemCallback(s3, bucket, name, animationEngine) {
 					trackLayer.add(trackGeometries.bbox[ii]);
 					// viewer.scene.scene.add(trackGeometries.bbox[ii]); // Original
 				}
-
 				viewer.scene.scene.add(trackLayer);
 				let e = new CustomEvent("truth_layer_added", {detail: trackLayer, writable: true});
 				viewer.scene.dispatchEvent({
@@ -1003,7 +1040,13 @@ async function loadRemCallback(s3, bucket, name, animationEngine) {
 					trackShaderMaterial.uniforms.minGpsTime.value = currentTime - animationEngine.activeWindow.backward;
 					trackShaderMaterial.uniforms.maxGpsTime.value = currentTime + animationEngine.activeWindow.forward;
 				});
+
+                if (callback)
+                {
+                    callback()
+                }
 			});
+
 		}
 
 
@@ -1015,7 +1058,6 @@ async function loadRemCallback(s3, bucket, name, animationEngine) {
 			let loadDetectionsButton = $("#load_detections_button")[0];
 			loadDetectionsButton.addEventListener("mousedown", () => {
 				if (!window.detectionsLoaded) {
-					$("#loading-bar")[0].style.display = "none";
 					setLoadingScreen();
 					let detectionShaderMaterial = shaderMaterial.clone();
 					detectionShaderMaterial.uniforms.color.value = new THREE.Color(0xFFA500);
@@ -1082,7 +1124,6 @@ async function loadRemCallback(s3, bucket, name, animationEngine) {
 			let loadRadarButton = $("#load_radar_button")[0];
 			loadRadarButton.addEventListener("mousedown", () => {
 				if (!window.radarLoaded) {
-					$("#loading-bar")[0].style.display = "none";
 					setLoadingScreen();
 
 					loadRadar(s3, bucket, name, (geometry,t_init, boxBufferGeometries) => {

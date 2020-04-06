@@ -24,10 +24,10 @@ export async function loadVelo2Rtk(s3, bucket, name, callback) {
         const data = await s3.getObject({Bucket: bucket, Key: objectName}).promise();
         const calibrationText = new TextDecoder("utf-8").decode(data.Body);
         const extrinsics = parseCalibrationFile(calibrationText);
-        callback( extrinsics );
+        await callback( extrinsics );
       } catch (err) {
         console.log(err, err.stack);
-        callback(null);
+        await callback(null);
       }
 
     })();

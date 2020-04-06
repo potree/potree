@@ -1,5 +1,10 @@
+import { getLoadingBar, getLoadingBarTotal, numberTasks, removeLoadingScreen, pause } from "../common/overlay.js";
+
 export async function loadRem(s3, bucket, name, remShaderMaterial, animationEngine, callback) {
   const tstart = performance.now();
+  let loadingBar = getLoadingBar();
+  let loadingBarTotal = getLoadingBarTotal(); 
+  let lastLoaded = 0;
   //is name here the dataset name? We should be more careful about that....
   if (s3 && bucket && name) {
     (async () => {
@@ -12,16 +17,37 @@ export async function loadRem(s3, bucket, name, remShaderMaterial, animationEngi
         Key: schemaFile
       });
 
-      s3.getObject({Bucket: bucket,
+      const request = await s3.getObject({Bucket: bucket,
                     Key: objectName},
                    async (err, data) => {
                      if (err) {
                        console.log(err, err.stack);
+                       // have to increment progress bar since "parseControlPoints" will not be called
+                       loadingBarTotal.set(Math.min(Math.ceil(loadingBarTotal.value + (100/numberTasks))), 100);
                      } else {
                        const FlatbufferModule = await import(schemaUrl);
-                       const remSphereMeshes = parseControlPoints(data.Body, remShaderMaterial, FlatbufferModule, animationEngine);
-                       callback( remSphereMeshes );
+                       const remSphereMeshes = await parseControlPoints(data.Body, remShaderMaterial, FlatbufferModule, animationEngine);
+                       await callback( remSphereMeshes );
+                     }
+                     if (loadingBarTotal.value  == 100) {
+                      removeLoadingScreen();
                      }});
+      request.on("httpDownloadProgress", async (e) => {
+        let val = e.loaded/e.total * 100;  
+        val = Math.max(lastLoaded, val);
+        loadingBar.set(Math.max(val, loadingBar.value));
+        lastLoaded = val;
+        await pause();
+      });
+      
+      request.on("complete", async () => {
+        loadingBarTotal.set(Math.min(Math.ceil(loadingBarTotal.value + (100/numberTasks))), 100);
+        loadingBar.set(0);
+        if (loadingBarTotal.value >= 100) {
+          removeLoadingScreen();
+        }
+        await pause();
+      });
     })();
 
   } else {
@@ -49,8 +75,8 @@ export async function loadRem(s3, bucket, name, remShaderMaterial, animationEngi
       }
 
       let bytesArray = new Uint8Array(response);
-      const remSphereMeshes = parseControlPoints(bytesArray, remShaderMaterial, FlatbufferModule, animationEngine);
-      callback( remSphereMeshes );
+      const remSphereMeshes = await parseControlPoints(bytesArray, remShaderMaterial, FlatbufferModule, animationEngine);
+      await callback( remSphereMeshes );
     };
 
     t0 = performance.now();
@@ -59,7 +85,7 @@ export async function loadRem(s3, bucket, name, remShaderMaterial, animationEngi
 }
 
 // parse control points from flatbuffers
-function parseControlPoints(bytesArray, remShaderMaterial, FlatbufferModule, animationEngine) {
+async function parseControlPoints(bytesArray, remShaderMaterial, FlatbufferModule, animationEngine) {
 
   let numBytes = bytesArray.length;
   let controlPoints = [];
@@ -81,17 +107,21 @@ function parseControlPoints(bytesArray, remShaderMaterial, FlatbufferModule, ani
     controlPoints.push(point);
     segOffset += segSize;
   }
-  return createControlMeshes(controlPoints, remShaderMaterial, FlatbufferModule, animationEngine);
+  return await createControlMeshes(controlPoints, remShaderMaterial, FlatbufferModule, animationEngine);
 }
 
 
-function createControlMeshes(controlPoints, remShaderMaterial, FlatbufferModule, animationEngine) {
+async function createControlMeshes(controlPoints, remShaderMaterial, FlatbufferModule, animationEngine) {
+  let loadingBar = getLoadingBar();
+  let loadingBarTotal = getLoadingBarTotal(); 
 
   let point;
 
   let allSpheres = [];
   let controlTimes = [];
   for(let ii=0, len=controlPoints.length; ii<len; ii++) {
+    loadingBar.set(Math.max(ii/len * 100, loadingBar.value)); // update individual task progress
+    await pause()
 
     point = controlPoints[ii];
 
@@ -115,5 +145,12 @@ function createControlMeshes(controlPoints, remShaderMaterial, FlatbufferModule,
     allSpheres.push(sphereMesh);
   }
 
+  // update total progress
+  loadingBarTotal.set(Math.min(Math.ceil(loadingBarTotal.value + (100/numberTasks))), 100);
+  loadingBar.set(0);
+  if (loadingBarTotal.value >= 100) {
+    removeLoadingScreen();
+  }
+  await pause()
   return allSpheres;
 }

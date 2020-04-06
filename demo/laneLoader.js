@@ -1,9 +1,13 @@
 import { Measure } from "../src/utils/Measure.js";
 import { LaneSegments } from "./LaneSegments.js"
+import { getLoadingBar, getLoadingBarTotal, numberTasks, removeLoadingScreen, pause } from "../common/overlay.js";
 
 
 export async function loadLanes(s3, bucket, name, fname, supplierNum, annotationMode, volumes, callback) {
   const tstart = performance.now();
+  let loadingBar = getLoadingBar();
+  let loadingBarTotal = getLoadingBarTotal(); 
+  let lastLoaded = 0;
 
   // Logic for dealing with Map Supplier Data:
   const resolvedFilename = fname || 'lanes.fb';
@@ -27,16 +31,61 @@ export async function loadLanes(s3, bucket, name, fname, supplierNum, annotation
         Key: schemaFile
       });
 
-      s3.getObject({Bucket: bucket,
+      const request = await s3.getObject({Bucket: bucket,
                     Key: objectName},
                    async (err, data) => {
                      if (err) {
                        console.log(err, err.stack);
-                     } else {
+                       // have to increment progress bar since function that would isnt going to be called
+                       if (!annotationMode) {
+                        loadingBarTotal.set(Math.min(Math.ceil(loadingBarTotal.value + (100/numberTasks))), 100);
+                       }
+                       else {
+                        loadingBar.set(100);
+                        loadingBarTotal.set(100);
+                        removeLoadingScreen();
+                       }
+                      } else {
                        const FlatbufferModule = await import(schemaUrl);
-                       const laneGeometries = parseLanes(data.Body, FlatbufferModule, resolvedSupplierNum, annotationMode, volumes);
-                       callback( laneGeometries );
+                       const laneGeometries = await parseLanes(data.Body, FlatbufferModule, resolvedSupplierNum, annotationMode, volumes);
+                       if (!annotationMode) {
+                        loadingBarTotal.set(Math.min(Math.ceil(loadingBarTotal.value + (100/numberTasks))), 100);
+                        loadingBar.set(0);
+                        if (loadingBarTotal.value >= 100) {
+                          removeLoadingScreen();
+                        }
+                       } else {
+                         loadingBarTotal.set(100);
+                         removeLoadingScreen();
+                       }
+                       await pause();
+                       await callback( laneGeometries );
+                     }
+                     if (loadingBarTotal.value  >= 100) {
+                      removeLoadingScreen();
                      }});
+      request.on("httpDownloadProgress", async (e) => {
+        let val = e.loaded/e.total * 100;  
+        val = Math.max(lastLoaded, val);
+        loadingBar.set(Math.max(val, loadingBar.value));
+        lastLoaded = val;
+        await pause();
+      });
+
+      request.on("complete", async () => {
+        if (!annotationMode) {
+          loadingBarTotal.set(Math.min(Math.ceil(loadingBarTotal.value + (100/numberTasks))), 100);
+          loadingBar.set(0);
+          if (loadingBarTotal.value >= 100) {
+            removeLoadingScreen();
+          }
+        }
+        else {
+          loadingBarTotal.set(50); // second half is loading in parseLanes
+          loadingBar.set(0);
+        }
+      await pause();
+    });
     })();
 
   } else {
@@ -64,8 +113,8 @@ export async function loadLanes(s3, bucket, name, fname, supplierNum, annotation
       }
 
       let bytesArray = new Uint8Array(response);
-      const laneGeometries = parseLanes(bytesArray, FlatbufferModule, resolvedSupplierNum, annotationMode, volumes);
-      callback( laneGeometries );
+      const laneGeometries = await parseLanes(bytesArray, FlatbufferModule, resolvedSupplierNum, annotationMode, volumes);
+      await callback( laneGeometries );
     };
 
     t0 = performance.now();
@@ -75,7 +124,7 @@ export async function loadLanes(s3, bucket, name, fname, supplierNum, annotation
 
 
 
-function parseLanes(bytesArray, FlatbufferModule, supplierNum, annotationMode, volumes) {
+async function parseLanes(bytesArray, FlatbufferModule, supplierNum, annotationMode, volumes) {
 
   let numBytes = bytesArray.length;
   let lanes = [];
@@ -97,7 +146,7 @@ function parseLanes(bytesArray, FlatbufferModule, supplierNum, annotationMode, v
     lanes.push(lane);
     segOffset += segSize;
   }
-  return createLaneGeometriesOld(lanes, supplierNum, annotationMode, volumes);
+  return await createLaneGeometriesOld(lanes, supplierNum, annotationMode, volumes);
 }
 
 
@@ -209,7 +258,9 @@ function createLaneGeometries(vertexGroups, material) {
 }
 
 
-function createLaneGeometriesOld(lanes, supplierNum, annotationMode, volumes) {
+// async function in order to enable a real time loading bar (caller functions must also use async/await)
+// without it the javascript code will run and block the UI that needs to update the loading bar (remove at your own risk)
+async function createLaneGeometriesOld(lanes, supplierNum, annotationMode, volumes) {
 
   let materialLeft, materialSpine, materialRight;
   switch (supplierNum) {
@@ -242,7 +293,7 @@ function createLaneGeometriesOld(lanes, supplierNum, annotationMode, volumes) {
       materialLeft = new THREE.MeshBasicMaterial({color: 0xffffff});
       materialSpine = new THREE.MeshBasicMaterial({color: 0x00ff00});
       materialRight = new THREE.MeshBasicMaterial({color: 0xffffff});
-  }
+    }
 
   let laneLeft, laneRight, laneSpine;
   laneLeft = new Measure(); laneLeft.name = "Lane Left"; laneLeft.closed = false; laneLeft.showCoordinates = true; laneLeft.showAngles = true;
@@ -267,7 +318,19 @@ function createLaneGeometriesOld(lanes, supplierNum, annotationMode, volumes) {
   let spines = [];
   let all = [];
   let allBoxes = new THREE.Geometry();
+  
+  let loadingBar = getLoadingBar();
+  let loadingBarTotal = getLoadingBarTotal();
   for(let ii=0, len=lanes.length; ii<len; ii++) {
+    if (annotationMode) {
+      // hack: bar will decrease itself over time for no reason unless continously set during annotate lanes
+      loadingBarTotal.set(50); 
+    }
+    loadingBar.set(Math.max(ii/len * 100, loadingBar.value)); // update progress
+    // put in pause so running javascript can hand over temp control to the UI
+    // gives it an opportunity to repaint the UI for the loading bar element
+    await pause();
+
     lane = lanes[ii];
 
     var geometryLeft = new THREE.Geometry();

@@ -1,3 +1,8 @@
+"use strict"
+import { runForLocalDevelopment, s3, bucket, name } from "../demo/paramLoader.js"
+import { PointAttributeNames } from "../src/loader/PointAttributes.js";
+import { togglePointClass } from "../common/custom-sidebar.js"
+
 export async function storeCalibration(s3, bucket, name, callback) {
   // TODO
 }
@@ -100,4 +105,107 @@ function parseCalibrationFile(calibrationText){
   }
 
   return velo2Rtk;
+}
+
+export function addCalibrationButton() {
+	// Listener to store pointcloud material as calibration extrinsics get updated
+	window.addEventListener("update-calibration-panel", (e) => {
+		console.log("calibration panel updated: ", e.detail);
+		const id = e.detail.id;
+		const dim = e.detail.dim;
+		const val = e.detail.value;
+
+		for (const cloud of viewer.scene.pointclouds) {
+			let material = cloud.material;
+
+			if (id == "rtk2vehicle") {
+				let rtk2Vehicle = getRtk2Vehicle();
+				let vehicleMesh = viewer.scene.scene.getObjectByName("Vehicle").getObjectByName("Vehicle Mesh");
+
+				// Apply Transformations to Vehicle:
+				let translation = new THREE.Vector3(rtk2Vehicle.x, rtk2Vehicle.y, rtk2Vehicle.z);
+				vehicleMesh.position.copy(translation);
+				vehicleMesh.rotation.set(rtk2Vehicle.roll, rtk2Vehicle.pitch, rtk2Vehicle.yaw);
+
+				// Store updated values in mesh:
+				material.uniforms.rtk2VehicleXYZNew = { type: "v3", value: new THREE.Vector3(rtk2Vehicle.x, rtk2Vehicle.y, rtk2Vehicle.z) };
+				material.uniforms.rtk2VehicleRPYNew = { type: "v3", value: new THREE.Vector3(rtk2Vehicle.roll, rtk2Vehicle.pitch, rtk2Vehicle.yaw) };
+
+			} else if (id == "velo2rtk") {
+
+				let velo2Rtk = getVelo2Rtk();
+				material.uniforms.velo2RtkXYZNew = { type: "v3", value: new THREE.Vector3(velo2Rtk.x, velo2Rtk.y, velo2Rtk.z) };
+				material.uniforms.velo2RtkRPYNew = { type: "v3", value: new THREE.Vector3(velo2Rtk.roll, velo2Rtk.pitch, velo2Rtk.yaw) };
+
+			} else {
+				console.error("Unknown Calibration Extrinsics Id:", id);
+			}
+		}
+	});
+
+	window.canEnableCalibrationPanels = true;
+	function canUseCalibrationPanels(attributes) {
+		let hasRtkPose = false;
+		let hasRtkOrient = false;
+		for (let attr of attributes) {
+			hasRtkPose = hasRtkPose || (attr.name === PointAttributeNames.RTK_POSE);
+			hasRtkOrient = hasRtkOrient || (attr.name === PointAttributeNames.RTK_ORIENT);
+		}
+		return hasRtkPose && hasRtkOrient
+	}
+
+	// Load Pointclouds
+	if (runForLocalDevelopment) {
+		Potree.loadPointCloud("../pointclouds/test/cloud.js", "full-cloud", e => {
+			const pointcloud = e.pointcloud;
+			const material = pointcloud.material;
+			viewer.scene.addPointCloud(pointcloud);
+			material.pointColorType = Potree.PointColorType.INTENSITY; // any Potree.PointColorType.XXXX
+			material.gradient = Potree.Gradients.GRAYSCALE; // Can define custom gradient or look up in Potree.Gradients
+			material.size = 0.09;
+			material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
+			material.shape = Potree.PointShape.SQUARE;
+
+			let cloudCanUseCalibrationPanels = canUseCalibrationPanels(pointcloud.pcoGeometry.pointAttributes.attributes);
+			window.canEnableCalibrationPanels = window.canEnableCalibrationPanels && cloudCanUseCalibrationPanels;
+
+			if (window.canEnableCalibrationPanels) {
+				$(document).ready(() => enablePanels());
+
+			} else {
+				$(document).ready(() => {
+					let reason = "Pointcloud was not serialized with the necessary point attributes"
+					disablePanels(reason);
+					console.error("Cannot use calibration panels: ", reason);
+				});
+			}
+		});
+
+	} else {
+		Potree.loadPointCloud({ s3, bucket, name }, name.substring(5), e => {
+			const pointcloud = e.pointcloud;
+			const material = pointcloud.material;
+			viewer.scene.addPointCloud(pointcloud);
+			material.pointColorType = Potree.PointColorType.INTENSITY; // any Potree.PointColorType.XXXX
+			material.gradient = Potree.Gradients.GRAYSCALE;
+			material.size = 0.09;
+			material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
+			material.shape = Potree.PointShape.SQUARE;
+
+			let cloudCanUseCalibrationPanels = canUseCalibrationPanels(pointcloud.pcoGeometry.pointAttributes.attributes);
+			window.canEnableCalibrationPanels = window.canEnableCalibrationPanels && cloudCanUseCalibrationPanels;
+
+			if (window.canEnableCalibrationPanels) {
+				$(document).ready(() => enablePanels());
+
+			} else {
+				$(document).ready(() => {
+					disablePanels("Pointcloud was not serialized with the necessary point attributes");
+					console.error("Cannot use calibration panels");
+				});
+			}
+
+			$("#playbutton").click();
+		});
+	}
 }

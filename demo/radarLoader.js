@@ -1,4 +1,6 @@
-import { getLoadingBar, getLoadingBarTotal, removeLoadingScreen } from "../common/overlay.js";
+'use strict';
+import { getShaderMaterial, s3, bucket, name } from "../demo/paramLoader.js"
+import { getLoadingBar, getLoadingBarTotal, setLoadingScreen, removeLoadingScreen } from "../common/overlay.js";
 
 function isNan(n) {
   return n !== n;
@@ -116,3 +118,90 @@ function parseRadar(radarString) {
     let boxBufferGeometries = new THREE.BufferGeometry().fromGeometry(boxGeometries);
     return {geometry, t_init, boxBufferGeometries}; // TODO REMOVE
   };
+
+
+export function addLoadRadarButton() {
+	window.radarLoaded = false;
+	// Configure Playbar
+	$("#load_radar_button")[0].style.display = "block"
+	let loadRadarButton = $("#load_radar_button")[0];
+	loadRadarButton.addEventListener("mousedown", () => {
+		if (!window.radarLoaded) {
+			$("#loading-bar")[0].style.display = "none";
+			setLoadingScreen();
+
+			loadRadar(s3, bucket, name, (geometry, t_init, boxBufferGeometries) => {
+
+				let boxMesh = new THREE.Mesh(boxBufferGeometries, new THREE.MeshBasicMaterial({ color: 0xffff00 }));
+				boxMesh.name = "radar_boxes";
+				// viewer.scene.scene.add(boxMesh);
+
+
+				// uniforms
+				let uniforms = {
+					color: { value: new THREE.Color(0xffff00) },
+					minGpsTime: { value: 0.0 },
+					maxGpsTime: { value: 110.0 },
+					initialTime: { value: t_init }
+				};
+
+				// point cloud material
+				let shaderMaterial = getShaderMaterial()
+				var material = new THREE.PointsMaterial({ size: 1.0 });
+				var mesh = new THREE.Points(geometry, shaderMaterial);
+				mesh.name = "radar";
+				// debugger; //radar tracks added?
+				viewer.scene.scene.add(mesh);
+				viewer.scene.dispatchEvent({ "type": "sensor_layer_added", "sensorLayer": mesh });
+
+
+				// Create tween:
+				{
+					animationEngine.tweenTargets.push((t) => {
+						// debugger;
+						let minGpsTime = t - animationEngine.activeWindow.backward;
+						let maxGpsTime = t + animationEngine.activeWindow.forward;
+						let radarOffset = t_init;
+						let minRadarTime = minGpsTime - radarOffset;
+						let maxRadarTime = maxGpsTime - radarOffset;
+						let radar = viewer.scene.scene.getObjectByName("radar")
+						radar.material.uniforms.minGpsTime.value = minRadarTime;
+						radar.material.uniforms.maxGpsTime.value = maxRadarTime;
+					});
+				}
+				window.radarLoaded = true;
+				loadRadarButton.disabled = true;
+			});
+			removeLoadingScreen();
+		}
+	});
+} // end of add radar button
+
+
+// // Load Radar Cubes:
+// loadRadar((geometry, t_init) => {
+	//
+//   // uniforms
+//   uniforms = {
+//       color: { value: new THREE.Color( 0xffff00 ) },
+//       minGpsTime: {value: 0.0 },
+//       maxGpsTime: {value: 110.0 },
+//       initialTime: {value: t_init}
+//   };
+	//
+//   // point cloud material
+//   var shaderMaterial = new THREE.ShaderMaterial( {
+	//
+//       uniforms:       uniforms,
+//       vertexShader:   document.getElementById( 'vertexshader' ).textContent,
+//       fragmentShader: document.getElementById( 'fragmentshader' ).textContent,
+//       transparent:    true
+	//
+//   });
+	//
+//   var material = new THREE.PointsMaterial( {size:1.0} );
+//   var mesh = new THREE.Points(geometry, shaderMaterial);
+//   mesh.name = "radar";
+//   // debugger; //radar tracks added?
+//   viewer.scene.scene.add(mesh);
+// });

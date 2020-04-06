@@ -1,3 +1,4 @@
+"use strict"
 var tweenPosition;
 var tweenTarget;
 var tween, tweenBack;

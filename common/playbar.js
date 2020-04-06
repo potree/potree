@@ -1,4 +1,7 @@
-$(document).ready(function () {
+
+"use strict"
+// sets up playbar in window
+export function createPlaybar () {
 
   // Insert HTML for Playbar:
   var playbarhtml = $(`
@@ -187,7 +190,7 @@ $(document).ready(function () {
 
       // Find Calibration Panels:
       let panels = $(".draggable-overlay");
-      for(ii=0, len=panels.length; ii<len; ii++) {
+      for(let ii=0, len=panels.length; ii<len; ii++) {
 
         let panel = panels[ii];
 
@@ -263,6 +266,11 @@ $(document).ready(function () {
 
 
     });
+    createPlaybarListeners(playbarhtml);
+
+}
+
+function createPlaybarListeners(playbarhtml) {
 
     window.addEventListener("message", e => {
      if (e.data === 'pause') {
@@ -289,4 +297,172 @@ $(document).ready(function () {
     document.getElementById("load_detections_button").style.display = "none";
     document.getElementById("load_gaps_button").style.display = "none";
     document.getElementById("download_lanes_button").style.display = "none";
-});
+
+	// originall from radar.html
+	document.getElementById("playbar_tmax").disabled = false;
+	document.getElementById("playbar_tmin").disabled = false;
+	document.getElementById("elevation_max").display = false;
+	document.getElementById("elevation_min").disabled = false;
+
+	window.truthAnnotationMode = 0;	// 0: None, 1: Delete, 2: Add
+	let annotationScreen = $(`<div id="annotationScreen"><p id="annotation-label">ANNOTATION MODE: <b id="annotation-mode-text"></b></p></div>`);
+	$('body').prepend(annotationScreen);
+	let div = document.getElementById("annotationScreen");
+	div.style.opacity=0;
+
+	// event listeners
+	window.addEventListener('keydown', (e) => {
+		if (window.annotateLanesModeActive) {
+			if (e.code == "KeyA") {
+				window.truthAnnotationMode = 2;
+			} else if (e.code == "KeyS") {
+				window.truthAnnotationMode = 1;
+			} else if (e.shiftKey) {
+				window.truthAnnotationMode = (window.truthAnnotationMode + 1) % 3;
+			}
+
+			let div = document.getElementById("annotationScreen");
+			let label = document.getElementById("annotation-mode-text");
+			if (window.truthAnnotationMode == 0) {
+				div.style.background = "black";
+				div.style.opacity=0;
+				label.innerHTML = "NONE";
+			}
+			else if (window.truthAnnotationMode == 1) {
+				div.style.background = "red";
+				div.style.opacity=0.25;
+				label.innerHTML = "DELETE POINTS";
+			} else if (window.truthAnnotationMode == 2) {
+				div.style.background = "green";
+				div.style.opacity=0.25;
+				label.innerHTML = "ADD POINTS";
+			}
+		}
+	});
+
+	window.addEventListener("keyup", (e) => {
+		if (window.annotateLanesModeActive) {
+			window.truthAnnotationMode = 0;
+			let div = document.getElementById("annotationScreen");
+			let label = document.getElementById("annotation-mode-text");
+			div.style.background = "black";
+			div.style.opacity=0;
+			label.innerHTML = "NONE";
+		}
+	});
+}
+
+
+// adds event listeners to animate the viewer and playbar's slider and play/pause button
+export function addPlaybarListeners() {
+    // create Animation Path & make light follow it
+    // ANIMATION + SLIDER LOGIC:
+    let slider = document.getElementById("myRange");
+    let time_display = document.getElementById("time_display");
+    let tmin = document.getElementById("playbar_tmin");
+    let tmax = document.getElementById("playbar_tmax");
+    let zmin = document.getElementById("elevation_min");
+    let zmax = document.getElementById("elevation_max");
+    let animationEngine = window.animationEngine;
+	let toggleplay = document.getElementById("toggleplay");
+    time_display.value = Math.round(10000 * slider.value) / 10000;
+
+    // Playbar Button Functions:
+    let playbutton = document.getElementById("playbutton");
+    let pausebutton = document.getElementById("pausebutton");
+    pausebutton.addEventListener("mousedown", () => {
+        animationEngine.stop();
+    });
+    playbutton.addEventListener("mousedown", () => {
+        animationEngine.start();
+    });
+
+	// Pre-Start/Stop Callbacks
+	animationEngine.preStartCallback = function () {
+		if (!animationEngine.isPlaying) {
+			$("#playbutton").trigger("mousedown");
+		}
+	}
+
+	animationEngine.preStopCallback = function () {
+		if (animationEngine.isPlaying) {
+			$("#pausebutton").trigger("mousedown");
+		}
+	}
+
+	// Playbar:
+	animationEngine.tweenTargets.push((gpsTime) => {
+		// TODO add playbackSpeed
+		time_display.value = Math.round(10000*slider.value)/10000;
+
+		let t = (gpsTime - animationEngine.tstart) / (animationEngine.timeRange);
+		slider.value = 100*t;
+		time_display.value = Math.round(10000*(gpsTime - animationEngine.tstart))/10000; // Centered to zero
+	});
+
+	// Camera:
+	// let updateCamera = false;
+	// let lag = 1.01; // seconds
+	// let camPointZOffset = 10; // meters
+	// window.camControlInitialized = false;
+	// window.camPointNeedsToBeComputed = true;
+	// window.camControlInUse = false;
+	// window.camDeltaTransform = {camStart: new THREE.Matrix4(), vehicleStart: new THREE.Vector3(), camEnd: new THREE.Matrix4(), vehicleEnd: new THREE.Vector3()};
+	// window.camPointLocalFrame = {position: new THREE.Vector3(-10,0,10)};
+	// window.camTargetLocalFrame = {position: new THREE.Vector3(0, 0, 0)};
+	viewer.renderArea.addEventListener("keypress", (e) => {
+		if (e.key == "r") {
+			let box = new THREE.Box3().setFromObject(viewer.scene.scene.getObjectByName("Vehicle").getObjectByName("Vehicle Mesh"));
+			let node = new THREE.Object3D();
+			node.boundingBox = box;
+			viewer.zoomTo(node, 5, 500);
+		}
+	});
+
+    time_display.addEventListener('keyup', function onEvent(e) {
+        if (e.keyCode === 13) {
+            console.log('Enter')
+            animationEngine.stop();
+            let val = parseFloat(time_display.value);
+            val = Math.max(0, val);
+            val = Math.min(animationEngine.timeRange - .001, val);
+            animationEngine.timeline.t = val + animationEngine.tstart;
+            animationEngine.updateTimeForAll();
+        }
+    });
+
+    slider.addEventListener("input", () => {
+        animationEngine.stop();
+        var val = slider.value / 100.0;
+        animationEngine.timeline.t = val * animationEngine.timeRange + animationEngine.tstart;
+        animationEngine.updateTimeForAll();
+    });
+
+    slider.addEventListener("wheel", () => {
+        animationEngine.stop();
+        var val = slider.value / 100.0;
+        animationEngine.timeline.t = val * animationEngine.timeRange + animationEngine.tstart;
+        animationEngine.updateTimeForAll();
+    });
+
+    zmin.addEventListener("input", () => {
+        window.elevationWindow.min = Math.abs(Number(zmin.value));
+        window.elevationWindow.max = Math.abs(Number(zmax.value));
+        animationEngine.updateTimeForAll();
+    });
+
+    zmax.addEventListener("input", () => {
+        window.elevationWindow.min = Math.abs(Number(zmin.value));
+        window.elevationWindow.max = Math.abs(Number(zmax.value));
+        animationEngine.updateTimeForAll();
+    });
+
+	// PointCloud:
+	animationEngine.tweenTargets.push((gpsTime) => {
+		// debugger; // account for pointcloud offset
+		let minGpsTime = gpsTime-animationEngine.activeWindow.backward;
+		let maxGpsTime = gpsTime+animationEngine.activeWindow.forward;
+		viewer.setFilterGPSTimeRange(minGpsTime, maxGpsTime);
+		viewer.setFilterGPSTimeExtent(minGpsTime-1.5*animationEngine.activeWindow.backward, maxGpsTime+1.5*animationEngine.activeWindow.forward);
+	});
+}

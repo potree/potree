@@ -1,3 +1,4 @@
+"use strict"
 // import { Flatbuffer } from "../schemas/GroundTruth_generated.js";
 // import { Flatbuffer } from "http://localhost:1234/schemas/GroundTruth_generated.js";
 import { getLoadingBar, getLoadingBarTotal, numberTasks, removeLoadingScreen, pause} from "../common/overlay.js";
@@ -325,3 +326,29 @@ async function createTrackGeometries(shaderMaterial, tracks, animationEngine) {
 
   return output;
 }
+
+export async function loadTracksCallback(s3, bucket, name, trackShaderMaterial, animationEngine) {
+
+	await loadTracks(s3, bucket, name, trackShaderMaterial, animationEngine, (trackGeometries) => {
+		let trackLayer = new THREE.Group();
+		trackLayer.name = "Tracked Objects";
+		for (let ii = 0, len = trackGeometries.bbox.length; ii < len; ii++) {
+			trackLayer.add(trackGeometries.bbox[ii]);
+			// viewer.scene.scene.add(trackGeometries.bbox[ii]); // Original
+		}
+
+		viewer.scene.scene.add(trackLayer);
+		let e = new CustomEvent("truth_layer_added", { detail: trackLayer, writable: true });
+		viewer.scene.dispatchEvent({
+			"type": "truth_layer_added",
+			"truthLayer": trackLayer
+		});
+
+		// TODO check if group works as expected, then trigger "truth_layer_added" event
+		animationEngine.tweenTargets.push((gpsTime) => {
+			let currentTime = gpsTime - animationEngine.tstart;
+			trackShaderMaterial.uniforms.minGpsTime.value = currentTime - animationEngine.activeWindow.backward;
+			trackShaderMaterial.uniforms.maxGpsTime.value = currentTime + animationEngine.activeWindow.forward;
+		});
+	});
+}  // end of loadTracksCallback

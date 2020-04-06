@@ -1,6 +1,8 @@
+'use strict';
 import { Measure } from "../src/utils/Measure.js";
 import { LaneSegments } from "./LaneSegments.js"
-import { getLoadingBar, getLoadingBarTotal, numberTasks, removeLoadingScreen, pause } from "../common/overlay.js";
+import { visualizationMode, comparisonDatasets, s3, bucket, name } from "../demo/paramLoader.js"
+import { getLoadingBar, getLoadingBarTotal, numberTasks, setLoadingScreen, removeLoadingScreen, pause } from "../common/overlay.js";
 
 
 export async function loadLanes(s3, bucket, name, fname, supplierNum, annotationMode, volumes, callback) {
@@ -525,3 +527,144 @@ function updateSegments(laneSegments, clonedBoxes, prevIsContains, point, index,
 
   return newIsContains
 }
+
+// Load Lanes Truth Data:
+export async function loadLanesCallback(s3, bucket, name, callback) {
+
+	let filename, tmpSupplierNum;
+	tmpSupplierNum = -1;
+	await loadLanes(s3, bucket, name, filename, tmpSupplierNum, window.annotateLanesModeActive, viewer.scene.volumes, (laneGeometries) => {
+
+		// need to have Annoted Lanes layer, so that can have original and edited lanes layers
+		let lanesLayer = new THREE.Group();
+		lanesLayer.name = "Lanes";
+		for (let ii = 0, len = laneGeometries.all.length; ii < len; ii++) {
+			lanesLayer.add(laneGeometries.all[ii]);
+		}
+		viewer.scene.scene.add(lanesLayer);
+		viewer.scene.dispatchEvent({
+			"type": "truth_layer_added",
+			"truthLayer": lanesLayer
+		});
+		if (callback) {
+			callback();
+		}
+	});
+
+
+
+	if (visualizationMode == "aptivLanes") {
+
+		async function loadLanesHelper(layerName, filename, s) {
+			try {
+				await loadLanes(s3, bucket, name, filename, s, window.annotateLanesModeActive, viewer.scene.volumes, (laneGeometries) => {
+					let lanesLayer = new THREE.Group();
+					lanesLayer.name = layerName;
+					for (let ii = 0, len = laneGeometries.all.length; ii < len; ii++) {
+						lanesLayer.add(laneGeometries.all[ii]);
+					}
+					viewer.scene.scene.add(lanesLayer);
+					viewer.scene.dispatchEvent({
+						"type": "map_provider_layer_added",
+						"mapLayer": lanesLayer
+					});
+				});
+			} catch (e) {
+				console.log(`Couldn't load ${filename}: ${e}`);
+			}
+		};
+
+		const laneNum = [1, 2, 3];
+		const laneDirection = ["EB", "WB"];
+		const supplierNum = [1, 2, 3];
+		let filename, layerName, datasetName;
+
+		for (let s of supplierNum) {
+			for (let d of laneDirection) {
+				for (let n of laneNum) {
+					layerName = `Supplier${s}_${d}_Lane${n}`;
+					filename = `Supplier${s}_${d}_Lane${n}.fb`;
+
+					loadLanesHelper(layerName, filename, s);
+				}
+			}
+		}
+
+		layerName = `TomTom`;
+		filename = `I-75-North_potree.fb`;
+		loadLanesHelper(layerName, filename, 1);
+	}
+
+	// Load Comparison Dataset (hardcoded to one for now)
+	if (comparisonDatasets.length > 0) {
+		filename = 'lanes.fb';
+		tmpSupplierNum = -2;
+		await loadLanes(s3, bucket, comparisonDatasets[0], filename, tmpSupplierNum, window.annotateLanesModeActive, viewer.scene.volumes, (laneGeometries) => {
+
+			let lanesLayer = new THREE.Group();
+			lanesLayer.name = `Lanes-${comparisonDatasets[0].split("Data/")[1]}`;
+			for (let ii = 0, len = laneGeometries.all.length; ii < len; ii++) {
+				lanesLayer.add(laneGeometries.all[ii]);
+			}
+			viewer.scene.scene.add(lanesLayer);
+			viewer.scene.dispatchEvent({
+				"type": "truth_layer_added",
+				"truthLayer": lanesLayer
+			});
+		});
+	}
+
+} // end of loadLanesCallback
+
+// add an event listener for the reload lanes button
+export function addReloadLanesButton() {
+	window.annotateLanesModeActive = false; // starts off false
+
+	$("#reload_lanes_button")[0].style.display = "block"
+	let reloadLanesButton = $("#reload_lanes_button")[0];
+	reloadLanesButton.addEventListener("mousedown", () => {
+
+		let proceed = true;
+		if (window.annotateLanesModeActive) {
+			proceed = confirm("Proceed? Lanes will be reloaded, so ensure that annotations have been saved if you want to keep them.");
+		}
+
+		if (proceed) {
+			// REMOVE LANES
+			let removeLanes = viewer.scene.scene.getChildByName("Lanes");
+			while (removeLanes) {
+				viewer.scene.scene.remove(removeLanes);
+				removeLanes = viewer.scene.scene.getChildByName("Lanes");
+			}
+
+			// Pause animation:
+			animationEngine.stop();
+
+			// TOGGLE window.annotateLanesModeActive
+			window.annotateLanesModeActive = !window.annotateLanesModeActive;
+
+			// Disable Button:
+			reloadLanesButton.disabled = true;
+
+			{
+				$("#loading-bar")[0].style.display = "none";
+				setLoadingScreen();
+				loadLanesCallback(s3, bucket, name, () => {
+					removeLoadingScreen();
+
+					// TOGGLE BUTTON TEXT
+					if (window.annotateLanesModeActive) {
+						reload_lanes_button.innerText = "View Truth Lanes";
+						document.getElementById("download_lanes_button").style.display = "block";
+					} else {
+						reload_lanes_button.innerText = "Annotate Truth Lanes";
+						document.getElementById("download_lanes_button").style.display = "none";
+					}
+
+					reloadLanesButton.disabled = false
+
+				});
+			}
+		}
+	});
+} // end of Reload Lanes Button Code

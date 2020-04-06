@@ -1,3 +1,4 @@
+"use strict"
 class RtkState {
 
   constructor(t, poseVec3, orientVec3) {

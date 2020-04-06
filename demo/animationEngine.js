@@ -1,5 +1,6 @@
 
-class AnimationEngine {
+"use strict"
+export class AnimationEngine {
 
   constructor() {
 

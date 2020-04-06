@@ -1,5 +1,6 @@
-import { getLoadingBar, getLoadingBarTotal, removeLoadingScreen } from "../common/overlay.js";
-
+'use strict';
+import { getLoadingBar, getLoadingBarTotal, setLoadingScreen, removeLoadingScreen } from "../common/overlay.js";
+import { s3, bucket, name, getShaderMaterial } from "../demo/paramLoader.js"
 
 
 export async function loadDetections(s3, bucket, name, shaderMaterial, animationEngine, callback) {
@@ -209,4 +210,41 @@ function createDetectionGeometries(shaderMaterial, detections, animationEngine) 
   }
 
   return output;
+}
+
+
+export function addDetectionButton() {
+window.detectionsLoaded = false;
+	// Configure Playbar
+	$("#load_detections_button")[0].style.display = "block"
+	let loadDetectionsButton = $("#load_detections_button")[0];
+	loadDetectionsButton.addEventListener("mousedown", () => {
+		if (!window.detectionsLoaded) {
+			$("#loading-bar")[0].style.display = "none";
+			setLoadingScreen();
+			let shaderMaterial = getShaderMaterial();
+			let detectionShaderMaterial = shaderMaterial.clone();
+			detectionShaderMaterial.uniforms.color.value = new THREE.Color(0xFFA500);
+			loadDetections(s3, bucket, name, detectionShaderMaterial, animationEngine, (detectionGeometries) => {
+				let detectionLayer = new THREE.Group();
+				detectionLayer.name = "Object Detections";
+				for (let ii = 0, len = detectionGeometries.bbox.length; ii < len; ii++) {
+					detectionLayer.add(detectionGeometries.bbox[ii]);
+				}
+				viewer.scene.scene.add(detectionLayer);
+				viewer.scene.dispatchEvent({
+					"type": "truth_layer_added",
+					"truthLayer": detectionLayer
+				});
+				animationEngine.tweenTargets.push((gpsTime) => {
+					let currentTime = gpsTime - animationEngine.tstart;
+					detectionShaderMaterial.uniforms.minGpsTime.value = currentTime - animationEngine.activeWindow.backward;
+					detectionShaderMaterial.uniforms.maxGpsTime.value = currentTime + animationEngine.activeWindow.forward;
+				});
+				window.detectionsLoaded = true;
+				loadDetectionsButton.disabled = true;
+			});
+			removeLoadingScreen();
+		}
+	});
 }

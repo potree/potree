@@ -1,4 +1,6 @@
+"use strict"
 import { getLoadingBar } from "../common/overlay.js";
+import { visualizationMode } from "../demo/paramLoader.js";
 
 const isODC = false;
 
@@ -183,4 +185,70 @@ export function applyRotation(obj, roll, pitch, yaw) {
   obj.rotation.setFromRotationMatrix(rotMat);
 
 
+}
+
+// animates the viewer camera and TweenTarget for RTK
+// once textured vehicle object is created
+export function animateRTK() {
+	window.updateCamera = true;
+	window.pitchThreshold = 1.00;
+	window.elevationWindow = { min: 1, max: 1, z: 0 };
+	animationEngine.tweenTargets.push((gpsTime) => {
+		try {
+			let t = (gpsTime - animationEngine.tstart) / (animationEngine.timeRange);
+			// vehicle contains all the work done by textureLoader
+			let vehicle = viewer.scene.scene.getObjectByName("Vehicle");
+                        const mesh = vehicle.getObjectByName("Vehicle Mesh");
+                        const meshPosition = new THREE.Vector3();
+		        let lastRtkPoint = vehicle.position.clone();
+			let lastRtkOrientation = vehicle.rotation.clone();
+			let lastTransform = vehicle.matrixWorld.clone();
+			// debugger; //vehicle
+			let state = vehicle.rtkTrajectory.getState(gpsTime);
+			let rtkPoint = state.pose.clone();
+			let vehicleOrientation = state.orient.clone();
+			vehicle.position.copy(rtkPoint);
+			if (visualizationMode == "aptivLanes") {
+				vehicle.position.add(new THREE.Vector3(0, 0, 1000));
+			}
+			applyRotation(vehicle, vehicleOrientation.x, vehicleOrientation.y, vehicleOrientation.z);
+			vehicle.updateMatrixWorld();
+
+			// Apply Transformation to Camera and Target:
+			if (window.updateCamera) {
+				let newTransform = vehicle.matrixWorld.clone();
+				let lastTransformInverse = lastTransform.getInverse(lastTransform);
+				let deltaTransform = lastTransformInverse.premultiply(newTransform);
+				let target = viewer.scene.view.position.clone();
+				let direction = viewer.scene.view.direction.clone();
+				let radius = viewer.scene.view.radius;
+				target.add(direction.multiplyScalar(radius));
+				viewer.scene.view.position.applyMatrix4(deltaTransform);
+				if (Math.abs(viewer.scene.view.pitch) < window.pitchThreshold) {
+					viewer.scene.view.lookAt(target.applyMatrix4(deltaTransform));
+				}
+			}
+
+			// Set Elevation:
+			// let elevationDeltaMin = -0;
+			// let elevationDeltaMax = 2;
+			let clouds = viewer.scene.pointclouds;
+			for (let ii = 0, numClouds = clouds.length; ii < numClouds; ii++) {
+                                meshPosition.setFromMatrixPosition(mesh.matrixWorld);
+                                const zheight = meshPosition.z;
+			        window.elevationWindow.z = zheight;
+				viewer.scene.pointclouds[ii].material.elevationRange = [window.elevationWindow.z - window.elevationWindow.min, window.elevationWindow.z + window.elevationWindow.max];
+				// TODO set elevation slider range extent
+			}
+
+			// Save Current RTK Pose in Uniforms:
+			for (let ii = 0, numClouds = clouds.length; ii < numClouds; ii++) {
+				let material = clouds[ii].material;
+				material.uniforms.currentRtkPosition.value = state.pose.clone();
+				material.uniforms.currentRtkOrientation.value = state.orient.toVector3().clone();
+			}
+		} catch (e) {
+			console.error("Caught error: ", e);
+		}
+	});
 }

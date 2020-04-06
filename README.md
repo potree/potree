@@ -52,7 +52,9 @@ Active EC2 instances (as of 2020-04-02):
 | (prod) PotreeServer)         | 18.208.171.218 | `prod.viz.nextdroid.com` | `NextDroidDev.pem` | `~/git/GroundTruthVisualization/external/potree` | "Production" server - runs everywhere right now, except |
 |                             | 35.168.112.209 |  `dev.viz.nextdroid.com` | `NextDroidDev.pem` | `/var/www/potree`                   | "Development" server - running on dev, demo, and sites |
 
-Steps for deploying (primarily for Veritas Dev server):   
+Steps for deploying (primarily for Veritas Dev server):
+[Bob has been deploying more simply, by downloading the .zip file from GitHub to his laptop, then scp'ing the zip file to the server, unzipping, and moving it to the right place (stop and restart nginx around moving).]
+
 1. ssh into the desired EC2 instance with the appropriate keypair  
 2. Activate ssh-agent by running `eval $(ssh-agent -s)` and   
 2.1.0 make a directory in the ~/.ssh folder like `[your_name]_rsa` to store your keys   

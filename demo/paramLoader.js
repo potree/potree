@@ -29,11 +29,18 @@ if (fonts) {
         head.appendChild(link);
     });
 
-    // Override fonts specified.
+    // Override fonts with the ones we want.
     const { typography } = theme;
     const style = document.createElement('style');
-    style.innerHTML = `#value {font-family: ${typography.fontFamily} !important;} #sidebar_root {font-family: 
-        ${typography.fontFamily} !important;} #potree_languages {font-family: ${typography.fontFamily} !important;}`;
+    const fontFamily = typography.fontFamily;
+    style.innerHTML =
+      `#value {font-family: ${fontFamily} !important;}
+       #sidebar_root {font-family: ${fontFamily} !important;}
+       #potree_languages {font-family: ${fontFamily} !important;}
+       #loading-bar {font-family: ${fontFamily} !important;}
+       #loading-bar-total {font-family: ${fontFamily} !important;}
+       #annotation {font-family: ${fontFamily} !important;}
+       .draggable-overlay {font-family: ${fontFamily} !important;}`;
     head.appendChild(style);
 }
 

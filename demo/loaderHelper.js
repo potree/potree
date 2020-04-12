@@ -1,13 +1,14 @@
+'use strict';
+
 // this file is intended to call every other function in order to get potree to load
-"use strict"
 import {
 	runForLocalDevelopment, params, bucket, region, names, name, visualizationMode,
 	annotateLanesAvailable, downloadLanesAvailable, calibrationModeAvailable, accessKeyId,
 	secretAccessKey, sessionToken, fonts, theme, comparisonDatasets, s3, getShaderMaterial
 } from "../demo/paramLoader.js"
-import { createViewer } from "../demo/viewer.js" 
+import { createViewer } from "../demo/viewer.js"
 import { AnimationEngine } from "../demo/animationEngine.js"
-import { createPlaybar, addPlaybarListeners } from "../common/playbar.js"
+import { createPlaybar } from "../common/playbar.js"
 import { loadRtkCallback } from "../demo/rtkLoaderFlatbuffer.js"
 import { loadVelo2Rtk, loadRtk2Vehicle, storeCalibration } from "../demo/calibrationManager.js"
 import { loadLanesCallback, addReloadLanesButton } from "../demo/laneLoader.js"
@@ -30,12 +31,10 @@ export function loadPotree() {
 		// Create AnimationEngine:
 		createViewer();
 		window.animationEngine = new AnimationEngine();
-	
-		// add html element with listeners to document
-		createPlaybar(); 
 
-		// create event listeners that animate the playbar
-		addPlaybarListeners();
+		// add html element with listeners to document
+		createPlaybar();
+
 		addReloadLanesButton();
 		addLoadGapsButton();
 		addLoadRadarButton();

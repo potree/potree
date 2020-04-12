@@ -357,6 +357,7 @@ export class PropertiesPanel{
 				} else if (selectedValue === "Index" ){
 					blockIndex.css('display', 'block');
 				}
+                                window.animationEngine.updateTimeForAll();
 			};
 
 			attributeSelection.selectmenu({change: updateMaterialPanel});

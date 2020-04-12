@@ -1,5 +1,5 @@
+'use strict';
 
-"use strict"
 // sets up playbar in window
 export function createPlaybar () {
 
@@ -17,7 +17,7 @@ export function createPlaybar () {
                 <td><input type="checkbox" id="toggleplay">
                 <button class="button" class="play" id="playbutton" class="inline"><i class="material-icons">play_arrow</i></button>
                 <button class="button" class="pause" id="pausebutton"><i class="material-icons">pause</i></button></td>
-                <td><span id='time_display_span'> Time (seconds): <input type="number" id="time_display" min=0 value=0 step="0.0001"> </span></td>
+                <td>Time (s): <input type="number" id="time_display" min=0 value=0 step="0.001"></td>
               </tr>
             </table>
 
@@ -39,13 +39,13 @@ export function createPlaybar () {
               <span class="toggleslider" id="toggleslider"></span>
             </label>
             <input type="range" name="playback_speed" id="playback_speed" min="1" max="8" value="4" step="any">
-            <button name="toggle_calibration_panels" id="toggle_calibration_panels">Toggle Calibration Panels</button>
-            <button name="toggle_hideshow" id="toggle_hideshow">Toggle Pointcloud Highlight Mode</button>
-            <button name="load_detections_button" id="load_detections_button">Load Detections</button>
-            <button name="load_gaps_button" id="load_gaps_button">Load Gaps</button>
-            <button name="load_radar_button" id="load_radar_button">Load Radar</button>
-            <button name="download_lanes_button" id="download_lanes_button">Download Lanes</button>
-            <button name="reload_lanes_button" id="reload_lanes_button">Annotate Lanes</button>
+            <button name="toggle_calibration_panels" id="toggle_calibration_panels">Toggle<br/>Calibration<br/>Panels</button>
+            <button name="toggle_hideshow" id="toggle_hideshow">Toggle Pointcloud<br/>Highlight Mode</button>
+            <button name="load_detections_button" id="load_detections_button">Load<br/>Detections</button>
+            <button name="load_gaps_button" id="load_gaps_button">Load<br/>Gaps</button>
+            <button name="load_radar_button" id="load_radar_button">Load<br/>Radar</button>
+            <button name="download_lanes_button" id="download_lanes_button">Download<br/>Lanes</button>
+            <button name="reload_lanes_button" id="reload_lanes_button">Annotate<br/>Lanes</button>
           </div>
         </div>
       </div>
@@ -71,8 +71,8 @@ export function createPlaybar () {
         $( "#playbar_tmin" ).prop( "disabled", false ); //Enable
         $( "#playbar_tmax" ).prop( "disabled", false ); //Enable
 
-        var sliderVal = $("#myRange").val() / 100.;
-        var t = sliderVal * lidarRange + lidarOffset;
+        const sliderVal = $("#myRange").val() / 100.;
+        const t = sliderVal * lidarRange + lidarOffset;
         $("#demo").html((t-lidarOffset).toFixed(4));
 
         // var dtMin = Number($("#playbar_tmin").val());
@@ -81,12 +81,28 @@ export function createPlaybar () {
         const dtMin = window.animationEngine.activeWindow.backward;
         const dtMax = window.animationEngine.activeWindow.forward;
 
-        tmin = t - dtMin;
-        tmax = t + dtMax;
+        const tmin = t - dtMin;
+        const tmax = t + dtMax;
 
         window.viewer.setFilterGPSTimeRange(tmin, tmax);
       }
     }
+
+    const tmin = document.getElementById('playbar_tmin');
+    tmin.addEventListener('input',
+                          () => {
+                            window.animationEngine.activeWindow.backward = Math.abs(Number(tmin.value));
+                            updateClip();
+                            window.animationEngine.updateTimeForAll();
+                          });
+
+    const tmax = document.getElementById('playbar_tmax');
+    tmax.addEventListener('input',
+                          () => {
+                            window.animationEngine.activeWindow.forward = Math.abs(Number(tmax.value));
+                            updateClip();
+                            window.animationEngine.updateTimeForAll();
+                          });
 
     // Function to update slider:
     function updateSlider(slideval=null) {
@@ -100,33 +116,7 @@ export function createPlaybar () {
 
     }
 
-    playbarhtml.find("#playbar_tmin").on('input', function() {
-      const tmin = playbarhtml.find("#playbar_tmin");
-      window.animationEngine.activeWindow.backward = Math.abs(Number(tmin.val()));
-      updateClip();
-      window.animationEngine.updateTimeForAll();
-    });
-
-    playbarhtml.find("#playbar_tmax").on('input', function() {
-      const tmax = playbarhtml.find("#playbar_tmax");
-      window.animationEngine.activeWindow.forward = Math.abs(Number(tmax.val()));
-      updateClip();
-      window.animationEngine.updateTimeForAll();
-    });
-
-    playbarhtml.find("#elevation_max").on('input', function() {
-      const elevationMax = playbarhtml.find("#elevation_max");
-      window.elevationWindow[1] = Math.abs(Number(elevationMax.val()));
-    });
-
-    playbarhtml.find("#elevation_min").on('input', function() {
-      const elevationMin = playbarhtml.find("#elevation_min");
-      window.elevationWindow[0] = Math.abs(Number(elevationMin.val()));
-    });
-
-    playbarhtml.find("#myRange").on('input', function() {
-      updateSlider();
-    });
+    playbarhtml.find("#myRange").on('input', updateSlider);
 
     playbarhtml.find("#myRange").on('wheel', function(e) {
       var slider = playbarhtml.find("#myRange");
@@ -146,20 +136,19 @@ export function createPlaybar () {
       var lidarRange = 1;
       try {
        // lidarRange = window.viewer.scene.pointclouds[0].pcoGeometry.nodes.r.gpsTime.range;
-       lidarRange = window.animationEngine.timeRange;
-     } catch (e) {
-     }
-      var stepY = 0;
-      if (dy < 0) {
-        // dt = Number(tmax.val());
-        dt = tmax;
-      } else if (dy > 0) {
-        // dt = Number(tmin.val());
-        dt = -tmin;
+        lidarRange = window.animationEngine.timeRange;
+      } catch (e) {
       }
-      dt = dt*scalefactor;
-      var sliderange = Number(slider.attr("max")) - Number(slider.attr("min"));
-      var stepY = sliderange*dt/lidarRange;
+      const dt = (dy < 0 ? tmax : -tmin) * scalefactor;
+      // dt = Number(tmax.val());
+      //   dt = tmax;
+      // } else if (dy > 0) {
+      //   // dt = Number(tmin.val());
+      //   dt = -tmin;
+      // }
+      // dt = dt*scalefactor;
+      const sliderange = Number(slider.attr("max")) - Number(slider.attr("min"));
+      const stepY = sliderange*dt/lidarRange;
 
       slideval += stepY;
 
@@ -266,11 +255,6 @@ export function createPlaybar () {
 
 
     });
-    createPlaybarListeners(playbarhtml);
-
-}
-
-function createPlaybarListeners(playbarhtml) {
 
     window.addEventListener("message", e => {
      if (e.data === 'pause') {
@@ -350,11 +334,12 @@ function createPlaybarListeners(playbarhtml) {
 			label.innerHTML = "NONE";
 		}
 	});
+  addPlaybarListeners();
 }
 
 
 // adds event listeners to animate the viewer and playbar's slider and play/pause button
-export function addPlaybarListeners() {
+function addPlaybarListeners() {
     // create Animation Path & make light follow it
     // ANIMATION + SLIDER LOGIC:
     let slider = document.getElementById("myRange");
@@ -364,8 +349,8 @@ export function addPlaybarListeners() {
     let zmin = document.getElementById("elevation_min");
     let zmax = document.getElementById("elevation_max");
     let animationEngine = window.animationEngine;
-	let toggleplay = document.getElementById("toggleplay");
-    time_display.value = Math.round(10000 * slider.value) / 10000;
+    let toggleplay = document.getElementById("toggleplay");
+    time_display.value = parseFloat(slider.value).toFixed(3);
 
     // Playbar Button Functions:
     let playbutton = document.getElementById("playbutton");
@@ -393,11 +378,11 @@ export function addPlaybarListeners() {
 	// Playbar:
 	animationEngine.tweenTargets.push((gpsTime) => {
 		// TODO add playbackSpeed
-		time_display.value = Math.round(10000*slider.value)/10000;
+	        time_display.value = parseFloat(slider.value).toFixed(3);
 
 		let t = (gpsTime - animationEngine.tstart) / (animationEngine.timeRange);
 		slider.value = 100*t;
-		time_display.value = Math.round(10000*(gpsTime - animationEngine.tstart))/10000; // Centered to zero
+	        time_display.value = (gpsTime - animationEngine.tstart).toFixed(3) ; // Centered to zero
 	});
 
 	// Camera:
@@ -419,17 +404,14 @@ export function addPlaybarListeners() {
 		}
 	});
 
-    time_display.addEventListener('keyup', function onEvent(e) {
-        if (e.keyCode === 13) {
-            console.log('Enter')
-            animationEngine.stop();
-            let val = parseFloat(time_display.value);
-            val = Math.max(0, val);
-            val = Math.min(animationEngine.timeRange - .001, val);
-            animationEngine.timeline.t = val + animationEngine.tstart;
-            animationEngine.updateTimeForAll();
-        }
-    });
+    time_display.addEventListener('input',
+                                  e => {
+                                    animationEngine.stop();
+                                    const time = parseFloat(time_display.value);
+                                    const clipped = Math.min(Math.max(0, time), animationEngine.timeRange - .001);
+                                    animationEngine.timeline.t = clipped + animationEngine.tstart;
+                                    animationEngine.updateTimeForAll();
+                                  });
 
     slider.addEventListener("input", () => {
         animationEngine.stop();

@@ -18,7 +18,6 @@
 }
 
 .loading_text {
-  font-family: 'Open Sans', sans-serif;
   width: 100%;
   height: 100%;
   position: absolute;
@@ -30,7 +29,6 @@
 }
 
 #loading-bar #loading-bar-total {
-  font-family: 'Open Sans', sans-serif;
   text-shadow: none;
   display: inline-block;
   vertical-align: center;
@@ -48,7 +46,6 @@
  margin: auto;
  width: 50%;
  height: 50%;
- font-family: 'Open Sans', sans-serif;
  color: #FFFFFF;
  text-shadow: none;
  display: table-cell;

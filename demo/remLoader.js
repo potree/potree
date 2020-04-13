@@ -181,7 +181,7 @@ export async function loadRemCallback(s3, bucket, name, animationEngine) {
 		// TODO check if group works as expected, then trigger "truth_layer_added" event
 		animationEngine.tweenTargets.push((gpsTime) => {
 			let currentTime = gpsTime - animationEngine.tstart;
-			remShaderMaterial.uniforms.minGpsTime.value = currentTime - animationEngine.activeWindow.backward;
+			remShaderMaterial.uniforms.minGpsTime.value = currentTime + animationEngine.activeWindow.backward;
 			remShaderMaterial.uniforms.maxGpsTime.value = currentTime + animationEngine.activeWindow.forward;
 		});
 	});

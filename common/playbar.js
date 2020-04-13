@@ -24,12 +24,12 @@ export function createPlaybar () {
             <table id="windows">
               <tr>
                 <td style="text-align:right">Time Window:</td>
-                <td>[<input type="number" id="playbar_tmin" value=-0.05 max=0 step="0.01">, <input type="number" id="playbar_tmax" value=0.05 min=0 step="0.01">]</td>
+                <td>[<input type="number" id="playbar_tmin" value=-0.05 max=0.05 step="0.01">, <input type="number" id="playbar_tmax" value=0.05 min=-0.05 step="0.01">]</td>
                 <td>(s)</td>
               </tr>
               <tr>
                 <td style="text-align:right">Elevation Window:</td>
-                <td>[<input type="number" id="elevation_min" value=-0.5 max=0 step="0.01">, <input type="number" id="elevation_max" value=0.5 min=0 step="0.01">]</td>
+                <td>[<input type="number" id="elevation_min" value=-0.5 max=0.5 step="0.01">, <input type="number" id="elevation_max" value=0.5 min=-0.5 step="0.01">]</td>
                 <td>(m)</td>
               </tr>
             </table>
@@ -89,17 +89,21 @@ export function createPlaybar () {
     }
 
     const tmin = document.getElementById('playbar_tmin');
+    const tmax = document.getElementById('playbar_tmax');
     tmin.addEventListener('input',
                           () => {
-                            window.animationEngine.activeWindow.backward = Math.abs(Number(tmin.value));
+                            const min = Number(tmin.value);
+                            window.animationEngine.activeWindow.backward = min;
+                            tmax.min = min;
                             updateClip();
                             window.animationEngine.updateTimeForAll();
                           });
 
-    const tmax = document.getElementById('playbar_tmax');
     tmax.addEventListener('input',
                           () => {
-                            window.animationEngine.activeWindow.forward = Math.abs(Number(tmax.value));
+                            const max = Number(tmax.value);
+                            window.animationEngine.activeWindow.forward = max;
+                            tmin.max = max;
                             updateClip();
                             window.animationEngine.updateTimeForAll();
                           });
@@ -428,14 +432,18 @@ function addPlaybarListeners() {
     });
 
     zmin.addEventListener("input", () => {
-        window.elevationWindow.min = Math.abs(Number(zmin.value));
-        window.elevationWindow.max = Math.abs(Number(zmax.value));
+        const min = Number(zmin.value);
+        window.elevationWindow.min = min;
+        window.elevationWindow.max = Number(zmax.value);
+        zmax.min = min;
         animationEngine.updateTimeForAll();
     });
 
     zmax.addEventListener("input", () => {
-        window.elevationWindow.min = Math.abs(Number(zmin.value));
-        window.elevationWindow.max = Math.abs(Number(zmax.value));
+        const max = Number(zmax.value);
+        window.elevationWindow.min = Number(zmin.value);
+        window.elevationWindow.max = max;
+        zmin.max = max;
         animationEngine.updateTimeForAll();
     });
 

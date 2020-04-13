@@ -341,7 +341,7 @@ export function addLoadGapsButton() {
 				});
 				animationEngine.tweenTargets.push((gpsTime) => {
 					let currentTime = gpsTime - animationEngine.tstart;
-					gapShaderMaterial.uniforms.minGpsTime.value = currentTime - animationEngine.activeWindow.backward;
+					gapShaderMaterial.uniforms.minGpsTime.value = currentTime + animationEngine.activeWindow.backward;
 					gapShaderMaterial.uniforms.maxGpsTime.value = currentTime + animationEngine.activeWindow.forward;
 				});
 				window.gapsLoaded = true;

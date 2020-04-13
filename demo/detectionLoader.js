@@ -238,7 +238,7 @@ window.detectionsLoaded = false;
 				});
 				animationEngine.tweenTargets.push((gpsTime) => {
 					let currentTime = gpsTime - animationEngine.tstart;
-					detectionShaderMaterial.uniforms.minGpsTime.value = currentTime - animationEngine.activeWindow.backward;
+					detectionShaderMaterial.uniforms.minGpsTime.value = currentTime + animationEngine.activeWindow.backward;
 					detectionShaderMaterial.uniforms.maxGpsTime.value = currentTime + animationEngine.activeWindow.forward;
 				});
 				window.detectionsLoaded = true;

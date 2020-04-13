@@ -237,7 +237,7 @@ export function animateRTK() {
                                 meshPosition.setFromMatrixPosition(mesh.matrixWorld);
                                 const zheight = meshPosition.z;
 			        window.elevationWindow.z = zheight;
-				viewer.scene.pointclouds[ii].material.elevationRange = [window.elevationWindow.z - window.elevationWindow.min, window.elevationWindow.z + window.elevationWindow.max];
+				viewer.scene.pointclouds[ii].material.elevationRange = [window.elevationWindow.z + window.elevationWindow.min, window.elevationWindow.z + window.elevationWindow.max];
 				// TODO set elevation slider range extent
 			}
 

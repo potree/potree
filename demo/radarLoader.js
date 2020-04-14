@@ -159,7 +159,7 @@ export function addLoadRadarButton() {
 				{
 					animationEngine.tweenTargets.push((t) => {
 						// debugger;
-						let minGpsTime = t - animationEngine.activeWindow.backward;
+						let minGpsTime = t + animationEngine.activeWindow.backward;
 						let maxGpsTime = t + animationEngine.activeWindow.forward;
 						let radarOffset = t_init;
 						let minRadarTime = minGpsTime - radarOffset;

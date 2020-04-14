@@ -347,7 +347,7 @@ export async function loadTracksCallback(s3, bucket, name, trackShaderMaterial, 
 		// TODO check if group works as expected, then trigger "truth_layer_added" event
 		animationEngine.tweenTargets.push((gpsTime) => {
 			let currentTime = gpsTime - animationEngine.tstart;
-			trackShaderMaterial.uniforms.minGpsTime.value = currentTime - animationEngine.activeWindow.backward;
+			trackShaderMaterial.uniforms.minGpsTime.value = currentTime + animationEngine.activeWindow.backward;
 			trackShaderMaterial.uniforms.maxGpsTime.value = currentTime + animationEngine.activeWindow.forward;
 		});
 	});

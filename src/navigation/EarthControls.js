@@ -312,7 +312,6 @@ export class EarthControls extends EventDispatcher {
 		let camera = this.scene.getActiveCamera();
 		{ // accelerate while input is given
 			const ih = this.viewer.inputHandler
-			console.log('input',ih.pressedKeys)			
 			const moveForward = this.keys.FORWARD.every(e => ih.pressedKeys[e]) && Object.keys(ih.pressedKeys).length === 1
 			const moveBackward = this.keys.BACKWARD.every(e => ih.pressedKeys[e]) && Object.keys(ih.pressedKeys).length === 1
 			const moveLeft = this.keys.LEFT.every(e => ih.pressedKeys[e]) && Object.keys(ih.pressedKeys).length === 1

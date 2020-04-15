@@ -112,6 +112,17 @@ onmessage = function (event) {
 		attributeOffset += pointAttribute.byteSize;
 	}
 
+	{ // add indices
+		let buff = new ArrayBuffer(numPoints * 4);
+		let indices = new Uint32Array(buff);
+
+		for (let i = 0; i < numPoints; i++) {
+			indices[i] = i;
+		}
+		
+		attributeBuffers["INDICES"] = { buffer: buff, attribute: PointAttribute.INDICES };
+	}
+
 	let message = {
 		buffer: buffer,
 		attributeBuffers: attributeBuffers,

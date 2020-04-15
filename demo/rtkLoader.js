@@ -192,7 +192,6 @@ export function applyRotation(obj, roll, pitch, yaw) {
 export function animateRTK() {
 	window.updateCamera = true;
 	window.pitchThreshold = 1.00;
-	window.elevationWindow = { min: 1, max: 1, z: 0 };
 	animationEngine.tweenTargets.push((gpsTime) => {
 		try {
 			let t = (gpsTime - animationEngine.tstart) / (animationEngine.timeRange);
@@ -233,11 +232,12 @@ export function animateRTK() {
 			// let elevationDeltaMin = -0;
 			// let elevationDeltaMax = 2;
 			let clouds = viewer.scene.pointclouds;
+                        const elevationWindow = window.animationEngine.elevationWindow;
 			for (let ii = 0, numClouds = clouds.length; ii < numClouds; ii++) {
                                 meshPosition.setFromMatrixPosition(mesh.matrixWorld);
                                 const zheight = meshPosition.z;
-			        window.elevationWindow.z = zheight;
-				viewer.scene.pointclouds[ii].material.elevationRange = [window.elevationWindow.z + window.elevationWindow.min, window.elevationWindow.z + window.elevationWindow.max];
+			        elevationWindow.z = zheight;
+				viewer.scene.pointclouds[ii].material.elevationRange = [elevationWindow.z + elevationWindow.min, elevationWindow.z + elevationWindow.max];
 				// TODO set elevation slider range extent
 			}
 

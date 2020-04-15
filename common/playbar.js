@@ -81,7 +81,7 @@ export function createPlaybar () {
         const dtMin = window.animationEngine.activeWindow.backward;
         const dtMax = window.animationEngine.activeWindow.forward;
 
-        const tmin = t - dtMin;
+        const tmin = t + dtMin;
         const tmax = t + dtMax;
 
         window.viewer.setFilterGPSTimeRange(tmin, tmax);
@@ -90,6 +90,15 @@ export function createPlaybar () {
 
     const tmin = document.getElementById('playbar_tmin');
     const tmax = document.getElementById('playbar_tmax');
+
+    // Initialize DOM element values from initial activeWindow values
+    tmin.value = window.animationEngine.activeWindow.backward;
+    tmin.max = window.animationEngine.activeWindow.forward;
+    tmin.step = window.animationEngine.activeWindow.step;
+    tmax.value = window.animationEngine.activeWindow.forward;
+    tmax.min = window.animationEngine.activeWindow.backward;
+    tmax.step = window.animationEngine.activeWindow.step;
+
     tmin.addEventListener('input',
                           () => {
                             const min = Number(tmin.value);
@@ -124,18 +133,13 @@ export function createPlaybar () {
 
     playbarhtml.find("#myRange").on('wheel', function(e) {
       var slider = playbarhtml.find("#myRange");
-      // var tmin = playbarhtml.find("#playbar_tmin");
-      // var tmax = playbarhtml.find("#playbar_tmax");
       var slideval = Number(slider.val());
-      var dy = e.originalEvent.deltaY;
+      // var dy = e.originalEvent.deltaY;
 
       const tmin = window.animationEngine.activeWindow.backward;
       const tmax = window.animationEngine.activeWindow.forward;
 
-      var scalefactor = 1;
-      if (e.originalEvent.shiftKey) {
-        scalefactor = 100;
-      }
+      const scalefactor = e.originalEvent.shiftKey ? 100 : 1;
 
       var lidarRange = 1;
       try {
@@ -143,7 +147,7 @@ export function createPlaybar () {
         lidarRange = window.animationEngine.timeRange;
       } catch (e) {
       }
-      const dt = (dy < 0 ? tmax : -tmin) * scalefactor;
+      const dt = (tmax - tmin) * scalefactor;
       // dt = Number(tmax.val());
       //   dt = tmax;
       // } else if (dy > 0) {
@@ -262,7 +266,7 @@ export function createPlaybar () {
 
     window.addEventListener("message", e => {
      if (e.data === 'pause') {
-       animationEngine.stop()
+       window.animationEngine.stop()
      }
     });
 
@@ -431,18 +435,26 @@ function addPlaybarListeners() {
         animationEngine.updateTimeForAll();
     });
 
+    // Initialize DOM element values from initial elevationWindow values
+    zmin.value = window.animationEngine.elevationWindow.min;
+    zmin.max = window.animationEngine.elevationWindow.max;
+    zmin.step = window.animationEngine.elevationWindow.step;
+    zmax.value = window.animationEngine.elevationWindow.max;
+    zmax.min = window.animationEngine.elevationWindow.min;
+    zmax.step = window.animationEngine.elevationWindow.step;
+
     zmin.addEventListener("input", () => {
         const min = Number(zmin.value);
-        window.elevationWindow.min = min;
-        window.elevationWindow.max = Number(zmax.value);
+        window.animationEngine.elevationWindow.min = min;
+        window.animationEngine.elevationWindow.max = Number(zmax.value);
         zmax.min = min;
         animationEngine.updateTimeForAll();
     });
 
     zmax.addEventListener("input", () => {
         const max = Number(zmax.value);
-        window.elevationWindow.min = Number(zmin.value);
-        window.elevationWindow.max = max;
+        window.animationEngine.elevationWindow.min = Number(zmin.value);
+        window.animationEngine.elevationWindow.max = max;
         zmin.max = max;
         animationEngine.updateTimeForAll();
     });
@@ -450,9 +462,9 @@ function addPlaybarListeners() {
 	// PointCloud:
 	animationEngine.tweenTargets.push((gpsTime) => {
 		// debugger; // account for pointcloud offset
-		let minGpsTime = gpsTime-animationEngine.activeWindow.backward;
+		let minGpsTime = gpsTime+animationEngine.activeWindow.backward;
 		let maxGpsTime = gpsTime+animationEngine.activeWindow.forward;
 		viewer.setFilterGPSTimeRange(minGpsTime, maxGpsTime);
-		viewer.setFilterGPSTimeExtent(minGpsTime-1.5*animationEngine.activeWindow.backward, maxGpsTime+1.5*animationEngine.activeWindow.forward);
+		viewer.setFilterGPSTimeExtent(minGpsTime+1.5*animationEngine.activeWindow.backward, maxGpsTime+1.5*animationEngine.activeWindow.forward);
 	});
 }

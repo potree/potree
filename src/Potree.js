@@ -1,3 +1,7 @@
+export * from "./exporter/CSVExporter.js"
+export * from "./exporter/DXFExporter.js"
+export * from "./exporter/GeoJSONExporter.js"
+export * from "./exporter/LASExporter.js"
 
 export * from "./Actions.js";
 export * from "./AnimationPath.js";

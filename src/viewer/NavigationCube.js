@@ -80,9 +80,9 @@ export class NavigationCube extends THREE.Object3D {
 			this.pickedFace = null;
 			let mouse = new THREE.Vector2();
 			mouse.x = event.clientX - (window.innerWidth - this.width);
-			mouse.y = event.clientY;
+			mouse.y = event.clientY - (window.innerHeight - this.width);
 
-			if(mouse.x < 0 || mouse.y > this.width) return;
+			if(mouse.x < 0 || mouse.y < 0) return;
 
 			mouse.x = (mouse.x / this.width) * 2 - 1;
 			mouse.y = -(mouse.y / this.width) * 2 + 1;

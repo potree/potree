@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<meta name="description" content="">
+	<meta name="author" content="">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+	<title>Potree Viewer</title>
+
+	<link rel="stylesheet" type="text/css" href="../../build/potree/potree.css">
+	<link rel="stylesheet" type="text/css" href="../../libs/jquery-ui/jquery-ui.min.css">
+	<link rel="stylesheet" type="text/css" href="../../libs/openlayers3/ol.css">
+	<link rel="stylesheet" type="text/css" href="../../libs/spectrum/spectrum.css">
+	<link rel="stylesheet" type="text/css" href="../../libs/jstree/themes/mixed/style.css">
+</head>
+
+<body>
+	<script src="../../libs/jquery/jquery-3.1.1.min.js"></script>
+	<script src="../../libs/spectrum/spectrum.js"></script>
+	<script src="../../libs/jquery-ui/jquery-ui.min.js"></script>
+	<script src="../../libs/three.js/build/three.min.js"></script>
+	<script src="../../libs/three.js/extra/lines.js"></script>
+	<script src="../../libs/other/BinaryHeap.js"></script>
+	<script src="../../libs/tween/tween.min.js"></script>
+	<script src="../../libs/d3/d3.js"></script>
+	<script src="../../libs/proj4/proj4.js"></script>
+	<script src="../../libs/openlayers3/ol.js"></script>
+	<script src="../../libs/i18next/i18next.js"></script>
+	<script src="../../libs/jstree/jstree.js"></script>
+	<script src="../../build/potree/potree.js"></script>
+	<script src="../../libs/plasio/js/laslaz.js"></script>
+	
+	<!-- INCLUDE ADDITIONAL DEPENDENCIES HERE -->
+	<!-- INCLUDE SETTINGS HERE -->
+	
+	<div class="potree_container" style="position: absolute; width: 100%; height: 100%; left: 0px; top: 0px; ">
+		<div id="potree_render_area" style="background-image: url('../../build/potree/resources/images/background.jpg');"></div>
+		<div id="potree_sidebar_container"> </div>
+	</div>
+	
+	<script>
+	
+		window.viewer = new Potree.Viewer(document.getElementById("potree_render_area"));
+		
+		viewer.setEDLEnabled(true);
+		viewer.setFOV(60);
+		viewer.setPointBudget(1*1000*1000);
+		viewer.loadSettingsFromURL();
+		
+		viewer.setDescription("Point cloud courtesy of <a target='_blank' href='https://www.sigeom.ch/'>sigeom sa</a>");
+		
+		viewer.loadGUI(() => {
+			viewer.setLanguage('en');
+			$("#menu_scene").next().show();
+			viewer.toggleSidebar();
+		});
+		
+		let sceneSG = new Potree.Scene();
+		let sceneLion = new Potree.Scene();
+		
+		viewer.setScene(sceneSG);
+		
+		// Sigeom
+		Potree.loadPointCloud("../../pointclouds/vol_total/cloud.js", "sigeom.sa", function(e){
+			sceneSG.addPointCloud(e.pointcloud);
+			
+			let material = e.pointcloud.material;
+			material.size = 1;
+			material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
+			
+			{ // DISTANCE MEASURE
+				let measure = new Potree.Measure();
+				measure.closed = false;
+				measure.addMarker(new THREE.Vector3(589803.18, 231357.35, 745.38));
+				measure.addMarker(new THREE.Vector3(589795.74, 231323.42, 746.21));		
+				measure.addMarker(new THREE.Vector3(589822.50, 231315.90, 744.45));
+				
+				sceneSG.addMeasurement(measure);
+			}
+			
+			{ // ANGLE MEASURE
+				let measure = new Potree.Measure();
+				measure.name = "Angle Sample";
+				measure.closed = true;
+				measure.showAngles = true;
+				measure.showDistances = false;
+				measure.addMarker(new THREE.Vector3(589866.11, 231372.25, 737.41));
+				measure.addMarker(new THREE.Vector3(589842.15, 231366.82, 743.61));		
+				measure.addMarker(new THREE.Vector3(589860.61, 231348.01, 740.33));
+				
+				sceneSG.addMeasurement(measure);
+			}
+			
+			{ // SINGLE POINT MEASURE
+				let measure = new Potree.Measure();
+				measure.name = "Canopy";
+				measure.showDistances = false;
+				measure.showCoordinates = true;
+				measure.maxMarkers = 1;
+				measure.addMarker(new THREE.Vector3(589853.73, 231300.24, 775.48));
+				
+				sceneSG.addMeasurement(measure);
+			}
+			
+			{ // HEIGHT MEASURE
+				let measure = new Potree.Measure();
+				measure.name = "Tree Height";
+				measure.closed = false;
+				measure.showDistances = false;
+				measure.showHeight = true;
+				measure.addMarker(new THREE.Vector3(589849.69, 231327.26, 766.32));
+				measure.addMarker(new THREE.Vector3(589840.96, 231329.53, 744.52));		
+				
+				sceneSG.addMeasurement(measure);
+			}
+			
+			{ // AREA MEASURE
+				let measure = new Potree.Measure();
+				measure.name = "Area";
+				measure.closed = true;
+				measure.showArea = true;
+				measure.addMarker(new THREE.Vector3(589899.37, 231300.16, 750.25));
+				measure.addMarker(new THREE.Vector3(589874.60, 231326.06, 743.40));
+				measure.addMarker(new THREE.Vector3(589911.61, 231352.57, 743.58));
+				measure.addMarker(new THREE.Vector3(589943.50, 231300.08, 754.62));
+				
+				sceneSG.addMeasurement(measure);
+			}
+			
+			sceneSG.view.position.set(589874.36, 231447.43, 835.03);
+			sceneSG.view.lookAt(new THREE.Vector3(589853.01, 231318.55, 738.91));
+			
+			{
+				{
+					let elTitle = $(`
+						<span>
+							Scene change
+							<img src="${Potree.resourcePath}/icons/goto.svg" 
+								name="action_set_scene"
+								class="annotation-action-icon" 
+								style="filter: invert(1);" />
+						</span>
+					`);
+					elTitle.find("img[name=action_set_scene]").click( (event) => {
+						event.stopPropagation();
+						viewer.setScene(sceneLion); 
+					});
+					elTitle.toString = () => "Scene change";
+
+					let aAbout1 = new Potree.Annotation({
+						position: [590043.63, 231490.79, 740.78],
+						title: elTitle,
+						cameraPosition: [590105.53, 231541.63, 782.05],
+						cameraTarget: [590043.63, 231488.79, 740.78],
+						description: `<ul><li>Click on the icon to execute the specified action.</li>
+						In this case, the action will bring you to another scene and point cloud.</ul>`
+					});
+
+					sceneSG.annotations.add(aAbout1);
+				}
+			}
+		});
+		
+		// Lion point cloud in scene 2
+		Potree.loadPointCloud("../../pointclouds/lion_takanawa/cloud.js", "lion", function(e){
+			sceneLion.addPointCloud(e.pointcloud);
+			sceneLion.view.position.set(4.15, -6.12, 8.54);
+			sceneLion.view.lookAt(new THREE.Vector3(0, -0.098, 4.23));
+			e.pointcloud.material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
+			
+			sceneLion.addAnnotation([0.72, -1, 8], {
+				"title": "Chinese Guardian Lion",
+				"actions": [{
+					"icon": Potree.resourcePath + "/icons/goto.svg",
+					"onclick": function(){
+						viewer.setScene(sceneSG);
+					}
+				}]
+			});
+			
+			{ // HEIGHT MEASURE
+				let measure = new Potree.Measure();
+				measure.name = "Lion Height";
+				measure.closed = false;
+				measure.showDistances = false;
+				measure.showHeight = true;
+				measure.addMarker(new THREE.Vector3(1.026, -1.136, 7.182));
+				measure.addMarker(new THREE.Vector3(1.513, -1.500, 3.511));		
+				
+				sceneLion.addMeasurement(measure);
+			}
+		});
+		
+	</script>
+	
+	
+  </body>
+</html>

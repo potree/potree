@@ -60,8 +60,7 @@ export function createPlaybar () {
     // Add to DOM:
     $("#potree_render_area").append(playbarhtml);
 
-    // Define function to update clip range:
-    function updateClip(disable=false) {
+    function updateTimeWindow(disable=false) {
 
       const lidarOffset = window.animationEngine.tstart;
       const lidarRange = window.animationEngine.timeRange;
@@ -109,7 +108,7 @@ export function createPlaybar () {
                             const min = numberOrZero(tmin.value);
                             window.animationEngine.activeWindow.backward = min;
                             tmax.min = min;
-                            updateClip();
+                            updateTimeWindow();
                             window.animationEngine.updateTimeForAll();
                           });
 
@@ -118,25 +117,16 @@ export function createPlaybar () {
                             const max = numberOrZero(tmax.value);
                             window.animationEngine.activeWindow.forward = max;
                             tmin.max = max;
-                            updateClip();
+                            updateTimeWindow();
                             window.animationEngine.updateTimeForAll();
                           });
 
-    // Function to update slider:
-    function updateSlider(slideval=null) {
-
-      if (slideval) {
-        var slider = playbarhtml.find("#myRange");
-        slider.val(slideval);
-      }
-
-      updateClip();
-
+    function updateSlider(slideval) {
+      playbarhtml.find("#myRange").val(slideval);
+      updateTimeWindow();
     }
 
-    playbarhtml.find("#myRange").on('input', function() {
-      updateSlider();
-    });
+    playbarhtml.find("#myRange").on('input', updateTimeWindow);
 
     playbarhtml.find("#myRange").on('wheel', function(e) {
       var slider = playbarhtml.find("#myRange");
@@ -167,7 +157,7 @@ export function createPlaybar () {
     });
 
     playbarhtml.find("#playbar_toggle").click(function() {
-      updateClip(disable=this.checked);
+      updateTimeWindow(disable=this.checked);
     });
     playbarhtml.find("#playbar_toggle").trigger('click');
 

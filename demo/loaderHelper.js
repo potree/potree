@@ -29,11 +29,16 @@ $(document).ready(() => {
 export function loadPotree() {
 	$(document).ready(() => {
 		// Create AnimationEngine:
-		createViewer();
-		window.animationEngine = new AnimationEngine();
+	        const viewer = createViewer();
+                window.viewer = viewer;
+                const animationEngine = new AnimationEngine({
+                  activeWindow: {backward: -0.05, forward: 0.05, step: "0.01"},
+                  elevationWindow: {min: -0.05, max: 0.05, step: "0.01"}
+                });
+		window.animationEngine = animationEngine;
 
 		// add html element with listeners to document
-		createPlaybar();
+	        createPlaybar();
 
 		addReloadLanesButton();
 		addLoadGapsButton();
@@ -48,8 +53,8 @@ export function loadPotree() {
 
 // loads all necessary data (car obj/texture, rtk, radar, tracks, etc...)
 function loadDataIntoDocument() {
-	// Load Data Sources in loadRtkCallback:
-	loadRtkCallback(s3, bucket, name, () => {
+	        // Load Data Sources in loadRtkCallback:
+                loadRtkCallback(s3, bucket, name, () => {
 
 		// Load Extrinsics:
 		window.extrinsics = { rtk2Vehicle: null, velo2Rtk: {} };

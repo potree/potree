@@ -5,7 +5,7 @@ import { visualizationMode, annotateLanesAvailable, downloadLanesAvailable,
 import { updateSidebar, togglePointClass } from "../common/custom-sidebar.js"
 
 export function createViewer() {
-	window.viewer = new Potree.Viewer(document.getElementById("potree_render_area"));
+	const viewer = new Potree.Viewer(document.getElementById("potree_render_area"));
 	viewer.setEDLEnabled(true);
 	viewer.setFOV(60);
 	viewer.setPointBudget(1 * 1000 * 1000);
@@ -59,4 +59,5 @@ export function createViewer() {
 			}
 		}
 	});
+        return viewer;
 }

@@ -1,4 +1,5 @@
-"use strict"
+'use strict';
+
 import { applyRotation } from "../demo/rtkLoader.js";
 import { removeLoadingScreen } from "../common/overlay.js";
 
@@ -56,7 +57,7 @@ function onLoadVehicleCallback(object, rtkTrajectory, texture, pos, rot) {
     const vehicleGroup = new THREE.Group();
     vehicleGroup.name = "Vehicle";
 
-    // render the path 
+    // render the path
     let geometry = new THREE.Geometry();
     for (let ii = 0; ii < rtkTrajectory.numStates; ii++) {
         geometry.vertices[ii] = rtkTrajectory.states[ii].pose.clone();
@@ -95,7 +96,7 @@ function onLoadVehicleCallback(object, rtkTrajectory, texture, pos, rot) {
     // axesHelper.rotateOnAxis(new THREE.Vector3(0,0,1), -Math.PI/2);
     axesHelper.visible = false;
     viewer.scene.dispatchEvent({ "type": "vehicle_layer_added", "vehicleLayer": axesHelper });
-    
+
     // Add Polar Grid Helper
     vehicleGroup.add(gridHelper);
     vehicleGroup.add(polarGridHelper);
@@ -126,5 +127,13 @@ function onLoadVehicleCallback(object, rtkTrajectory, texture, pos, rot) {
     viewer.scene.dispatchEvent({ "type": "vehicle_layer_added", "vehicleLayer": object });
 
     viewer.setFilterGPSTimeRange(0, 0); // Size 0 Time Window at start of timeline
+
+    // This is to force the initial complete render
+    // The fact that it is here is a complete kludge. I just kept looking for
+    // places to put it, until I found one that worked.
+    // None of the more obvious, more principled places worked, and I decided
+    // I had more important things to do.
+    window.animationEngine.updateTimeForAll();
+
     removeLoadingScreen();
 }

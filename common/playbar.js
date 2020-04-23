@@ -1,5 +1,10 @@
 'use strict';
 
+const numberOrZero = (string) => {
+  const value = Number(string);
+  return isNaN(value) ? 0 : value;
+}
+
 // sets up playbar in window
 export function createPlaybar () {
 
@@ -55,8 +60,7 @@ export function createPlaybar () {
     // Add to DOM:
     $("#potree_render_area").append(playbarhtml);
 
-    // Define function to update clip range:
-    function updateClip(disable=false) {
+    function updateTimeWindow(disable=false) {
 
       const lidarOffset = window.animationEngine.tstart;
       const lidarRange = window.animationEngine.timeRange;
@@ -81,7 +85,7 @@ export function createPlaybar () {
         const dtMin = window.animationEngine.activeWindow.backward;
         const dtMax = window.animationEngine.activeWindow.forward;
 
-        const tmin = t - dtMin;
+        const tmin = t + dtMin;
         const tmax = t + dtMax;
 
         window.viewer.setFilterGPSTimeRange(tmin, tmax);
@@ -90,52 +94,49 @@ export function createPlaybar () {
 
     const tmin = document.getElementById('playbar_tmin');
     const tmax = document.getElementById('playbar_tmax');
+
+    // Initialize DOM element values from initial activeWindow values
+    tmin.value = window.animationEngine.activeWindow.backward;
+    tmin.max = window.animationEngine.activeWindow.forward;
+    tmin.step = window.animationEngine.activeWindow.step;
+    tmax.value = window.animationEngine.activeWindow.forward;
+    tmax.min = window.animationEngine.activeWindow.backward;
+    tmax.step = window.animationEngine.activeWindow.step;
+
     tmin.addEventListener('input',
                           () => {
-                            const min = Number(tmin.value);
+                            const min = numberOrZero(tmin.value);
                             window.animationEngine.activeWindow.backward = min;
                             tmax.min = min;
-                            updateClip();
+                            updateTimeWindow();
                             window.animationEngine.updateTimeForAll();
                           });
 
     tmax.addEventListener('input',
                           () => {
-                            const max = Number(tmax.value);
+                            const max = numberOrZero(tmax.value);
                             window.animationEngine.activeWindow.forward = max;
                             tmin.max = max;
-                            updateClip();
+                            updateTimeWindow();
                             window.animationEngine.updateTimeForAll();
                           });
 
-    // Function to update slider:
-    function updateSlider(slideval=null) {
-
-      if (slideval) {
-        var slider = playbarhtml.find("#myRange");
-        slider.val(slideval);
-      }
-
-      updateClip();
-
+    function updateSlider(slideval) {
+      playbarhtml.find("#myRange").val(slideval);
+      updateTimeWindow();
     }
 
-    playbarhtml.find("#myRange").on('input', updateSlider);
+    playbarhtml.find("#myRange").on('input', updateTimeWindow);
 
     playbarhtml.find("#myRange").on('wheel', function(e) {
       var slider = playbarhtml.find("#myRange");
-      // var tmin = playbarhtml.find("#playbar_tmin");
-      // var tmax = playbarhtml.find("#playbar_tmax");
-      var slideval = Number(slider.val());
+      var slideval = numberOrZero(slider.val());
       var dy = e.originalEvent.deltaY;
 
       const tmin = window.animationEngine.activeWindow.backward;
       const tmax = window.animationEngine.activeWindow.forward;
 
-      var scalefactor = 1;
-      if (e.originalEvent.shiftKey) {
-        scalefactor = 100;
-      }
+      const scalefactor = e.originalEvent.shiftKey ? 100 : 1;
 
       var lidarRange = 1;
       try {
@@ -143,14 +144,7 @@ export function createPlaybar () {
         lidarRange = window.animationEngine.timeRange;
       } catch (e) {
       }
-      const dt = (dy < 0 ? tmax : -tmin) * scalefactor;
-      // dt = Number(tmax.val());
-      //   dt = tmax;
-      // } else if (dy > 0) {
-      //   // dt = Number(tmin.val());
-      //   dt = -tmin;
-      // }
-      // dt = dt*scalefactor;
+      const dt = Math.sign(dy) * (tmax - tmin) * scalefactor;
       const sliderange = Number(slider.attr("max")) - Number(slider.attr("min"));
       const stepY = sliderange*dt/lidarRange;
 
@@ -163,7 +157,7 @@ export function createPlaybar () {
     });
 
     playbarhtml.find("#playbar_toggle").click(function() {
-      updateClip(disable=this.checked);
+      updateTimeWindow(disable=this.checked);
     });
     playbarhtml.find("#playbar_toggle").trigger('click');
 
@@ -262,7 +256,7 @@ export function createPlaybar () {
 
     window.addEventListener("message", e => {
      if (e.data === 'pause') {
-       animationEngine.stop()
+       window.animationEngine.stop()
      }
     });
 
@@ -354,7 +348,7 @@ function addPlaybarListeners() {
     let zmax = document.getElementById("elevation_max");
     let animationEngine = window.animationEngine;
     let toggleplay = document.getElementById("toggleplay");
-    time_display.value = parseFloat(slider.value).toFixed(3);
+    time_display.value = numberOrZero(slider.value).toFixed(3);
 
     // Playbar Button Functions:
     let playbutton = document.getElementById("playbutton");
@@ -380,14 +374,15 @@ function addPlaybarListeners() {
 	}
 
 	// Playbar:
-	animationEngine.tweenTargets.push((gpsTime) => {
-		// TODO add playbackSpeed
-	        time_display.value = parseFloat(slider.value).toFixed(3);
+    animationEngine.tweenTargets.push((gpsTime, updateDisplayedTime) => {
+	  let t = (gpsTime - animationEngine.tstart) / (animationEngine.timeRange);
+	  slider.value = 100*t;
 
-		let t = (gpsTime - animationEngine.tstart) / (animationEngine.timeRange);
-		slider.value = 100*t;
-	        time_display.value = (gpsTime - animationEngine.tstart).toFixed(3) ; // Centered to zero
-	});
+          // If this change came from typing, don't rewrite it.
+          if (updateDisplayedTime) {
+            time_display.value = (gpsTime - animationEngine.tstart).toFixed(3) ; // Centered to zero
+          }
+    });
 
 	// Camera:
 	// let updateCamera = false;
@@ -411,7 +406,7 @@ function addPlaybarListeners() {
     time_display.addEventListener('input',
                                   e => {
                                     animationEngine.stop();
-                                    const time = parseFloat(time_display.value);
+                                    const time = numberOrZero(time_display.value);
                                     const clipped = Math.min(Math.max(0, time), animationEngine.timeRange - .001);
                                     animationEngine.timeline.t = clipped + animationEngine.tstart;
                                     animationEngine.updateTimeForAll();
@@ -421,38 +416,46 @@ function addPlaybarListeners() {
         animationEngine.stop();
         var val = slider.value / 100.0;
         animationEngine.timeline.t = val * animationEngine.timeRange + animationEngine.tstart;
-        animationEngine.updateTimeForAll();
+        animationEngine.updateTimeForAll(true);
     });
 
     slider.addEventListener("wheel", () => {
         animationEngine.stop();
         var val = slider.value / 100.0;
         animationEngine.timeline.t = val * animationEngine.timeRange + animationEngine.tstart;
-        animationEngine.updateTimeForAll();
+        animationEngine.updateTimeForAll(true);
     });
 
+    // Initialize DOM element values from initial elevationWindow values
+    zmin.value = window.animationEngine.elevationWindow.min;
+    zmin.max = window.animationEngine.elevationWindow.max;
+    zmin.step = window.animationEngine.elevationWindow.step;
+    zmax.value = window.animationEngine.elevationWindow.max;
+    zmax.min = window.animationEngine.elevationWindow.min;
+    zmax.step = window.animationEngine.elevationWindow.step;
+
     zmin.addEventListener("input", () => {
-        const min = Number(zmin.value);
-        window.elevationWindow.min = min;
-        window.elevationWindow.max = Number(zmax.value);
-        zmax.min = min;
-        animationEngine.updateTimeForAll();
+      const min = numberOrZero(zmin.value);
+      window.animationEngine.elevationWindow.min = min;
+      window.animationEngine.elevationWindow.max = numberOrZero(zmax.value);
+      zmax.min = min;
+      animationEngine.updateTimeForAll();
     });
 
     zmax.addEventListener("input", () => {
-        const max = Number(zmax.value);
-        window.elevationWindow.min = Number(zmin.value);
-        window.elevationWindow.max = max;
-        zmin.max = max;
-        animationEngine.updateTimeForAll();
+      const max = numberOrZero(zmax.value);
+      window.animationEngine.elevationWindow.min = numberOrZero(zmin.value);
+      window.animationEngine.elevationWindow.max = max;
+      zmin.max = max;
+      animationEngine.updateTimeForAll();
     });
 
 	// PointCloud:
 	animationEngine.tweenTargets.push((gpsTime) => {
 		// debugger; // account for pointcloud offset
-		let minGpsTime = gpsTime-animationEngine.activeWindow.backward;
+		let minGpsTime = gpsTime+animationEngine.activeWindow.backward;
 		let maxGpsTime = gpsTime+animationEngine.activeWindow.forward;
 		viewer.setFilterGPSTimeRange(minGpsTime, maxGpsTime);
-		viewer.setFilterGPSTimeExtent(minGpsTime-1.5*animationEngine.activeWindow.backward, maxGpsTime+1.5*animationEngine.activeWindow.forward);
+		viewer.setFilterGPSTimeExtent(minGpsTime+1.5*animationEngine.activeWindow.backward, maxGpsTime+1.5*animationEngine.activeWindow.forward);
 	});
 }

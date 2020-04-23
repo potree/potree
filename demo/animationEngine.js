@@ -38,7 +38,7 @@ export class AnimationEngine {
     let durationMillis = this.timeRange*1000*this.playbackRate;
     this.tweenEngine = new TWEEN.Tween(this.timeline).to({t:this.tend}, durationMillis);
     this.tweenEngine.easing(TWEEN.Easing.Linear.None);
-    this.tweenEngine.onUpdate((t) => this.updateTimeForAll(t));
+    this.tweenEngine.onUpdate(() => this.updateTimeForAll(true));
     this.tweenEngine.onComplete(() => {
       if (this.repeat) {
         this.timeline.t = this.tstart;
@@ -71,11 +71,10 @@ export class AnimationEngine {
     this.tweenEngine.update(t);
   }
 
-  updateTimeForAll(t) {
-
+  updateTimeForAll(updateDisplayedTime) {
     // Update all targets with current time
     for(let ii=0, len=this.tweenTargets.length; ii<len; ii++) {
-      this.tweenTargets[ii](this.timeline.t);
+      this.tweenTargets[ii](this.timeline.t, updateDisplayedTime);
     }
   }
 }

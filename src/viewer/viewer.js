@@ -581,8 +581,8 @@ export class Viewer extends EventDispatcher{
 	}
 
 	setFilterGPSTimeRange(from, to){
-		this.filterGPSTimeRange = [from, to];
-		this.dispatchEvent({'type': 'filter_gps_time_range_changed', 'viewer': this});
+	        this.filterGPSTimeRange = [from, to];
+	        this.dispatchEvent({'type': 'filter_gps_time_range_changed', 'viewer': this});
 	}
 
 	setFilterGPSTimeExtent(from, to){

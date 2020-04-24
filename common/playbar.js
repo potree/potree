@@ -129,28 +129,25 @@ export function createPlaybar () {
     playbarhtml.find("#myRange").on('input', updateTimeWindow);
 
     playbarhtml.find("#myRange").on('wheel', function(e) {
-      var slider = playbarhtml.find("#myRange");
-      var slideval = numberOrZero(slider.val());
-      var dy = e.originalEvent.deltaY;
+      const slider = playbarhtml.find("#myRange");
+      const slideval = numberOrZero(slider.val());
 
       const tmin = window.animationEngine.activeWindow.backward;
       const tmax = window.animationEngine.activeWindow.forward;
 
       const scalefactor = e.originalEvent.shiftKey ? 100 : 1;
 
-      var lidarRange = 1;
+      let lidarRange = 1;
       try {
        // lidarRange = window.viewer.scene.pointclouds[0].pcoGeometry.nodes.r.gpsTime.range;
         lidarRange = window.animationEngine.timeRange;
       } catch (e) {
       }
-      const dt = Math.sign(dy) * (tmax - tmin) * scalefactor;
+      const dt = Math.sign(e.originalEvent.deltaY) * (tmin - tmax) * scalefactor;
       const sliderange = Number(slider.attr("max")) - Number(slider.attr("min"));
       const stepY = sliderange*dt/lidarRange;
 
-      slideval += stepY;
-
-      updateSlider(slideval);
+      updateSlider(slideval + stepY);
     });
     playbarhtml.find("#myRange").on("scroll", function(e) {
       console.log(e);

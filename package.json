@@ -17,7 +17,10 @@
   ],
   "scripts": {
     "start": "gulp watch",
-    "build": "gulp build pack"
+    "build": "gulp build pack",
+    "server": "gulp webserver",
+    "alt-start": "gulp watchAlt",
+    "alt-server": "gulp webserverAlt"
   },
   "dependencies": {
     "gulp": "^4.0.2",

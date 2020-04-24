@@ -1,4 +1,3 @@
-
 const path = require('path');
 const gulp = require('gulp');
 const exec = require('child_process').exec;
@@ -7,14 +6,28 @@ const fs = require("fs");
 const fsp = fs.promises;
 const concat = require('gulp-concat');
 const connect = require('gulp-connect');
-const {watch} = gulp;
+const { watch } = gulp;
 
-const {createExamplesPage} = require("./src/tools/create_potree_page");
-const {createGithubPage} = require("./src/tools/create_github_page");
-const {createIconsPage} = require("./src/tools/create_icons_page");
+const { createExamplesPage } = require("./src/tools/create_potree_page");
+const { createGithubPage } = require("./src/tools/create_github_page");
+const { createIconsPage } = require("./src/tools/create_icons_page");
 
+const SERVER_PORT = 1234;
+const SERVER_PORT_ALT = 80; // An alternate port to be used with tasks alt-start & alt-server
 
-let paths = {
+const watchlist = [
+	'src/**/*.js',
+	'src/**/**/*.js',
+	'src/**/*.css',
+	'src/**/*.html',
+	'src/**/*.vs',
+	'src/**/*.fs',
+	'resources/**/*',
+	'examples//**/*.json',
+	'!resources/icons/index.html',
+];
+
+const paths = {
 	laslaz: [
 		"build/workers/laslaz-worker.js",
 		"build/workers/lasdecoder-worker.js",
@@ -29,7 +42,7 @@ let paths = {
 	]
 };
 
-let workers = {
+const workers = {
 	"LASLAZWorker": [
 		"libs/plasio/workers/laz-perf.js",
 		"libs/plasio/workers/laz-loader-worker.js"
@@ -48,15 +61,14 @@ let workers = {
 	]
 };
 
-// these libs are lazily loaded
-// in order for the lazy loader to find them, independent of the path of the html file,
-// we package them together with potree
-let lazyLibs = {
+// These libs are lazily loaded. We package them together with potree
+// in order for the lazy loader to find them, independent of the path of the HTML file
+const lazyLibs = {
 	"geopackage": "libs/geopackage",
 	"sql.js": "libs/sql.js"
 };
 
-let shaders = [
+const shaders = [
 	"src/materials/shaders/pointcloud.vs",
 	"src/materials/shaders/pointcloud.fs",
 	"src/materials/shaders/pointcloud_sm.vs",
@@ -74,8 +86,17 @@ let shaders = [
 // from the command line to start the server (default port is 8080)
 gulp.task('webserver', gulp.series(async function() {
 	server = connect.server({
-		port: 1234,
+		port: SERVER_PORT,
 		https: false,
+		host: '0.0.0.0'
+	});
+}));
+
+gulp.task('webserverAlt', gulp.series(async function() {
+	server = connect.server({
+		port: SERVER_PORT_ALT,
+		https: false,
+		host: '0.0.0.0'
 	});
 }));
 
@@ -103,7 +124,7 @@ gulp.task('test', async function() {
 
 gulp.task("workers", async function(done){
 
-	for(let workerName of Object.keys(workers)){
+	for(const workerName of Object.keys(workers)){
 
 		gulp.src(workers[workerName])
 			.pipe(concat(`${workerName}.js`))
@@ -115,7 +136,7 @@ gulp.task("workers", async function(done){
 
 gulp.task("lazylibs", async function(done){
 
-	for(let libname of Object.keys(lazyLibs)){
+	for(const libname of Object.keys(lazyLibs)){
 
 		const libpath = lazyLibs[libname];
 
@@ -132,7 +153,7 @@ gulp.task("shaders", async function(){
 		"let Shaders = {};"
 	];
 
-	for(let file of shaders){
+	for(const file of shaders){
 		const filename = path.basename(file);
 
 		const content = await fsp.readFile(file);
@@ -142,7 +163,7 @@ gulp.task("shaders", async function(){
 		components.push(prep);
 	}
 
-	components.push("export {Shaders};");
+	components.push("export { Shaders };");
 
 	const content = components.join("\n\n");
 
@@ -177,21 +198,11 @@ gulp.task("pack", async function(){
 });
 
 gulp.task('watch', gulp.parallel("build", "pack", "webserver", async function() {
-
-	let watchlist = [
-		'src/**/*.js',
-		'src/**/**/*.js',
-		'src/**/*.css',
-		'src/**/*.html',
-		'src/**/*.vs',
-		'src/**/*.fs',
-		'resources/**/*',
-		'examples//**/*.json',
-		'!resources/icons/index.html',
-	];
-
 	watch(watchlist, gulp.series("build", "pack"));
+}));
 
+gulp.task('watchAlt', gulp.parallel("build", "pack", "webserverAlt", async function() {
+	watch(watchlist, gulp.series("build", "pack"));
 }));
 
 

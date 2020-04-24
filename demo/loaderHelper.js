@@ -18,37 +18,80 @@ import { addLoadGapsButton } from "../demo/gapsLoader.js"
 import { addLoadRadarButton } from "../demo/radarLoader.js"
 import { addCalibrationButton } from "../demo/calibrationManager.js"
 import { addDetectionButton } from "../demo/detectionLoader.js"
+import { PointAttributeNames } from "../src/loader/PointAttributes.js";
 
+
+function canUseCalibrationPanels(attributes) {
+  let hasRtkPose = false;
+  let hasRtkOrient = false;
+  for (const attr of attributes) {
+    hasRtkPose = hasRtkPose || (attr.name === PointAttributeNames.RTK_POSE);
+    hasRtkOrient = hasRtkOrient || (attr.name === PointAttributeNames.RTK_ORIENT);
+  }
+  return hasRtkPose && hasRtkOrient
+}
+
+function finishLoading({pointcloud}) {
+  const material = pointcloud.material;
+  viewer.scene.addPointCloud(pointcloud);
+  material.pointColorType = Potree.PointColorType.INTENSITY; // any Potree.PointColorType.XXXX
+  material.gradient = Potree.Gradients.GRAYSCALE; // Can define custom gradient or look up in Potree.Gradients
+  material.size = 0.09;
+  material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
+  material.shape = Potree.PointShape.SQUARE;
+
+  const cloudCanUseCalibrationPanels = canUseCalibrationPanels(pointcloud.pcoGeometry.pointAttributes.attributes);
+  window.canEnableCalibrationPanels = window.canEnableCalibrationPanels && cloudCanUseCalibrationPanels;
+
+  if (window.canEnableCalibrationPanels) {
+    enablePanels();
+
+  } else {
+    const reason = "Pointcloud was not serialized with the necessary point attributes"
+    disablePanels(reason);
+    console.error("Cannot use calibration panels: ", reason);
+  }
+}
 
 // event listener that spins off everything to load the page
 $(document).ready(() => {
 	loadPotree();
 });
 
+
 // Call all functions to load potree
 export function loadPotree() {
-	$(document).ready(() => {
-		// Create AnimationEngine:
-	        const viewer = createViewer();
-                window.viewer = viewer;
-                const animationEngine = new AnimationEngine({
-                  activeWindow: {backward: -0.05, forward: 0.05, step: "0.01"},
-                  elevationWindow: {min: -0.05, max: 0.05, step: "0.01"}
-                });
-		window.animationEngine = animationEngine;
+  // Create AnimationEngine:
+  const viewer = createViewer();
+  window.viewer = viewer;
+  const animationEngine = new AnimationEngine({
+    activeWindow: {backward: -0.05, forward: 0.05, step: "0.01"},
+    elevationWindow: {min: -0.05, max: 0.05, step: "0.01"}
+  });
+  window.animationEngine = animationEngine;
 
-		// add html element with listeners to document
-	        createPlaybar();
+  // add html element with listeners to document
+  createPlaybar();
 
-		addReloadLanesButton();
-		addLoadGapsButton();
-		addLoadRadarButton();
-		addCalibrationButton();
-		addDetectionButton();
+  addReloadLanesButton();
+  addLoadGapsButton();
+  addLoadRadarButton();
+  addCalibrationButton();
+  addDetectionButton();
 
-		// load in actual data & configure playbar along the way
-		loadDataIntoDocument();
-	});
+  // load in actual data & configure playbar along the way
+  loadDataIntoDocument();
+
+  // Load Pointclouds
+  if (runForLocalDevelopment) {
+    Potree.loadPointCloud("../pointclouds/test/cloud.js", "full-cloud", finishLoading);
+
+  } else {
+    Potree.loadPointCloud({ s3, bucket, name }, name.substring(5), e => {
+      finishLoading(e);
+      $("#playbutton").click();
+    });
+  }
 }
 
 // loads all necessary data (car obj/texture, rtk, radar, tracks, etc...)

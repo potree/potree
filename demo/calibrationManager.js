@@ -1,7 +1,4 @@
-"use strict"
-import { runForLocalDevelopment, s3, bucket, name } from "../demo/paramLoader.js"
-import { PointAttributeNames } from "../src/loader/PointAttributes.js";
-import { togglePointClass } from "../common/custom-sidebar.js"
+'use strict';
 
 export async function storeCalibration(s3, bucket, name, callback) {
   // TODO
@@ -144,68 +141,4 @@ export function addCalibrationButton() {
 	});
 
 	window.canEnableCalibrationPanels = true;
-	function canUseCalibrationPanels(attributes) {
-		let hasRtkPose = false;
-		let hasRtkOrient = false;
-		for (let attr of attributes) {
-			hasRtkPose = hasRtkPose || (attr.name === PointAttributeNames.RTK_POSE);
-			hasRtkOrient = hasRtkOrient || (attr.name === PointAttributeNames.RTK_ORIENT);
-		}
-		return hasRtkPose && hasRtkOrient
-	}
-
-	// Load Pointclouds
-	if (runForLocalDevelopment) {
-		Potree.loadPointCloud("../pointclouds/test/cloud.js", "full-cloud", e => {
-			const pointcloud = e.pointcloud;
-			const material = pointcloud.material;
-			viewer.scene.addPointCloud(pointcloud);
-			material.pointColorType = Potree.PointColorType.INTENSITY; // any Potree.PointColorType.XXXX
-			material.gradient = Potree.Gradients.GRAYSCALE; // Can define custom gradient or look up in Potree.Gradients
-			material.size = 0.09;
-			material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
-			material.shape = Potree.PointShape.SQUARE;
-
-			let cloudCanUseCalibrationPanels = canUseCalibrationPanels(pointcloud.pcoGeometry.pointAttributes.attributes);
-			window.canEnableCalibrationPanels = window.canEnableCalibrationPanels && cloudCanUseCalibrationPanels;
-
-			if (window.canEnableCalibrationPanels) {
-				$(document).ready(() => enablePanels());
-
-			} else {
-				$(document).ready(() => {
-					let reason = "Pointcloud was not serialized with the necessary point attributes"
-					disablePanels(reason);
-					console.error("Cannot use calibration panels: ", reason);
-				});
-			}
-		});
-
-	} else {
-		Potree.loadPointCloud({ s3, bucket, name }, name.substring(5), e => {
-			const pointcloud = e.pointcloud;
-			const material = pointcloud.material;
-			viewer.scene.addPointCloud(pointcloud);
-			material.pointColorType = Potree.PointColorType.INTENSITY; // any Potree.PointColorType.XXXX
-			material.gradient = Potree.Gradients.GRAYSCALE;
-			material.size = 0.09;
-			material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
-			material.shape = Potree.PointShape.SQUARE;
-
-			let cloudCanUseCalibrationPanels = canUseCalibrationPanels(pointcloud.pcoGeometry.pointAttributes.attributes);
-			window.canEnableCalibrationPanels = window.canEnableCalibrationPanels && cloudCanUseCalibrationPanels;
-
-			if (window.canEnableCalibrationPanels) {
-				$(document).ready(() => enablePanels());
-
-			} else {
-				$(document).ready(() => {
-					disablePanels("Pointcloud was not serialized with the necessary point attributes");
-					console.error("Cannot use calibration panels");
-				});
-			}
-
-			$("#playbutton").click();
-		});
-	}
 }

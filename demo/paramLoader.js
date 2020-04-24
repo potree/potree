@@ -1,5 +1,6 @@
+'use strict';
+
 // This file contains common constant variables (some of which are pulled from the url params)
-"use strict"
 export const runForLocalDevelopment = location.search === "" && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
 export const params = new URLSearchParams(location.search);
 export const bucket = params.get("bucket");

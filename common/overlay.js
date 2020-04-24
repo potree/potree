@@ -4,7 +4,7 @@ $(document).ready(function () {
   // get correct fonts/themes
   const params = new URLSearchParams(location.search);
   const theme = JSON.parse(params.get("theme")) // material-ui theme 
-  const loadingBarColor = theme.palette.secondary.main;
+  const loadingBarColor = theme ? theme.palette.secondary.main : "#edac3e";
 
   // Insert HTML for Playbar/Loading Bars:
   // data-stroke-width & data-stroke-width determines the height of the bar

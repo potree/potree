@@ -12,19 +12,31 @@ export class CameraAnimationPanel{
 				<span id="animation_keyframes"></span>
 
 				<span>
-
 					<span style="display:flex">
-						<span style="display:flex; align-items: center; padding-right: 10px">Duration: </span>
+						<span style="display:flex; align-items: center; padding-right: 10px"><span data-i18n="scene.animation_duration">`+i18n.t("scene.animation_duration")+`</span>: </span>
 						<input name="spnDuration" value="5.0" style="flex-grow: 1; width:100%">
 					</span>
 
-					<span>Time: </span><span id="lblTime"></span> <div id="sldTime"></div>
+					<span><span data-i18n="scene.animation_time">`+i18n.t("scene.animation_time")+`</span>: </span>					
+					<span id="lblTime"></span> <div id="sldTime"></div>
 
-					<input name="play" type="button" value="play"/>
+					<input name="play" type="button" data-i18n="[value]scene.button_play"/>
 				</span>
+				
+				<!-- ACTIONS -->
+				<div style="display: flex; margin-top: 12px">
+					<span></span>
+					<span style="flex-grow: 1"></span>
+					<img name="remove" data-i18n="[title]scene.button_remove" class="button-icon" src="${Potree.resourcePath}/icons/remove.svg" style="width: 16px; height: 16px"/>
+				</div>
 			</div>
 		`);
-
+		
+		this.elRemove = this.elContent.find("img[name=remove]");
+		this.elRemove.click( () => {
+			this.viewer.scene.removeCameraAnimation(animation);
+		});
+		
 		const elPlay = this.elContent.find("input[name=play]");
 		elPlay.click( () => {
 			animation.play();
@@ -86,7 +98,7 @@ export class CameraAnimationPanel{
 				let elNewKeyframe = $(`
 					<div style="display: flex; margin: 0.2em 0em">
 						<span style="flex-grow: 1"></span>
-						<input type="button" name="add" value="create control point" />
+						<input type="button" name="add" data-i18n="[value]scene.animation_create_control_point" />
 						<span style="flex-grow: 1"></span>
 					</div>
 				`);
@@ -94,6 +106,7 @@ export class CameraAnimationPanel{
 				const elAdd = elNewKeyframe.find("input[name=add]");
 				elAdd.click( () => {
 					animation.createControlPoint(index);
+					this.update();
 				});
 
 				elKeyframes.append(elNewKeyframe);
@@ -103,16 +116,16 @@ export class CameraAnimationPanel{
 				let elKeyframe = $(`
 					<div style="display: flex; margin: 0.2em 0em">
 						<span style="flex-grow: 0;">
-							<img name="assign" src="${Potree.resourcePath}/icons/assign.svg" style="width: 1.5em; height: 1.5em"/>
+							<img name="move" data-i18n="[title]scene.button_view" class="button-icon" src="${Potree.resourcePath}/icons/circled_dot.svg" style="width: 1.5em; height: 1.5em"/>
 						</span>
 						<span style="flex-grow: 0;">
-							<img name="move" src="${Potree.resourcePath}/icons/circled_dot.svg" style="width: 1.5em; height: 1.5em"/>
+							<img name="assign" data-i18n="[title]scene.button_assign" class="button-icon" src="${Potree.resourcePath}/icons/assign.svg" style="width: 1.5em; height: 1.5em"/>
 						</span>
 						<span style="flex-grow: 0; width: 1.5em; height: 1.5em"></span>
-						<span style="flex-grow: 0; font-size: 1.5em">keyframe</span>
+						<span style="flex-grow: 0; font-size: 1.5em" data-i18n="scene.animation_keyframe">`+i18n.t("scene.animation_keyframe")+`</span>
 						<span style="flex-grow: 1"></span>
 						<span style="flex-grow: 0;">
-							<img name="delete" src="${Potree.resourcePath}/icons/remove.svg" style="width: 1.5em; height: 1.5em"/>
+							<img name="delete" data-i18n="[title]scene.button_remove" class="button-icon" src="${Potree.resourcePath}/icons/remove.svg" style="width: 1.5em; height: 1.5em"/>
 						</span>
 					</div>
 				`);
@@ -138,6 +151,7 @@ export class CameraAnimationPanel{
 				elDelete.click( () => {
 					const cp = animation.controlPoints[index];
 					animation.removeControlPoint(cp);
+					this.update();
 				});
 
 				elKeyframes.append(elKeyframe);
@@ -166,10 +180,10 @@ export class CameraAnimationPanel{
 
 		// this._update = () => { this.update(); };
 
-		// this.update();
+		this.update();
 	}
 
 	update(){
-		
+		this.elContent.i18n();
 	}
 };

@@ -28,7 +28,7 @@ export class AnglePanel extends MeasurePanel{
 				<div style="display: flex; margin-top: 12px">
 					<span></span>
 					<span style="flex-grow: 1"></span>
-					<img name="remove" class="button-icon" src="${removeIconPath}" style="width: 16px; height: 16px"/>
+					<img name="remove" data-i18n="[title]scene.button_remove" class="button-icon" src="${removeIconPath}" style="width: 16px; height: 16px"/>
 				</div>
 			</div>
 		`);
@@ -63,5 +63,7 @@ export class AnglePanel extends MeasurePanel{
 		elAlpha.html(angles[0]);
 		elBetta.html(angles[1]);
 		elGamma.html(angles[2]);
+		
+		this.elContent.i18n();
 	}
 };

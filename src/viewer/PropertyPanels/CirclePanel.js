@@ -17,7 +17,7 @@ export class CirclePanel extends MeasurePanel{
 				<div style="display: flex; margin-top: 12px">
 					<span></span>
 					<span style="flex-grow: 1"></span>
-					<img name="remove" class="button-icon" src="${removeIconPath}" style="width: 16px; height: 16px"/>
+					<img name="remove" data-i18n="[title]scene.button_remove" class="button-icon" src="${removeIconPath}" style="width: 16px; height: 16px"/>
 				</div>
 			</div>
 		`);
@@ -69,7 +69,7 @@ export class CirclePanel extends MeasurePanel{
 		
 		elInfos.html(`
 			<tr>
-				<th ${thStyle}>Center: </th>
+				<th ${thStyle}><span data-i18n="scene.measure_circle_center">`+i18n.t("scene.measure_circle_center")+`</span>: </th>
 				<td ${tdStyle}></td>
 			</tr>
 			<tr>
@@ -78,13 +78,15 @@ export class CirclePanel extends MeasurePanel{
 				</td>
 			</tr>
 			<tr>
-				<th ${thStyle}>Radius: </th>
+				<th ${thStyle}><span data-i18n="scene.measure_circle_radius">`+i18n.t("scene.measure_circle_radius")+`</span>: </th>
 				<td ${tdStyle}>${txtRadius}</td>
 			</tr>
 			<tr>
-				<th ${thStyle}>Circumference: </th>
+				<th ${thStyle}><span data-i18n="scene.measure_circle_circumference">`+i18n.t("scene.measure_circle_circumference")+`</span>: </th>
 				<td ${tdStyle}>${txtCircumference}</td>
 			</tr>
 		`);
+		
+		this.elContent.i18n();
 	}
 };

@@ -13,27 +13,27 @@ export class CameraPanel{
 		<div class="propertypanel_content">
 			<table>
 				<tr>
-					<th colspan="3">position</th>
-					<th></th>
+					<th colspan="4" data-i18n="scene.camera_position">`+i18n.t("scene.camera_position")+`</th>
+			  
 				</tr>
 				<tr>
 					<td align="center" id="camera_position_x" style="width: 25%"></td>
 					<td align="center" id="camera_position_y" style="width: 25%"></td>
 					<td align="center" id="camera_position_z" style="width: 25%"></td>
 					<td align="right" id="copy_camera_position" style="width: 25%">
-						<img name="copyPosition" title="copy" class="button-icon" src="${copyIconPath}" style="width: 16px; height: 16px"/>
+						<img name="copyPosition" data-i18n="[title]scene.button_copy" class="button-icon" src="${copyIconPath}" style="width: 16px; height: 16px"/>
 					</td>
 				</tr>
 				<tr>
-					<th colspan="3">target</th>
-					<th></th>
+					<th colspan="4" data-i18n="scene.camera_target">`+i18n.t("scene.camera_target")+`</th>
+			  
 				</tr>
 				<tr>
 					<td align="center" id="camera_target_x" style="width: 25%"></td>
 					<td align="center" id="camera_target_y" style="width: 25%"></td>
 					<td align="center" id="camera_target_z" style="width: 25%"></td>
 					<td align="right" id="copy_camera_target" style="width: 25%">
-						<img name="copyTarget" title="copy" class="button-icon" src="${copyIconPath}" style="width: 16px; height: 16px"/>
+						<img name="copyTarget" data-i18n="[title]scene.button_copy" class="button-icon" src="${copyIconPath}" style="width: 16px; height: 16px"/>
 					</td>
 				</tr>
 			</table>
@@ -47,7 +47,7 @@ export class CameraPanel{
 			Utils.clipboardCopy(msg);
 
 			this.viewer.postMessage(
-					`Copied value to clipboard: <br>'${msg}'`,
+					`<span data-i18n=\"scene.camera_copy">`+i18n.t("scene.camera_copy")+`</span>: <br>'${msg}'`,
 					{duration: 3000});
 		});
 
@@ -58,7 +58,7 @@ export class CameraPanel{
 			Utils.clipboardCopy(msg);
 
 			this.viewer.postMessage(
-					`Copied value to clipboard: <br>'${msg}'`,
+					`<span data-i18n=\"scene.camera_copy">`+i18n.t("scene.camera_copy")+`</span>: <br>'${msg}'`,
 					{duration: 3000});
 		});
 
@@ -68,8 +68,6 @@ export class CameraPanel{
 	}
 
 	update(){
-		//console.log("updating camera panel");
-
 		let camera = this.viewer.scene.getActiveCamera();
 		let view = this.viewer.scene.view;
 
@@ -82,5 +80,7 @@ export class CameraPanel{
 		this.elContent.find("#camera_target_x").html(target[0]);
 		this.elContent.find("#camera_target_y").html(target[1]);
 		this.elContent.find("#camera_target_z").html(target[2]);
+		
+		this.elContent.i18n();
 	}
 };

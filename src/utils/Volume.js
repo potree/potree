@@ -108,7 +108,8 @@ export class BoxVolume extends Volume{
 		super(args);
 
 		this.constructor.counter = (this.constructor.counter === undefined) ? 0 : this.constructor.counter + 1;
-		this.name = 'box_' + this.constructor.counter;
+		this.name = `<span data-i18n="scene.object_box_clip">`+i18n.t("scene.object_box_clip")+`</span>_` + this.constructor.counter;
+		//this.name = 'box_' + this.constructor.counter;
 
 		let boxGeometry = new THREE.BoxGeometry(1, 1, 1);
 		boxGeometry.computeBoundingBox();
@@ -201,7 +202,8 @@ export class SphereVolume extends Volume{
 		super(args);
 
 		this.constructor.counter = (this.constructor.counter === undefined) ? 0 : this.constructor.counter + 1;
-		this.name = 'sphere_' + this.constructor.counter;
+		this.name = `<span data-i18n="scene.object_sphere_clip">`+i18n.t("scene.object_sphere_clip")+`</span>_` + this.constructor.counter;
+		//this.name = 'sphere_' + this.constructor.counter;
 
 		let sphereGeometry = new THREE.SphereGeometry(1, 32, 32);
 		sphereGeometry.computeBoundingBox();
@@ -259,8 +261,6 @@ export class SphereVolume extends Volume{
 				let uh = (vSegment / (vSegments + 1)); // -1 to 1
 				uh = (1 - uh) * (-Math.PI / 2) + uh *(Math.PI / 2);
 				let height = Math.sin(uh);
-
-				console.log(uh, height);
 
 				for(let i = 0; i <= steps; i++){
 					let u = (i / steps) * Math.PI * 2;

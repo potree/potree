@@ -384,10 +384,10 @@ export class ProfileWindow extends EventDispatcher {
 									<td>z</td>
 									<td>${values[2]}</td>
 								</tr>`;
-						} else if (attributeName === 'rgba') {
+						} else if (attributeName === 'rgba' || attributeName === 'color') {
 							html += `
 								<tr>
-									<td>${attributeName}</td>
+									<td><span data-i18n=\"profile.attribute_color">`+i18n.t("profile.attribute_color")+`</span></td>
 									<td>${value.join(', ')}</td>
 								</tr>`;
 						} else if (attributeName === 'normal') {
@@ -395,8 +395,38 @@ export class ProfileWindow extends EventDispatcher {
 						} else if (attributeName === 'mileage') {
 							html += `
 								<tr>
-									<td>${attributeName}</td>
+									<td><span data-i18n=\"profile.attribute_mileage">`+i18n.t("profile.attribute_mileage")+`</span></td>
 									<td>${value.toFixed(3)}</td>
+								</tr>`;
+						} else if (attributeName === 'intensity') {
+							html += `
+								<tr>
+									<td><span data-i18n=\"profile.attribute_intensity">`+i18n.t("profile.attribute_intensity")+`</span></td>
+									<td>${transform(value)}</td>
+								</tr>`;
+						} else if (attributeName === 'classification') {
+							html += `
+								<tr>
+									<td><span data-i18n=\"profile.attribute_classification">`+i18n.t("profile.attribute_classification")+`</span></td>
+									<td>${transform(value)}</td>
+								</tr>`;
+						} else if (attributeName === 'return number') {
+							html += `
+								<tr>
+									<td><span data-i18n=\"profile.attribute_returnnumber">`+i18n.t("profile.attribute_returnnumber")+`</span></td>
+									<td>${transform(value)}</td>
+								</tr>`;
+						} else if (attributeName === 'number of returns') {
+							html += `
+								<tr>
+									<td><span data-i18n=\"profile.attribute_numberofreturns">`+i18n.t("profile.attribute_numberofreturns")+`</span></td>
+									<td>${transform(value)}</td>
+								</tr>`;
+						} else if (attributeName === 'source id') {
+							html += `
+								<tr>
+									<td><span data-i18n=\"profile.attribute_sourceid">`+i18n.t("profile.attribute_sourceid")+`</span></td>
+									<td>${transform(value)}</td>
 								</tr>`;
 						} else {
 							html += `
@@ -406,6 +436,7 @@ export class ProfileWindow extends EventDispatcher {
 								</tr>`;
 						}
 					}
+
 					html += '</table>';
 					info.html(html);
 
@@ -432,7 +463,7 @@ export class ProfileWindow extends EventDispatcher {
 
 		let onWheel = e => {
 			this.autoFit = false;
-
+			
 			let delta = 0;
 			if (e.wheelDelta !== undefined) { // WebKit / Opera / Explorer 9
 				delta = e.wheelDelta;
@@ -789,7 +820,6 @@ export class ProfileWindow extends EventDispatcher {
 	}
 
 	updateScales () {
-
 		let width = this.renderArea[0].clientWidth;
 		let height = this.renderArea[0].clientHeight;
 

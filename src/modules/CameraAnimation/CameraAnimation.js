@@ -31,11 +31,11 @@ export class CameraAnimation extends EventDispatcher{
 		this.node = new THREE.Object3D();
 		this.node.name = "camera animation";
 		this.viewer.scene.scene.add(this.node);
-
+		
 		this.frustum = this.createFrustum();
 		this.node.add(this.frustum);
 
-		this.name = "Camera Animation";
+		this.name = this.name = `<span data-i18n="scene.object_animation">`+i18n.t("scene.object_animation")+`</span>`;
 		this.duration = 5;
 		this.t = 0;
 		// "centripetal", "chordal", "catmullrom"
@@ -212,8 +212,22 @@ export class CameraAnimation extends EventDispatcher{
 
 		return cp;
 	}
+	
+	remove() {
+		for(let cp of this.controlPoints){
+			cp.positionHandle.svg.remove();
+			cp.targetHandle.svg.remove();
+		}
+		this.viewer.removeEventListener("update", this.onUpdate);
+		this.viewer.scene.scene.children = this.viewer.scene.scene.children.filter(e => e !== this.node);
+	}
 
 	removeControlPoint(cp){
+		if(this.controlPoints.length === 2) {
+			this.viewer.postMessage(`<span data-i18n=\"tt.screen_clip_msg">`+i18n.t("scene.animation_msg")+`</span>`, {duration: 2000});
+			return;
+		}
+		
 		this.controlPoints = this.controlPoints.filter(_cp => _cp !== cp);
 
 		this.dispatchEvent({
@@ -313,7 +327,6 @@ export class CameraAnimation extends EventDispatcher{
 	}
 
 	updatePath(){
-
 		{ // positions
 			const positions = this.controlPoints.map(cp => cp.position);
 			const first = positions[0];
@@ -434,9 +447,9 @@ export class CameraAnimation extends EventDispatcher{
 			if (this.selectedElement) {
 				evt.preventDefault();
 
-				const rect = viewer.renderer.domElement.getBoundingClientRect();
+				const rect = viewer.renderer.domElement.getBoundingClientRect();				
 
-				const x = evt.clientX - rect.x;
+				const x = evt.clientX - rect.x;				
 				const y = evt.clientY - rect.y;
 
 				const {width, height} = this.viewer.renderer.getSize(new THREE.Vector2());
@@ -446,7 +459,7 @@ export class CameraAnimation extends EventDispatcher{
 
 				projected.x = ((x / width) - 0.5) / 0.5;
 				projected.y = (-(y - height) / height - 0.5) / 0.5;
-
+				
 				const unprojected = projected.clone().unproject(camera);
 				vector.set(unprojected.x, unprojected.y, unprojected.z);
 
@@ -493,7 +506,7 @@ export class CameraAnimation extends EventDispatcher{
 		const originalyVisible = this.visible;
 		this.setVisible(false);
 
-		const onUpdate = (delta) => {
+		this.onUpdate = (delta) => {
 
 			let tNow = performance.now();
 			let elapsed = (tNow - tStart) / 1000;
@@ -510,12 +523,12 @@ export class CameraAnimation extends EventDispatcher{
 			if(t > 1){
 				this.setVisible(originalyVisible);
 
-				this.viewer.removeEventListener("update", onUpdate);
+				this.viewer.removeEventListener("update", this.onUpdate);
 			}
 
 		};
 
-		this.viewer.addEventListener("update", onUpdate);
+		this.viewer.addEventListener("update", this.onUpdate);
 
 	}
 

@@ -37,7 +37,7 @@ export class MeasurePanel{
 					<td><span>${y}</span></td>
 					<td><span>${z}</span></td>
 					<td align="right" style="width: 25%">
-						<img name="copy" title="copy" class="button-icon" src="${copyIconPath}" style="width: 16px; height: 16px"/>
+						<img name="copy" data-i18n="[title]scene.button_copy" class="button-icon" src="${copyIconPath}" style="width: 16px; height: 16px"/>
 					</td>
 				</tr>
 			`);
@@ -48,7 +48,7 @@ export class MeasurePanel{
 				Utils.clipboardCopy(msg);
 
 				this.viewer.postMessage(
-					`Copied value to clipboard: <br>'${msg}'`,
+					`<span data-i18n=\"scene.camera_copy">`+i18n.t("scene.camera_copy")+`</span>: <br>'${msg}'`,
 					{duration: 3000});
 			});
 
@@ -64,28 +64,71 @@ export class MeasurePanel{
 		let point = this.measurement.points[0];
 		
 		for(let attributeName of Object.keys(point)){
-			if(attributeName === "position"){
-			
-			}else if(attributeName === "rgba"){
+			if(attributeName === "position"){			
+			} else if(attributeName === "rgba" || attributeName === 'color'){
 				let color = point.rgba;
 				let text = color.join(', ');
 
 				elTable.append($(`
 					<tr>
-						<td>rgb</td>
+						<td><span data-i18n=\"profile.attribute_color">`+i18n.t("profile.attribute_color")+`</span></td>
 						<td>${text}</td>
 					</tr>
 				`));
-			}else{
+			} else {
 				let value = point[attributeName];
 				let text = value.join(', ');
-
-				elTable.append($(`
-					<tr>
-						<td>${attributeName}</td>
-						<td>${text}</td>
-					</tr>
-				`));
+				
+				if (attributeName === 'intensity') {
+					elTable.append($(`
+						<tr>
+							<td><span data-i18n=\"profile.attribute_intensity">`+i18n.t("profile.attribute_intensity")+`</span></td>
+							<td>${text}</td>
+						</tr>
+					`));
+				} else if (attributeName === 'classification') {
+					elTable.append($(`
+						<tr>
+							<td><span data-i18n=\"profile.attribute_classification">`+i18n.t("profile.attribute_classification")+`</span></td>
+							<td>${text}</td>
+						</tr>
+					`));
+				} else if (attributeName === 'return number') {
+					elTable.append($(`
+						<tr>
+							<td><span data-i18n=\"profile.attribute_returnnumber">`+i18n.t("profile.attribute_returnnumber")+`</span></td>
+							<td>${text}</td>
+						</tr>
+					`));
+				} else if (attributeName === 'number of returns') {
+					elTable.append($(`
+						<tr>
+							<td><span data-i18n=\"profile.attribute_numberofreturns">`+i18n.t("profile.attribute_numberofreturns")+`</span></td>
+							<td>${text}</td>
+						</tr>
+					`));
+				} else if (attributeName === 'source id') {
+					elTable.append($(`
+						<tr>
+							<td><span data-i18n=\"profile.attribute_sourceid">`+i18n.t("profile.attribute_sourceid")+`</span></td>
+							<td>${text}</td>
+						</tr>
+					`));
+				} else if (attributeName === 'gps-time') {
+					elTable.append($(`
+						<tr>
+							<td><span data-i18n=\"profile.attribute_gpstime">`+i18n.t("profile.attribute_gpstime")+`</span></td>
+							<td>${text}</td>
+						</tr>
+					`));
+				} else{
+					elTable.append($(`
+						<tr>
+							<td>${attributeName}</td>
+							<td>${text}</td>
+						</tr>
+					`));
+				}
 			}
 		}
 

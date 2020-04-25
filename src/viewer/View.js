@@ -27,7 +27,7 @@ export class View{
 	}
 
 	set pitch (angle) {
-		this._pitch = angle;//Math.max(Math.min(angle, this.maxPitch), this.minPitch);
+		this._pitch = Math.max(Math.min(angle, this.maxPitch), this.minPitch);
 	}
 
 	get direction () {

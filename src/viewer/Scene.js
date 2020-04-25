@@ -35,7 +35,6 @@ export class Scene extends EventDispatcher{
 		this.orientedImages = [];
 		this.images360 = [];
 		this.geopackages = [];
-		this.others = [];
 		
 		this.fpControls = null;
 		this.orbitControls = null;
@@ -131,17 +130,6 @@ export class Scene extends EventDispatcher{
 		});
 	}
 
-	add(object){
-		this.others.push(object);
-		this.scene.add(object);
-
-		this.dispatchEvent({
-			'type': 'other_added',
-			'scene': this,
-			'object': object
-		});
-	}
-	
 	addVolume (volume) {
 		this.volumes.push(volume);
 		this.dispatchEvent({
@@ -149,20 +137,7 @@ export class Scene extends EventDispatcher{
 			'scene': this,
 			'volume': volume
 		});
-	};
-
-	removeVolume (volume) {
-		let index = this.volumes.indexOf(volume);
-		if (index > -1) {
-			this.volumes.splice(index, 1);
-
-			this.dispatchEvent({
-				'type': 'volume_removed',
-				'scene': this,
-				'volume': volume
-			});
-		}
-	};
+	}
 
 	addOrientedImages(images){
 		this.orientedImages.push(images);
@@ -236,6 +211,19 @@ export class Scene extends EventDispatcher{
 		}
 	};
 
+	removeVolume (volume) {
+		let index = this.volumes.indexOf(volume);
+		if (index > -1) {
+			this.volumes.splice(index, 1);
+
+			this.dispatchEvent({
+				'type': 'volume_removed',
+				'scene': this,
+				'volume': volume
+			});
+		}
+	};
+
 	addCameraAnimation(animation) {
 		this.cameraAnimations.push(animation);
 		this.dispatchEvent({
@@ -246,10 +234,10 @@ export class Scene extends EventDispatcher{
 	};
 
 	removeCameraAnimation(animation){
-		let index = this.cameraAnimations.indexOf(volume);
-		if (index > -1) {
-			this.cameraAnimations.splice(index, 1);
-
+		let index = this.cameraAnimations.indexOf(animation);
+		if (index > -1) {this.cameraAnimations.splice(index, 1);
+			animation.remove();
+			
 			this.dispatchEvent({
 				'type': 'camera_animation_removed',
 				'scene': this,
@@ -445,131 +433,5 @@ export class Scene extends EventDispatcher{
 
 	removeAnnotation(annotationToRemove) {
 		this.annotations.remove(annotationToRemove);
-	}
-	
-	hideSidebarInformation () {
-		for(let pointcloud of this.pointclouds){
-			this.dispatchEvent({
-				type: 'pointcloud_removed',
-				pointcloud: pointcloud
-			});
-		}		
-		for(let measure of this.measurements){
-			this.dispatchEvent({
-				type: 'measurement_removed',
-				measurement: measure
-			});
-		}
-		for(let profile of this.profiles){
-			this.dispatchEvent({
-				type: 'profile_removed',
-				profile: profile
-			});
-		}
-		for(let volume of this.volumes){
-			this.dispatchEvent({
-				type: 'volume_removed',
-				volume: volume
-			});
-		}
-		for(let volume of this.polygonClipVolumes){
-			this.dispatchEvent({
-				type: 'polygon_clip_volume_removed',
-				volume: volume
-			});
-		}		
-		for(let animation of this.cameraAnimations){
-			this.dispatchEvent({
-				type: 'camera_animation_removed',
-				animation: animation
-			});
-		}
-		for(let orientedImage of this.orientedImages){
-			this.dispatchEvent({
-				type: 'oriented_images_removed',
-				images: orientedImage
-			});
-		}
-		/*for(let image360 of this.images360){
-			this.dispatchEvent({
-				type: 'images360_removed',
-				images: image360
-			});
-		}*/
-		for(let geopackage of this.geopackages){
-			this.dispatchEvent({
-				type: 'geopackage_removed',
-				geopackage: geopackage
-			});
-		}
-		for(let other of this.others){
-			this.dispatchEvent({
-				type: 'other_removed',
-				object: other
-			});
-		}
-	}
-	
-	showSidebarInformation () {
-		for(let pointcloud of this.pointclouds){
-			this.dispatchEvent({
-				type: 'pointcloud_added',
-				pointcloud: pointcloud
-			});
-		}
-		for(let measure of this.measurements){
-			this.dispatchEvent({
-				type: 'measurement_added',
-				measurement: measure
-			});
-		}
-		for(let profile of this.profiles){
-			this.dispatchEvent({
-				type: 'profile_added',
-				profile: profile
-			});
-		}
-		for(let volume of this.volumes){
-			this.dispatchEvent({
-				type: 'volume_added',
-				volume: volume
-			});
-		}
-		for(let volume of this.polygonClipVolumes){
-			this.dispatchEvent({
-				type: 'polygon_clip_volume_added',
-				volume: volume
-			});
-		}
-		for(let animation of this.cameraAnimations){
-			this.dispatchEvent({
-				type: 'camera_animation_added',
-				animation: animation
-			});
-		}
-		for(let orientedImage of this.orientedImages){
-			this.dispatchEvent({
-				type: 'oriented_images_added',
-				images: orientedImage
-			});
-		}
-		/*for(let image360 of this.images360){
-			this.dispatchEvent({
-				type: 'images360_added',
-				images: image360
-			});
-		}*/
-		for(let geopackage of this.geopackages){
-			this.dispatchEvent({
-				type: 'geopackage_added',
-				geopackage: geopackage
-			});
-		}
-		for(let other of this.others){
-			this.dispatchEvent({
-				type: 'other_added',
-				object: other
-			});
-		}
 	}
 };

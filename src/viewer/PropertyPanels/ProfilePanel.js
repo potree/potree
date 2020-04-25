@@ -12,7 +12,7 @@ export class ProfilePanel extends MeasurePanel{
 				<span class="coordinates_table_container"></span>
 				<br>
 				<span style="display:flex">
-					<span style="display:flex; align-items: center; padding-right: 10px">Width: </span>
+					<span style="display:flex; align-items: center; padding-right: 10px"><span data-i18n="scene.measure_width">`+i18n.t("scene.measure_width")+`</span>: </span>
 					<input id="sldProfileWidth" name="sldProfileWidth" value="5.06" style="flex-grow: 1; width:100%">
 				</span>
 				<br>
@@ -22,15 +22,12 @@ export class ProfilePanel extends MeasurePanel{
 					<div name="download_message"></div>
 				</li>
 
-				<br>
-
-				<input type="button" id="show_2d_profile" value="show 2d profile" style="width: 100%"/>
-
 				<!-- ACTIONS -->
 				<div style="display: flex; margin-top: 12px">
-					<span></span>
+					<span><input type="button" id="show_2d_profile" data-i18n="[value]scene.measure_profil_2D" style="width: 100%"/></span>
+					
 					<span style="flex-grow: 1"></span>
-					<img name="remove" class="button-icon" src="${removeIconPath}" style="width: 16px; height: 16px"/>
+					<img name="remove" data-i18n="[title]scene.button_remove" class="button-icon" src="${removeIconPath}" style="width: 16px; height: 16px"/>
 				</div>
 			</div>
 		`);
@@ -108,6 +105,8 @@ export class ProfilePanel extends MeasurePanel{
 		let elCoordiantesContainer = this.elContent.find('.coordinates_table_container');
 		elCoordiantesContainer.empty();
 		elCoordiantesContainer.append(this.createCoordinatesTable(this.measurement.points));
+		
+		this.elContent.i18n();
 	}
 
 	async download(){

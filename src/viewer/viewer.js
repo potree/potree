@@ -220,10 +220,12 @@ export class Viewer extends EventDispatcher{
 					e.scene.addEventListener("pointcloud_added", onPointcloudAdded);
 				}
 
-				if(!e.scene.hasEventListener("volume_removed", onVolumeRemoved)){
+				if(!e.scene.hasEventListener("volume_removed", onPointcloudAdded)){
 					e.scene.addEventListener("volume_removed", onVolumeRemoved);
-				}				
+				}
+				
 			});
+
 			this.scene.addEventListener("volume_removed", onVolumeRemoved);
 			this.scene.addEventListener('pointcloud_added', onPointcloudAdded);
 		}
@@ -319,18 +321,6 @@ export class Viewer extends EventDispatcher{
 
 		let oldScene = this.scene;
 		this.scene = scene;
-		
-		if(this.profileWindow !== undefined){
-			this.profileWindow.hide();
-		}
-		
-		if(oldScene !== null) {
-			oldScene.hideSidebarInformation();
-			
-			oldScene.annotations.traverse(node => {
-				oldScene.annotations.hide(node);
-			});
-		}
 
 		this.dispatchEvent({
 			type: 'scene_changed',
@@ -341,14 +331,22 @@ export class Viewer extends EventDispatcher{
 		{ // Annotations
 			$('.annotation').detach();
 
+			// for(let annotation of this.scene.annotations){
+			//	this.renderArea.appendChild(annotation.domElement[0]);
+			// }
+
 			this.scene.annotations.traverse(annotation => {
 				this.renderArea.appendChild(annotation.domElement[0]);
 			});
 
 			if (!this.onAnnotationAdded) {
 				this.onAnnotationAdded = e => {
+				// console.log("annotation added: " + e.annotation.title);
+
 					e.annotation.traverse(node => {
+
 						$("#potree_annotation_container").append(node.domElement);
+						//this.renderArea.appendChild(node.domElement[0]);
 						node.scene = this.scene;
 					});
 				};
@@ -358,14 +356,6 @@ export class Viewer extends EventDispatcher{
 				oldScene.annotations.removeEventListener('annotation_added', this.onAnnotationAdded);
 			}
 			this.scene.annotations.addEventListener('annotation_added', this.onAnnotationAdded);
-		}
-		
-		if(this.scene !== null) {
-			scene.showSidebarInformation();
-			
-			scene.annotations.traverse(node => {
-				scene.annotations.show(node);
-			});
 		}
 	};
 
@@ -1213,6 +1203,8 @@ export class Viewer extends EventDispatcher{
 	setLanguage (lang) {
 		i18n.setLng(lang);
 		$('body').i18n();
+		
+		this.dispatchEvent({'type': 'language_changed', 'viewer': this});
 	}
 
 	setServer (server) {
@@ -1802,6 +1794,7 @@ export class Viewer extends EventDispatcher{
 			this.mapView.update(delta);
 			if(this.mapView.sceneProjection){
 				$( "#potree_map_toggle" ).css("display", "block");
+				
 			}
 		}
 

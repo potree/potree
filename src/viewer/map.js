@@ -110,7 +110,7 @@ export class MapView{
 				_this.showSources(!visible);
 			}, false);
 			btToggleTiles.style.float = 'left';
-			btToggleTiles.title = 'show / hide tiles';
+			btToggleTiles.setAttribute("data-i18n", "[title]map.tiles_visibility");
 
 			// DOWNLOAD SELECTED TILES
 			let link = document.createElement('a');
@@ -128,7 +128,7 @@ export class MapView{
 				let url = [document.location.protocol, '//', document.location.host, document.location.pathname].join('');
 
 				if (features.length === 0) {
-					alert('No tiles were selected. Select area with ctrl + left mouse button!');
+					alert(`<span data-i18n=\"map.no_tiles">`+i18n.t("map.no_tiles")+`</span>`);
 					e.preventDefault();
 					e.stopImmediatePropagation();
 					return false;
@@ -168,7 +168,7 @@ export class MapView{
 			element.appendChild(btToggleTiles);
 			element.style.bottom = '0.5em';
 			element.style.left = '0.5em';
-			element.title = 'Download file or list of selected tiles. Select tile with left mouse button or area using ctrl + left mouse.';
+			element.setAttribute("data-i18n", "[title]map.download");
 
 			ol.control.Control.call(this, {
 				element: element,
@@ -272,14 +272,7 @@ export class MapView{
 			selectedFeatures.clear();
 		});
 
-		this.viewer.addEventListener('scene_changed', e => {						
-			this.sceneProjection = null;
-			this.getAnnotationsLayer().getSource().clear();
-			
-			let mapCenter = this.getMapCenter();
-			let view = this.map.getView();
-			view.setCenter(mapCenter);
-			
+		this.viewer.addEventListener('scene_changed', e => {
 			this.setScene(e.scene);
 		});
 
@@ -309,7 +302,7 @@ export class MapView{
 				let coordinates = feature.getGeometry().getCoordinates();
 				let p = this.map.getPixelFromCoordinate(coordinates);
 
-				this.elTooltip.html(annotation.title);
+				this.elTooltip.html('<span>' + annotation.title + '</span>');
 				this.elTooltip.css('display', '');
 				this.elTooltip.css('left', `${p[0]}px`);
 				this.elTooltip.css('top', `${p[1]}px`);
@@ -632,9 +625,6 @@ export class MapView{
 		}
 
 		if (!pointcloud.projection) {
-			$( "#potree_map_toggle" ).css("display", "none");
-			this.elMap.css('display', 'none');
-			this.enabled = false;
 			return;
 		}
 

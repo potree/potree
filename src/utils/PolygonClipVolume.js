@@ -5,8 +5,9 @@ export class PolygonClipVolume extends THREE.Object3D{
 		super();
 
 		this.constructor.counter = (this.constructor.counter === undefined) ? 0 : this.constructor.counter + 1;
-		this.name = "polygon_clip_volume_" + this.constructor.counter;
-
+		this.name = `<span data-i18n="scene.object_polygon_clip">`+i18n.t("scene.object_polygon_clip")+`</span>_` + this.constructor.counter;
+		//this.name = "polygon_clip_volume_" + this.constructor.counter;
+		
 		this.camera = camera.clone();
 		this.camera.rotation.set(...camera.rotation.toArray()); // [r85] workaround because camera.clone() doesn't work on rotation
 		this.camera.rotation.order = camera.rotation.order;

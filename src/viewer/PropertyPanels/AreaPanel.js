@@ -11,14 +11,14 @@ export class AreaPanel extends MeasurePanel{
 			<div class="measurement_content selectable">
 				<span class="coordinates_table_container"></span>
 				<br>
-				<span style="font-weight: bold">Area: </span>
+				<span style="font-weight: bold"><span data-i18n="scene.measure_area">`+i18n.t("scene.measure_area")+`</span>: </span>
 				<span id="measurement_area"></span>
 
 				<!-- ACTIONS -->
 				<div style="display: flex; margin-top: 12px">
 					<span></span>
 					<span style="flex-grow: 1"></span>
-					<img name="remove" class="button-icon" src="${removeIconPath}" style="width: 16px; height: 16px"/>
+					<img name="remove" data-i18n="[title]scene.button_remove" class="button-icon" src="${removeIconPath}" style="width: 16px; height: 16px"/>
 				</div>
 			</div>
 		`);
@@ -42,5 +42,7 @@ export class AreaPanel extends MeasurePanel{
 
 		let elArea = this.elContent.find(`#measurement_area`);
 		elArea.html(this.measurement.getArea().toFixed(3));
+		
+		this.elContent.i18n();
 	}
 };

@@ -33,7 +33,7 @@ export class OrientedImageControls extends EventDispatcher{
 		this.elRight = $(`<input type="button" value="🡆" style="position: absolute; top: calc(50%); right: 10px; z-index: 1000" />`);
 		this.elDown =  $(`<input type="button" value="🡇" style="position: absolute; bottom: 10px; left: calc(50%); z-index: 1000" />`);
 		this.elLeft =  $(`<input type="button" value="🡄" style="position: absolute; top: calc(50%); left: 10px; z-index: 1000" />`);
-		this.elExit = $(`<input type="button" value="Back to 3D view" style="position: absolute; bottom: 10px; right: 10px; z-index: 1000" />`);
+		this.elExit = $(`<input type="button" data-i18n="[value]tt.back_3d_view" style="position: absolute; bottom: 10px; right: 10px; z-index: 1000" />`);
 
 		this.elExit.click( () => {
 			this.release();
@@ -102,6 +102,8 @@ export class OrientedImageControls extends EventDispatcher{
 		elRoot.append(this.elDown);
 		elRoot.append(this.elLeft);
 		elRoot.append(this.elExit);
+		
+		elRoot.i18n();
 	}
 
 	release(){

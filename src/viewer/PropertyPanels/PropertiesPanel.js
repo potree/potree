@@ -21,7 +21,7 @@ import {VolumePanel} from "./VolumePanel.js";
 import {ProfilePanel} from "./ProfilePanel.js";
 import {CameraPanel} from "./CameraPanel.js";
 import {AnnotationPanel} from "./AnnotationPanel.js";
-import { CameraAnimationPanel } from "./CameraAnimationPanel.js";
+import {CameraAnimationPanel} from "./CameraAnimationPanel.js";
 
 export class PropertiesPanel{
 
@@ -61,7 +61,30 @@ export class PropertiesPanel{
 		}else if(object instanceof CameraAnimation){
 			this.setCameraAnimation(object);
 		}
+	}
+	
+	refresh() {
+		if(this.object === undefined || this.object === null){ 
+			return;
+		}
 		
+		for(let task of this.cleanupTasks){
+			task();
+		}
+		this.cleanupTasks = [];
+		this.container.empty();
+
+		if(this.object instanceof PointCloudTree){
+			this.setPointCloud(this.object);
+		}else if(this.object instanceof Measure || this.object instanceof Profile || this.object instanceof Volume){
+			this.setMeasurement(this.object);			
+		}else if(this.object instanceof THREE.Camera){
+			this.setCamera(this.object);
+		}else if(this.object instanceof Annotation) {
+            this.setAnnotation(this.object);
+        }else if(this.object instanceof CameraAnimation){
+			this.setCameraAnimation(this.object);			
+		}
 	}
 
 	//
@@ -88,26 +111,26 @@ export class PropertiesPanel{
 				<span data-i18n="appearance.point_size"></span>:&nbsp;<span id="lblPointSize"></span> <div id="sldPointSize"></div>
 				</li>
 				<li>
-				<span data-i18n="appearance.min_point_size"></span>:&nbsp;<span id="lblMinPointSize"></span> <div id="sldMinPointSize"></div>
+				<span data-i18n="appearance.point_min_size"></span>:&nbsp;<span id="lblMinPointSize"></span> <div id="sldMinPointSize"></div>
 				</li>
 
 				<!-- SIZE TYPE -->
 				<li>
-					<label for="optPointSizing" class="pv-select-label" data-i18n="appearance.point_size_type">Point Sizing </label>
+					<span data-i18n="appearance.point_size_type"></span>
 					<select id="optPointSizing" name="optPointSizing">
-						<option>FIXED</option>
-						<option>ATTENUATED</option>
-						<option>ADAPTIVE</option>
+                        <option value="FIXED">` + i18n.t("appearance.point_fixed") + `</option>
+						<option value="ATTENUATED">` + i18n.t("appearance.point_attenuated") + `</option>
+						<option value="ADAPTIVE">` + i18n.t("appearance.point_adaptative") + `</option>
 					</select>
 				</li>
 
 				<!-- SHAPE -->
 				<li>
-					<label for="optShape" class="pv-select-label" data-i18n="appearance.point_shape"></label><br>
+					<span data-i18n="appearance.point_shape"></span>
 					<select id="optShape" name="optShape">
-						<option>SQUARE</option>
-						<option>CIRCLE</option>
-						<option>PARABOLOID</option>
+                        <option value="SQUARE">` + i18n.t("appearance.point_square") + `</option>
+						<option value="CIRCLE">` + i18n.t("appearance.point_circle") + `</option>
+						<option value="PARABOLOID">` + i18n.t("appearance.point_paraboloid") + `</option>
 					</select>
 				</li>
 
@@ -119,7 +142,7 @@ export class PropertiesPanel{
 				<li><span data-i18n="appearance.point_opacity"></span>:<span id="lblOpacity"></span><div id="sldOpacity"></div></li>
 
 				<div class="divider">
-					<span>Attribute</span>
+					<span data-i18n="scene.attribute"></span>
 				</div>
 
 				<li>
@@ -128,42 +151,42 @@ export class PropertiesPanel{
 
 				<div id="materials.composite_weight_container">
 					<div class="divider">
-						<span>Attribute Weights</span>
+						<span data-i18n="scene.attribute_weights"></span>
 					</div>
 
-					<li>RGB: <span id="lblWeightRGB"></span> <div id="sldWeightRGB"></div>	</li>
-					<li>Intensity: <span id="lblWeightIntensity"></span> <div id="sldWeightIntensity"></div>	</li>
-					<li>Elevation: <span id="lblWeightElevation"></span> <div id="sldWeightElevation"></div>	</li>
-					<li>Classification: <span id="lblWeightClassification"></span> <div id="sldWeightClassification"></div>	</li>
-					<li>Return Number: <span id="lblWeightReturnNumber"></span> <div id="sldWeightReturnNumber"></div>	</li>
-					<li>Source ID: <span id="lblWeightSourceID"></span> <div id="sldWeightSourceID"></div>	</li>
+					<li><span data-i18n="scene.attribute_rgb"></span>: <span id="lblWeightRGB"></span> <div id="sldWeightRGB"></div>	</li>
+					<li><span data-i18n="scene.attribute_intensity"></span>: <span id="lblWeightIntensity"></span> <div id="sldWeightIntensity"></div>	</li>
+					<li><span data-i18n="scene.attribute_elevation"></span>: <span id="lblWeightElevation"></span> <div id="sldWeightElevation"></div>	</li>
+					<li><span data-i18n="scene.attribute_classification"></span>: <span id="lblWeightClassification"></span> <div id="sldWeightClassification"></div>	</li>
+					<li><span data-i18n="scene.attribute_returnnumber"></span>: <span id="lblWeightReturnNumber"></span> <div id="sldWeightReturnNumber"></div>	</li>
+					<li><span data-i18n="scene.attribute_source"></span>: <span id="lblWeightSourceID"></span> <div id="sldWeightSourceID"></div>	</li>
 				</div>
 
 				<div id="materials.rgb_container">
 					<div class="divider">
-						<span>RGB</span>
+						<span data-i18n="scene.attribute_rgb"></span>
 					</div>
 
-					<li>Gamma: <span id="lblRGBGamma"></span> <div id="sldRGBGamma"></div>	</li>
-					<li>Brightness: <span id="lblRGBBrightness"></span> <div id="sldRGBBrightness"></div>	</li>
-					<li>Contrast: <span id="lblRGBContrast"></span> <div id="sldRGBContrast"></div>	</li>
+					<li><span data-i18n="scene.gamma"></span>: <span id="lblRGBGamma"></span> <div id="sldRGBGamma"></div>	</li>
+					<li><span data-i18n="scene.brightness"></span>: <span id="lblRGBBrightness"></span> <div id="sldRGBBrightness"></div>	</li>
+					<li><span data-i18n="scene.contrast"></span>: <span id="lblRGBContrast"></span> <div id="sldRGBContrast"></div>	</li>
 				</div>
 
 				<div id="materials.extra_container">
 					<div class="divider">
-						<span>Extra Attribute</span>
+						<span data-i18n="scene.attribute_extra"></span>
 					</div>
 
-					<li><span data-i18n="appearance.extra_range"></span>: <span id="lblExtraRange"></span> <div id="sldExtraRange"></div></li>
+					<li><span data-i18n="scene.extra_range"></span>: <span id="lblExtraRange"></span> <div id="sldExtraRange"></div></li>
 
-					<li>Gamma: <span id="lblExtraGamma"></span> <div id="sldExtraGamma"></div></li>
-					<li>Brightness: <span id="lblExtraBrightness"></span> <div id="sldExtraBrightness"></div></li>
-					<li>Contrast: <span id="lblExtraContrast"></span> <div id="sldExtraContrast"></div></li>
+					<li><span data-i18n="scene.gamma"></span>: <span id="lblExtraGamma"></span> <div id="sldExtraGamma"></div></li>
+					<li><span data-i18n="scene.brightness"></span>: <span id="lblExtraBrightness"></span> <div id="sldExtraBrightness"></div></li>
+					<li><span data-i18n="scene.contrast"></span>: <span id="lblExtraContrast"></span> <div id="sldExtraContrast"></div></li>
 				</div>
 				
 				<div id="materials.matcap_container">
 					<div class="divider">
-						<span>MATCAP</span>
+						<span data-i18n="scene.attribute_matcap"></span>
 					</div>
 
 					<li>
@@ -173,35 +196,37 @@ export class PropertiesPanel{
 
 				<div id="materials.color_container">
 					<div class="divider">
-						<span>Color</span>
+						<span data-i18n="scene.attribute_color"></span>
 					</div>
 
-					<input id="materials.color.picker" />
+					<center><input id="materials.color.picker" /></center>
 				</div>
 
 
 				<div id="materials.elevation_container">
 					<div class="divider">
-						<span>Elevation</span>
+						<span data-i18n="scene.attribute_elevation"></span>
 					</div>
 
-					<li><span data-i18n="appearance.elevation_range"></span>: <span id="lblHeightRange"></span> <div id="sldHeightRange"></div>	</li>
-
+					<li><span data-i18n="scene.elevation_range"></span>: <span id="lblHeightRange"></span> <div id="sldHeightRange"></div>	</li>
+				</div>
+					
+				<div id="materials.gradient_container">
 					<li>
+						<span data-i18n="scene.gradient_repeat_option"></span>
 						<selectgroup id="gradient_repeat_option">
-							<option id="gradient_repeat_clamp" value="CLAMP">Clamp</option>
-							<option id="gradient_repeat_repeat" value="REPEAT">Repeat</option>
-							<option id="gradient_repeat_mirrored_repeat" value="MIRRORED_REPEAT">Mirrored Repeat</option>
+							<option id="gradient_repeat_clamp" value="CLAMP">` + i18n.t("scene.gradient_repeat_clamp") + `</option>
+							<option id="gradient_repeat_repeat" value="REPEAT">` + i18n.t("scene.gradient_repeat_repeat") + `</option>
+							<option id="gradient_repeat_mirrored_repeat" value="MIRRORED_REPEAT">` + i18n.t("scene.gradient_repeat_mirrored_repeat") + `</option>
 						</selectgroup>
 					</li>
 
 					<li>
-						<span>Gradient Scheme:</span>
-						<div id="elevation_gradient_scheme_selection" style="display: flex; padding: 1em 0em">
-						</div>
+						<span data-i18n="scene.gradient_scheme"></span>:
+						<div id="elevation_gradient_scheme_selection" style="display: flex"></div>
 					</li>
 				</div>
-
+				
 				<div id="materials.transition_container">
 					<div class="divider">
 						<span>Transition</span>
@@ -212,28 +237,26 @@ export class PropertiesPanel{
 
 				<div id="materials.intensity_container">
 					<div class="divider">
-						<span>Intensity</span>
+						<span data-i18n="scene.attribute_intensity"></span>
 					</div>
 
-					<li>Range: <span id="lblIntensityRange"></span> <div id="sldIntensityRange"></div>	</li>
-					<li>Gamma: <span id="lblIntensityGamma"></span> <div id="sldIntensityGamma"></div>	</li>
-					<li>Brightness: <span id="lblIntensityBrightness"></span> <div id="sldIntensityBrightness"></div>	</li>
-					<li>Contrast: <span id="lblIntensityContrast"></span> <div id="sldIntensityContrast"></div>	</li>
+					<li><span data-i18n="scene.intensity_range"></span>: <span id="lblIntensityRange"></span> <div id="sldIntensityRange"></div>	</li>
+					<li><span data-i18n="scene.gamma"></span>: <span id="lblIntensityGamma"></span> <div id="sldIntensityGamma"></div>	</li>
+					<li><span data-i18n="scene.brightness"></span>: <span id="lblIntensityBrightness"></span> <div id="sldIntensityBrightness"></div>	</li>
+					<li><span data-i18n="scene.contrast"></span>: <span id="lblIntensityContrast"></span> <div id="sldIntensityContrast"></div>	</li>
 				</div>
-
+				
 				<div id="materials.gpstime_container">
 					<div class="divider">
-						<span>GPS Time</span>
+						<span data-i18n="scene.attribute_gpstime"></span>
 					</div>
-
 				</div>
 				
 				<div id="materials.index_container">
 					<div class="divider">
-						<span>Indices</span>
+						<span data-i18n="scene.attribute_index"></span>
 					</div>
 				</div>
-
 
 				</ul>
 			</div>
@@ -334,22 +357,12 @@ export class PropertiesPanel{
 
 			let blockBackface = $('#materials_backface_container');
 			blockBackface.css('display', 'none');
-
+			
 			const pointAttributes = pointcloud.pcoGeometry.pointAttributes;
 			const hasNormals = pointAttributes.hasNormals ? pointAttributes.hasNormals() : false;
 			if(hasNormals) {
 				blockBackface.css('display', 'block');
 			}
-			/*
-			opt.checkboxradio({
-				clicked: (event, ui) => {
-					// let value = ui.item.value;
-					let value = ui.item.checked;
-					console.log(value);
-					material.backfaceCulling = value; // $('#set_freeze').prop("checked");
-				}
-			});
-			*/
 		}
 
 		{ // OPACITY
@@ -376,47 +389,49 @@ export class PropertiesPanel{
 		}
 
 		{
-
-			const attributes = pointcloud.pcoGeometry.pointAttributes.attributes;
-
+			let attributesList = [];
+			attributesList.push(...pointcloud.pcoGeometry.pointAttributes.attributes.map(a => a.name));
+			
 			let options = [];
-
-			options.push(...attributes.map(a => a.name));
-
-			const intensityIndex = options.indexOf("intensity");
-			if(intensityIndex >= 0){
-				options.splice(intensityIndex + 1, 0, "intensity gradient");
-			}
-
 			options.push(
-				"elevation",
-				"color",
-				'matcap',
-				'indices',
-				'level of detail',
-				'composite'
+				['rgba', i18n.t("scene.attribute_rgb")],
+				['elevation', i18n.t("scene.attribute_elevation")]				
 			);
-
-			const blacklist = [
-				"POSITION_CARTESIAN",
-			];
-
-			options = options.filter(o => !blacklist.includes(o));
-
+			
+			if(attributesList.indexOf("intensity") >= 0){
+				options.push(
+					['intensity', i18n.t("scene.attribute_intensity")],
+					['intensity gradient', i18n.t("scene.attribute_intensitygrad")]
+				);
+			}
+			if(attributesList.indexOf("classification") >= 0) options.push(['classification', i18n.t("scene.attribute_classification")]);
+			if(attributesList.indexOf("return number") >= 0) options.push(['return number', i18n.t("scene.attribute_returnnumber")]);
+			if(attributesList.indexOf("number of returns") >= 0) options.push(['number of returns', i18n.t("scene.attribute_numberofreturns")]);
+			if(attributesList.indexOf("source id") >= 0) options.push(['source id', i18n.t("scene.attribute_source")]);
+			if(attributesList.indexOf("gps-time") >= 0) options.push(['gps-time', i18n.t("scene.attribute_gpstime")]);
+					
+			options.push(
+				['color', i18n.t("scene.attribute_color")],
+				['matcap', i18n.t("scene.attribute_matcap")],
+				['indices', i18n.t("scene.attribute_index")],
+				['level of detail', i18n.t("scene.attribute_levelofdetail")],
+				['composite', i18n.t("scene.attribute_composite")]
+			);
+			
 			let attributeSelection = panel.find('#optMaterial');
 			for(let option of options){
-				let elOption = $(`<option>${option}</option>`);
+				let [key, value] = option;
+				
+				let elOption = $(`<option value='${key}'>${value}</option>`);	
 				attributeSelection.append(elOption);
 			}
 
 			let updateMaterialPanel = (event, ui) => {
-				let selectedValue = attributeSelection.selectmenu().val();
+				let selectedValue = attributeSelection.selectmenu().val();								
 				material.activeAttributeName = selectedValue;
 
 				const attribute = pointcloud.getAttribute(selectedValue);
-
-				const isIntensity = attribute !== null 
-					&& (attribute.name === "intensity" || attribute.name === "intensity gradient");
+				const isIntensity = attribute !== null && (attribute.name === "intensity" || attribute.name === "intensity gradient");
 				if(isIntensity){
 					if(pointcloud.material.intensityRange[0] === Infinity){
 						pointcloud.material.intensityRange = attribute.range;
@@ -438,7 +453,6 @@ export class PropertiesPanel{
 					const [min, max] = attribute.range;
 
 					let selectedRange = material.getRange(attribute.name);
-
 					if(!selectedRange){
 						selectedRange = [...attribute.range];
 					}
@@ -451,20 +465,18 @@ export class PropertiesPanel{
 						values: selectedRange,
 						slide: (event, ui) => {
 							let [a, b] = ui.values;
-
 							material.setRange(attribute.name, [a, b]);
 						}
 					});
-
-					// material.extraRange = [min, max];
 				}
-
+				
 				let blockWeights = $('#materials\\.composite_weight_container');
 				let blockElevation = $('#materials\\.elevation_container');
 				let blockRGB = $('#materials\\.rgb_container');
 				let blockExtra = $('#materials\\.extra_container');
 				let blockColor = $('#materials\\.color_container');
 				let blockIntensity = $('#materials\\.intensity_container');
+				let blockGradient = $('#materials\\.gradient_container');
 				let blockIndex = $('#materials\\.index_container');
 				let blockTransition = $('#materials\\.transition_container');
 				let blockGps = $('#materials\\.gpstime_container');
@@ -472,6 +484,7 @@ export class PropertiesPanel{
 
 				blockIndex.css('display', 'none');
 				blockIntensity.css('display', 'none');
+				blockGradient.css('display', 'none');
 				blockElevation.css('display', 'none');
 				blockRGB.css('display', 'none');
 				blockExtra.css('display', 'none');
@@ -480,17 +493,16 @@ export class PropertiesPanel{
 				blockTransition.css('display', 'none');
 				blockMatcap.css('display', 'none');
 				blockGps.css('display', 'none');
-
+				
 				if (selectedValue === 'composite') {
 					blockWeights.css('display', 'block');
 					blockElevation.css('display', 'block');
 					blockRGB.css('display', 'block');
-					blockIntensity.css('display', 'block');
-				} else if (selectedValue === 'elevation') {
+					blockIntensity.css('display', 'block');																	 
+					blockGradient.css('display', 'block');
+				} else if (selectedValue === 'elevation') {													 
 					blockElevation.css('display', 'block');
-				} else if (selectedValue === 'RGB and Elevation') {
-					blockRGB.css('display', 'block');
-					blockElevation.css('display', 'block');
+					blockGradient.css('display', 'block');
 				} else if (selectedValue === 'rgba') {
 					blockRGB.css('display', 'block');
 				} else if (selectedValue === 'color') {
@@ -499,20 +511,24 @@ export class PropertiesPanel{
 					blockIntensity.css('display', 'block');
 				} else if (selectedValue === 'intensity gradient') {
 					blockIntensity.css('display', 'block');
+					blockGradient.css('display', 'block');
 				} else if (selectedValue === "indices" ){
-					blockIndex.css('display', 'block');
+					blockGradient.css('display', 'block');
 				} else if (selectedValue === "matcap" ){
 					blockMatcap.css('display', 'block');
 				} else if (selectedValue === "classification" ){
-					// add classification color selctor?
+					
 				} else if (selectedValue === "gps-time" ){
-					blockGps.css('display', 'block');
+					//blockGps.css('display', 'block');
+					blockGradient.css('display', 'block');
 				} else if(selectedValue === "number of returns"){
-					
+					blockGradient.css('display', 'block');					
 				} else if(selectedValue === "return number"){
-					
+								
 				} else if(selectedValue === "source id"){
-					
+
+				} else if(selectedValue === "level of detail"){
+					blockGradient.css('display', 'block');					
 				} else{
 					blockExtra.css('display', 'block');
 				}
@@ -538,6 +554,7 @@ export class PropertiesPanel{
 			for(let scheme of schemes){
 				let elScheme = $(`
 					<span style="flex-grow: 1;">
+					
 					</span>
 				`);
 
@@ -646,6 +663,17 @@ export class PropertiesPanel{
 				}
 			});
 
+			panel.find('#sldIntensityRange').slider({ 
+				range: true,
+				min: 0, max: 1, step: 0.01,
+				values: [0, 1],
+				slide: (event, ui) => {
+					let min = (Number(ui.values[0]) === 0) ? 0 : parseInt(Math.pow(2, 16 * ui.values[0]));
+					let max = parseInt(Math.pow(2, 16 * ui.values[1]));
+					material.intensityRange = [min, max];
+				}
+			});
+			
 			panel.find('#sldIntensityGamma').slider({
 				value: material.intensityGamma,
 				min: 0, max: 4, step: 0.01,
@@ -705,7 +733,7 @@ export class PropertiesPanel{
 				showInput: true,
 				preferredFormat: 'rgb',
 				cancelText: '',
-				chooseText: 'Apply',
+				chooseText: i18n.t("scene.color_apply"),
 				color: `#${material.color.getHexString()}`,
 				move: color => {
 					let cRGB = color.toRgb();
@@ -737,7 +765,7 @@ export class PropertiesPanel{
 
 				let range = material.elevationRange;
 
-				panel.find('#lblHeightRange').html(`${range[0].toFixed(2)} to ${range[1].toFixed(2)}`);
+				panel.find('#lblHeightRange').html(`[${range[0].toFixed(2)}, ${range[1].toFixed(2)}]`);
 				panel.find('#sldHeightRange').slider({min: bMin, max: bMax, values: range});
 			};
 
@@ -768,7 +796,7 @@ export class PropertiesPanel{
 			let updateIntensityRange = function () {
 				let range = material.intensityRange;
 
-				panel.find('#lblIntensityRange').html(`${parseInt(range[0])} to ${parseInt(range[1])}`);
+				panel.find('#lblIntensityRange').html(`[${parseInt(range[0])}, ${parseInt(range[1])}]`);
 			};
 
 			{
@@ -779,7 +807,7 @@ export class PropertiesPanel{
 
 			{
 				let elGradientRepeat = panel.find("#gradient_repeat_option");
-				elGradientRepeat.selectgroup({title: "Gradient"});
+				elGradientRepeat.selectgroup();
 
 				elGradientRepeat.find("input").click( (e) => {
 					this.viewer.setElevationGradientRepeat(ElevationGradientRepeat[e.target.value]);
@@ -832,9 +860,7 @@ export class PropertiesPanel{
 		}
 
 	}
-
 	
-
 	setMeasurement(object){
 
 		let TYPE = {
@@ -859,7 +885,7 @@ export class PropertiesPanel{
 					return TYPE.POINT;
 				} else if (!measurement.showDistances && !measurement.showArea && measurement.showAngles) {
 					return TYPE.ANGLE;
-				} else if (measurement.showHeight) {
+				} else if (measurement.showHeight || measurement.showAzimuth) {
 					return TYPE.HEIGHT;
 				} else if (measurement.showCircle) {
 					return TYPE.CIRCLE;
@@ -873,10 +899,11 @@ export class PropertiesPanel{
 			}
 		};
 
-		//this.container.html("measurement");
-
 		let type = getType(object);
 		let Panel = type.panel;
+		
+		console.log("type");
+		console.log(type);
 
 		let panel = new Panel(this.viewer, object, this);
 		this.container.append(panel.elContent);
@@ -896,5 +923,4 @@ export class PropertiesPanel{
 		let panel = new CameraAnimationPanel(this.viewer, this, animation)
 		this.container.append(panel.elContent);
 	}
-
 }

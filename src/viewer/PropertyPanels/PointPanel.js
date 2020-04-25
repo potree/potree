@@ -17,7 +17,7 @@ export class PointPanel extends MeasurePanel{
 				<div style="display: flex; margin-top: 12px">
 					<span></span>
 					<span style="flex-grow: 1"></span>
-					<img name="remove" class="button-icon" src="${removeIconPath}" style="width: 16px; height: 16px"/>
+					<img name="remove" data-i18n="[title]scene.button_remove" class="button-icon" src="${removeIconPath}" style="width: 16px; height: 16px"/>
 				</div>
 			</div>
 		`);
@@ -42,5 +42,7 @@ export class PointPanel extends MeasurePanel{
 		let elAttributesContainer = this.elContent.find('.attributes_table_container');
 		elAttributesContainer.empty();
 		elAttributesContainer.append(this.createAttributesTable());
+		
+		this.elContent.i18n();
 	}
 };

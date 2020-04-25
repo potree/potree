@@ -14,7 +14,7 @@ export class AnnotationPanel{
 		<div class="propertypanel_content">
 			<table>
 				<tr>
-					<th colspan="3">position</th>
+					<th colspan="3"><span data-i18n="annotations.annotation_position">`+i18n.t("annotations.annotation_position")+`</span></th>
 					<th></th>
 				</tr>
 				<tr>
@@ -22,7 +22,7 @@ export class AnnotationPanel{
 					<td align="center" id="annotation_position_y" style="width: 25%"></td>
 					<td align="center" id="annotation_position_z" style="width: 25%"></td>
 					<td align="right" id="copy_annotation_position" style="width: 25%">
-						<img name="copyPosition" title="copy" class="button-icon" src="${copyIconPath}" style="width: 16px; height: 16px"/>
+						<img name="copy" data-i18n="[title]scene.button_copy" class="button-icon" src="${copyIconPath}" style="width: 16px; height: 16px"/>
 					</td>
 				</tr>
 
@@ -30,16 +30,14 @@ export class AnnotationPanel{
 
 			<div>
 
-				<div class="heading">Title</div>
+				<div class="heading"><span data-i18n="annotations.annotation_title">`+i18n.t("annotations.annotation_title")+`</span></div>
 				<div id="annotation_title" contenteditable="true">
 					Annotation Title
 				</div>
 
-				<div class="heading">Description</div>
+				<div class="heading"><span data-i18n="annotations.annotation_description">`+i18n.t("annotations.annotation_description")+`</span></div>
 				<div id="annotation_description" contenteditable="true">
-					A longer description of this annotation. 
-						Can be multiple lines long. TODO: the user should be able
-						to modify title and description. 
+					A longer description of this annotation.
 				</div>
 
 			</div>
@@ -47,14 +45,14 @@ export class AnnotationPanel{
 		</div>
 		`);
 
-		this.elCopyPosition = this.elContent.find("img[name=copyPosition]");
+		this.elCopyPosition = this.elContent.find("img[name=copy]");
 		this.elCopyPosition.click( () => {
 			let pos = this.annotation.position.toArray();
 			let msg = pos.map(c => c.toFixed(3)).join(", ");
 			Utils.clipboardCopy(msg);
 
 			this.viewer.postMessage(
-					`Copied value to clipboard: <br>'${msg}'`,
+					`<span data-i18n=\"scene.camera_copy">`+i18n.t("scene.camera_copy")+`</span>: <br>'${msg}'`,
 					{duration: 3000});
 		});
 
@@ -86,6 +84,6 @@ export class AnnotationPanel{
 		elTitle.html(annotation.title);
 		elDescription.html(annotation.description);
 
-
+		this.elContent.i18n();
 	}
 };

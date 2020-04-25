@@ -12,17 +12,17 @@ export class VolumePanel extends MeasurePanel{
 		let removeIconPath = Potree.resourcePath + '/icons/remove.svg';
 
 		let lblLengthText = new Map([
-			[BoxVolume, "length"],
+			[BoxVolume, `<span data-i18n="scene.measure_length">`+i18n.t("scene.measure_length")+`</span>`],
 			[SphereVolume, "rx"],
 		]).get(measurement.constructor);
 
 		let lblWidthText = new Map([
-			[BoxVolume, "width"],
+			[BoxVolume, `<span data-i18n="scene.measure_width">`+i18n.t("scene.measure_width")+`</span>`],
 			[SphereVolume, "ry"],
 		]).get(measurement.constructor);
 
 		let lblHeightText = new Map([
-			[BoxVolume, "height"],
+			[BoxVolume, `<span data-i18n="scene.measure_height">`+i18n.t("scene.measure_height")+`</span>`],
 			[SphereVolume, "rz"],
 		]).get(measurement.constructor);
 
@@ -42,7 +42,7 @@ export class VolumePanel extends MeasurePanel{
 						<td align="center" id="angle_cell_betta" style="width: 33%"></td>
 						<td align="center" id="angle_cell_gamma" style="width: 33%"></td>
 						<td align="right" style="width: 25%">
-							<img name="copyRotation" title="copy" class="button-icon" src="${copyIconPath}" style="width: 16px; height: 16px"/>
+							<img name="copyRotation" data-i18n="[title]scene.button_copy" class="button-icon" src="${copyIconPath}" style="width: 16px; height: 16px"/>
 						</td>
 					</tr>
 				</table>
@@ -59,13 +59,12 @@ export class VolumePanel extends MeasurePanel{
 						<td align="center" id="cell_width" style="width: 33%"></td>
 						<td align="center" id="cell_height" style="width: 33%"></td>
 						<td align="right" style="width: 25%">
-							<img name="copyScale" title="copy" class="button-icon" src="${copyIconPath}" style="width: 16px; height: 16px"/>
+							<img name="copyScale" data-i18n="[title]scene.button_copy" class="button-icon" src="${copyIconPath}" style="width: 16px; height: 16px"/>
 						</td>
 					</tr>
 				</table>
 
-				<br>
-				<span style="font-weight: bold">Volume: </span>
+				<span style="font-weight: bold"><span data-i18n="scene.measure_volume">`+i18n.t("scene.measure_volume")+`</span>: </span>
 				<span id="measurement_volume"></span>
 
 				<!--
@@ -79,7 +78,7 @@ export class VolumePanel extends MeasurePanel{
 				<li>
 					<label style="whitespace: nowrap">
 						<input id="volume_clip" type="checkbox"/>
-						<span>make clip volume</span>
+						<span data-i18n="scene.measure_make_clip_volume">` + i18n.t("scene.measure_make_clip_volume") +`</span>
 					</label>
 				</li>
 
@@ -91,13 +90,13 @@ export class VolumePanel extends MeasurePanel{
 
 				<!-- ACTIONS -->
 				<li style="display: grid; grid-template-columns: auto auto; grid-column-gap: 5px; margin-top: 10px">
-					<input id="volume_reset_orientation" type="button" value="reset orientation"/>
-					<input id="volume_make_uniform" type="button" value="make uniform"/>
+					<input id="volume_reset_orientation" type="button" data-i18n="[value]scene.measure_volume_reset_orientation"/>
+					<input id="volume_make_uniform" type="button" data-i18n="[value]scene.measure_volume_reset_size"/>
 				</li>
 				<div style="display: flex; margin-top: 12px">
 					<span></span>
 					<span style="flex-grow: 1"></span>
-					<img name="remove" class="button-icon" src="${removeIconPath}" style="width: 16px; height: 16px"/>
+					<img name="remove" data-i18n="[title]scene.button_remove" class="button-icon" src="${removeIconPath}" style="width: 16px; height: 16px"/>
 				</div>
 			</div>
 		`);
@@ -119,7 +118,7 @@ export class VolumePanel extends MeasurePanel{
 			Utils.clipboardCopy(msg);
 
 			this.viewer.postMessage(
-					`Copied value to clipboard: <br>'${msg}'`,
+					`<span data-i18n=\"scene.camera_copy">`+i18n.t("scene.camera_copy")+`</span>: <br>'${msg}'`,
 					{duration: 3000});
 		});
 
@@ -130,7 +129,7 @@ export class VolumePanel extends MeasurePanel{
 			Utils.clipboardCopy(msg);
 
 			this.viewer.postMessage(
-					`Copied value to clipboard: <br>'${msg}'`,
+					`<span data-i18n=\"scene.camera_copy">`+i18n.t("scene.camera_copy")+`</span>: <br>'${msg}'`,
 					{duration: 3000});
 		});
 
@@ -382,6 +381,7 @@ export class VolumePanel extends MeasurePanel{
 
 		this.elCheckClip.prop("checked", this.measurement.clip);
 		this.elCheckShow.prop("checked", this.measurement.visible);
-
+		
+		this.elContent.i18n();
 	}
 };

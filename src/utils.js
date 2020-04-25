@@ -811,7 +811,11 @@ export class Utils {
 
 	static getMeasurementIcon(measurement){
 		if (measurement instanceof Measure) {
-			if (measurement.showDistances && !measurement.showArea && !measurement.showAngles) {
+			if (measurement.showCircle) {
+				return `${Potree.resourcePath}/icons/circle.svg`;
+			} else if (measurement.showAzimuth) {
+				return `${Potree.resourcePath}/icons/azimuth.svg`;
+			} else if (measurement.showDistances && !measurement.showArea && !measurement.showAngles) {
 				return `${Potree.resourcePath}/icons/distance.svg`;
 			} else if (measurement.showDistances && measurement.showArea && !measurement.showAngles) {
 				return `${Potree.resourcePath}/icons/area.svg`;
@@ -917,8 +921,7 @@ export class Utils {
 			return new THREE.Vector3(...northVec, p1.z).sub(p1);
 		}else{
 			// if there is no projection, assume [0, 1, 0] as north direction
-
-			const vec = p1.clone().add(new THREE.Vector3(0, 1, 0).multiplyScalar(distance));
+			const vec = new THREE.Vector3(0, 1, 0).multiplyScalar(distance);
 			
 			return vec;
 		}

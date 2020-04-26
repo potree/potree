@@ -276,10 +276,6 @@ export class MapView{
 			this.sceneProjection = null;
 			this.getAnnotationsLayer().getSource().clear();
 			
-			let mapCenter = this.getMapCenter();
-			let view = this.map.getView();
-			view.setCenter(mapCenter);
-			
 			this.setScene(e.scene);
 		});
 

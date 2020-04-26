@@ -218,6 +218,8 @@ float getLOD(){
 	vec3 offset = vec3(0.0, 0.0, 0.0);
 	int iOffset = int(uVNStart);
 	float depth = uLevel;
+
+	float alpha = 0.0;
 	for(float i = 0.0; i <= 30.0; i++){
 		float nodeSizeAtLevel = uOctreeSize / pow(2.0, i + uLevel + 0.0);
 		
@@ -227,6 +229,11 @@ float getLOD(){
 		
 		vec4 value = texture2D(visibleNodes, vec2(float(iOffset) / 2048.0, 0.0));
 		int mask = int(round(value.r * 255.0));
+		alpha = value.a * 255.0 - 10.0;
+
+		// if(alpha > 0.0){
+		// 	return depth - 1.0;
+		// }
 
 		if(isBitSet(mask, index)){
 			// there are more visible child nodes at this position
@@ -240,14 +247,23 @@ float getLOD(){
 			depth++;
 		}else{
 			// no more visible child nodes at this position
-			return value.a * 255.0;
-			//return depth;
+
+			// if(uIsLeafNode){
+			// 	return 20.0;
+			// }
+
+			return depth + alpha;
+			//return value.a * 255.0;
 		}
 		
 		offset = offset + (vec3(1.0, 1.0, 1.0) * nodeSizeAtLevel * 0.5) * index3d;
 	}
+
+	// if(uIsLeafNode){
+	// 	return 20.0;
+	// }
 		
-	return depth;
+	return depth + alpha;
 }
 
 float getSpacing(){
@@ -344,7 +360,7 @@ float getLOD(){
 		float factor = length(pos * splitv / size);
 		if(factor < 0.5){
 			// left
-		if(children == 0 || children == 2){
+			if(children == 0 || children == 2){
 				return depth;
 			}
 		}else{
@@ -640,7 +656,8 @@ float getPointSize(){
 		} else {
 
 			if(uIsLeafNode && false){
-				pointSize = size * spacing * projFactor;
+				// pointSize = size * spacing * projFactor;
+				pointSize = 1.0;
 			}else{
 				float worldSpaceSize = 1.0 * size * r / getPointSizeAttenuation();
 				pointSize = worldSpaceSize * projFactor;

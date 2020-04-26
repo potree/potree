@@ -124,6 +124,7 @@ export class BinaryLoader{
 
 			let numPoints = e.data.buffer.byteLength / pointAttributes.byteSize;
 			
+			node.density = data.density;
 			node.numPoints = numPoints;
 			node.geometry = geometry;
 			node.mean = new THREE.Vector3(...data.mean);
@@ -138,7 +139,8 @@ export class BinaryLoader{
 			buffer: buffer,
 			pointAttributes: pointAttributes,
 			version: this.version.version,
-			min: [ node.boundingBox.min.x, node.boundingBox.min.y, node.boundingBox.min.z ],
+			min: node.boundingBox.min,
+			max: node.boundingBox.max,
 			offset: [node.pcoGeometry.offset.x, node.pcoGeometry.offset.y, node.pcoGeometry.offset.z],
 			scale: this.scale,
 			spacing: node.spacing,

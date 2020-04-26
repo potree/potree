@@ -3,71 +3,26 @@
 import {Version} from "../../Version.js";
 import {PointAttributes, PointAttribute} from "../../loader/PointAttributes.js";
 
-/* global onmessage:true postMessage:false */
-/* exported onmessage */
-// http://jsperf.com/uint8array-vs-dataview3/3
-function CustomView (buffer) {
-	this.buffer = buffer;
-	this.u8 = new Uint8Array(buffer);
-
-	let tmp = new ArrayBuffer(8);
-	let tmpf = new Float32Array(tmp);
-	let tmpd = new Float64Array(tmp);
-	let tmpu8 = new Uint8Array(tmp);
-	let tmpi8 = new Int8Array(tmp);
-
-	this.getUint32 = function (i) {
-		return (this.u8[i + 3] << 24) | (this.u8[i + 2] << 16) | (this.u8[i + 1] << 8) | this.u8[i];
-	};
-
-	this.getUint16 = function (i) {
-		return (this.u8[i + 1] << 8) | this.u8[i];
-	};
-
-	this.getFloat32 = function (i) {
-		tmpu8[0] = this.u8[i + 0];
-		tmpu8[1] = this.u8[i + 1];
-		tmpu8[2] = this.u8[i + 2];
-		tmpu8[3] = this.u8[i + 3];
-
-		return tmpf[0];
-	};
-
-	this.getFloat64 = function (i) {
-		tmpu8[0] = this.u8[i + 0];
-		tmpu8[1] = this.u8[i + 1];
-		tmpu8[2] = this.u8[i + 2];
-		tmpu8[3] = this.u8[i + 3];
-		tmpu8[4] = this.u8[i + 4];
-		tmpu8[5] = this.u8[i + 5];
-		tmpu8[6] = this.u8[i + 6];
-		tmpu8[7] = this.u8[i + 7];
-
-		return tmpd[0];
-	};
-
-	this.getUint8 = function (i) {
-		return this.u8[i];
-	};
-}
-
 Potree = {};
+
+const gridSize = 64;
+const grid = new Int32Array(gridSize * gridSize * gridSize);
+let cellIterationID = 0;
 
 onmessage = function (event) {
 
-	// let buffer = event.data.buffer;
-	// let pointAttributes = event.data.pointAttributes;
-	let {buffer, pointAttributes, scale, min} = event.data;
+	let tStart = performance.now();
+	
+	let {buffer, pointAttributes, scale, offset, min, max} = event.data;
+	let {nodeMin, nodeMax} = event.data;
 
 	let numPoints = buffer.byteLength / pointAttributes.byteSize;
-	let cv = new CustomView(buffer);
-
-	// let scale = event.data.scale;
-	// let min = event.data.min;
+	let cv = new DataView(buffer);
 
 	
 	let attributeBuffers = {};
 	let attributeOffset = 0;
+	let density = 0.0;
 
 	let bytesPerPoint = 0;
 	for (let pointAttribute of pointAttributes.attributes) {
@@ -76,25 +31,56 @@ onmessage = function (event) {
 
 	for (let pointAttribute of pointAttributes.attributes) {
 		
-		if (pointAttribute.name === "POSITION_CARTESIAN") {
+		if (pointAttribute.name === "position") {
 			let buff = new ArrayBuffer(numPoints * 4 * 3);
 			let positions = new Float32Array(buff);
+
+			cellIterationID++;
+			let numCells = 0;
+			let nodeSize = max.x - min.x;
 		
 			for (let j = 0; j < numPoints; j++) {
 				
 				let pointOffset = j * bytesPerPoint;
 
-				let x = (cv.getUint32(pointOffset + attributeOffset + 0, true) * scale) - min.x;
-				let y = (cv.getUint32(pointOffset + attributeOffset + 4, true) * scale) - min.y;
-				let z = (cv.getUint32(pointOffset + attributeOffset + 8, true) * scale) - min.z;
+				let x = (cv.getInt32(pointOffset + attributeOffset + 0, true) * scale.x) + offset.x; //- min.x;
+				let y = (cv.getInt32(pointOffset + attributeOffset + 4, true) * scale.y) + offset.y; //- min.y;
+				let z = (cv.getInt32(pointOffset + attributeOffset + 8, true) * scale.z) + offset.z; //- min.z;
 
-				positions[3 * j + 0] = x;
-				positions[3 * j + 1] = y;
-				positions[3 * j + 2] = z;
+				let mx = x - min.x;
+				let my = y - min.y;
+				let mz = z - min.z;
+
+				positions[3 * j + 0] = mx;
+				positions[3 * j + 1] = my;
+				positions[3 * j + 2] = mz;
+
+				let nx = mx / nodeSize;
+				let ny = my / nodeSize;
+				let nz = mz / nodeSize;
+
+				let gx = parseInt(Math.max(Math.min(gridSize * nx, gridSize - 1), 0));
+				let gy = parseInt(Math.max(Math.min(gridSize * ny, gridSize - 1), 0));
+				let gz = parseInt(Math.max(Math.min(gridSize * nz, gridSize - 1), 0));
+				let gridIndex = gx + gy * gridSize + gz * gridSize * gridSize;
+
+				if(grid[gridIndex] != cellIterationID){
+					grid[gridIndex] = cellIterationID;
+					numCells++;
+				}
+
+			}
+
+			{
+				let ratio = numPoints / numCells;
+				// let name = event.data.name;
+				// console.log(`${name}: ${ratio}`);
+
+				density = ratio;
 			}
 
 			attributeBuffers[pointAttribute.name] = { buffer: buff, attribute: pointAttribute };
-		}else if(pointAttribute.name === "RGBA"){
+		}else if(pointAttribute.name === "rgba"){
 			let buff = new ArrayBuffer(numPoints * 4);
 			let colors = new Uint8Array(buff);
 
@@ -104,6 +90,27 @@ onmessage = function (event) {
 				colors[4 * j + 0] = cv.getUint8(pointOffset + attributeOffset + 0);
 				colors[4 * j + 1] = cv.getUint8(pointOffset + attributeOffset + 1);
 				colors[4 * j + 2] = cv.getUint8(pointOffset + attributeOffset + 2);
+			}
+
+			attributeBuffers[pointAttribute.name] = { buffer: buff, attribute: pointAttribute };
+		}else if(pointAttribute.name === "rgb"){
+			let buff = new ArrayBuffer(numPoints * 4);
+			let colors = new Uint8Array(buff);
+
+			for (let j = 0; j < numPoints; j++) {
+				let pointOffset = j * bytesPerPoint;
+
+				let r = cv.getUint16(pointOffset + attributeOffset + 0);
+				let g = cv.getUint16(pointOffset + attributeOffset + 2);
+				let b = cv.getUint16(pointOffset + attributeOffset + 4);
+
+				r = r >= 256 ? r / 256 : r;
+				g = g >= 256 ? g / 256 : g;
+				b = b >= 256 ? b / 256 : b;
+
+				colors[4 * j + 0] = r;
+				colors[4 * j + 1] = g;
+				colors[4 * j + 2] = b;
 			}
 
 			attributeBuffers[pointAttribute.name] = { buffer: buff, attribute: pointAttribute };
@@ -126,6 +133,7 @@ onmessage = function (event) {
 	let message = {
 		buffer: buffer,
 		attributeBuffers: attributeBuffers,
+		density: density,
 	};
 
 	let transferables = [];
@@ -133,6 +141,9 @@ onmessage = function (event) {
 		transferables.push(message.attributeBuffers[property].buffer);
 	}
 	transferables.push(buffer);
+
+	let duration = performance.now() - tStart;
+	console.log(`${name}: ${duration.toFixed(3)}ms`);
 
 	postMessage(message, transferables);
 };

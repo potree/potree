@@ -304,6 +304,10 @@ export class PointCloudOctree extends PointCloudTree {
 
 		// copy array
 		nodes = nodes.slice();
+		//nodes = nodes.filter(node => node.geometryNode.density > 1.5);
+		// if(Potree.debug.vnTextureBlacklist){
+		// 	nodes = nodes.filter(node => !Potree.debug.vnTextureBlacklist.includes(node.name));
+		// }
 
 		// sort by level and index, e.g. r, r0, r3, r4, r01, r07, r30, ...
 		let sort = function (a, b) {
@@ -315,38 +319,6 @@ export class PointCloudOctree extends PointCloudTree {
 			return 0;
 		};
 		nodes.sort(sort);
-
-		// code sample taken from three.js src/math/Ray.js
-		let v1 = new THREE.Vector3();
-		let intersectSphereBack = (ray, sphere) => {
-			v1.subVectors( sphere.center, ray.origin );
-			let tca = v1.dot( ray.direction );
-			let d2 = v1.dot( v1 ) - tca * tca;
-			let radius2 = sphere.radius * sphere.radius;
-
-			if(d2 > radius2){
-				return null;
-			}
-
-			let thc = Math.sqrt( radius2 - d2 );
-
-			// t1 = second intersect point - exit point on back of sphere
-			let t1 = tca + thc;
-
-			if(t1 < 0 ){
-				return null;
-			}
-
-			return t1;
-		};
-
-		let lodRanges = new Map();
-		let leafNodeLodRanges = new Map();
-
-		let bBox = new THREE.Box3();
-		let bSphere = new THREE.Sphere();
-		let worldDir = new THREE.Vector3();
-		let cameraRay = new THREE.Ray(camera.position, camera.getWorldDirection(worldDir));
 
 		let nodeMap = new Map();
 		let offsetsToChild = new Array(nodes.length).fill(Infinity);
@@ -372,10 +344,41 @@ export class PointCloudOctree extends PointCloudTree {
 				data[parentOffset * 4 + 2] = (offsetsToChild[parentOffset] % 256);
 			}
 
-			data[i * 4 + 3] = node.name.length - 1;
-		}
+			//data[i * 4 + 3] = node.name.length - 1;
 
-		var a = 10;
+			if(node.name === "r4667"){
+				let a = 10;
+			}
+
+			if(Potree.debug.vnTextureBlacklist){
+				let isBlacklisted = Potree.debug.vnTextureBlacklist.includes(node.name);
+				data[i * 4 + 3] = isBlacklisted ? node.name.length - 1 : 0;
+			}else{
+
+				let density = node.geometryNode.density;
+
+				if(density < 1.5){
+					data[i * 4 + 3] = 9;
+				}else{
+
+					//data[i * 4 + 3] = 10;
+					if(density < 6){
+						data[i * 4 + 3] = 10;
+					}else if(density < 16){
+						data[i * 4 + 3] = 11;
+					}else if(density < 4 * 16){
+						data[i * 4 + 3] = 12;
+					}else if(density < 4 * 4 * 16){
+						data[i * 4 + 3] = 13;
+					}else{
+						data[i * 4 + 3] = 10;
+					}
+					
+				}
+				//let value = node.geometryNode.density > 1.5 ? 0 : 1;
+				
+			}
+		}
 
 		if(Potree.measureTimings){
 			performance.mark("computeVisibilityTextureData-end");

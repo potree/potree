@@ -3,54 +3,6 @@
 import {Version} from "../Version.js";
 import {PointAttributes, PointAttribute, PointAttributeTypes} from "../loader/PointAttributes.js";
 
-/* global onmessage:true postMessage:false */
-/* exported onmessage */
-// http://jsperf.com/uint8array-vs-dataview3/3
-function CustomView (buffer) {
-	this.buffer = buffer;
-	this.u8 = new Uint8Array(buffer);
-
-	let tmp = new ArrayBuffer(8);
-	let tmpf = new Float32Array(tmp);
-	let tmpd = new Float64Array(tmp);
-	let tmpu8 = new Uint8Array(tmp);
-	let tmpi8 = new Int8Array(tmp);
-
-	this.getUint32 = function (i) {
-		return (this.u8[i + 3] << 24) | (this.u8[i + 2] << 16) | (this.u8[i + 1] << 8) | this.u8[i];
-	};
-
-	this.getUint16 = function (i) {
-		return (this.u8[i + 1] << 8) | this.u8[i];
-	};
-
-	this.getFloat32 = function (i) {
-		tmpu8[0] = this.u8[i + 0];
-		tmpu8[1] = this.u8[i + 1];
-		tmpu8[2] = this.u8[i + 2];
-		tmpu8[3] = this.u8[i + 3];
-
-		return tmpf[0];
-	};
-
-	this.getFloat64 = function (i) {
-		tmpu8[0] = this.u8[i + 0];
-		tmpu8[1] = this.u8[i + 1];
-		tmpu8[2] = this.u8[i + 2];
-		tmpu8[3] = this.u8[i + 3];
-		tmpu8[4] = this.u8[i + 4];
-		tmpu8[5] = this.u8[i + 5];
-		tmpu8[6] = this.u8[i + 6];
-		tmpu8[7] = this.u8[i + 7];
-
-		return tmpd[0];
-	};
-
-	this.getUint8 = function (i) {
-		return this.u8[i];
-	};
-}
-
 const typedArrayMapping = {
 	"int8":   Int8Array,
 	"int16":  Int16Array,
@@ -66,20 +18,28 @@ const typedArrayMapping = {
 
 Potree = {};
 
+const gridSize = 64;
+const grid = new Int32Array(gridSize * gridSize * gridSize);
+let cellIterationID = 0;
+
 onmessage = function (event) {
 
 	performance.mark("binary-decoder-start");
+
+	let {buffer, pointAttributes} = event.data;
+	let {nodeOffset, scale, spacing, hasChildren, name} = event.data;
+	let {min, max} = event.data;
 	
-	let buffer = event.data.buffer;
-	let pointAttributes = event.data.pointAttributes;
+	// let buffer = event.data.buffer;
+	// let pointAttributes = event.data.pointAttributes;
 	let numPoints = buffer.byteLength / pointAttributes.byteSize;
-	let cv = new CustomView(buffer);
+	let cv = new DataView(buffer);
 	let version = new Version(event.data.version);
-	let nodeOffset = event.data.offset;
-	let scale = event.data.scale;
-	let spacing = event.data.spacing;
-	let hasChildren = event.data.hasChildren;
-	let name = event.data.name;
+	// let nodeOffset = event.data.offset;
+	// let scale = event.data.scale;
+	// let spacing = event.data.spacing;
+	// let hasChildren = event.data.hasChildren;
+	// let name = event.data.name;
 	
 	let tightBoxMin = [ Number.POSITIVE_INFINITY, Number.POSITIVE_INFINITY, Number.POSITIVE_INFINITY ];
 	let tightBoxMax = [ Number.NEGATIVE_INFINITY, Number.NEGATIVE_INFINITY, Number.NEGATIVE_INFINITY ];
@@ -93,6 +53,10 @@ onmessage = function (event) {
 		if (pointAttribute.name === "POSITION_CARTESIAN") {
 			let buff = new ArrayBuffer(numPoints * 4 * 3);
 			let positions = new Float32Array(buff);
+
+			cellIterationID++;
+			let numCells = 0;
+			let nodeSize = max.x - min.x;
 		
 			for (let j = 0; j < numPoints; j++) {
 				let x, y, z;
@@ -122,6 +86,28 @@ onmessage = function (event) {
 				tightBoxMax[0] = Math.max(tightBoxMax[0], x);
 				tightBoxMax[1] = Math.max(tightBoxMax[1], y);
 				tightBoxMax[2] = Math.max(tightBoxMax[2], z);
+
+				let nx = x / nodeSize;
+				let ny = y / nodeSize;
+				let nz = z / nodeSize;
+
+				let gx = parseInt(Math.max(Math.min(gridSize * nx, gridSize - 1), 0));
+				let gy = parseInt(Math.max(Math.min(gridSize * ny, gridSize - 1), 0));
+				let gz = parseInt(Math.max(Math.min(gridSize * nz, gridSize - 1), 0));
+				let gridIndex = gx + gy * gridSize + gz * gridSize * gridSize;
+
+				if(grid[gridIndex] != cellIterationID){
+					grid[gridIndex] = cellIterationID;
+					numCells++;
+				}
+			}
+
+			{
+				let ratio = numPoints / numCells;
+				let name = event.data.name;
+				console.log(`${name}: ${ratio}`);
+
+				density = ratio;
 			}
 
 			attributeBuffers[pointAttribute.name] = { buffer: buff, attribute: pointAttribute };
@@ -364,6 +350,7 @@ onmessage = function (event) {
 		mean: mean,
 		attributeBuffers: attributeBuffers,
 		tightBoundingBox: { min: tightBoxMin, max: tightBoxMax },
+		density: density,
 	};
 
 	let transferables = [];

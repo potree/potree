@@ -713,19 +713,8 @@ export class Renderer {
 				shader.setUniform("uDebug", false);
 			}
 
-			// let isLeaf = false;
-			// if(node instanceof PointCloudOctreeNode){
-			// 	isLeaf = Object.keys(node.children).length === 0;
-			// }else if(node instanceof PointCloudArena4DNode){
-			// 	isLeaf = node.geometryNode.isLeaf;
-			// }
-			// shader.setUniform("uIsLeafNode", isLeaf);
-
-			// let isLeaf = node.children.filter(n => n != null).length === 0;
-			// if(!isLeaf){
-			// 	continue;
-			// }
-
+			let isLeaf = node.children.filter(n => n != null).length === 0;
+			shader.setUniform("uIsLeafNode", isLeaf);
 
 			// TODO consider passing matrices in an array to avoid uniformMatrix4fv overhead
 			const lModel = shader.uniformLocations["modelMatrix"];

@@ -18,10 +18,15 @@ export class NodeLoader{
 		let byteSize = node.byteSize;
 
 		try{
+
+			if(node.name === "r4020"){
+				debugger;
+			}
+
 			let response = await fetch(this.url, {
 				headers: {
 					'content-type': 'multipart/byteranges',
-					'Range': `bytes=${byteOffset}-${byteOffset + byteSize}`,
+					'Range': `bytes=${byteOffset}-${byteOffset + byteSize - 1n}`,
 				},
 			});
 
@@ -42,9 +47,11 @@ export class NodeLoader{
 
 					let buffer = buffers[property].buffer;
 
-					if(property === "POSITION_CARTESIAN"){
+					if(property === "position"){
 						geometry.addAttribute('position', new THREE.BufferAttribute(new Float32Array(buffer), 3));
-					}else if(property === "RGBA"){
+					}else if(property === "rgba"){
+						geometry.addAttribute('rgba', new THREE.BufferAttribute(new Uint8Array(buffer), 4, true));
+					}else if(property === "rgb"){
 						geometry.addAttribute('rgba', new THREE.BufferAttribute(new Uint8Array(buffer), 4, true));
 					}else if (property === "INDICES") {
 						let bufferAttribute = new THREE.BufferAttribute(new Uint8Array(buffer), 4);
@@ -55,6 +62,7 @@ export class NodeLoader{
 				}
 				// indices ??
 
+				node.density = data.density;
 				node.geometry = geometry;
 				node.loaded = true;
 				node.loading = false;
@@ -64,16 +72,22 @@ export class NodeLoader{
 			let buffer = await response.arrayBuffer();
 
 			let pointAttributes = node.octreeGeometry.pointAttributes;
-			let scale = node.octreeGeometry.scale;
+			let scale = node.octreeGeometry.dbgScale;
+			let offset = node.octreeGeometry.dbgOffset;
 
 			let min = node.octreeGeometry.offset.clone().add(node.boundingBox.min);
+			let max = node.octreeGeometry.offset.clone().add(node.boundingBox.max);
 
 			let message = {
+				name: node.name,
 				buffer: buffer,
 				pointAttributes: pointAttributes,
 				scale: scale,
+				offset: offset,
 				min: min,
-				//min: node.boundingBox.min,
+				max: max,
+				nodeMin: node.boundingBox.min,
+				nodeMax: node.boundingBox.max,
 			};
 
 			worker.postMessage(message, [message.buffer]);
@@ -120,8 +134,35 @@ export class OctreeLoader_1_8{
 
 		let attributes = new PointAttributes();
 
-		attributes.add(PointAttribute.POSITION_CARTESIAN);
-		attributes.add(new PointAttribute("RGBA", PointAttributeTypes.DATA_TYPE_UINT8, 4));
+		//attributes.add(PointAttribute.POSITION_CARTESIAN);
+		//attributes.add(new PointAttribute("rgba", PointAttributeTypes.DATA_TYPE_UINT8, 4));
+
+		for(let attribute of aJson){
+			let {name, size, numElements, elementSize} = attribute;
+
+			let type;
+
+			// TODO: read from file
+			if(name === "position"){
+				type = PointAttributeTypes.DATA_TYPE_INT32;
+			}else if(name === "intensity"){
+				type = PointAttributeTypes.DATA_TYPE_UINT16;
+			}else if(name === "returns"){
+				type = PointAttributeTypes.DATA_TYPE_UINT8;
+			}else if(name === "classification"){
+				type = PointAttributeTypes.DATA_TYPE_UINT8;
+			}else if(name === "scan angle rank"){
+				type = PointAttributeTypes.DATA_TYPE_UINT8;
+			}else if(name === "user data"){
+				type = PointAttributeTypes.DATA_TYPE_UINT8;
+			}else if(name === "point source id"){
+				type = PointAttributeTypes.DATA_TYPE_UINT16;
+			}else if(name === "rgb"){
+				type = PointAttributeTypes.DATA_TYPE_UINT16;
+			}
+
+			attributes.add(new PointAttribute(name, type, numElements));
+		}
 
 		return attributes;
 	}
@@ -198,7 +239,8 @@ export class OctreeLoader_1_8{
 		let octree = new OctreeGeometry();
 		octree.url = url;
 		octree.spacing = json.spacing;
-		octree.scale = json.scale;
+		octree.dbgScale = new THREE.Vector3(...json.scale);
+		octree.dbgOffset = new THREE.Vector3(...json.offset);
 
 		let min = new THREE.Vector3(...json.boundingBox.min);
 		let max = new THREE.Vector3(...json.boundingBox.max);

@@ -25,9 +25,9 @@ Make sure you have [node.js](http://nodejs.org/) installed
 Install all dependencies, as specified in package.json,
 then, install the gulp build tool:
 
-    sudo npm install -g gulp
-    sudo npm install -g rollup
-    cd <potree_directory>
+    npm install -g gulp
+    npm install -g rollup
+    cd /var/www/potree
     npm install --save
 
 Use the ```gulp watch``` command to
@@ -45,12 +45,12 @@ Note: If you use Visual Studio Code, to avoid a potential conflict with VSC exce
 
 Deploy potree to the EC2 instances serving the Veritas sites:
 
-Active EC2 instances (as of 2020-04-02):
+Active EC2 instances (as of 2020-04-24):
 
-| Name                        | IPv4 Public IP | DNS Address              | Keypair            | Potree Location                                  | Description |
-| --------------------------- | -------------- | ------------------------ | ------------------ | ------------------------------------------------ | ----------- |
-| (prod) PotreeServer)         | 18.208.171.218 | `prod.viz.nextdroid.com` | `NextDroidDev.pem` | `~/git/GroundTruthVisualization/external/potree` | "Production" server - runs everywhere right now, except |
-|                             | 35.168.112.209 |  `dev.viz.nextdroid.com` | `NextDroidDev.pem` | `/var/www/potree`                   | "Development" server - running on dev, demo, and sites |
+| Name                     | Keypair            | Potree Location   | Description |
+| ------------------------ | ------------------ | ----------------- | ----------- |
+| `prod.viz.nextdroid.com` | `NextDroidDev.pem` | `/var/www/potree` | "Production" server - runs everywhere right now, except |
+|  `dev.viz.nextdroid.com` | `NextDroidDev.pem` | `/var/www/potree` | "Development" server - running on dev, demo, and sites |
 
 Steps for deploying (primarily for Veritas Dev server):
 [Bob has been deploying more simply, by downloading the .zip file from GitHub to his laptop, then scp'ing the zip file to the server, unzipping, stoppig nginx, moving it to the right place, then restarting nginx.]

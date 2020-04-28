@@ -274,7 +274,9 @@ export class ProfileWindow extends EventDispatcher {
 
 	initListeners () {
 		$(window).resize(() => {
+			if (this.enabled) {
 			this.render();
+			}
 		});
 
 		this.renderArea.mousedown(e => {

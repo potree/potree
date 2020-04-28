@@ -609,15 +609,16 @@ export class ProfileWindow extends EventDispatcher {
 		this.renderer.autoClear = false;
 		this.renderArea.append($(this.renderer.domElement));
 		this.renderer.domElement.tabIndex = '2222';
-		this.renderer.getContext().getExtension('EXT_frag_depth');
 		$(this.renderer.domElement).css('width', '100%');
 		$(this.renderer.domElement).css('height', '100%');
 
 
 		{
+			// See viewer.js for note on extensions
 			let gl = this.renderer.getContext();
 			gl.getExtension('EXT_frag_depth');
 			gl.getExtension('WEBGL_depth_texture');
+			gl.getExtension('WEBGL_color_buffer_float');
 
 			let extVAO = gl.getExtension('OES_vertex_array_object');
 

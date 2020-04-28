@@ -22,20 +22,20 @@ export function createPlaybar () {
                 <td><input type="checkbox" id="toggleplay">
                 <button class="button" class="play" id="playbutton" class="inline"><i class="material-icons">play_arrow</i></button>
                 <button class="button" class="pause" id="pausebutton"><i class="material-icons">pause</i></button></td>
-                <td>Time (s): <input type="number" id="time_display" min=0 value=0 step="0.001"></td>
+                <td><input type="number" id="time_display" min=0 value=0 step="0.001"> s</td>
               </tr>
             </table>
 
             <table id="windows">
               <tr>
-                <td style="text-align:right">Time Window:</td>
+                <td style="text-align:right">Time Window</td>
                 <td>[<input type="number" id="playbar_tmin">, <input type="number" id="playbar_tmax">]</td>
-                <td>(s)</td>
+                <td style="text-align:left">s</td>
               </tr>
               <tr>
-                <td style="text-align:right">Elevation Window:</td>
+                <td style="text-align:right">Elevation Window</td>
                 <td>[<input type="number" id="elevation_min">, <input type="number" id="elevation_max">]</td>
-                <td>(m)</td>
+                <td style="text-align:left">m</td>
               </tr>
             </table>
 

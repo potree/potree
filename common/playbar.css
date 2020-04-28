@@ -78,7 +78,6 @@
   top: 0px;
   /* padding-top: 10px; */
   /* padding-bottom: 5px; */
-  font-family: 'Open Sans', sans-serif;
   font-size: 125%
 }
 
@@ -135,12 +134,12 @@ input::-webkit-inner-spin-button {
   background: none;
   border: none;
   color: white;
-  font-family: 'Open Sans', sans-serif;
   font-size: 100%;
 }
 
 #time_display {
-  width: 125px;
+    width: 100px;
+    text-align: right;
 }
 
 #windows {

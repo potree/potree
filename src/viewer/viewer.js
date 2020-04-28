@@ -1760,8 +1760,12 @@ export class Viewer extends EventDispatcher{
 			
 			let clipBoxes = boxes.map( box => {
 				box.updateMatrixWorld();
-				let boxInverse = new THREE.Matrix4().getInverse(box.matrixWorld);
-				let boxPosition = box.getWorldPosition(new THREE.Vector3());
+
+				// Fix for getInverse "determinant is 0" - saves resources
+				const matrixMultipliersZero = !box.matrixWorld.elements[0] && !box.matrixWorld.elements[1] && !box.matrixWorld.elements[2] && !box.matrixWorld.elements[3];
+				const boxInverse = matrixMultipliersZero ? new THREE.Matrix4() : new THREE.Matrix4().getInverse(box.matrixWorld);
+
+				const boxPosition = box.getWorldPosition(new THREE.Vector3());
 				return {box: box, inverse: boxInverse, position: boxPosition};
 			});
 

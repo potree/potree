@@ -697,10 +697,6 @@ export class ProfileWindow extends EventDispatcher {
 			.call(this.yAxis);
 	}
 
-	setProfile (profile) {
-		this.render();
-	}
-
 	addPoints (pointcloud, points) {
 
 		let entry = this.pointclouds.get(pointcloud);

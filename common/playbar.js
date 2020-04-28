@@ -29,12 +29,12 @@ export function createPlaybar () {
             <table id="windows">
               <tr>
                 <td style="text-align:right">Time Window:</td>
-                <td>[<input type="number" id="playbar_tmin" value=-0.05 max=0.05 step="0.01">, <input type="number" id="playbar_tmax" value=0.05 min=-0.05 step="0.01">]</td>
+                <td>[<input type="number" id="playbar_tmin">, <input type="number" id="playbar_tmax">]</td>
                 <td>(s)</td>
               </tr>
               <tr>
                 <td style="text-align:right">Elevation Window:</td>
-                <td>[<input type="number" id="elevation_min" value=-0.5 max=0.5 step="0.01">, <input type="number" id="elevation_max" value=0.5 min=-0.5 step="0.01">]</td>
+                <td>[<input type="number" id="elevation_min">, <input type="number" id="elevation_max">]</td>
                 <td>(m)</td>
               </tr>
             </table>
@@ -79,16 +79,9 @@ export function createPlaybar () {
         const t = sliderVal * lidarRange + lidarOffset;
         $("#demo").html((t-lidarOffset).toFixed(4));
 
-        // var dtMin = Number($("#playbar_tmin").val());
-        // var dtMax = Number($("#playbar_tmax").val());
-
-        const dtMin = window.animationEngine.activeWindow.backward;
-        const dtMax = window.animationEngine.activeWindow.forward;
-
-        const tmin = t + dtMin;
-        const tmax = t + dtMax;
-
-        window.viewer.setFilterGPSTimeRange(tmin, tmax);
+        const dtMin = numberOrZero(window.animationEngine.activeWindow.backward);
+        const dtMax = numberOrZero(window.animationEngine.activeWindow.forward);
+        window.viewer.setFilterGPSTimeRange(t + dtMin, t + dtMax);
       }
     }
 
@@ -126,7 +119,8 @@ export function createPlaybar () {
       updateTimeWindow();
     }
 
-    playbarhtml.find("#myRange").on('input', updateTimeWindow);
+    // Make sure to call updateTimeWindow with disable false
+    playbarhtml.find("#myRange").on('input', () => updateTimeWindow());
 
     playbarhtml.find("#myRange").on('wheel', function(e) {
       const slider = playbarhtml.find("#myRange");
@@ -450,8 +444,8 @@ function addPlaybarListeners() {
 	// PointCloud:
 	animationEngine.tweenTargets.push((gpsTime) => {
 		// debugger; // account for pointcloud offset
-		let minGpsTime = gpsTime+animationEngine.activeWindow.backward;
-		let maxGpsTime = gpsTime+animationEngine.activeWindow.forward;
+                const minGpsTime = gpsTime+numberOrZero(animationEngine.activeWindow.backward);
+                const maxGpsTime = gpsTime+numberOrZero(animationEngine.activeWindow.forward);
 		viewer.setFilterGPSTimeRange(minGpsTime, maxGpsTime);
 		viewer.setFilterGPSTimeExtent(minGpsTime+1.5*animationEngine.activeWindow.backward, maxGpsTime+1.5*animationEngine.activeWindow.forward);
 	});

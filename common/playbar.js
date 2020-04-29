@@ -444,9 +444,10 @@ function addPlaybarListeners() {
 	// PointCloud:
 	animationEngine.tweenTargets.push((gpsTime) => {
 		// debugger; // account for pointcloud offset
-                const minGpsTime = gpsTime+numberOrZero(animationEngine.activeWindow.backward);
-                const maxGpsTime = gpsTime+numberOrZero(animationEngine.activeWindow.forward);
-		viewer.setFilterGPSTimeRange(minGpsTime, maxGpsTime);
-		viewer.setFilterGPSTimeExtent(minGpsTime+1.5*animationEngine.activeWindow.backward, maxGpsTime+1.5*animationEngine.activeWindow.forward);
+                const {backward, forward} = animationEngine.activeWindow;
+                const timeMin = numberOrZero(backward);
+                const timeMax = numberOrZero(forward);
+		viewer.setFilterGPSTimeRange(gpsTime + timeMin, gpsTime + timeMax);
+		viewer.setFilterGPSTimeExtent(gpsTime + 2.5 * timeMin, gpsTime + 2.5 * timeMax);
 	});
 }

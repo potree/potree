@@ -233,11 +233,15 @@ export function animateRTK() {
 			// let elevationDeltaMax = 2;
 			let clouds = viewer.scene.pointclouds;
                         const elevationWindow = window.animationEngine.elevationWindow;
+                        const {min, max} = elevationWindow;
+                        const elevationMin = Number(min);
+                        const elevationMax = Number(max);
 			for (let ii = 0, numClouds = clouds.length; ii < numClouds; ii++) {
                                 meshPosition.setFromMatrixPosition(mesh.matrixWorld);
                                 const zheight = meshPosition.z;
+                                // Is this setting ever used?
 			        elevationWindow.z = zheight;
-				viewer.scene.pointclouds[ii].material.elevationRange = [elevationWindow.z + elevationWindow.min, elevationWindow.z + elevationWindow.max];
+			        viewer.scene.pointclouds[ii].material.elevationRange = [zheight + elevationMin, zheight + elevationMax];
 				// TODO set elevation slider range extent
 			}
 

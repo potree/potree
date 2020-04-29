@@ -535,8 +535,7 @@ export class PropertiesPanel{
 				let bMax = box.max.z + 0.2 * bWidth;
 
 				let range = material.elevationRange;
-
-				panel.find('#lblHeightRange').html(`${range[0].toFixed(2)} to ${range[1].toFixed(2)}`);
+				panel.find('#lblHeightRange').html(`${Number(range[0]).toFixed(2)} to ${Number(range[1]).toFixed(2)}`);
 				panel.find('#sldHeightRange').slider({min: bMin, max: bMax, values: range});
 			};
 

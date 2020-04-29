@@ -22,20 +22,20 @@ export function createPlaybar () {
                 <td><input type="checkbox" id="toggleplay">
                 <button class="button" class="play" id="playbutton" class="inline"><i class="material-icons">play_arrow</i></button>
                 <button class="button" class="pause" id="pausebutton"><i class="material-icons">pause</i></button></td>
-                <td>Time (s): <input type="number" id="time_display" min=0 value=0 step="0.001"></td>
+                <td><input type="number" id="time_display" min=0 value=0 step="0.001"> s</td>
               </tr>
             </table>
 
             <table id="windows">
               <tr>
-                <td style="text-align:right">Time Window:</td>
-                <td>[<input type="number" id="playbar_tmin" value=-0.05 max=0.05 step="0.01">, <input type="number" id="playbar_tmax" value=0.05 min=-0.05 step="0.01">]</td>
-                <td>(s)</td>
+                <td style="text-align:right">Time Window</td>
+                <td>[<input type="number" id="playbar_tmin">, <input type="number" id="playbar_tmax">]</td>
+                <td style="text-align:left">s</td>
               </tr>
               <tr>
-                <td style="text-align:right">Elevation Window:</td>
-                <td>[<input type="number" id="elevation_min" value=-0.5 max=0.5 step="0.01">, <input type="number" id="elevation_max" value=0.5 min=-0.5 step="0.01">]</td>
-                <td>(m)</td>
+                <td style="text-align:right">Elevation Window</td>
+                <td>[<input type="number" id="elevation_min">, <input type="number" id="elevation_max">]</td>
+                <td style="text-align:left">m</td>
               </tr>
             </table>
 
@@ -79,16 +79,9 @@ export function createPlaybar () {
         const t = sliderVal * lidarRange + lidarOffset;
         $("#demo").html((t-lidarOffset).toFixed(4));
 
-        // var dtMin = Number($("#playbar_tmin").val());
-        // var dtMax = Number($("#playbar_tmax").val());
-
-        const dtMin = window.animationEngine.activeWindow.backward;
-        const dtMax = window.animationEngine.activeWindow.forward;
-
-        const tmin = t + dtMin;
-        const tmax = t + dtMax;
-
-        window.viewer.setFilterGPSTimeRange(tmin, tmax);
+        const dtMin = numberOrZero(window.animationEngine.activeWindow.backward);
+        const dtMax = numberOrZero(window.animationEngine.activeWindow.forward);
+        window.viewer.setFilterGPSTimeRange(t + dtMin, t + dtMax);
       }
     }
 
@@ -126,7 +119,8 @@ export function createPlaybar () {
       updateTimeWindow();
     }
 
-    playbarhtml.find("#myRange").on('input', updateTimeWindow);
+    // Make sure to call updateTimeWindow with disable false
+    playbarhtml.find("#myRange").on('input', () => updateTimeWindow());
 
     playbarhtml.find("#myRange").on('wheel', function(e) {
       const slider = playbarhtml.find("#myRange");
@@ -450,9 +444,10 @@ function addPlaybarListeners() {
 	// PointCloud:
 	animationEngine.tweenTargets.push((gpsTime) => {
 		// debugger; // account for pointcloud offset
-		let minGpsTime = gpsTime+animationEngine.activeWindow.backward;
-		let maxGpsTime = gpsTime+animationEngine.activeWindow.forward;
-		viewer.setFilterGPSTimeRange(minGpsTime, maxGpsTime);
-		viewer.setFilterGPSTimeExtent(minGpsTime+1.5*animationEngine.activeWindow.backward, maxGpsTime+1.5*animationEngine.activeWindow.forward);
+                const {backward, forward} = animationEngine.activeWindow;
+                const timeMin = numberOrZero(backward);
+                const timeMax = numberOrZero(forward);
+		viewer.setFilterGPSTimeRange(gpsTime + timeMin, gpsTime + timeMax);
+		viewer.setFilterGPSTimeExtent(gpsTime + 2.5 * timeMin, gpsTime + 2.5 * timeMax);
 	});
 }

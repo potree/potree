@@ -24,5 +24,13 @@ export default [
 			name: 'Potree',
 			sourcemap: false
 		}
+	},{
+		input: 'src/modules/Loader_LAS_Octree/LasOctreeDecoderWorker.js',
+		output: {
+			file: 'build/potree/workers/LasOctreeDecoderWorker.js',
+			format: 'es',
+			name: 'Potree',
+			sourcemap: false
+		}
 	}
 ]

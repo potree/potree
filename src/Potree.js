@@ -67,6 +67,7 @@ export * from "./modules/Images360/Images360.js";
 export * from "./modules/CameraAnimation/CameraAnimation.js";
 
 export * from "./modules/Loader_1.8/OctreeLoader_1_8.js";
+export * from "./modules/Loader_LAS_Octree/LasOctreeLoader.js";
 
 export {OrbitControls} from "./navigation/OrbitControls.js";
 export {FirstPersonControls} from "./navigation/FirstPersonControls.js";

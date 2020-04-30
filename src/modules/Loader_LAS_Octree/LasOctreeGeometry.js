@@ -67,10 +67,6 @@ export class OctreeGeometryNode{
 		return this.boundingBox;
 	}
 
-	// loadHierachyThenPoints(){
-	// 	// TODO
-	// }
-
 	loadPoints(){
 		this.octreeGeometry.loader.load(this);
 	}
@@ -85,12 +81,6 @@ export class OctreeGeometryNode{
 		Potree.numNodesLoading++;
 
 		this.loadPoints();
-
-		// if ((this.level % this.pcoGeometry.hierarchyStepSize) === 0 && this.hasChildren) {
-		// 	this.loadHierachyThenPoints();
-		// } else {
-		// 	this.loadPoints();
-		// }
 	}
 
 	getNumPoints(){

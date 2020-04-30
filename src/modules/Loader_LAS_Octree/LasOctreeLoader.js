@@ -1,18 +1,12 @@
 
 import {PointAttribute, PointAttributes, PointAttributeTypes} from "../../loader/PointAttributes.js";
-import {OctreeGeometry, OctreeGeometryNode} from "./OctreeGeometry.js";
+import {OctreeGeometry, OctreeGeometryNode} from "./LasOctreeGeometry.js";
 
 export class NodeLoader{
 
-	constructor(url){
+	constructor(url, offsetToPointRecords){
 		this.url = url;
-	}
-
-	async loadHierarchy(node){
-
-		let {byteOffset, byteSize} = node.proxyData;
-
-		await OctreeLoader_1_8.loadHierarchy(this.url, node, byteOffset, byteSize);
+		this.offsetToPointRecords = offsetToPointRecords;
 	}
 
 	async load(node){
@@ -21,15 +15,10 @@ export class NodeLoader{
 			return;
 		}
 
-		if(node.proxyData){
-			await this.loadHierarchy(node);
-		}
-
-		let byteOffset = node.byteOffset;
+		let byteOffset = node.byteOffset + this.offsetToPointRecords;
 		let byteSize = node.byteSize;
 
 		try{
-
 			let response = await fetch(this.url, {
 				headers: {
 					'content-type': 'multipart/byteranges',
@@ -37,7 +26,7 @@ export class NodeLoader{
 				},
 			});
 
-			let workerPath = Potree.scriptPath + '/workers/OctreeDecoderWorker.js';
+			let workerPath = Potree.scriptPath + '/workers/LasOctreeDecoderWorker.js';
 			let worker = Potree.workerPool.getWorker(workerPath);
 
 			worker.onmessage = function (e) {
@@ -101,7 +90,6 @@ export class NodeLoader{
 		}catch(e){
 			node.loaded = false;
 			node.loading = false;
-			Potree.numNodesLoading--;
 
 			console.log(`failed to load ${node.name}`);
 			console.log(`trying again!`);
@@ -136,7 +124,7 @@ function createChildAABB(aabb, index){
 	return new THREE.Box3(min, max);
 }
 
-export class OctreeLoader_1_8{
+export class LasOctreeLoader{
 
 	static parseAttributes(aJson){
 
@@ -177,21 +165,12 @@ export class OctreeLoader_1_8{
 		return attributes;
 	}
 
-	static async loadHierarchy(url, root, firstByte, byteSize){
+	static async parseHierarchy(buffer, root){
 
-		
-
-		let hierarchyPath = `${url}/../hierarchy.bin`;
-		let response = await fetch(hierarchyPath, {
-			headers: {
-				'content-type': 'multipart/byteranges',
-				'Range': `bytes=${firstByte}-${firstByte + byteSize - 1n}`,
-			},
-		});
-		let buffer = await response.arrayBuffer();
+		// let buffer = await response.arrayBuffer();
 		let view = new DataView(buffer);
 
-		let bytesPerNode = 22;
+		let bytesPerNode = 21;
 		let numNodes = buffer.byteLength / bytesPerNode;
 
 		let octree = root.octreeGeometry;
@@ -201,30 +180,14 @@ export class OctreeLoader_1_8{
 
 			let node = nodes[i];
 
-			let type = view.getUint8(i * bytesPerNode + 0);
-			let childMask = view.getUint8(i * bytesPerNode + 1);
-			let numPoints = view.getUint32(i * bytesPerNode + 2, true);
-			let byteOffset = view.getBigInt64(i * bytesPerNode + 6, true);
-			let byteSize = view.getBigInt64(i * bytesPerNode + 14, true);
+			let childMask = view.getUint8(i * bytesPerNode);
+			let numPoints = view.getUint32(i * bytesPerNode + 1, true);
+			let byteOffset = view.getBigInt64(i * bytesPerNode + 5, true);
+			let byteSize = view.getBigInt64(i * bytesPerNode + 13, true);
 
-			if(type == 2){
-				node.proxyData = {
-					byteOffset: byteOffset,
-					byteSize: byteSize,
-				};
-			}else{
-				node.byteOffset = byteOffset;
-				node.byteSize = byteSize;
-				node.numPoints = numPoints;
-			}
-
-			// console.log({
-			// 	name: node.name,
-			// 	type: type,
-			// 	numPoints: numPoints,
-			// 	byteOffset: byteOffset,
-			// 	byteSize: byteSize,
-			// });
+			node.byteOffset = byteOffset;
+			node.byteSize = byteSize;
+			node.numPoints = numPoints;
 
 			for(let childIndex = 0; childIndex < 8; childIndex++){
 				let childExists = ((1 << childIndex) & childMask) !== 0;
@@ -249,19 +212,44 @@ export class OctreeLoader_1_8{
 
 			
 		}
+
+		console.log("lala");
 	}
 
 	static async load(url){
 
-		let cloudJsPath = url;
-		// let hierarchyPath = `${url}/../hierarchy.json`;
-		let dataPath = `${url}/../octree.bin`;
+		let lasPath = url;
 
-		let cloudJsResponse = fetch(cloudJsPath);
-		// let hierarchyResponse = fetch(hierarchyPath);
+		let headerSize = 375 + 4 + 4;
+		let responseHeader = await fetch(lasPath, {
+			headers: {
+				'content-type': 'multipart/byteranges',
+				'Range': `bytes=0-${headerSize - 1}`,
+			},
+		});
 
-		let json = await (await cloudJsResponse).json();
-		// let hierarchy = await (await hierarchyResponse).json();
+		let headerBuffer = await responseHeader.arrayBuffer();
+		let headerView = new DataView(headerBuffer);
+		let metadataSize = headerView.getInt32(375, true);
+		let hierarchyDataSize = headerView.getInt32(375 + 4, true);
+		let offsetToPointRecords = BigInt(headerSize + metadataSize + hierarchyDataSize);
+
+		let responseMetadata = await fetch(lasPath, {
+			headers: {
+				'content-type': 'multipart/byteranges',
+				'Range': `bytes=${headerSize}-${headerSize + metadataSize - 1}`,
+			},
+		});
+
+		let responseHierarchyData = await fetch(lasPath, {
+			headers: {
+				'content-type': 'multipart/byteranges',
+				'Range': `bytes=${headerSize + metadataSize}-${headerSize + metadataSize + hierarchyDataSize - 1}`,
+			},
+		});
+
+		let json = await responseMetadata.json();
+		let hierarchyBuffer = await responseHierarchyData.arrayBuffer();
 
 		let octree = new OctreeGeometry();
 		octree.url = url;
@@ -283,21 +271,20 @@ export class OctreeLoader_1_8{
 		octree.boundingSphere = boundingBox.getBoundingSphere(new THREE.Sphere());
 		octree.tightBoundingSphere = boundingBox.getBoundingSphere(new THREE.Sphere());
 		octree.offset = offset;
-		octree.pointAttributes = OctreeLoader_1_8.parseAttributes(json.attributes);
-		octree.loader = new NodeLoader(dataPath);
+		octree.pointAttributes = LasOctreeLoader.parseAttributes(json.attributes);
+		octree.loader = new NodeLoader(lasPath, offsetToPointRecords);
 
 		let root = new OctreeGeometryNode("r", octree, boundingBox);
 		root.level = 0;
 		root.hasChildren = false;
 		root.spacing = octree.spacing;
 		root.byteOffset = 0;
-		root.hierarchyStepSize = json.hierarchy.stepSize;
 		// root.byteSize = 1000 * 16;
 		// root.numPoints = 1000;
 
 		octree.root = root;
 
-		await OctreeLoader_1_8.loadHierarchy(url, root, 0n, BigInt(json.hierarchy.firstChunkSize));
+		await LasOctreeLoader.parseHierarchy(hierarchyBuffer, root);
 
 		// let traverse = (node, nodeJson) => {
 		// 	node.numPoints = nodeJson.numPoints;

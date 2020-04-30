@@ -143,7 +143,7 @@ onmessage = function (event) {
 	transferables.push(buffer);
 
 	let duration = performance.now() - tStart;
-	// console.log(`${name}: ${duration.toFixed(3)}ms`);
+	console.log(`${name}: ${duration.toFixed(3)}ms`);
 
 	postMessage(message, transferables);
 };

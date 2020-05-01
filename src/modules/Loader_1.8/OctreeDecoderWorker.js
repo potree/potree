@@ -114,6 +114,21 @@ onmessage = function (event) {
 			}
 
 			attributeBuffers[pointAttribute.name] = { buffer: buff, attribute: pointAttribute };
+		}else{
+			let attributeSize = pointAttribute.byteSize;
+			let buff = new ArrayBuffer(numPoints * attributeSize);
+			let uint8 = new Uint8Array(buff);
+
+			for (let j = 0; j < numPoints; j++) {
+				let pointOffset = j * bytesPerPoint;
+
+				for(let k = 0; k < attributeSize; k++){
+					let value = cv.getUint8(pointOffset + attributeOffset + k);
+					uint8[j * attributeSize + k] = value;
+				}
+			}
+
+			attributeBuffers[pointAttribute.name] = { buffer: buff, attribute: pointAttribute };
 		}
 
 		attributeOffset += pointAttribute.byteSize;

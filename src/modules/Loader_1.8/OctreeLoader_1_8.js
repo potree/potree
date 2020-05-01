@@ -49,6 +49,17 @@ export class NodeLoader{
 
 
 				let geometry = new THREE.BufferGeometry();
+
+				let bufferTypes = {
+					"int8": Int8Array,
+					"int16": Int16Array,
+					"int32": Int32Array,
+					"uint8": Uint8Array,
+					"uint16": Uint16Array,
+					"uint32": Uint32Array,
+					"float": Float32Array,
+					"double": Float64Array,
+				};
 				
 				for(let property in buffers){
 
@@ -64,10 +75,27 @@ export class NodeLoader{
 						let bufferAttribute = new THREE.BufferAttribute(new Uint8Array(buffer), 4);
 						bufferAttribute.normalized = true;
 						geometry.addAttribute('indices', bufferAttribute);
-					} 
+					}else{
+						let attributes = node.octreeGeometry.pointAttributes;
+						let attribute = attributes.attributes.find(a => a.name === property);
+						let XArray = bufferTypes[attribute.type.name];
+						let typedBuffer = new XArray(buffer)
+						let numElements = attribute.numElements;
+						let bufferAttribute = new THREE.BufferAttribute(typedBuffer, numElements, false);
+						geometry.addAttribute(property, bufferAttribute);
+
+						// TODO: currently generates fake/debug data
+						bufferAttribute.potree = {
+							offset: 0,
+							scale: 1,
+							preciseBuffer: null,
+							range: [0, 255],
+						};
+						attribute.range[0] = 0;
+						attribute.range[1] = 255;
+					}
 
 				}
-				// indices ??
 
 				node.density = data.density;
 				node.geometry = geometry;
@@ -142,34 +170,22 @@ export class OctreeLoader_1_8{
 
 		let attributes = new PointAttributes();
 
-		//attributes.add(PointAttribute.POSITION_CARTESIAN);
-		//attributes.add(new PointAttribute("rgba", PointAttributeTypes.DATA_TYPE_UINT8, 4));
+		let types = {
+			"int8":   PointAttributeTypes.DATA_TYPE_INT8,
+			"int16":  PointAttributeTypes.DATA_TYPE_INT16,
+			"int32":  PointAttributeTypes.DATA_TYPE_INT32,
+			"uint8":  PointAttributeTypes.DATA_TYPE_UINT8,
+			"uint16": PointAttributeTypes.DATA_TYPE_UINT16,
+			"uint32": PointAttributeTypes.DATA_TYPE_UINT32,
+			"float":  PointAttributeTypes.DATA_TYPE_FLOAT,
+			"double": PointAttributeTypes.DATA_TYPE_DOUBLE,
+		};
 
 		for(let attribute of aJson){
 			let {name, size, numElements, elementSize} = attribute;
+			let typename = attribute.type;
 
-			let type;
-
-			// TODO: read from file
-			if(name === "position"){
-				type = PointAttributeTypes.DATA_TYPE_INT32;
-			}else if(name === "intensity"){
-				type = PointAttributeTypes.DATA_TYPE_UINT16;
-			}else if(name === "returns"){
-				type = PointAttributeTypes.DATA_TYPE_UINT8;
-			}else if(name === "classification"){
-				type = PointAttributeTypes.DATA_TYPE_UINT8;
-			}else if(name === "scan angle rank"){
-				type = PointAttributeTypes.DATA_TYPE_UINT8;
-			}else if(name === "user data"){
-				type = PointAttributeTypes.DATA_TYPE_UINT8;
-			}else if(name === "point source id"){
-				type = PointAttributeTypes.DATA_TYPE_UINT16;
-			}else if(name === "rgb"){
-				type = PointAttributeTypes.DATA_TYPE_UINT16;
-			}else if(name === "gps time"){
-				type = PointAttributeTypes.DATA_TYPE_DOUBLE;
-			}
+			let type = types[typename];
 
 			attributes.add(new PointAttribute(name, type, numElements));
 		}

@@ -1,10 +1,4 @@
 
-
-import {Version} from "../../Version.js";
-import {PointAttributes, PointAttribute} from "../../loader/PointAttributes.js";
-
-Potree = {};
-
 const gridSize = 64;
 const grid = new Int32Array(gridSize * gridSize * gridSize);
 let cellIterationID = 0;
@@ -14,11 +8,9 @@ onmessage = function (event) {
 	let tStart = performance.now();
 	
 	let {buffer, pointAttributes, scale, offset, min, max} = event.data;
-	let {nodeMin, nodeMax} = event.data;
 
 	let numPoints = buffer.byteLength / pointAttributes.byteSize;
 	let cv = new DataView(buffer);
-
 	
 	let attributeBuffers = {};
 	let attributeOffset = 0;
@@ -70,14 +62,9 @@ onmessage = function (event) {
 				}
 
 			}
-
-			{
-				let ratio = numPoints / numCells;
-				// let name = event.data.name;
-				// console.log(`${name}: ${ratio}`);
-
-				density = ratio;
-			}
+			
+			let ratio = numPoints / numCells;
+			density = ratio;
 
 			attributeBuffers[pointAttribute.name] = { buffer: buff, attribute: pointAttribute };
 		}else if(pointAttribute.name === "rgba"){
@@ -142,7 +129,7 @@ onmessage = function (event) {
 			indices[i] = i;
 		}
 		
-		attributeBuffers["INDICES"] = { buffer: buff, attribute: PointAttribute.INDICES };
+		attributeBuffers["INDICES"] = { buffer: buff };
 	}
 
 	let message = {
@@ -157,8 +144,12 @@ onmessage = function (event) {
 	}
 	transferables.push(buffer);
 
-	let duration = performance.now() - tStart;
-	// console.log(`${name}: ${duration.toFixed(3)}ms`);
+
+	//let duration = performance.now() - tStart;
+	//let pointsPerSec = ((numPoints / duration) * 1000);
+	//pointsPerSec = (pointsPerSec / (1000 * 1000)).toFixed(1);
+	//console.log(`${name}: ${duration.toFixed(3)}ms, numPoints: ${numPoints}, points/sec: ${pointsPerSec}M`);
+
 
 	postMessage(message, transferables);
 };

@@ -83,7 +83,13 @@ export async function loadTracks(s3, bucket, name, shaderMaterial, animationEngi
       }
 
       let bytesArray = new Uint8Array(response);
-      const trackGeometries = parseTracks(bytesArray, shaderMaterial, FlatbufferModule, animationEngine);
+      const trackGeometries = await parseTracks(bytesArray, shaderMaterial, FlatbufferModule, animationEngine);
+      loadingBarTotal.set(Math.min(Math.ceil(loadingBarTotal.value + (100/numberTasks))), 100);
+      loadingBar.set(0);
+      if (loadingBarTotal.value >= 100) {
+        removeLoadingScreen();
+      }
+      await pause();
       await callback(trackGeometries, );
     };
 

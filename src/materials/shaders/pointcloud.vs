@@ -149,7 +149,7 @@ float round(float number){
 // OCTREE
 // ---------------------
 
-#if (defined(adaptive_point_size) || defined(color_type_lod)) && defined(tree_type_octree)
+#if (defined(adaptive_point_size) || defined(color_type_level_of_detail)) && defined(tree_type_octree)
 /**
  * number of 1-bits up to inclusive index position
  * number is treated as if it were an integer in the range 0-255
@@ -307,7 +307,7 @@ float getPointSizeAttenuation(){
 // KD-TREE
 // ---------------------
 
-#if (defined(adaptive_point_size) || defined(color_type_lod)) && defined(tree_type_kdtree)
+#if (defined(adaptive_point_size) || defined(color_type_level_of_detail)) && defined(tree_type_kdtree)
 
 float getLOD(){
 	vec3 offset = vec3(0.0, 0.0, 0.0);

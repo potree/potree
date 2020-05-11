@@ -47,6 +47,7 @@ export class EarthControls extends EventDispatcher {
 			}
 
 			let camStart = this.camStart;
+			let camera = this.scene.getActiveCamera();
 			let view = this.viewer.scene.view;
 
 			// let camera = this.viewer.scene.camera;
@@ -55,7 +56,7 @@ export class EarthControls extends EventDispatcher {
 
 			if (e.drag.mouse === MOUSE.LEFT) {
 
-				let ray = Utils.mouseToRay(mouse, camStart, domElement.clientWidth, domElement.clientHeight);
+				let ray = Utils.mouseToRay(mouse, camera, domElement.clientWidth, domElement.clientHeight);
 				let plane = new THREE.Plane().setFromNormalAndCoplanarPoint(
 					new THREE.Vector3(0, 0, 1),
 					this.pivot);

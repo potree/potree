@@ -57,7 +57,6 @@
 			viewer.toggleSidebar();
 		});
 		
-		// Sigeom
 		Potree.loadPointCloud("http://5.9.65.151/mschuetz/potree/resources/pointclouds/opentopography/CA13_1.4/cloud.js", "CA13", function(e){
 			viewer.scene.addPointCloud(e.pointcloud);
 			e.pointcloud.position.z = 0;

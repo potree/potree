@@ -527,9 +527,8 @@ export class Utils {
 		};
 
 		let vector = new THREE.Vector3(normalizedMouse.x, normalizedMouse.y, 0.5);
-		let origin = new THREE.Vector3(normalizedMouse.x, normalizedMouse.y, 0);
+		let origin = camera.position.clone();
 		vector.unproject(camera);
-		origin.unproject(camera);
 		let direction = new THREE.Vector3().subVectors(vector, origin).normalize();
 
 		let ray = new THREE.Ray(origin, direction);

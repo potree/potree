@@ -244,7 +244,8 @@ export class PointCloudOctreeGeometryNode extends PointCloudTreeNode{
 			this.geometry = null;
 			this.loaded = false;
 
-			// this.dispatchEvent( { type: 'dispose' } );
+			this.dispatchEvent( { type: 'dispose' } );
+			
 			for (let i = 0; i < this.oneTimeDisposeHandlers.length; i++) {
 				let handler = this.oneTimeDisposeHandlers[i];
 				handler();

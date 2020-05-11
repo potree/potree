@@ -557,8 +557,6 @@ export class Renderer {
 
 	deleteBuffer(geometry) {
 
-		return;
-
 		let gl = this.gl;
 		let webglBuffer = this.buffers.get(geometry);
 		if (webglBuffer != null) {
@@ -606,8 +604,6 @@ export class Renderer {
 				version: 0
 			});
 		}
-
-		// INLINE https://imgs.xkcd.com/comics/preprint.png
 
 		gl.bindBuffer(gl.ARRAY_BUFFER, null);
 		gl.bindVertexArray(null);

@@ -1,19 +1,19 @@
 {
   "name": "potree",
   "private": true,
-  "version": "1.6.1",
+  "version": "1.7.0",
   "description": "WebGL point cloud viewer",
   "keywords": [
     "point",
     "cloud",
     "pointcloud",
     "octree",
-	"entwine",
+    "entwine",
     "viewer",
     "threejs",
     "webgl",
-	"browser",
-	"tool"
+    "browser",
+    "tool"
   ],
   "scripts": {
     "start": "gulp watch",

@@ -1325,10 +1325,12 @@ export class Viewer extends EventDispatcher{
 		});
 		//this.renderer.domElement.focus();
 
+		// NOTE: If extension errors occur, pass the string into this.renderer.extensions.get(x) before enabling
 		// enable frag_depth extension for the interpolation shader, if available
 		let gl = this.renderer.getContext();
 		gl.getExtension('EXT_frag_depth');
 		gl.getExtension('WEBGL_depth_texture');
+		gl.getExtension('WEBGL_color_buffer_float'); 	// Enable explicitly for more portability, EXT_color_buffer_float is the proper name in WebGL 2
 		
 		//if(gl instanceof WebGLRenderingContext){
 			let extVAO = gl.getExtension('OES_vertex_array_object');

@@ -274,7 +274,9 @@ export class ProfileWindow extends EventDispatcher {
 
 	initListeners () {
 		$(window).resize(() => {
+			if (this.enabled) {
 			this.render();
+			}
 		});
 
 		this.renderArea.mousedown(e => {
@@ -607,15 +609,12 @@ export class ProfileWindow extends EventDispatcher {
 		this.renderer.autoClear = false;
 		this.renderArea.append($(this.renderer.domElement));
 		this.renderer.domElement.tabIndex = '2222';
-		this.renderer.getContext().getExtension('EXT_frag_depth');
 		$(this.renderer.domElement).css('width', '100%');
 		$(this.renderer.domElement).css('height', '100%');
 
 
 		{
 			let gl = this.renderer.getContext();
-			gl.getExtension('EXT_frag_depth');
-			gl.getExtension('WEBGL_depth_texture');
 
 			let extVAO = gl.getExtension('OES_vertex_array_object');
 
@@ -693,10 +692,6 @@ export class ProfileWindow extends EventDispatcher {
 			.attr('class', 'y axis')
 			.attr('transform', `translate(${marginLeft}, 0)`)
 			.call(this.yAxis);
-	}
-
-	setProfile (profile) {
-		this.render();
 	}
 
 	addPoints (pointcloud, points) {

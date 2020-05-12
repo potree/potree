@@ -614,11 +614,7 @@ export class ProfileWindow extends EventDispatcher {
 
 
 		{
-			// See viewer.js for note on extensions
 			let gl = this.renderer.getContext();
-			gl.getExtension('EXT_frag_depth');
-			gl.getExtension('WEBGL_depth_texture');
-			gl.getExtension('WEBGL_color_buffer_float');
 
 			let extVAO = gl.getExtension('OES_vertex_array_object');
 

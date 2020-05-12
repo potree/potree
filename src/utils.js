@@ -5,7 +5,6 @@ import {Profile} from "./utils/Profile.js";
 import {Measure} from "./utils/Measure.js";
 import {PolygonClipVolume} from "./utils/PolygonClipVolume.js";
 
-
 export class Utils {
 	static async loadShapefileFeatures (file, callback) {
 		let features = [];
@@ -931,8 +930,14 @@ export class Utils {
 			// if there is a projection, transform coordinates to WGS84
 			// and compute angle to north there
 
-			proj4.defs("pointcloud", projection);
-			const transform = proj4("pointcloud", "WGS84");
+			let transform;
+
+			if (projection.includes('EPSG')) {
+				transform = proj4(projection, "WGS84");
+			} else {
+				proj4.defs("pointcloud", projection);
+				transform = proj4("pointcloud", "WGS84");
+			}
 
 			const llP1 = transform.forward(p1.toArray());
 			const llP2 = transform.forward(p2.toArray());

@@ -88,8 +88,8 @@ export const workerPool = new WorkerPool();
 
 export const version = {
 	major: 1,
-	minor: 6,
-	suffix: ''
+	minor: 7,
+	suffix: 'beta'
 };
 
 export let lru = new LRU();

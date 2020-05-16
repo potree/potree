@@ -474,6 +474,9 @@ export class Measure extends THREE.Object3D {
 		this.edgeLabels.splice(edgeIndex, 1);
 		this.coordinateLabels.splice(index, 1);
 
+		this.remove(this.angleLabels[index]);
+		this.angleLabels.splice(index, 1);
+
 		this.spheres.splice(index, 1);
 
 		this.update();

@@ -873,8 +873,14 @@ export class ProfileWindow extends EventDispatcher {
 		pRenderer.render(profileScene, camera, null);
 
 		let radius = Math.abs(scaleX.invert(0) - scaleX.invert(5));
-		pickSphere.scale.set(radius, radius, radius);
-		pickSphere.visible = true;
+
+		if (radius === 0) {
+			pickSphere.visible = false;
+		} else {
+			pickSphere.scale.set(radius, radius, radius);
+			pickSphere.visible = true;
+		}
+		
 		renderer.render(scene, camera);
 
 		this.requestScaleUpdate();

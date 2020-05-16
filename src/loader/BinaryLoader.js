@@ -1,9 +1,14 @@
 
-Potree.BinaryLoader = class BinaryLoader{
+
+import {Version} from "../Version.js";
+import {XHRFactory} from "../XHRFactory.js";
+
+
+export class BinaryLoader{
 
 	constructor(version, boundingBox, scale){
 		if (typeof (version) === 'string') {
-			this.version = new Potree.Version(version);
+			this.version = new Version(version);
 		} else {
 			this.version = version;
 		}
@@ -23,7 +28,7 @@ Potree.BinaryLoader = class BinaryLoader{
 			url += '.bin';
 		}
 
-		let xhr = Potree.XHRFactory.createXMLHttpRequest();
+		let xhr = XHRFactory.createXMLHttpRequest();
 		xhr.open('GET', url, true);
 		xhr.responseType = 'arraybuffer';
 		xhr.overrideMimeType('text/plain; charset=x-user-defined');
@@ -33,6 +38,7 @@ Potree.BinaryLoader = class BinaryLoader{
 					let buffer = xhr.response;
 					this.parse(node, buffer);
 				} else {
+					//console.error(`Failed to load file! HTTP status: ${xhr.status}, file: ${url}`);
 					throw new Error(`Failed to load file! HTTP status: ${xhr.status}, file: ${url}`);
 				}
 			}
@@ -71,31 +77,47 @@ Potree.BinaryLoader = class BinaryLoader{
 
 			for(let property in buffers){
 				let buffer = buffers[property].buffer;
+				let batchAttribute = buffers[property].attribute;
 
-				if (parseInt(property) === Potree.PointAttributeNames.POSITION_CARTESIAN) {
+				if (property === "POSITION_CARTESIAN") {
 					geometry.addAttribute('position', new THREE.BufferAttribute(new Float32Array(buffer), 3));
-				} else if (parseInt(property) === Potree.PointAttributeNames.COLOR_PACKED) {
-					geometry.addAttribute('color', new THREE.BufferAttribute(new Uint8Array(buffer), 4, true));
-				} else if (parseInt(property) === Potree.PointAttributeNames.INTENSITY) {
-					geometry.addAttribute('intensity', new THREE.BufferAttribute(new Float32Array(buffer), 1));
-				} else if (parseInt(property) === Potree.PointAttributeNames.CLASSIFICATION) {
-					geometry.addAttribute('classification', new THREE.BufferAttribute(new Uint8Array(buffer), 1));
-				} else if (parseInt(property) === Potree.PointAttributeNames.NORMAL_SPHEREMAPPED) {
+				} else if (property === "rgba") {
+					geometry.addAttribute("rgba", new THREE.BufferAttribute(new Uint8Array(buffer), 4, true));
+				} else if (property === "NORMAL_SPHEREMAPPED") {
 					geometry.addAttribute('normal', new THREE.BufferAttribute(new Float32Array(buffer), 3));
-				} else if (parseInt(property) === Potree.PointAttributeNames.NORMAL_OCT16) {
+				} else if (property === "NORMAL_OCT16") {
 					geometry.addAttribute('normal', new THREE.BufferAttribute(new Float32Array(buffer), 3));
-				} else if (parseInt(property) === Potree.PointAttributeNames.NORMAL) {
+				} else if (property === "NORMAL") {
 					geometry.addAttribute('normal', new THREE.BufferAttribute(new Float32Array(buffer), 3));
-				} else if (parseInt(property) === Potree.PointAttributeNames.INDICES) {
+				} else if (property === "INDICES") {
 					let bufferAttribute = new THREE.BufferAttribute(new Uint8Array(buffer), 4);
 					bufferAttribute.normalized = true;
 					geometry.addAttribute('indices', bufferAttribute);
-				} else if (parseInt(property) === Potree.PointAttributeNames.SPACING) {
+				} else if (property === "SPACING") {
 					let bufferAttribute = new THREE.BufferAttribute(new Float32Array(buffer), 1);
 					geometry.addAttribute('spacing', bufferAttribute);
+				} else {
+					const bufferAttribute = new THREE.BufferAttribute(new Float32Array(buffer), 1);
+
+					bufferAttribute.potree = {
+						offset: buffers[property].offset,
+						scale: buffers[property].scale,
+						preciseBuffer: buffers[property].preciseBuffer,
+						range: batchAttribute.range,
+					};
+
+					geometry.addAttribute(property, bufferAttribute);
+
+					const attribute = pointAttributes.attributes.find(a => a.name === batchAttribute.name);
+					attribute.range[0] = Math.min(attribute.range[0], batchAttribute.range[0]);
+					attribute.range[1] = Math.max(attribute.range[1], batchAttribute.range[1]);
+
+					if(node.getLevel() === 0){
+						attribute.initialRange = batchAttribute.range;
+					}
+
 				}
 			}
-
 
 			tightBoundingBox.max.sub(tightBoundingBox.min);
 			tightBoundingBox.min.set(0, 0, 0);
@@ -127,5 +149,5 @@ Potree.BinaryLoader = class BinaryLoader{
 	};
 
 	
-};
+}
 

@@ -9,7 +9,6 @@
 
 	<link rel="stylesheet" type="text/css" href="../build/potree/potree.css">
 	<link rel="stylesheet" type="text/css" href="../libs/jquery-ui/jquery-ui.min.css">
-	<link rel="stylesheet" type="text/css" href="../libs/perfect-scrollbar/css/perfect-scrollbar.css">
 	<link rel="stylesheet" type="text/css" href="../libs/openlayers3/ol.css">
 	<link rel="stylesheet" type="text/css" href="../libs/spectrum/spectrum.css">
 	<link rel="stylesheet" type="text/css" href="../libs/jstree/themes/mixed/style.css">
@@ -18,9 +17,9 @@
 <body>
 	<script src="../libs/jquery/jquery-3.1.1.min.js"></script>
 	<script src="../libs/spectrum/spectrum.js"></script>
-	<script src="../libs/perfect-scrollbar/js/perfect-scrollbar.jquery.js"></script>
 	<script src="../libs/jquery-ui/jquery-ui.min.js"></script>
 	<script src="../libs/three.js/build/three.min.js"></script>
+	<script src="../libs/three.js/extra/lines.js"></script>
 	<script src="../libs/other/BinaryHeap.js"></script>
 	<script src="../libs/tween/tween.min.js"></script>
 	<script src="../libs/d3/d3.js"></script>
@@ -37,7 +36,7 @@
 	<!-- INCLUDE SETTINGS HERE -->
 	
 	<div class="potree_container" style="position: absolute; width: 100%; height: 100%; left: 0px; top: 0px; ">
-		<div id="potree_render_area"></div>
+		<div id="potree_render_area" style="background-image: url('../build/potree/resources/images/background.jpg');"></div>
 		<div id="potree_sidebar_container"> </div>
 	</div>
 	
@@ -72,6 +71,17 @@
 			scene.view.lookAt(new THREE.Vector3(589851.587, 231428.213, 715.634));
 			// viewer.fitToScreen();
 		});
+
+		{ // LIGHTS
+			const directional = new THREE.DirectionalLight( 0xffffff, 1.0);
+			directional.position.set( 10, 10, 10 );
+			directional.lookAt(0, 0, 0);
+
+			const ambient = new THREE.AmbientLight(0x555555);
+
+			viewer.scene.scene.add(directional);
+			viewer.scene.scene.add(ambient);
+		}
 
 		{ // MEASUREMENTS
 			let scene = viewer.scene;
@@ -219,7 +229,7 @@
 					"icon": Potree.resourcePath + "/icons/profile.svg",
 					"onclick": function(){
 						for(let pointcloud of viewer.scene.pointclouds){
-							pointcloud.material.pointColorType = Potree.PointColorType.ELEVATION;
+							pointcloud.material.activeAttributeName = "elevation";
 							pointcloud.material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
 						}
 					}
@@ -227,7 +237,7 @@
 					"icon": Potree.resourcePath + "/icons/rgb.png",
 					"onclick": function(){
 						for(let pointcloud of viewer.scene.pointclouds){
-							pointcloud.material.pointColorType = Potree.PointColorType.RGB;
+							pointcloud.material.activeAttributeName = "rgba";
 							pointcloud.material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
 						}
 					}
@@ -236,7 +246,7 @@
 		}
 
 		{
-			let volume = new Potree.Volume();
+			let volume = new Potree.BoxVolume();
 			volume.name = "Test Volume";
 			volume.scale.set(87.70990081104037, 65.01472874807978, 95.53770288101325);
 			volume.position.set(589688.5173246722, 231341.79786558595, 792.7726157084892);

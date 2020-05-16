@@ -1,6 +1,11 @@
 
 #extension GL_EXT_frag_depth : enable
 
+// 
+// adapted from the EDL shader code from Christian Boucheny in cloud compare:
+// https://github.com/cloudcompare/trunk/tree/master/plugins/qEDL/shaders/EDL
+//
+
 precision mediump float;
 precision mediump int;
 

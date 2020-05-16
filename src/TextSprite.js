@@ -1,8 +1,87 @@
-/**
- * adapted from http://stemkoski.github.io/Three.js/Sprite-Text-Labels.html
- */
 
-Potree.TextSprite = class TextSprite extends THREE.Object3D{
+
+// /**
+//  * adapted from http://stemkoski.github.io/Three.js/Sprite-Text-Labels.html
+//  */
+
+// let vs2D = `
+// // precision mediump float;
+// // precision mediump int;
+
+// // attribute vec3 position;
+// // attribute vec4 color;
+// // attribute vec2 uv;
+
+// // uniform mat4 modelViewMatrix;
+// // uniform mat4 projectionMatrix;
+// // uniform mat3 uvTransform;
+
+// uniform vec2 uPosition;
+// uniform vec2 uScale;
+
+// varying vec2 vUv;
+
+
+// void main(){
+
+// 	vec2 pos = position.xy * uScale;
+
+// 	gl_Position = vec4(pos, 0.0, 1.0);
+
+// 	vUv = uv;
+
+
+
+// }
+
+// `;
+
+// let fs2D = `
+// precision mediump float;
+// precision mediump int;
+
+// uniform sampler2D map;
+
+// // varying vec3 vPosition;
+// // varying vec4 vColor;
+// varying vec2 vUv;
+
+
+// void main()	{
+
+// 	gl_FragColor = vec4(0.0, 1.0, 0.0, 1.0);
+
+// 	gl_FragColor = vec4(vUv, 0.0, 1.0);
+
+// 	vec4 texelColor = texture2D( map, vUv );
+// 	//texelColor = mapTexelToLinear( texelColor );
+
+// 	gl_FragColor = vec4(texelColor.xyz, 1.0);
+
+
+// }
+
+// `;
+
+// function getRawMaterial(map){
+// 	let material = new THREE.ShaderMaterial( {
+// 		uniforms: {
+// 			map: { type: "t", value: map },
+// 			uPosition: {type: "vec2", value: [0, 0]},
+// 			uScale: {type: "vec2", value: [1, 1]},
+// 		},
+// 		vertexShader: vs2D,
+// 		fragmentShader: fs2D,
+// 		side: THREE.DoubleSide,
+// 		transparent: false,
+
+// 	} );
+
+// 	return material;
+// }
+
+
+export class TextSprite extends THREE.Object3D{
 	
 	constructor(text){
 		super();
@@ -15,8 +94,11 @@ Potree.TextSprite = class TextSprite extends THREE.Object3D{
 			depthTest: false,
 			depthWrite: false});
 
+		this.texture = texture;
+
 		this.material = spriteMaterial;
-		this.sprite = new THREE.Sprite(spriteMaterial);
+		//this.material = getRawMaterial(texture);
+		this.sprite = new THREE.Sprite(this.material);
 		this.add(this.sprite);
 
 		this.borderThickness = 4;
@@ -36,25 +118,25 @@ Potree.TextSprite = class TextSprite extends THREE.Object3D{
 
 			this.update();
 		}
-	};
+	}
 
 	setTextColor(color){
 		this.textColor = color;
 
 		this.update();
-	};
+	}
 
 	setBorderColor(color){
 		this.borderColor = color;
 
 		this.update();
-	};
+	}
 
 	setBackgroundColor(color){
 		this.backgroundColor = color;
 
 		this.update();
-	};
+	}
 
 	update(){
 		let canvas = document.createElement('canvas');
@@ -95,11 +177,28 @@ Potree.TextSprite = class TextSprite extends THREE.Object3D{
 		texture.minFilter = THREE.LinearFilter;
 		texture.magFilter = THREE.LinearFilter;
 		texture.needsUpdate = true;
+		//this.material.needsUpdate = true;
+
+		// { // screen-space sprite
+		// 	let [screenWidth, screenHeight] = [1620, 937];
+
+		// 	let uniforms = this.sprite.material.uniforms;
+		// 	let aspect = spriteHeight / spriteWidth;
+		// 	let factor = 0.5;
+
+		// 	let w = spriteWidth / screenWidth;
+		// 	let h = spriteHeight / screenHeight;
+
+		// 	uniforms.uScale.value = [2 * w, 2 * h];
+		// 	//uniforms.uScale.value = [factor * 1, factor * aspect];
+		//	this.sprite.material.uniforms.map.value = texture;
+		// }
 
 		this.sprite.material.map = texture;
+		this.texture = texture;
 
 		this.sprite.scale.set(spriteWidth * 0.01, spriteHeight * 0.01, 1.0);
-	};
+	}
 
 	roundRect(ctx, x, y, w, h, r){
 		ctx.beginPath();
@@ -115,8 +214,8 @@ Potree.TextSprite = class TextSprite extends THREE.Object3D{
 		ctx.closePath();
 		ctx.fill();
 		ctx.stroke();
-	};
+	}
 
-};
+}
 
 

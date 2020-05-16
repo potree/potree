@@ -3,7 +3,13 @@
  *
  *
  */
-Potree.InputHandler = class InputHandler extends THREE.EventDispatcher {
+
+
+import {KeyCodes} from "../KeyCodes.js";
+import {Utils} from "../utils.js";
+import {EventDispatcher} from "../EventDispatcher.js";
+
+export class InputHandler extends EventDispatcher {
 	constructor (viewer) {
 		super();
 
@@ -171,7 +177,7 @@ Potree.InputHandler = class InputHandler extends THREE.EventDispatcher {
 		if (this.logMessages) console.log(this.constructor.name + ': onKeyDown');
 
 		// DELETE
-		if (e.keyCode === Potree.KeyCodes.DELETE && this.selection.length > 0) {
+		if (e.keyCode === KeyCodes.DELETE && this.selection.length > 0) {
 			this.dispatchEvent({
 				type: 'delete',
 				selection: this.selection
@@ -469,6 +475,12 @@ Potree.InputHandler = class InputHandler extends THREE.EventDispatcher {
 
 		}
 		
+		// for (let inputListener of this.getSortedListeners()) {
+		// 	inputListener.dispatchEvent({
+		// 		type: 'mousemove',
+		// 		object: null
+		// 	});
+		// }
 		
 
 		this.hoveredElements = hoveredElements;
@@ -530,7 +542,7 @@ Potree.InputHandler = class InputHandler extends THREE.EventDispatcher {
 	}
 
 	getMousePointCloudIntersection (mouse) {
-		return Potree.utils.getMousePointCloudIntersection(
+		return Utils.getMousePointCloudIntersection(
 			this.mouse, 
 			this.scene.getActiveCamera(), 
 			this.viewer, 
@@ -657,7 +669,7 @@ Potree.InputHandler = class InputHandler extends THREE.EventDispatcher {
 		}
 		
 		let camera = this.scene.getActiveCamera();
-		let ray = Potree.utils.mouseToRay(this.mouse, camera, this.domElement.clientWidth, this.domElement.clientHeight);
+		let ray = Utils.mouseToRay(this.mouse, camera, this.domElement.clientWidth, this.domElement.clientHeight);
 		
 		let raycaster = new THREE.Raycaster();
 		raycaster.ray.set(ray.origin, ray.direction);
@@ -709,4 +721,4 @@ Potree.InputHandler = class InputHandler extends THREE.EventDispatcher {
 
 		return lastDrag;
 	}
-};
+}

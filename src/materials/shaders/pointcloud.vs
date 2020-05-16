@@ -14,11 +14,15 @@ attribute float numberOfReturns;
 attribute float pointSourceID;
 attribute vec4 indices;
 attribute float spacing;
+attribute float gpsTime;
+attribute vec3 normal;
+attribute float aExtra;
 
 uniform mat4 modelMatrix;
 uniform mat4 modelViewMatrix;
 uniform mat4 projectionMatrix;
 uniform mat4 viewMatrix;
+uniform mat4 uViewInv;
 
 uniform float uScreenWidth;
 uniform float uScreenHeight;
@@ -31,7 +35,6 @@ uniform bool uDebug;
 uniform bool uUseOrthographicCamera;
 uniform float uOrthoWidth;
 uniform float uOrthoHeight;
-
 
 #define CLIPTASK_NONE 0
 #define CLIPTASK_HIGHLIGHT 1
@@ -47,11 +50,16 @@ uniform int clipMethod;
 	uniform mat4 clipBoxes[num_clipboxes];
 #endif
 
+#if defined(num_clipspheres) && num_clipspheres > 0
+	uniform mat4 uClipSpheres[num_clipspheres];
+#endif
+
 #if defined(num_clippolygons) && num_clippolygons > 0
 	uniform int uClipPolygonVCount[num_clippolygons];
 	uniform vec3 uClipPolygonVertices[num_clippolygons * 8];
 	uniform mat4 uClipPolygonWVP[num_clippolygons];
 #endif
+
 
 uniform float size;
 uniform float minSize;
@@ -71,12 +79,20 @@ uniform float uOpacity;
 
 uniform vec2 elevationRange;
 uniform vec2 intensityRange;
-uniform float intensityGamma;
-uniform float intensityContrast;
-uniform float intensityBrightness;
-uniform float rgbGamma;
-uniform float rgbContrast;
-uniform float rgbBrightness;
+
+uniform vec2 uFilterReturnNumberRange;
+uniform vec2 uFilterNumberOfReturnsRange;
+uniform vec2 uFilterPointSourceIDClipRange;
+uniform vec2 uFilterGPSTimeClipRange;
+uniform float uGpsScale;
+uniform float uGpsOffset;
+
+uniform vec2 uNormalizedGpsBufferRange;
+
+uniform vec3 uIntensity_gbc;
+uniform vec3 uRGB_gbc;
+uniform vec3 uExtra_gbc;
+
 uniform float uTransition;
 uniform float wRGB;
 uniform float wIntensity;
@@ -85,25 +101,26 @@ uniform float wClassification;
 uniform float wReturnNumber;
 uniform float wSourceID;
 
+uniform vec2 uExtraNormalizedRange;
+uniform vec2 uExtraRange;
+uniform float uExtraScale;
+uniform float uExtraOffset;
+
 uniform vec3 uShadowColor;
 
 uniform sampler2D visibleNodes;
 uniform sampler2D gradient;
 uniform sampler2D classificationLUT;
 
+#if defined(color_type_matcap)
+uniform sampler2D matcapTextureUniform;
+#endif
+uniform bool backfaceCulling;
+
 #if defined(num_shadowmaps) && num_shadowmaps > 0
 uniform sampler2D uShadowMap[num_shadowmaps];
 uniform mat4 uShadowWorldView[num_shadowmaps];
 uniform mat4 uShadowProj[num_shadowmaps];
-#endif
-
-#if defined(num_snapshots) && num_snapshots > 0
-uniform sampler2D uSnapshot[num_snapshots];
-uniform mat4 uSnapView[num_snapshots];
-uniform mat4 uSnapProj[num_snapshots];
-uniform mat4 uSnapScreenToCurrentView[num_snapshots];
-
-varying float vSnapTextureID;
 #endif
 
 varying vec3	vColor;
@@ -132,7 +149,7 @@ float round(float number){
 // OCTREE
 // ---------------------
 
-#if (defined(adaptive_point_size) || defined(color_type_lod)) && defined(tree_type_octree)
+#if (defined(adaptive_point_size) || defined(color_type_level_of_detail)) && defined(tree_type_octree)
 /**
  * number of 1-bits up to inclusive index position
  * number is treated as if it were an integer in the range 0-255
@@ -202,7 +219,7 @@ float getLOD(){
 	int iOffset = int(uVNStart);
 	float depth = uLevel;
 	for(float i = 0.0; i <= 30.0; i++){
-		float nodeSizeAtLevel = uOctreeSize  / pow(2.0, i + uLevel + 0.0);
+		float nodeSizeAtLevel = uOctreeSize / pow(2.0, i + uLevel + 0.0);
 		
 		vec3 index3d = (position-offset) / nodeSizeAtLevel;
 		index3d = floor(index3d + 0.5);
@@ -239,7 +256,7 @@ float getSpacing(){
 	float depth = uLevel;
 	float spacing = uNodeSpacing;
 	for(float i = 0.0; i <= 30.0; i++){
-		float nodeSizeAtLevel = uOctreeSize  / pow(2.0, i + uLevel + 0.0);
+		float nodeSizeAtLevel = uOctreeSize / pow(2.0, i + uLevel + 0.0);
 		
 		vec3 index3d = (position-offset) / nodeSizeAtLevel;
 		index3d = floor(index3d + 0.5);
@@ -290,7 +307,7 @@ float getPointSizeAttenuation(){
 // KD-TREE
 // ---------------------
 
-#if (defined(adaptive_point_size) || defined(color_type_lod)) && defined(tree_type_kdtree)
+#if (defined(adaptive_point_size) || defined(color_type_level_of_detail)) && defined(tree_type_kdtree)
 
 float getLOD(){
 	vec3 offset = vec3(0.0, 0.0, 0.0);
@@ -377,30 +394,38 @@ float getContrastFactor(float contrast){
 vec3 getRGB(){
 	vec3 rgb = color;
 	
-	rgb = pow(rgb, vec3(rgbGamma));
-	rgb = rgb + rgbBrightness;
-	//rgb = (rgb - 0.5) * getContrastFactor(rgbContrast) + 0.5;
+	rgb = pow(rgb, vec3(uRGB_gbc.x));
+	rgb = rgb + uRGB_gbc.y;
+	rgb = (rgb - 0.5) * getContrastFactor(uRGB_gbc.z) + 0.5;
 	rgb = clamp(rgb, 0.0, 1.0);
 
-		//rgb = indices.rgb;
-	//rgb.b = pcIndex / 255.0;
-	
-	
 	return rgb;
 }
 
 float getIntensity(){
 	float w = (intensity - intensityRange.x) / (intensityRange.y - intensityRange.x);
-	w = pow(w, intensityGamma);
-	w = w + intensityBrightness;
-	w = (w - 0.5) * getContrastFactor(intensityContrast) + 0.5;
+	w = pow(w, uIntensity_gbc.x);
+	w = w + uIntensity_gbc.y;
+	w = (w - 0.5) * getContrastFactor(uIntensity_gbc.z) + 0.5;
 	w = clamp(w, 0.0, 1.0);
 
-	//w = w + color.x * 0.0001;
-	
-	//float w = color.x * 0.001 + intensity / 1.0;
-
 	return w;
+}
+
+vec3 getGpsTime(){
+
+	float w = (gpsTime + uGpsOffset) * uGpsScale;
+
+
+	vec3 c = texture2D(gradient, vec2(w, 1.0 - w)).rgb;
+
+
+	// vec2 r = uNormalizedGpsBufferRange;
+	// float w = gpsTime * (r.y - r.x) + r.x;
+	// w = clamp(w, 0.0, 1.0);
+	// vec3 c = texture2D(gradient, vec2(w,1.0-w)).rgb;
+	
+	return c;
 }
 
 vec3 getElevation(){
@@ -432,6 +457,16 @@ vec3 getReturnNumber(){
 	}
 }
 
+vec3 getNumberOfReturns(){
+	float value = numberOfReturns;
+
+	float w = value / 6.0;
+
+	vec3 color = texture2D(gradient, vec2(w, 1.0 - w)).rgb;
+
+	return color;
+}
+
 vec3 getSourceID(){
 	float w = mod(pointSourceID, 10.0) / 10.0;
 	return texture2D(gradient, vec2(w,1.0 - w)).rgb;
@@ -457,7 +492,7 @@ vec3 getCompositeColor(){
 	w += wSourceID;
 	
 	vec4 cl = wClassification * getClassification();
-    c += cl.a * cl.rgb;
+	c += cl.a * cl.rgb;
 	w += wClassification * cl.a;
 
 	c = c / w;
@@ -471,24 +506,63 @@ vec3 getCompositeColor(){
 }
 
 
-// 
-//  ######  ##       #### ########  ########  #### ##    ##  ######   
-// ##    ## ##        ##  ##     ## ##     ##  ##  ###   ## ##    ##  
-// ##       ##        ##  ##     ## ##     ##  ##  ####  ## ##        
-// ##       ##        ##  ########  ########   ##  ## ## ## ##   #### 
-// ##       ##        ##  ##        ##         ##  ##  #### ##    ##  
-// ##    ## ##        ##  ##        ##         ##  ##   ### ##    ##  
-//  ######  ######## #### ##        ##        #### ##    ##  ######                                                          
-// 
+vec3 getNormal(){
+	//vec3 n_hsv = vec3( modelMatrix * vec4( normal, 0.0 )) * 0.5 + 0.5; // (n_world.xyz + vec3(1.,1.,1.)) / 2.;
+	vec3 n_view = normalize( vec3(modelViewMatrix * vec4( normal, 0.0 )) );
+	return n_view;
+}
+bool applyBackfaceCulling() {
+	// Black not facing vertices / Backface culling
+	vec3 e = normalize(vec3(modelViewMatrix * vec4( position, 1. )));
+	vec3 n = getNormal(); // normalize( vec3(modelViewMatrix * vec4( normal, 0.0 )) );
 
+	if((uUseOrthographicCamera && n.z <= 0.) || (!uUseOrthographicCamera && dot( n, e ) >= 0.)) { 
+		return true;
+	} else {
+		return false;
+	}
+}
 
+#if defined(color_type_matcap)
+// Matcap Material
+vec3 getMatcap(){ 
+	vec3 eye = normalize( vec3( modelViewMatrix * vec4( position, 1. ) ) ); 
+	if(uUseOrthographicCamera) { 
+		eye = vec3(0., 0., -1.);
+	}
+	vec3 r_en = reflect( eye, getNormal() ); // or r_en = e - 2. * dot( n, e ) * n;
+	float m = 2. * sqrt(pow( r_en.x, 2. ) + pow( r_en.y, 2. ) + pow( r_en.z + 1., 2. ));
+	vec2 vN = r_en.xy / m + .5;
+	return texture2D(matcapTextureUniform, vN).rgb; 
+}
+#endif
+
+vec3 getExtra(){
+
+	float w = (aExtra + uExtraOffset) * uExtraScale;
+	w = clamp(w, 0.0, 1.0);
+
+	vec3 color = texture2D(gradient, vec2(w,1.0-w)).rgb;
+
+	// vec2 r = uExtraNormalizedRange;
+
+	// float w = aExtra * (r.y - r.x) + r.x;
+
+	// w = (w - uExtraRange.x) / (uExtraRange.y - uExtraRange.x);
+
+	// w = clamp(w, 0.0, 1.0);
+
+	// vec3 color = texture2D(gradient, vec2(w,1.0-w)).rgb;
+
+	return color;
+}
 
 vec3 getColor(){
 	vec3 color;
 	
-	#ifdef color_type_rgb
+	#ifdef color_type_rgba
 		color = getRGB();
-	#elif defined color_type_height
+	#elif defined color_type_height || defined color_type_elevation
 		color = getElevation();
 	#elif defined color_type_rgb_height
 		vec3 cHeight = getElevation();
@@ -497,26 +571,31 @@ vec3 getColor(){
 		float linearDepth = gl_Position.w;
 		float expDepth = (gl_Position.z / gl_Position.w) * 0.5 + 0.5;
 		color = vec3(linearDepth, expDepth, 0.0);
+		//color = vec3(1.0, 0.5, 0.3);
 	#elif defined color_type_intensity
 		float w = getIntensity();
 		color = vec3(w, w, w);
+	#elif defined color_type_gps_time
+		color = getGpsTime();
 	#elif defined color_type_intensity_gradient
 		float w = getIntensity();
 		color = texture2D(gradient, vec2(w,1.0-w)).rgb;
 	#elif defined color_type_color
 		color = uColor;
-	#elif defined color_type_lod
+	#elif defined color_type_level_of_detail
 		float depth = getLOD();
 		float w = depth / 10.0;
 		color = texture2D(gradient, vec2(w,1.0-w)).rgb;
-	#elif defined color_type_point_index
+	#elif defined color_type_indices
 		color = indices.rgb;
 	#elif defined color_type_classification
 		vec4 cl = getClassification(); 
 		color = cl.rgb;
 	#elif defined color_type_return_number
 		color = getReturnNumber();
-	#elif defined color_type_source
+	#elif defined color_type_number_of_returns
+		color = getNumberOfReturns();
+	#elif defined color_type_source_id
 		color = getSourceID();
 	#elif defined color_type_normal
 		color = (modelMatrix * vec4(normal, 0.0)).xyz;
@@ -524,8 +603,16 @@ vec3 getColor(){
 		color = color;
 	#elif defined color_type_composite
 		color = getCompositeColor();
+	#elif defined color_type_matcap
+		color = getMatcap();
+	#else 
+		color = getExtra();
 	#endif
 	
+	if (backfaceCulling && applyBackfaceCulling()) {
+		color = vec3(0.);
+	}
+
 	return color;
 }
 
@@ -611,13 +698,59 @@ bool pointInClipPolygon(vec3 point, int polyIdx) {
 
 void doClipping(){
 
-	#if !defined color_type_composite
+	{
 		vec4 cl = getClassification(); 
 		if(cl.a == 0.0){
 			gl_Position = vec4(100.0, 100.0, 100.0, 0.0);
 			
 			return;
 		}
+	}
+
+	#if defined(clip_return_number_enabled)
+	{ // return number filter
+		vec2 range = uFilterReturnNumberRange;
+		if(returnNumber < range.x || returnNumber > range.y){
+			gl_Position = vec4(100.0, 100.0, 100.0, 0.0);
+			
+			return;
+		}
+	}
+	#endif
+
+	#if defined(clip_number_of_returns_enabled)
+	{ // number of return filter
+		vec2 range = uFilterNumberOfReturnsRange;
+		if(numberOfReturns < range.x || numberOfReturns > range.y){
+			gl_Position = vec4(100.0, 100.0, 100.0, 0.0);
+			
+			return;
+		}
+	}
+	#endif
+
+	#if defined(clip_gps_enabled)
+	{ // GPS time filter
+		float time = (gpsTime + uGpsOffset) * uGpsScale;
+		vec2 range = uFilterGPSTimeClipRange;
+
+		if(time < range.x || time > range.y){
+			gl_Position = vec4(100.0, 100.0, 100.0, 0.0);
+			
+			return;
+		}
+	}
+	#endif
+
+	#if defined(clip_point_source_id_enabled)
+	{ // point source id filter
+		vec2 range = uFilterPointSourceIDClipRange;
+		if(pointSourceID < range.x || pointSourceID > range.y){
+			gl_Position = vec4(100.0, 100.0, 100.0, 0.0);
+			
+			return;
+		}
+	}
 	#endif
 
 	int clipVolumesCount = 0;
@@ -679,7 +812,7 @@ void doClipping(){
 //
 
 void main() {
-	vec4 mvPosition = modelViewMatrix * vec4( position, 1.0 );
+	vec4 mvPosition = modelViewMatrix * vec4(position, 1.0 );
 	vViewPosition = mvPosition.xyz;
 	gl_Position = projectionMatrix * mvPosition;
 	vLogDepth = log2(-mvPosition.z);
@@ -691,6 +824,12 @@ void main() {
 
 	// COLOR
 	vColor = getColor();
+
+	//gl_Position = vec4(0.0, 0.0, 0.0, 1.0);
+	//gl_Position = vec4(position.xzy / 1000.0, 1.0 );
+
+	//gl_PointSize = 5.0;
+	//vColor = vec3(1.0, 1.0, 1.0);
 
 
 	#if defined hq_depth_pass
@@ -705,19 +844,22 @@ void main() {
 
 	// CLIPPING
 	doClipping();
-	
 
+	#if defined(num_clipspheres) && num_clipspheres > 0
+		for(int i = 0; i < num_clipspheres; i++){
+			vec4 sphereLocal = uClipSpheres[i] * mvPosition;
 
+			float distance = length(sphereLocal.xyz);
 
-
-	//#if defined(num_snapshots) && num_snapshots > 0
-
-	//	for(int i = 0; i < num_snapshots; i++){
-	//		vSnapProjected[i] = uSnapProj[i] * uSnapView[i] * modelMatrix * vec4(position, 1.0);	
-	//		vSnapProjectedDistance[i] = -(uSnapView[i] * modelMatrix * vec4(position, 1.0)).z;
-	//	}
-	//	
-	//#endif
+			if(distance < 1.0){
+				float w = distance;
+				vec3 cGradient = texture2D(gradient, vec2(w, 1.0 - w)).rgb;
+				
+				vColor = cGradient;
+				//vColor = cGradient * 0.7 + vColor * 0.3;
+			}
+		}
+	#endif
 
 	#if defined(num_shadowmaps) && num_shadowmaps > 0
 
@@ -773,14 +915,9 @@ void main() {
 				//vColor = vec3(1.0, 1.0, 1.0) * visibility + vec3(1.0, 1.0, 1.0) * vec3(0.5, 0.0, 0.0) * (1.0 - visibility);
 				vColor = vColor * visibility + vColor * uShadowColor * (1.0 - visibility);
 			}
+
+
 		}
 
 	#endif
-
-	if(uDebug){
-		vColor.b = (vColor.r + vColor.g + vColor.b) / 3.0;
-		vColor.r = 1.0;
-		vColor.g = 1.0;
-	}
-
 }

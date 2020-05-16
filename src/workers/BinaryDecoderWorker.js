@@ -1,3 +1,8 @@
+
+
+import {Version} from "../Version.js";
+import {PointAttributes, PointAttribute, PointAttributeTypes} from "../loader/PointAttributes.js";
+
 /* global onmessage:true postMessage:false */
 /* exported onmessage */
 // http://jsperf.com/uint8array-vs-dataview3/3
@@ -5,9 +10,11 @@ function CustomView (buffer) {
 	this.buffer = buffer;
 	this.u8 = new Uint8Array(buffer);
 
-	let tmp = new ArrayBuffer(4);
+	let tmp = new ArrayBuffer(8);
 	let tmpf = new Float32Array(tmp);
+	let tmpd = new Float64Array(tmp);
 	let tmpu8 = new Uint8Array(tmp);
+	let tmpi8 = new Int8Array(tmp);
 
 	this.getUint32 = function (i) {
 		return (this.u8[i + 3] << 24) | (this.u8[i + 2] << 16) | (this.u8[i + 1] << 8) | this.u8[i];
@@ -26,10 +33,36 @@ function CustomView (buffer) {
 		return tmpf[0];
 	};
 
+	this.getFloat64 = function (i) {
+		tmpu8[0] = this.u8[i + 0];
+		tmpu8[1] = this.u8[i + 1];
+		tmpu8[2] = this.u8[i + 2];
+		tmpu8[3] = this.u8[i + 3];
+		tmpu8[4] = this.u8[i + 4];
+		tmpu8[5] = this.u8[i + 5];
+		tmpu8[6] = this.u8[i + 6];
+		tmpu8[7] = this.u8[i + 7];
+
+		return tmpd[0];
+	};
+
 	this.getUint8 = function (i) {
 		return this.u8[i];
 	};
 }
+
+const typedArrayMapping = {
+	"int8":   Int8Array,
+	"int16":  Int16Array,
+	"int32":  Int32Array,
+	"int64":  Float64Array,
+	"uint8":  Uint8Array,
+	"uint16": Uint16Array,
+	"uint32": Uint32Array,
+	"uint64": Float64Array,
+	"float":  Float32Array,
+	"double": Float64Array,
+};
 
 Potree = {};
 
@@ -41,7 +74,7 @@ onmessage = function (event) {
 	let pointAttributes = event.data.pointAttributes;
 	let numPoints = buffer.byteLength / pointAttributes.byteSize;
 	let cv = new CustomView(buffer);
-	let version = new Potree.Version(event.data.version);
+	let version = new Version(event.data.version);
 	let nodeOffset = event.data.offset;
 	let scale = event.data.scale;
 	let spacing = event.data.spacing;
@@ -57,7 +90,7 @@ onmessage = function (event) {
 	let inOffset = 0;
 	for (let pointAttribute of pointAttributes.attributes) {
 		
-		if (pointAttribute.name === Potree.PointAttribute.POSITION_CARTESIAN.name) {
+		if (pointAttribute.name === "POSITION_CARTESIAN") {
 			let buff = new ArrayBuffer(numPoints * 4 * 3);
 			let positions = new Float32Array(buff);
 		
@@ -92,7 +125,7 @@ onmessage = function (event) {
 			}
 
 			attributeBuffers[pointAttribute.name] = { buffer: buff, attribute: pointAttribute };
-		} else if (pointAttribute.name === Potree.PointAttribute.COLOR_PACKED.name) {
+		} else if (pointAttribute.name === "rgba") {
 			let buff = new ArrayBuffer(numPoints * 4);
 			let colors = new Uint8Array(buff);
 
@@ -103,27 +136,7 @@ onmessage = function (event) {
 			}
 
 			attributeBuffers[pointAttribute.name] = { buffer: buff, attribute: pointAttribute };
-		} else if (pointAttribute.name === Potree.PointAttribute.INTENSITY.name) {
-			let buff = new ArrayBuffer(numPoints * 4);
-			let intensities = new Float32Array(buff);
-
-			for (let j = 0; j < numPoints; j++) {
-				let intensity = cv.getUint16(inOffset + j * pointAttributes.byteSize, true);
-				intensities[j] = intensity;
-			}
-
-			attributeBuffers[pointAttribute.name] = { buffer: buff, attribute: pointAttribute };
-		} else if (pointAttribute.name === Potree.PointAttribute.CLASSIFICATION.name) {
-			let buff = new ArrayBuffer(numPoints);
-			let classifications = new Uint8Array(buff);
-
-			for (let j = 0; j < numPoints; j++) {
-				let classification = cv.getUint8(inOffset + j * pointAttributes.byteSize);
-				classifications[j] = classification;
-			}
-
-			attributeBuffers[pointAttribute.name] = { buffer: buff, attribute: pointAttribute };
-		} else if (pointAttribute.name === Potree.PointAttribute.NORMAL_SPHEREMAPPED.name) {
+		} else if (pointAttribute.name === "NORMAL_SPHEREMAPPED") {
 			let buff = new ArrayBuffer(numPoints * 4 * 3);
 			let normals = new Float32Array(buff);
 
@@ -154,7 +167,7 @@ onmessage = function (event) {
 			}
 
 			attributeBuffers[pointAttribute.name] = { buffer: buff, attribute: pointAttribute };
-		} else if (pointAttribute.name === Potree.PointAttribute.NORMAL_OCT16.name) {
+		} else if (pointAttribute.name === "NORMAL_OCT16") {
 			let buff = new ArrayBuffer(numPoints * 4 * 3);
 			let normals = new Float32Array(buff);
 
@@ -188,7 +201,7 @@ onmessage = function (event) {
 			}
 
 			attributeBuffers[pointAttribute.name] = { buffer: buff, attribute: pointAttribute };
-		} else if (pointAttribute.name === Potree.PointAttribute.NORMAL.name) {
+		} else if (pointAttribute.name === "NORMAL") {
 			let buff = new ArrayBuffer(numPoints * 4 * 3);
 			let normals = new Float32Array(buff);
 
@@ -203,146 +216,79 @@ onmessage = function (event) {
 			}
 
 			attributeBuffers[pointAttribute.name] = { buffer: buff, attribute: pointAttribute };
+		} else {
+			let buff = new ArrayBuffer(numPoints * 4);
+			let f32 = new Float32Array(buff);
+
+			let TypedArray = typedArrayMapping[pointAttribute.type.name];
+			preciseBuffer = new TypedArray(numPoints);
+
+			let [min, max] = [Infinity, -Infinity];
+			let [offset, scale] = [0, 1];
+
+			const getterMap = {
+				"int8":   cv.getInt8,
+				"int16":  cv.getInt16,
+				"int32":  cv.getInt32,
+				"int64":  cv.getInt64,
+				"uint8":  cv.getUint8,
+				"uint16": cv.getUint16,
+				"uint32": cv.getUint32,
+				"uint64": cv.getUint64,
+				"float":  cv.getFloat32,
+				"double": cv.getFloat64,
+			};
+			const getter = getterMap[pointAttribute.type.name].bind(cv);
+
+			// compute offset and scale to pack larger types into 32 bit floats
+			if(pointAttribute.type.size > 4){
+				for(let j = 0; j < numPoints; j++){
+					let value = getter(inOffset + j * pointAttributes.byteSize);
+
+					if(!Number.isNaN(value)){
+						min = Math.min(min, value);
+						max = Math.max(max, value);
+					}
+				}
+
+				
+
+				if(pointAttribute.initialRange != null){
+					offset = pointAttribute.initialRange[0];
+					scale = 1 / (pointAttribute.initialRange[1] - pointAttribute.initialRange[0]);
+				}else{
+					offset = min;
+					scale = 1 / (max - min);
+				}
+			}
+
+			
+
+			for(let j = 0; j < numPoints; j++){
+				let value = getter(inOffset + j * pointAttributes.byteSize);
+
+				if(!Number.isNaN(value)){
+					min = Math.min(min, value);
+					max = Math.max(max, value);
+				}
+
+				f32[j] = (value - offset) * scale;
+				preciseBuffer[j] = value;
+			}
+
+			pointAttribute.range = [min, max];
+
+			attributeBuffers[pointAttribute.name] = { 
+				buffer: buff,
+				preciseBuffer: preciseBuffer,
+				attribute: pointAttribute,
+				offset: offset,
+				scale: scale,
+			};
 		}
 
 		inOffset += pointAttribute.byteSize;
 	}
-
-	//let debugNodes = ["r026", "r0226","r02274"];
-	//if(debugNodes.includes(name)){
-	if(false){
-		console.log("estimate spacing!");
-
-
-		let sparseGrid = new Map();
-		let gridSize = 16;
-
-		let tightBoxSize = tightBoxMax.map( (a, i) => a - tightBoxMin[i]);
-		let cubeLength = Math.max(...tightBoxSize);
-		let cube = {
-			min: tightBoxMin,
-			max: tightBoxMin.map(v => v + cubeLength)
-		};
-
-		let positions = new Float32Array(attributeBuffers[Potree.PointAttribute.POSITION_CARTESIAN.name].buffer);
-		for(let i = 0; i < numPoints; i++){
-			let x = positions[3 * i + 0];
-			let y = positions[3 * i + 1];
-			let z = positions[3 * i + 2];
-
-			let ix = Math.max(0, Math.min(gridSize * (x - cube.min[0]) / cubeLength, gridSize - 1));
-			let iy = Math.max(0, Math.min(gridSize * (y - cube.min[1]) / cubeLength, gridSize - 1));
-			let iz = Math.max(0, Math.min(gridSize * (z - cube.min[2]) / cubeLength, gridSize - 1));
-
-			ix = Math.floor(ix);
-			iy = Math.floor(iy);
-			iz = Math.floor(iz);
-
-			let cellIndex = ix | (iy << 8) | (iz << 16);
-			
-			if(!sparseGrid.has(cellIndex)){
-				sparseGrid.set(cellIndex, []);
-			}
-
-			sparseGrid.get(cellIndex).push(i);
-		}
-
-		let kNearest = (pointIndex, candidates, numNearest) => {
-			
-			let x = positions[3 * pointIndex + 0];
-			let y = positions[3 * pointIndex + 1];
-			let z = positions[3 * pointIndex + 2];
-
-			let candidateDistances = [];
-
-			for(let candidateIndex of candidates){
-				if(candidateIndex === pointIndex){
-					continue;
-				}
-
-				let cx = positions[3 * candidateIndex + 0];
-				let cy = positions[3 * candidateIndex + 1];
-				let cz = positions[3 * candidateIndex + 2];
-
-				let squaredDistance = (cx - x) ** 2 + (cy - y) ** 2 + (cz - z) ** 2;
-
-				candidateDistances.push({candidateInde: candidateIndex, squaredDistance: squaredDistance});
-			}
-
-			candidateDistances.sort( (a, b) => a.squaredDistance - b.squaredDistance);
-			let nearest = candidateDistances.slice(0, numNearest);
-
-			return nearest;
-		};
-
-		let meansBuffer = new ArrayBuffer(numPoints * 4);
-		let means = new Float32Array(meansBuffer);
-
-		for(let [key, value] of sparseGrid){
-			
-			for(let pointIndex of value){
-
-				if(value.length === 1){
-					means[pointIndex] = 0;
-					continue;
-				}
-
-				let [ix, iy, iz] = [(key & 255), ((key >> 8) & 255), ((key >> 16) & 255)];
-				
-				//let candidates = value;
-				let candidates = [];
-				for(let i of [-1, 0, 1]){
-					for(let j of [-1, 0, 1]){
-						for(let k of [-1, 0, 1]){
-							let cellIndex = (ix + i) | ((iy + j) << 8) | ((iz + k) << 16);
-
-							if(sparseGrid.has(cellIndex)){
-								candidates.push(...sparseGrid.get(cellIndex));
-							}
-						}
-					}
-				}
-
-
-				let nearestNeighbors = kNearest(pointIndex, candidates, 10);
-
-				let sum = 0;
-				for(let neighbor of nearestNeighbors){
-					sum += Math.sqrt(neighbor.squaredDistance);
-				}
-
-				//let mean = sum / nearestNeighbors.length;
-				let mean = Math.sqrt(Math.max(...nearestNeighbors.map(n => n.squaredDistance)));
-
-				if(Number.isNaN(mean)){
-					debugger;
-				}
-
-
-				means[pointIndex] = mean;
-
-			}
-
-		}
-
-
-		let maxMean = Math.max(...means);
-		let minMean = Math.min(...means);
-
-		//let colors = new Uint8Array(attributeBuffers[Potree.PointAttribute.COLOR_PACKED.name].buffer);
-		//for(let i = 0; i < numPoints; i++){
-		//	let v = means[i] / 0.05;
-
-		//	colors[4 * i + 0] = 255 * v;
-		//	colors[4 * i + 1] = 255 * v;
-		//	colors[4 * i + 2] = 255 * v;
-		//}
-
-		attributeBuffers[Potree.PointAttribute.SPACING.name] = { buffer: meansBuffer, attribute: Potree.PointAttribute.SPACING };
-
-
-	}
-
 
 	{ // add indices
 		let buff = new ArrayBuffer(numPoints * 4);
@@ -352,19 +298,63 @@ onmessage = function (event) {
 			indices[i] = i;
 		}
 		
-		attributeBuffers[Potree.PointAttribute.INDICES.name] = { buffer: buff, attribute: Potree.PointAttribute.INDICES };
+		attributeBuffers["INDICES"] = { buffer: buff, attribute: PointAttribute.INDICES };
+	}
+
+	{ // handle attribute vectors
+
+		
+
+		let vectors = pointAttributes.vectors;
+
+		for(let vector of vectors){
+
+			let {name, attributes} = vector;
+			let numVectorElements = attributes.length;
+			let buffer = new ArrayBuffer(numVectorElements * numPoints * 4);
+			let f32 = new Float32Array(buffer);
+
+			let iElement = 0;
+			for(let sourceName of attributes){
+				let sourceBuffer = attributeBuffers[sourceName];
+				let {offset, scale} = sourceBuffer;
+				let cv = new CustomView(sourceBuffer.buffer);
+
+				const getter = cv.getFloat32.bind(cv);
+
+				for(let j = 0; j < numPoints; j++){
+					let value = getter(j * 4);
+
+					f32[j * numVectorElements + iElement] = (value / scale) + offset;
+				}
+
+				iElement++;
+			}
+
+			let vecAttribute = new PointAttribute(name, PointAttributeTypes.DATA_TYPE_FLOAT, 3);
+
+			attributeBuffers[name] = { 
+				buffer: buffer, 
+				attribute: vecAttribute,
+				// offset: offset,
+				// scale: scale,
+			};
+
+		}
+
 	}
 
 	performance.mark("binary-decoder-end");
 
-	//{ // print timings
-	//	//performance.measure("spacing", "spacing-start", "spacing-end");
-	//	performance.measure("binary-decoder", "binary-decoder-start", "binary-decoder-end");
-	//	let measure = performance.getEntriesByType("measure")[0];
-	//	let dpp = 1000 * measure.duration / numPoints;
-	//	let debugMessage = `${measure.duration.toFixed(3)} ms, ${numPoints} points, ${dpp.toFixed(3)} µs / point`;
-	//	console.log(debugMessage);
-	//}
+	// { // print timings
+	// 	//performance.measure("spacing", "spacing-start", "spacing-end");
+	// 	performance.measure("binary-decoder", "binary-decoder-start", "binary-decoder-end");
+	// 	let measure = performance.getEntriesByType("measure")[0];
+	// 	let dpp = 1000 * measure.duration / numPoints;
+	// 	let pps = parseInt(numPoints / (measure.duration / 1000));
+	// 	let debugMessage = `${measure.duration.toFixed(3)} ms, ${numPoints} points, ${pps.toLocaleString()} points/sec`;
+	// 	console.log(debugMessage);
+	// }
 
 	performance.clearMarks();
 	performance.clearMeasures();
@@ -374,7 +364,6 @@ onmessage = function (event) {
 		mean: mean,
 		attributeBuffers: attributeBuffers,
 		tightBoundingBox: { min: tightBoxMin, max: tightBoxMax },
-		//estimatedSpacing: estimatedSpacing,
 	};
 
 	let transferables = [];

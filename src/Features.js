@@ -1,8 +1,12 @@
 
-Potree.Features = (function () {
-	let ftCanvas = document.createElement('canvas');
+let ftCanvas = document.createElement('canvas');
+
+export const Features = (function () {
+
 	let gl = ftCanvas.getContext('webgl') || ftCanvas.getContext('experimental-webgl');
-	if (gl === null)		{ return null; }
+	if (gl === null){ 
+		return null; 
+	}
 
 	// -- code taken from THREE.WebGLRenderer --
 	let _vertexShaderPrecisionHighpFloat = gl.getShaderPrecisionFormat(gl.VERTEX_SHADER, gl.HIGH_FLOAT);
@@ -57,10 +61,18 @@ Potree.Features = (function () {
 				supported = supported && gl.getExtension('OES_texture_float');
 				supported = supported && gl.getParameter(gl.MAX_VARYING_VECTORS) >= 8;
 
+				//supported = supported || (gl instanceof WebGL2RenderingContext);
+
 				return supported;
 			}
 
 		},
+		//WEBGL2: {
+		//	isSupported: function(){
+		//		return gl instanceof WebGL2RenderingContext;
+		//	}
+		//},
 		precision: precision
 	};
 }());
+

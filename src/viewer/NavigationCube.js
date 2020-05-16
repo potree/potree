@@ -1,5 +1,5 @@
 
-Potree.NavigationCube = class NavigationCube extends THREE.Object3D {
+export class NavigationCube extends THREE.Object3D {
 
 	constructor(viewer){
 		super();
@@ -13,9 +13,9 @@ Potree.NavigationCube = class NavigationCube extends THREE.Object3D {
 				side: THREE.DoubleSide
 			});
 			new THREE.TextureLoader().load(
-				Potree.resourcePath + '/textures/navigation/' + img,
+				exports.resourcePath + '/textures/navigation/' + img,
 				function(texture) {
-					texture.anisotropy = viewer.renderer.getMaxAnisotropy();
+					texture.anisotropy = viewer.renderer.capabilities.getMaxAnisotropy();
 					material.map = texture;
 					material.needsUpdate = true;
 				});
@@ -73,6 +73,10 @@ Potree.NavigationCube = class NavigationCube extends THREE.Object3D {
 		this.camera.rotation.order = "ZXY";
 
 		let onMouseDown = (event) => {
+			if (!this.visible) {
+				return;
+			}
+			
 			this.pickedFace = null;
 			let mouse = new THREE.Vector2();
 			mouse.x = event.clientX - (window.innerWidth - this.width);
@@ -85,7 +89,7 @@ Potree.NavigationCube = class NavigationCube extends THREE.Object3D {
 
 			let raycaster = new THREE.Raycaster();
 			raycaster.setFromCamera(mouse, this.camera);
-			raycaster.ray.origin.sub(this.camera.getWorldDirection());
+			raycaster.ray.origin.sub(this.camera.getWorldDirection(new THREE.Vector3()));
 
 			let intersects = raycaster.intersectObjects(this.children);
 
@@ -96,6 +100,7 @@ Potree.NavigationCube = class NavigationCube extends THREE.Object3D {
 					minDistance = intersects[i].distance;
 				}
 			}
+			
 			if(this.pickedFace) {
 				this.viewer.setView(this.pickedFace);
 			}

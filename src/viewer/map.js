@@ -1,8 +1,31 @@
 
 // http://epsg.io/
-proj4.defs('UTM10N', '+proj=utm +zone=10 +ellps=GRS80 +datum=NAD83 +units=m +no_defs');
+proj4.defs([
+	['UTM10N', '+proj=utm +zone=10 +ellps=GRS80 +datum=NAD83 +units=m +no_defs'],
+	['EPSG:6339', '+proj=utm +zone=10 +ellps=GRS80 +units=m +no_defs'],
+	['EPSG:6340', '+proj=utm +zone=11 +ellps=GRS80 +units=m +no_defs'],
+	['EPSG:6341', '+proj=utm +zone=12 +ellps=GRS80 +units=m +no_defs'],
+	['EPSG:6342', '+proj=utm +zone=13 +ellps=GRS80 +units=m +no_defs'],
+	['EPSG:6343', '+proj=utm +zone=14 +ellps=GRS80 +units=m +no_defs'],
+	['EPSG:6344', '+proj=utm +zone=15 +ellps=GRS80 +units=m +no_defs'],
+	['EPSG:6345', '+proj=utm +zone=16 +ellps=GRS80 +units=m +no_defs'],
+	['EPSG:6346', '+proj=utm +zone=17 +ellps=GRS80 +units=m +no_defs'],
+	['EPSG:6347', '+proj=utm +zone=18 +ellps=GRS80 +units=m +no_defs'],
+	['EPSG:6348', '+proj=utm +zone=19 +ellps=GRS80 +units=m +no_defs'],
+	['EPSG:26910', '+proj=utm +zone=10 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs '],
+	['EPSG:26911', '+proj=utm +zone=11 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs '],
+	['EPSG:26912', '+proj=utm +zone=12 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs '],
+	['EPSG:26913', '+proj=utm +zone=13 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs '],
+	['EPSG:26914', '+proj=utm +zone=14 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs '],
+	['EPSG:26915', '+proj=utm +zone=15 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs '],
+	['EPSG:26916', '+proj=utm +zone=16 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs '],
+	['EPSG:26917', '+proj=utm +zone=17 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs '],
+	['EPSG:26918', '+proj=utm +zone=18 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs '],
+	['EPSG:26919', '+proj=utm +zone=19 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs '],
+]);
 
-Potree.MapView = class {
+export class MapView{
+
 	constructor (viewer) {
 		this.viewer = viewer;
 
@@ -16,6 +39,7 @@ Potree.MapView = class {
 		this.toolLayer = null;
 		this.sourcesLayer = null;
 		this.sourcesLabelLayer = null;
+		this.images360Layer = null;
 		this.enabled = false;
 
 		this.createAnnotationStyle = (text) => {
@@ -31,20 +55,7 @@ Potree.MapView = class {
 							color: [0, 0, 0, 0.5]
 						})
 					})
-				})/*,
-				new ol.style.Style({
-					text: new ol.style.Text({
-						font: '12px helvetica,sans-serif',
-						text: text,
-						fill: new ol.style.Fill({
-							color: '#000'
-						}),
-						stroke: new ol.style.Stroke({
-							color: '#fff',
-							width: 2
-						})
-					})
-				}) */
+				})
 			];
 		};
 
@@ -83,6 +94,11 @@ Potree.MapView = class {
 	}
 
 	init () {
+
+		if(typeof ol === "undefined"){
+			return;
+		}
+
 		this.elMap = $('#potree_map');
 		this.elMap.draggable({ handle: $('#potree_map_header') });
 		this.elMap.resizable();
@@ -94,6 +110,7 @@ Potree.MapView = class {
 		let cameraLayer = this.getCameraLayer();
 		this.getToolLayer();
 		let sourcesLayer = this.getSourcesLayer();
+		this.images360Layer = this.getImages360Layer();
 		this.getSourcesLabelLayer();
 		this.getAnnotationsLayer();
 
@@ -198,6 +215,7 @@ Potree.MapView = class {
 				this.annotationsLayer,
 				this.sourcesLayer,
 				this.sourcesLabelLayer,
+				this.images360Layer,
 				extentsLayer,
 				cameraLayer
 			],
@@ -231,21 +249,21 @@ Potree.MapView = class {
 
 		this.map.addInteraction(dragBox);
 
-		this.map.on('pointermove', evt => {
-			let pixel = evt.pixel;
-			let feature = this.map.forEachFeatureAtPixel(pixel, function (feature) {
-				return feature;
-			});
+		// this.map.on('pointermove', evt => {
+		// 	let pixel = evt.pixel;
+		// 	let feature = this.map.forEachFeatureAtPixel(pixel, function (feature) {
+		// 		return feature;
+		// 	});
 
-			// console.log(feature);
-			// this.elTooltip.css("display", feature ? '' : 'none');
-			this.elTooltip.css('display', 'none');
-			if (feature && feature.onHover) {
-				feature.onHover(evt);
-				// overlay.setPosition(evt.coordinate);
-				// tooltip.innerHTML = feature.get('name');
-			}
-		});
+		// 	// console.log(feature);
+		// 	// this.elTooltip.css("display", feature ? '' : 'none');
+		// 	this.elTooltip.css('display', 'none');
+		// 	if (feature && feature.onHover) {
+		// 		feature.onHover(evt);
+		// 		// overlay.setPosition(evt.coordinate);
+		// 		// tooltip.innerHTML = feature.get('name');
+		// 	}
+		// });
 
 		this.map.on('click', evt => {
 			let pixel = evt.pixel;
@@ -253,7 +271,7 @@ Potree.MapView = class {
 				return feature;
 			});
 
-			if (feature && feature.onHover) {
+			if (feature && feature.onClick) {
 				feature.onClick(evt);
 			}
 		});
@@ -282,6 +300,10 @@ Potree.MapView = class {
 
 		this.onPointcloudAdded = e => {
 			this.load(e.pointcloud);
+		};
+
+		this.on360ImagesAdded = e => {
+			this.addImages360(e.images);
 		};
 
 		this.onAnnotationAdded = e => {
@@ -325,12 +347,14 @@ Potree.MapView = class {
 
 		if (this.scene) {
 			this.scene.removeEventListener('pointcloud_added', this.onPointcloudAdded);
+			this.scene.removeEventListener('360_images_added', this.on360ImagesAdded);
 			this.scene.annotations.removeEventListener('annotation_added', this.onAnnotationAdded);
 		}
 
 		this.scene = scene;
 
 		this.scene.addEventListener('pointcloud_added', this.onPointcloudAdded);
+		this.scene.addEventListener('360_images_added', this.on360ImagesAdded);
 		this.scene.annotations.addEventListener('annotation_added', this.onAnnotationAdded);
 
 		for (let pointcloud of this.viewer.scene.pointclouds) {
@@ -340,6 +364,10 @@ Potree.MapView = class {
 		this.viewer.scene.annotations.traverseDescendants(annotation => {
 			this.onAnnotationAdded({annotation: annotation});
 		});
+
+		for(let images of this.viewer.scene.images360){
+			this.on360ImagesAdded({images: images});
+		}
 	}
 
 	getExtentsLayer () {
@@ -443,6 +471,34 @@ Potree.MapView = class {
 		});
 
 		return this.toolLayer;
+	}
+
+	getImages360Layer(){
+		if(this.images360Layer){
+			return this.images360Layer;
+		}
+
+		let style = new ol.style.Style({
+			image: new ol.style.Circle({
+				radius: 4,
+				stroke: new ol.style.Stroke({
+					color: [255, 0, 0, 1],
+					width: 2
+				}),
+				fill: new ol.style.Fill({
+					color: [255, 100, 100, 1]
+				})
+			})
+		});
+		
+		let layer = new ol.layer.Vector({
+			source: new ol.source.Vector({}),
+			style: style,
+		});
+
+		this.images360Layer = layer;
+
+		return this.images360Layer;
 	}
 
 	getSourcesLayer () {
@@ -565,7 +621,27 @@ Potree.MapView = class {
 		}
 	}
 
-	load (pointcloud) {
+	addImages360(images){
+		let transform = this.toMap.forward;
+		let layer = this.getImages360Layer();
+
+		for(let image of images.images){
+
+			let p = transform([image.position[0], image.position[1]]);
+
+			let feature = new ol.Feature({
+				'geometry': new ol.geom.Point(p),
+			});
+
+			feature.onClick = () => {
+				images.focus(image);
+			};
+
+			layer.getSource().addFeature(feature);
+		}
+	}
+
+	async load (pointcloud) {
 		if (!pointcloud) {
 			return;
 		}
@@ -575,7 +651,24 @@ Potree.MapView = class {
 		}
 
 		if (!this.sceneProjection) {
-			this.setSceneProjection(pointcloud.projection);
+			try {
+				this.setSceneProjection(pointcloud.projection);
+			}catch (e) {
+				console.log('Failed projection:', e);
+
+				if (pointcloud.fallbackProjection) {
+					try {
+						console.log('Trying fallback projection...');
+						this.setSceneProjection(pointcloud.fallbackProjection);
+						console.log('Set projection from fallback');
+					}catch (e) {
+						console.log('Failed fallback projection:', e);
+						return;
+					}
+				}else{
+					return;
+				};
+			}
 		}
 
 		let mapExtent = this.getMapExtent();
@@ -596,8 +689,16 @@ Potree.MapView = class {
 			constrainResolution: false
 		});
 
-		let url = pointcloud.pcoGeometry.url + '/../sources.json';
-		$.getJSON(url, (data) => {
+		if (pointcloud.pcoGeometry.type == 'ept'){ 
+			return;
+		}
+
+		let url = `${pointcloud.pcoGeometry.url}/../sources.json`;
+		//let response = await fetch(url);
+
+		fetch(url).then(async (response) => {
+			let data = await response.json();
+		
 			let sources = data.sources;
 
 			for (let i = 0; i < sources.length; i++) {
@@ -636,7 +737,10 @@ Potree.MapView = class {
 				feature.setStyle(this.createLabelStyle(name));
 				this.sourcesLabelLayer.getSource().addFeature(feature);
 			}
+		}).catch(() => {
+			
 		});
+
 	}
 
 	toggle () {
@@ -666,13 +770,13 @@ Potree.MapView = class {
 		if (resized) {
 			this.map.updateSize();
 		}
-		
-		// 
+
+		//
 		let camera = this.viewer.scene.getActiveCamera();
 
 		let scale = this.map.getView().getResolution();
 		let campos = camera.position;
-		let camdir = camera.getWorldDirection();
+		let camdir = camera.getWorldDirection(new THREE.Vector3());
 		let sceneLookAt = camdir.clone().multiplyScalar(30 * scale).add(campos);
 		let geoPos = camera.position;
 		let geoLookAt = sceneLookAt;
@@ -698,4 +802,5 @@ Potree.MapView = class {
 	set sourcesVisible (value) {
 		this.getSourcesLayer().setVisible(value);
 	}
-};
+
+}

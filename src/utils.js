@@ -1,30 +1,33 @@
 
-Potree.utils = class {
-	static loadShapefileFeatures (file, callback) {
+import {XHRFactory} from "./XHRFactory.js";
+import {Volume} from "./utils/Volume.js";
+import {Profile} from "./utils/Profile.js";
+import {Measure} from "./utils/Measure.js";
+import {PolygonClipVolume} from "./utils/PolygonClipVolume.js";
+
+export class Utils {
+	static async loadShapefileFeatures (file, callback) {
 		let features = [];
 
 		let handleFinish = () => {
 			callback(features);
 		};
 
-		shapefile.open(file)
-			.then(source => {
-				source.read()
-					.then(function log (result) {
-						if (result.done) {
-							handleFinish();
-							return;
-						}
+		let source = await shapefile.open(file);
 
-						// console.log(result.value);
+		while(true){
+			let result = await source.read();
 
-						if (result.value && result.value.type === 'Feature' && result.value.geometry !== undefined) {
-							features.push(result.value);
-						}
+			if (result.done) {
+				handleFinish();
+				break;
+			}
 
-						return source.read().then(log);
-					});
-			});
+			if (result.value && result.value.type === 'Feature' && result.value.geometry !== undefined) {
+				features.push(result.value);
+			}
+		}
+
 	}
 
 	static toString (value) {
@@ -42,7 +45,7 @@ Potree.utils = class {
 	};
 
 	static pathExists (url) {
-		let req = Potree.XHRFactory.createXMLHttpRequest();
+		let req = XHRFactory.createXMLHttpRequest();
 		req.open('GET', url, false);
 		req.send(null);
 		if (req.status !== 200) {
@@ -67,11 +70,112 @@ Potree.utils = class {
 	}
 
 	static debugLine(parent, start, end, color){
+
 		let material = new THREE.LineBasicMaterial({ color: color }); 
-		let geometry = new THREE.Geometry(); 
-		geometry.vertices.push( start, end); 
-		let tl = new THREE.Line( geometry, material ); 
+		let geometry = new THREE.Geometry();
+
+		const p1 = new THREE.Vector3(0, 0, 0);
+		const p2 = end.clone().sub(start);
+
+		geometry.vertices.push(p1, p2);
+
+		let tl = new THREE.Line( geometry, material );
+		tl.position.copy(start);
+
 		parent.add(tl);
+	}
+
+	static debugCircle(parent, center, radius, normal, color){
+		let material = new THREE.LineBasicMaterial({ color: color });
+
+		let geometry = new THREE.Geometry();
+
+		let n = 32;
+		for(let i = 0; i <= n; i++){
+			let u0 = 2 * Math.PI * (i / n);
+			let u1 = 2 * Math.PI * (i + 1) / n;
+
+			let p0 = new THREE.Vector3(
+				Math.cos(u0), 
+				Math.sin(u0), 
+				0
+			);
+
+			let p1 = new THREE.Vector3(
+				Math.cos(u1), 
+				Math.sin(u1), 
+				0
+			);
+
+			geometry.vertices.push(p0, p1); 
+		}
+
+		let tl = new THREE.Line( geometry, material ); 
+		tl.position.copy(center);
+		tl.scale.set(radius, radius, radius);
+
+		parent.add(tl);
+	}
+
+	static debugBox(parent, box, transform = new THREE.Matrix4(), color = 0xFFFF00){
+		
+		let vertices = [
+			[box.min.x, box.min.y, box.min.z],
+			[box.min.x, box.min.y, box.max.z],
+			[box.min.x, box.max.y, box.min.z],
+			[box.min.x, box.max.y, box.max.z],
+
+			[box.max.x, box.min.y, box.min.z],
+			[box.max.x, box.min.y, box.max.z],
+			[box.max.x, box.max.y, box.min.z],
+			[box.max.x, box.max.y, box.max.z],
+		].map(v => new THREE.Vector3(...v));
+
+		let edges = [
+			[0, 4], [4, 5], [5, 1], [1, 0],
+			[2, 6], [6, 7], [7, 3], [3, 2],
+			[0, 2], [4, 6], [5, 7], [1, 3]
+		];
+
+		let center = box.getCenter(new THREE.Vector3());
+
+		let centroids = [
+			{position: [box.min.x, center.y, center.z], color: 0xFF0000},
+			{position: [box.max.x, center.y, center.z], color: 0x880000},
+
+			{position: [center.x, box.min.y, center.z], color: 0x00FF00},
+			{position: [center.x, box.max.y, center.z], color: 0x008800},
+
+			{position: [center.x, center.y, box.min.z], color: 0x0000FF},
+			{position: [center.x, center.y, box.max.z], color: 0x000088},
+		];
+
+		for(let vertex of vertices){
+			let pos = vertex.clone().applyMatrix4(transform);
+
+			Utils.debugSphere(parent, pos, 0.1, 0xFF0000);
+		}
+
+		for(let edge of edges){
+			let start = vertices[edge[0]].clone().applyMatrix4(transform);
+			let end = vertices[edge[1]].clone().applyMatrix4(transform);
+
+			Utils.debugLine(parent, start, end, color);
+		}
+
+		for(let centroid of centroids){
+			let pos = new THREE.Vector3(...centroid.position).applyMatrix4(transform);
+
+			Utils.debugSphere(parent, pos, 0.1, centroid.color);
+		}
+	}
+
+	static debugPlane(parent, plane, size = 1, color = 0x0000FF){
+
+		let planehelper = new THREE.PlaneHelper(plane, size, color);
+
+		parent.add(planehelper);
+
 	}
 
 	/**
@@ -147,7 +251,7 @@ Potree.utils = class {
 			let camTargetDistance = camera.position.distanceTo(endTarget);
 			let target = new THREE.Vector3().addVectors(
 				camera.position,
-				camera.getWorldDirection().clone().multiplyScalar(camTargetDistance)
+				camera.getWorldDirection(new THREE.Vector3()).clone().multiplyScalar(camTargetDistance)
 			);
 			let tween = new TWEEN.Tween(target).to(endTarget, animationDuration);
 			tween.easing(easing);
@@ -232,7 +336,7 @@ Potree.utils = class {
 		let line = new THREE.LineSegments(geometry, material, THREE.LinePieces);
 		line.receiveShadow = true;
 		return line;
-    };
+	}
 
 	static createBackgroundTexture (width, height) {
 		function gauss (x, y) {
@@ -269,7 +373,7 @@ Potree.utils = class {
 		texture.needsUpdate = true;
 
 		return texture;
-	};
+	}
 
 	static getMousePointCloudIntersection (mouse, camera, viewer, pointclouds, params = {}) {
 		
@@ -325,7 +429,7 @@ Potree.utils = class {
 		} else {
 			return null;
 		}
-	};
+	}
 
 	static pixelsArrayToImage (pixels, width, height) {
 		let canvas = document.createElement('canvas');
@@ -349,7 +453,7 @@ Potree.utils = class {
 		// img.style.transform = "scaleY(-1)";
 
 		return img;
-	};
+	}
 
 	static pixelsArrayToDataUrl(pixels, width, height) {
 		let canvas = document.createElement('canvas');
@@ -371,7 +475,7 @@ Potree.utils = class {
 		let dataURL = canvas.toDataURL();
 
 		return dataURL;
-	};
+	}
 
 	static pixelsArrayToCanvas(pixels, width, height){
 		let canvas = document.createElement('canvas');
@@ -402,7 +506,7 @@ Potree.utils = class {
 		context.putImageData(imageData, 0, 0);
 
 		return canvas;
-	};
+	}
 
 	static removeListeners(dispatcher, type){
 		if (dispatcher._listeners === undefined) {
@@ -422,9 +526,8 @@ Potree.utils = class {
 		};
 
 		let vector = new THREE.Vector3(normalizedMouse.x, normalizedMouse.y, 0.5);
-		let origin = new THREE.Vector3(normalizedMouse.x, normalizedMouse.y, 0);
+		let origin = camera.position.clone();
 		vector.unproject(camera);
-		origin.unproject(camera);
 		let direction = new THREE.Vector3().subVectors(vector, origin).normalize();
 
 		let ray = new THREE.Ray(origin, direction);
@@ -434,9 +537,9 @@ Potree.utils = class {
 
 	static projectedRadius(radius, camera, distance, screenWidth, screenHeight){
 		if(camera instanceof THREE.OrthographicCamera){
-			return Potree.utils.projectedRadiusOrtho(radius, camera.projectionMatrix, screenWidth, screenHeight);
+			return Utils.projectedRadiusOrtho(radius, camera.projectionMatrix, screenWidth, screenHeight);
 		}else if(camera instanceof THREE.PerspectiveCamera){
-			return Potree.utils.projectedRadiusPerspective(radius, camera.fov * Math.PI / 180, distance, screenHeight);
+			return Utils.projectedRadiusPerspective(radius, camera.fov * Math.PI / 180, distance, screenHeight);
 		}else{
 			throw new Error("invalid parameters");
 		}
@@ -447,7 +550,7 @@ Potree.utils = class {
 		projFactor = projFactor * screenHeight / 2;
 
 		return radius * projFactor;
-	};
+	}
 
 	static projectedRadiusOrtho(radius, proj, screenWidth, screenHeight) {
 		let p1 = new THREE.Vector4(0);
@@ -469,25 +572,94 @@ Potree.utils = class {
 		camera.position.set(0, 1, 0);
 		camera.rotation.set(-Math.PI / 2, 0, 0);
 		camera.zoomTo(node, 1);
-	};
+	}
 
 	static frontView (camera, node) {
 		camera.position.set(0, 0, 1);
 		camera.rotation.set(0, 0, 0);
 		camera.zoomTo(node, 1);
-	};
+	}
 
 	static leftView (camera, node) {
 		camera.position.set(-1, 0, 0);
 		camera.rotation.set(0, -Math.PI / 2, 0);
 		camera.zoomTo(node, 1);
-	};
+	}
 
 	static rightView (camera, node) {
 		camera.position.set(1, 0, 0);
 		camera.rotation.set(0, Math.PI / 2, 0);
 		camera.zoomTo(node, 1);
-	};
+	}
+
+	
+	static findClosestGpsTime(target, viewer){
+		const start = performance.now();
+
+		const nodes = [];
+		for(const pc of viewer.scene.pointclouds){
+			nodes.push(pc.root);
+
+			for(const child of pc.root.children){
+				if(child){
+					nodes.push(child);
+				}
+			}
+		}
+
+		let closestNode = null;
+		let closestIndex = Infinity;
+		let closestDistance = Infinity;
+		let closestValue = 0;
+
+		for(const node of nodes){
+
+			const isOkay = node.geometryNode != null 
+				&& node.geometryNode.geometry != null
+				&& node.sceneNode != null;
+
+			if(!isOkay){
+				continue;
+			}
+
+			let geometry = node.geometryNode.geometry;
+			let gpsTime = geometry.attributes["gps-time"];
+			let range = gpsTime.potree.range;
+
+			for(let i = 0; i < gpsTime.array.length; i++){
+				let value = gpsTime.array[i];
+				value = value * (range[1] - range[0]) + range[0];
+				const distance = Math.abs(target - value);
+
+				if(distance < closestDistance){
+					closestIndex = i;
+					closestDistance = distance;
+					closestValue = value;
+					closestNode = node;
+					//console.log("found a closer one: " + value);
+				}
+			}
+		}
+
+		const geometry = closestNode.geometryNode.geometry;
+		const position = new THREE.Vector3(
+			geometry.attributes.position.array[3 * closestIndex + 0],
+			geometry.attributes.position.array[3 * closestIndex + 1],
+			geometry.attributes.position.array[3 * closestIndex + 2],
+		);
+
+		position.applyMatrix4(closestNode.sceneNode.matrixWorld);
+
+		const end = performance.now();
+		const duration = (end - start);
+		console.log(`duration: ${duration.toFixed(3)}ms`);
+
+		return {
+			node: closestNode,
+			index: closestIndex,
+			position: position,
+		};
+	}
 
 	/**
 	 *
@@ -513,7 +685,7 @@ Potree.utils = class {
 		}
 
 		return (minDistance >= sphere.radius) ? 2 : 1;
-	};
+	}
 
 	// code taken from three.js
 	// ImageUtils - generateDataTexture()
@@ -536,7 +708,7 @@ Potree.utils = class {
 		texture.magFilter = THREE.NearestFilter;
 
 		return texture;
-	};
+	}
 
 	// from http://stackoverflow.com/questions/901115/how-can-i-get-query-string-values-in-javascript
 	static getParameterByName (name) {
@@ -567,6 +739,32 @@ Potree.utils = class {
 			url = url.replace(results[2], newValue);
 		}
 		window.history.replaceState({}, '', url);
+	}
+
+	static createChildAABB(aabb, index){
+		let min = aabb.min.clone();
+		let max = aabb.max.clone();
+		let size = new THREE.Vector3().subVectors(max, min);
+
+		if ((index & 0b0001) > 0) {
+			min.z += size.z / 2;
+		} else {
+			max.z -= size.z / 2;
+		}
+
+		if ((index & 0b0010) > 0) {
+			min.y += size.y / 2;
+		} else {
+			max.y -= size.y / 2;
+		}
+
+		if ((index & 0b0100) > 0) {
+			min.x += size.x / 2;
+		} else {
+			max.x -= size.x / 2;
+		}
+
+		return new THREE.Box3(min, max);
 	}
 
 	// see https://stackoverflow.com/questions/400212/how-do-i-copy-to-the-clipboard-in-javascript
@@ -608,9 +806,258 @@ Potree.utils = class {
 		document.body.removeChild(textArea);
 
 	}
-};
 
-Potree.utils.screenPass = new function () {
+	static getMeasurementIcon(measurement){
+		if (measurement instanceof Measure) {
+			if (measurement.showDistances && !measurement.showArea && !measurement.showAngles) {
+				return `${Potree.resourcePath}/icons/distance.svg`;
+			} else if (measurement.showDistances && measurement.showArea && !measurement.showAngles) {
+				return `${Potree.resourcePath}/icons/area.svg`;
+			} else if (measurement.maxMarkers === 1) {
+				return `${Potree.resourcePath}/icons/point.svg`;
+			} else if (!measurement.showDistances && !measurement.showArea && measurement.showAngles) {
+				return `${Potree.resourcePath}/icons/angle.png`;
+			} else if (measurement.showHeight) {
+				return `${Potree.resourcePath}/icons/height.svg`;
+			} else {
+				return `${Potree.resourcePath}/icons/distance.svg`;
+			}
+		} else if (measurement instanceof Profile) {
+			return `${Potree.resourcePath}/icons/profile.svg`;
+		} else if (measurement instanceof Volume) {
+			return `${Potree.resourcePath}/icons/volume.svg`;
+		} else if (measurement instanceof PolygonClipVolume) {
+			return `${Potree.resourcePath}/icons/clip-polygon.svg`;
+		}
+	}
+
+	static lineToLineIntersection(P0, P1, P2, P3){
+
+		const P = [P0, P1, P2, P3];
+
+		const d = (m, n, o, p) => {
+			let result =  
+				  (P[m].x - P[n].x) * (P[o].x - P[p].x)
+				+ (P[m].y - P[n].y) * (P[o].y - P[p].y)
+				+ (P[m].z - P[n].z) * (P[o].z - P[p].z);
+
+			return result;
+		};
+
+
+		const mua = (d(0, 2, 3, 2) * d(3, 2, 1, 0) - d(0, 2, 1, 0) * d(3, 2, 3, 2))
+		        /**-----------------------------------------------------------------**/ /
+		            (d(1, 0, 1, 0) * d(3, 2, 3, 2) - d(3, 2, 1, 0) * d(3, 2, 1, 0));
+
+
+		const mub = (d(0, 2, 3, 2) + mua * d(3, 2, 1, 0))
+		        /**--------------------------------------**/ /
+		                       d(3, 2, 3, 2);
+
+
+		const P01 = P1.clone().sub(P0);
+		const P23 = P3.clone().sub(P2);
+		
+		const Pa = P0.clone().add(P01.multiplyScalar(mua));
+		const Pb = P2.clone().add(P23.multiplyScalar(mub));
+
+		const center = Pa.clone().add(Pb).multiplyScalar(0.5);
+
+		return center;
+	}
+
+	static computeCircleCenter(A, B, C){
+		const AB = B.clone().sub(A);
+		const AC = C.clone().sub(A);
+
+		const N = AC.clone().cross(AB).normalize();
+
+		const ab_dir = AB.clone().cross(N).normalize();
+		const ac_dir = AC.clone().cross(N).normalize();
+
+		const ab_origin = A.clone().add(B).multiplyScalar(0.5);
+		const ac_origin = A.clone().add(C).multiplyScalar(0.5);
+
+		const P0 = ab_origin;
+		const P1 = ab_origin.clone().add(ab_dir);
+
+		const P2 = ac_origin;
+		const P3 = ac_origin.clone().add(ac_dir);
+
+		const center = Utils.lineToLineIntersection(P0, P1, P2, P3);
+
+		return center;
+
+		// Potree.Utils.debugLine(viewer.scene.scene, P0, P1, 0x00ff00);
+		// Potree.Utils.debugLine(viewer.scene.scene, P2, P3, 0x0000ff);
+
+		// Potree.Utils.debugSphere(viewer.scene.scene, center, 0.03, 0xff00ff);
+
+		// const radius = center.distanceTo(A);
+		// Potree.Utils.debugCircle(viewer.scene.scene, center, radius, new THREE.Vector3(0, 0, 1), 0xff00ff);
+	}
+
+	static getNorthVec(p1, distance, projection){
+		if(projection){
+			// if there is a projection, transform coordinates to WGS84
+			// and compute angle to north there
+
+			proj4.defs("pointcloud", projection);
+			const transform = proj4("pointcloud", "WGS84");
+
+			const llP1 = transform.forward(p1.toArray());
+			let llP2 = transform.forward([p1.x, p1.y + distance]);
+			const polarRadius = Math.sqrt((llP2[0] - llP1[0]) ** 2 + (llP2[1] - llP1[1]) ** 2);
+			llP2 = [llP1[0], llP1[1] + polarRadius];
+
+			const northVec = transform.inverse(llP2);
+			
+			return new THREE.Vector3(...northVec, p1.z).sub(p1);
+		}else{
+			// if there is no projection, assume [0, 1, 0] as north direction
+
+			const vec = new THREE.Vector3(0, 1, 0).multiplyScalar(distance);
+			
+			return vec;
+		}
+	}
+
+	static computeAzimuth(p1, p2, projection){
+
+		let azimuth = 0;
+
+		if(projection){
+			// if there is a projection, transform coordinates to WGS84
+			// and compute angle to north there
+
+			let transform;
+
+			if (projection.includes('EPSG')) {
+				transform = proj4(projection, "WGS84");
+			} else {
+				proj4.defs("pointcloud", projection);
+				transform = proj4("pointcloud", "WGS84");
+			}
+
+			const llP1 = transform.forward(p1.toArray());
+			const llP2 = transform.forward(p2.toArray());
+			const dir = [
+				llP2[0] - llP1[0],
+				llP2[1] - llP1[1],
+			];
+			azimuth = Math.atan2(dir[1], dir[0]) - Math.PI / 2;
+		}else{
+			// if there is no projection, assume [0, 1, 0] as north direction
+
+			const dir = [p2.x - p1.x, p2.y - p1.y];
+			azimuth = Math.atan2(dir[1], dir[0]) - Math.PI / 2;
+		}
+
+		// make clockwise
+		azimuth = -azimuth;
+
+		return azimuth;
+	}
+
+	static async loadScript(url){
+
+		return new Promise( resolve => {
+
+			const element = document.getElementById(url);
+
+			if(element){
+				resolve();
+			}else{
+				const script = document.createElement("script");
+
+				script.id = url;
+
+				script.onload = () => {
+					resolve();
+				};
+				script.src = url;
+
+				document.body.appendChild(script);
+			}
+		});
+	}
+
+	static createSvgGradient(scheme){
+
+		// this is what we are creating:
+		//
+		//<svg width="1em" height="3em"  xmlns="http://www.w3.org/2000/svg">
+		//	<defs>
+		//		<linearGradient id="gradientID" gradientTransform="rotate(90)">
+		//		<stop offset="0%"  stop-color="rgb(93, 78, 162)" />
+		//		...
+		//		<stop offset="100%"  stop-color="rgb(157, 0, 65)" />
+		//		</linearGradient>
+		//	</defs>
+		//	
+		//	<rect width="100%" height="100%" fill="url('#myGradient')" stroke="black" stroke-width="0.1em"/>
+		//</svg>
+
+
+		const gradientId = `${Math.random()}_${Date.now()}`;
+		
+		const svgn = "http://www.w3.org/2000/svg";
+		const svg = document.createElementNS(svgn, "svg");
+		svg.setAttributeNS(null, "width", "2em");
+		svg.setAttributeNS(null, "height", "3em");
+		
+		{ // <defs>
+			const defs = document.createElementNS(svgn, "defs");
+			
+			const linearGradient = document.createElementNS(svgn, "linearGradient");
+			linearGradient.setAttributeNS(null, "id", gradientId);
+			linearGradient.setAttributeNS(null, "gradientTransform", "rotate(90)");
+
+			for(let i = scheme.length - 1; i >= 0; i--){
+				const stopVal = scheme[i];
+				const percent = parseInt(100 - stopVal[0] * 100);
+				const [r, g, b] = stopVal[1].toArray().map(v => parseInt(v * 255));
+
+				const stop = document.createElementNS(svgn, "stop");
+				stop.setAttributeNS(null, "offset", `${percent}%`);
+				stop.setAttributeNS(null, "stop-color", `rgb(${r}, ${g}, ${b})`);
+
+				linearGradient.appendChild(stop);
+			}
+
+			defs.appendChild(linearGradient);
+			svg.appendChild(defs);
+		}
+
+		const rect = document.createElementNS(svgn, "rect");
+		rect.setAttributeNS(null, "width", `100%`);
+		rect.setAttributeNS(null, "height", `100%`);
+		rect.setAttributeNS(null, "fill", `url("#${gradientId}")`);
+		rect.setAttributeNS(null, "stroke", `black`);
+		rect.setAttributeNS(null, "stroke-width", `0.1em`);
+
+		svg.appendChild(rect);
+		
+		return svg;
+	}
+
+	static async waitAny(promises){
+		
+		return new Promise( (resolve) => {
+
+			promises.map( promise => {
+				promise.then( () => {
+					resolve();
+				});
+			});
+
+		});
+
+	}
+
+}
+
+Utils.screenPass = new function () {
 	this.screenScene = new THREE.Scene();
 	this.screenQuad = new THREE.Mesh(new THREE.PlaneBufferGeometry(2, 2, 0));
 	this.screenQuad.material.depthTest = true;

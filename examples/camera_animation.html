@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<meta name="description" content="">
+	<meta name="author" content="">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+	<title>Potree Viewer</title>
+
+	<link rel="stylesheet" type="text/css" href="../build/potree/potree.css">
+	<link rel="stylesheet" type="text/css" href="../libs/jquery-ui/jquery-ui.min.css">
+	<link rel="stylesheet" type="text/css" href="../libs/openlayers3/ol.css">
+	<link rel="stylesheet" type="text/css" href="../libs/spectrum/spectrum.css">
+	<link rel="stylesheet" type="text/css" href="../libs/jstree/themes/mixed/style.css">
+</head>
+
+<body>
+	<script src="../libs/jquery/jquery-3.1.1.min.js"></script>
+	<script src="../libs/spectrum/spectrum.js"></script>
+	<script src="../libs/jquery-ui/jquery-ui.min.js"></script>
+	<script src="../libs/three.js/build/three.min.js"></script>
+	<script src="../libs/three.js/extra/lines.js"></script>
+	<script src="../libs/other/BinaryHeap.js"></script>
+	<script src="../libs/tween/tween.min.js"></script>
+	<script src="../libs/d3/d3.js"></script>
+	<script src="../libs/proj4/proj4.js"></script>
+	<script src="../libs/openlayers3/ol.js"></script>
+	<script src="../libs/i18next/i18next.js"></script>
+	<script src="../libs/jstree/jstree.js"></script>
+	<script src="../build/potree/potree.js"></script>
+	<script src="../libs/plasio/js/laslaz.js"></script>
+
+	<div class="potree_container" style="position: absolute; width: 100%; height: 100%; left: 0px; top: 0px; ">
+		<div id="potree_render_area" style="background-image: url('../build/potree/resources/images/background.jpg');">
+		</div>
+		<div id="potree_sidebar_container"> </div>
+	</div>
+	
+	<script>
+	
+		window.viewer = new Potree.Viewer(document.getElementById("potree_render_area"));
+		
+		viewer.setEDLEnabled(false);
+		viewer.setFOV(60);
+		viewer.setPointBudget(3_000_000);
+		viewer.loadSettingsFromURL();
+		viewer.setDescription(`
+		Create a new animation path via "Tools -> Navigation -> Camera Animation"<br>
+		Modify and play animation via "Scene -> Objects -> Other -> [animation object]".
+		`);
+		
+		viewer.loadGUI(() => {
+			viewer.setLanguage('en');
+			$("#menu_scene").next().show();
+			viewer.toggleSidebar();
+		});
+		
+		Potree.loadPointCloud("../pointclouds/vol_total/cloud.js", "sigeom.sa", e => {
+			let scene = viewer.scene;
+			let pointcloud = e.pointcloud;
+			
+			let material = pointcloud.material;
+			material.size = 1;
+			material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
+			material.shape = Potree.PointShape.SQUARE;
+			
+			scene.addPointCloud(pointcloud);
+			
+			//scene.view.position.set(589974.341, 231698.397, 986.146);
+			//scene.view.lookAt(new THREE.Vector3(589851.587, 231428.213, 715.634));
+			 viewer.fitToScreen();
+		});
+		
+	</script>
+
+	<script>
+	
+		const animation = new Potree.CameraAnimation(viewer);
+
+
+		const positions = [
+			[590291.6145250637, 231565.3152460147, 888.181158774433],
+			[590094.2454560432, 231235.32163877538, 870.7535717968211],
+			[589675.8154371583, 231058.22066649256, 905.3068746322883],
+			[589328.6700949036, 231385.37585641106, 813.9565903445384],
+		];
+
+		const targets = [
+			[589859.3465488373, 231456.18943956672, 758.2733646218901],
+			[589846.4463098792, 231431.89813285187, 755.9090168440739],
+			[589824.0843049305, 231444.72309070674, 760.3459659610106],
+			[589799.7263767472, 231473.79043369304, 758.8332698380435],
+		];
+
+		for(let i = 0; i < positions.length; i++){
+			const cp = animation.createControlPoint();
+
+			cp.position.set(...positions[i]);
+			cp.target.set(...targets[i]);
+		}
+
+		viewer.scene.addCameraAnimation(animation);
+
+
+	</script>
+
+	<script>
+	
+	// viewer.onGUILoaded(() => {
+		
+	// 	let section = $(`
+	// 		<h3 id="menu_meta" class="accordion-header ui-widget"><span>Camera Animation</span></h3>
+	// 		<div class="accordion-content ui-widget pv-menu-list"></div>
+	// 	`);
+	// 	let content = section.last();
+	// 	content.html(`
+	// 	<div class="pv-menu-list">
+
+	// 		<span id="animation_keyframes"></span>
+
+	// 		<span>
+	// 			<span>Time: </span><span id="lblTime"></span> <div id="sldTime"></div>
+
+	// 			<input name="play" type="button" value="play"/>
+	// 		</span>
+	// 	</div>
+	// 	`);
+
+	// 	const elPlay = content.find("input[name=play]");
+	// 	elPlay.click( () => {
+	// 		animation.play();
+	// 	});
+
+	// 	const elSlider = content.find('#sldTime');
+	// 	elSlider.slider({
+	// 		value: 0,
+	// 		min: 0,
+	// 		max: 1,
+	// 		step: 0.001,
+	// 		slide: (event, ui) => { 
+	// 			animation.set(ui.value);
+	// 		}
+	// 	});
+
+	// 	const elKeyframes = content.find("#animation_keyframes");
+
+	// 	const updateKeyframes = () => {
+	// 		elKeyframes.empty();
+
+	// 		let index = 0;
+
+	// 		const addNewKeyframeItem = (index) => {
+	// 			let elNewKeyframe = $(`
+	// 				<div style="display: flex; margin: 0.2em 0em">
+						
+	// 					<span style="flex-grow: 0;">
+	// 						<img name="add" src="${Potree.resourcePath}/icons/add.svg" style="width: 1.5em; height: 1.5em"/>
+	// 					</span>
+	// 					<span style="flex-grow: 1"></span>
+	// 				</div>
+	// 			`);
+
+	// 			const elAdd = elNewKeyframe.find("img[name=add]");
+	// 			elAdd.click( () => {
+	// 				animation.createControlPoint(index);
+	// 			});
+
+	// 			elKeyframes.append(elNewKeyframe);
+	// 		};
+
+	// 		const addKeyframeItem = (index) => {
+	// 			let elKeyframe = $(`
+	// 				<div style="display: flex; margin: 0.2em 0em">
+	// 					<span style="flex-grow: 0;">
+	// 						<img name="assign" src="${Potree.resourcePath}/icons/assign.svg" style="width: 1.5em; height: 1.5em"/>
+	// 					</span>
+	// 					<span style="flex-grow: 0;">
+	// 						<img name="move" src="${Potree.resourcePath}/icons/circled_dot.svg" style="width: 1.5em; height: 1.5em"/>
+	// 					</span>
+	// 					<span style="flex-grow: 0; width: 1.5em; height: 1.5em"></span>
+	// 					<span style="flex-grow: 0; font-size: 1.5em">keyframe</span>
+	// 					<span style="flex-grow: 1"></span>
+	// 					<span style="flex-grow: 0;">
+	// 						<img name="delete" src="${Potree.resourcePath}/icons/remove.svg" style="width: 1.5em; height: 1.5em"/>
+	// 					</span>
+	// 				</div>
+	// 			`);
+
+	// 			const elAssign = elKeyframe.find("img[name=assign]");
+	// 			const elMove = elKeyframe.find("img[name=move]");
+	// 			const elDelete = elKeyframe.find("img[name=delete]");
+
+	// 			elAssign.click( () => {
+	// 				const cp = animation.controlPoints[index];
+
+	// 				cp.position.copy(viewer.scene.view.position);
+	// 				cp.target.copy(viewer.scene.view.getPivot());
+	// 			});
+
+	// 			elMove.click( () => {
+	// 				const cp = animation.controlPoints[index];
+
+	// 				viewer.scene.view.position.copy(cp.position);
+	// 				viewer.scene.view.lookAt(cp.target);
+	// 			});
+
+	// 			elDelete.click( () => {
+	// 				const cp = animation.controlPoints[index];
+	// 				animation.removeControlPoint(cp);
+	// 			});
+
+	// 			elKeyframes.append(elKeyframe);
+	// 		};
+
+	// 		addNewKeyframeItem(index);
+
+	// 		for(const cp of animation.controlPoints){
+				
+	// 			addKeyframeItem(index);
+	// 			index++;
+	// 			addNewKeyframeItem(index);
+
+	// 		}
+	// 	};
+
+	// 	updateKeyframes();
+
+	// 	animation.addEventListener("controlpoint_added", updateKeyframes);
+	// 	animation.addEventListener("controlpoint_removed", updateKeyframes);
+
+
+	// 	section.first().click(() => content.slideToggle());
+	// 	section.insertBefore($('#menu_about'));
+		
+	// });
+
+	</script>
+	
+	
+  </body>
+</html>

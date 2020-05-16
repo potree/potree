@@ -9,6 +9,7 @@
 		"materials_opt": "Materials",
 		"scene_opt": "Scene",
 		"classification_filter_opt": "Classification filter",
+		"filters_opt": "Filters",
 		"parameters_opt": "Other settings",
 		"about_opt": "About"
 	},
@@ -17,9 +18,11 @@
 		"point_measurement": "Point measurement",
 		"distance_measurement": "Distance measurement",
 		"height_measurement": "Height measurement",
+		"circle_measurement": "Circle measurement",
 		"area_measurement": "Area measurement",
 		"volume_measurement": "Volume measurement",
 		"height_profile": "Height profile",
+		"annotation": "Annotation",
 		"clip_volume": "Volume clip",
 		"clip_polygon": "Polygon clip",
 		"screen_clip_box": "Draw a selection box. Requires you to be in orthographic camera mode!",
@@ -41,20 +44,25 @@
 		"perspective_camera_control": "Perspective camera",
 		"orthographic_camera_control": "Orthographic camera",
 		"navigation_cube_control": "Navigation cube",
-		"remove_all_clipping_volumes": "Remove all clipping volumes"
+		"remove_all_clipping_volumes": "Remove all clipping volumes",
+		"compass": "Compass",
+		"camera_animation": "Camera Animation"
 	},
 	"appearance": {
 		"nb_max_pts": "Point budget", 
 		"point_size": "Point size",
+		"min_point_size": "Minimum size",
 		"point_opacity": "Opacity",
 		"field_view": "Field of view",
 		"point_size_type": "Point sizing",
 		"point_material": "Materials",
 		"elevation_range": "Elevation range",
+		"extra_range": "Scalar range",
 		"point_quality": "Quality",
 		"point_shape": "Shape",
 		"edl_radius": "Radius",
 		"edl_strength": "Strength",
+		"edl_opacity": "Opacity",
 		"edl_enable": "Enable",
 		"min_node_size": "Min node size",
 		"clip_mode": "Clip mode",
@@ -64,7 +72,8 @@
 		"box": "Box",
 		"length_unit": "Length unit",
 		"freeze": "Lock view",
-		"language": "Language"
+		"language": "Language",
+		"backface_culling": "Backface Culling"
 	},
 	"measurements": {
 		"clip": "clip",
@@ -83,6 +92,13 @@
 	"scene": {
 		"camera_position": "Camera Position",
 		"camera_target": "Camera Target"
+	},
+	"filters": {
+		"return_number": "Return Number",
+		"number_of_returns": "Number of Returns",
+		"gps_min": "min",
+		"gps_max": "max",
+		"gps_time": "GPS Time"
 	},
 	"settings": {
 		"language": "Language"

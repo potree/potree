@@ -1,10 +1,18 @@
 
-Potree.Scene = class extends THREE.EventDispatcher{
+
+import {Annotation} from "../Annotation.js";
+import {CameraMode} from "../defines.js";
+import {View} from "./View.js";
+import {Utils} from "../utils.js";
+import {EventDispatcher} from "../EventDispatcher.js";
+
+
+export class Scene extends EventDispatcher{
 
 	constructor(){
 		super();
 
-		this.annotations = new Potree.Annotation();
+		this.annotations = new Annotation();
 		
 		this.scene = new THREE.Scene();
 		this.sceneBG = new THREE.Scene();
@@ -12,23 +20,30 @@ Potree.Scene = class extends THREE.EventDispatcher{
 
 		this.cameraP = new THREE.PerspectiveCamera(this.fov, 1, 0.1, 1000*1000);
 		this.cameraO = new THREE.OrthographicCamera(-1, 1, 1, -1, 0.1, 1000*1000);
+		this.cameraVR = new THREE.PerspectiveCamera();
 		this.cameraBG = new THREE.Camera();
 		this.cameraScreenSpace = new THREE.OrthographicCamera(-1, 1, 1, -1, 0.1, 10);
-		this.cameraMode = Potree.CameraMode.PERSPECTIVE;
+		this.cameraMode = CameraMode.PERSPECTIVE;
+		this.overrideCamera = null;
 		this.pointclouds = [];
 
 		this.measurements = [];
 		this.profiles = [];
 		this.volumes = [];
 		this.polygonClipVolumes = [];
+		this.cameraAnimations = [];
+		this.orientedImages = [];
+		this.images360 = [];
+		this.geopackages = [];
 		
 		this.fpControls = null;
 		this.orbitControls = null;
 		this.earthControls = null;
 		this.geoControls = null;
+		this.deviceControls = null;
 		this.inputHandler = null;
 
-		this.view = new Potree.View();
+		this.view = new View();
 
 		this.directionalLight = null;
 
@@ -98,7 +113,7 @@ Potree.Scene = class extends THREE.EventDispatcher{
 			pointcloud.updateMatrixWorld(true);
 
 			let pointcloudBox = pointcloud.pcoGeometry.tightBoundingBox ? pointcloud.pcoGeometry.tightBoundingBox : pointcloud.boundingBox;
-			let boxWorld = Potree.utils.computeTransformedBoundingBox(pointcloudBox, pointcloud.matrixWorld);
+			let boxWorld = Utils.computeTransformedBoundingBox(pointcloudBox, pointcloud.matrixWorld);
 			box.union(boxWorld);
 		}
 
@@ -113,7 +128,7 @@ Potree.Scene = class extends THREE.EventDispatcher{
 			type: 'pointcloud_added',
 			pointcloud: pointcloud
 		});
-	};
+	}
 
 	addVolume (volume) {
 		this.volumes.push(volume);
@@ -122,6 +137,78 @@ Potree.Scene = class extends THREE.EventDispatcher{
 			'scene': this,
 			'volume': volume
 		});
+	}
+
+	addOrientedImages(images){
+		this.orientedImages.push(images);
+		this.scene.add(images.node);
+
+		this.dispatchEvent({
+			'type': 'oriented_images_added',
+			'scene': this,
+			'images': images
+		});
+	};
+
+	removeOrientedImages(images){
+		let index = this.orientedImages.indexOf(images);
+		if (index > -1) {
+			this.orientedImages.splice(index, 1);
+
+			this.dispatchEvent({
+				'type': 'oriented_images_removed',
+				'scene': this,
+				'images': images
+			});
+		}
+	};
+
+	add360Images(images){
+		this.images360.push(images);
+		this.scene.add(images.node);
+
+		this.dispatchEvent({
+			'type': '360_images_added',
+			'scene': this,
+			'images': images
+		});
+	}
+
+	remove360Images(images){
+		let index = this.images360.indexOf(images);
+		if (index > -1) {
+			this.images360.splice(index, 1);
+
+			this.dispatchEvent({
+				'type': '360_images_removed',
+				'scene': this,
+				'images': images
+			});
+		}
+	}
+
+	addGeopackage(geopackage){
+		this.geopackages.push(geopackage);
+		this.scene.add(geopackage.node);
+
+		this.dispatchEvent({
+			'type': 'geopackage_added',
+			'scene': this,
+			'geopackage': geopackage
+		});
+	};
+
+	removeGeopackage(geopackage){
+		let index = this.geopackages.indexOf(geopackage);
+		if (index > -1) {
+			this.geopackages.splice(index, 1);
+
+			this.dispatchEvent({
+				'type': 'geopackage_removed',
+				'scene': this,
+				'geopackage': geopackage
+			});
+		}
 	};
 
 	removeVolume (volume) {
@@ -133,6 +220,28 @@ Potree.Scene = class extends THREE.EventDispatcher{
 				'type': 'volume_removed',
 				'scene': this,
 				'volume': volume
+			});
+		}
+	};
+
+	addCameraAnimation(animation) {
+		this.cameraAnimations.push(animation);
+		this.dispatchEvent({
+			'type': 'camera_animation_added',
+			'scene': this,
+			'animation': animation
+		});
+	};
+
+	removeCameraAnimation(animation){
+		let index = this.cameraAnimations.indexOf(volume);
+		if (index > -1) {
+			this.cameraAnimations.splice(index, 1);
+
+			this.dispatchEvent({
+				'type': 'camera_animation_removed',
+				'scene': this,
+				'animation': animation
 			});
 		}
 	};
@@ -160,6 +269,7 @@ Potree.Scene = class extends THREE.EventDispatcher{
 	
 	addMeasurement(measurement){
 		measurement.lengthUnit = this.lengthUnit;
+		measurement.lengthUnitDisplay = this.lengthUnitDisplay;
 		this.measurements.push(measurement);
 		this.dispatchEvent({
 			'type': 'measurement_added',
@@ -227,7 +337,20 @@ Potree.Scene = class extends THREE.EventDispatcher{
 	}
 
 	getActiveCamera() {
-		return this.cameraMode == Potree.CameraMode.PERSPECTIVE ? this.cameraP : this.cameraO;		
+
+		if(this.overrideCamera){
+			return this.overrideCamera;
+		}
+
+		if(this.cameraMode === CameraMode.PERSPECTIVE){
+			return this.cameraP;
+		}else if(this.cameraMode === CameraMode.ORTHOGRAPHIC){
+			return this.cameraO;
+		}else if(this.cameraMode === CameraMode.VR){
+			return this.cameraVR;
+		}
+
+		return null;
 	}
 	
 	initialize(){
@@ -251,12 +374,9 @@ Potree.Scene = class extends THREE.EventDispatcher{
 		
 		let light = new THREE.AmbientLight( 0x555555 ); // soft white light
 		this.scenePointCloud.add( light );
-		
-		//let grid = Potree.utils.createGrid(5, 5, 2);
-		//this.scene.add(grid);
 
 		{ // background
-			let texture = Potree.utils.createBackgroundTexture(512, 512);
+			let texture = Utils.createBackgroundTexture(512, 512);
 
 			texture.minFilter = texture.magFilter = THREE.NearestFilter;
 			texture.minFilter = texture.magFilter = THREE.LinearFilter;
@@ -271,28 +391,28 @@ Potree.Scene = class extends THREE.EventDispatcher{
 			this.sceneBG.add(bg);
 		}
 
-		{ // lights
-			{
-				let light = new THREE.DirectionalLight(0xffffff);
-				light.position.set(10, 10, 1);
-				light.target.position.set(0, 0, 0);
-				this.scene.add(light);
-			}
+		// { // lights
+		// 	{
+		// 		let light = new THREE.DirectionalLight(0xffffff);
+		// 		light.position.set(10, 10, 1);
+		// 		light.target.position.set(0, 0, 0);
+		// 		this.scene.add(light);
+		// 	}
 
-			{
-				let light = new THREE.DirectionalLight(0xffffff);
-				light.position.set(-10, 10, 1);
-				light.target.position.set(0, 0, 0);
-				this.scene.add(light);
-			}
+		// 	{
+		// 		let light = new THREE.DirectionalLight(0xffffff);
+		// 		light.position.set(-10, 10, 1);
+		// 		light.target.position.set(0, 0, 0);
+		// 		this.scene.add(light);
+		// 	}
 
-			{
-				let light = new THREE.DirectionalLight(0xffffff);
-				light.position.set(0, -10, 20);
-				light.target.position.set(0, 0, 0);
-				this.scene.add(light);
-			}
-		}
+		// 	{
+		// 		let light = new THREE.DirectionalLight(0xffffff);
+		// 		light.position.set(0, -10, 20);
+		// 		light.target.position.set(0, 0, 0);
+		// 		this.scene.add(light);
+		// 	}
+		// }
 	}
 	
 	addAnnotation(position, args = {}){		
@@ -301,7 +421,7 @@ Potree.Scene = class extends THREE.EventDispatcher{
 		} else if (position instanceof THREE.Vector3) {
 			args.position = position;
 		}
-		let annotation = new Potree.Annotation(args);
+		let annotation = new Annotation(args);
 		this.annotations.add(annotation);
 
 		return annotation;

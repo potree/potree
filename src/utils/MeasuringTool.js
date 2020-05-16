@@ -1,5 +1,125 @@
 
-Potree.MeasuringTool = class MeasuringTool extends THREE.EventDispatcher {
+import {Measure} from "./Measure.js";
+import {Utils} from "../utils.js";
+import {CameraMode} from "../defines.js";
+import { EventDispatcher } from "../EventDispatcher.js";
+
+function updateAzimuth(viewer, measure){
+
+	const azimuth = measure.azimuth;
+
+	const isOkay = measure.points.length === 2;
+
+	azimuth.node.visible = isOkay && measure.showAzimuth;
+
+	if(!azimuth.node.visible){
+		return;
+	}
+
+	const camera = viewer.scene.getActiveCamera();
+	const renderAreaSize = viewer.renderer.getSize(new THREE.Vector2());
+	const width = renderAreaSize.width;
+	const height = renderAreaSize.height;
+	
+	const [p0, p1] = measure.points;
+	const r = p0.position.distanceTo(p1.position);
+	const northVec = Utils.getNorthVec(p0.position, r, viewer.getProjection());
+	const northPos = p0.position.clone().add(northVec);
+
+	azimuth.center.position.copy(p0.position);
+	azimuth.center.scale.set(2, 2, 2);
+	
+	azimuth.center.visible = false;
+	// azimuth.target.visible = false;
+
+
+	{ // north
+		azimuth.north.position.copy(northPos);
+		azimuth.north.scale.set(2, 2, 2);
+
+		let distance = azimuth.north.position.distanceTo(camera.position);
+		let pr = Utils.projectedRadius(1, camera, distance, width, height);
+
+		let scale = (5 / pr);
+		azimuth.north.scale.set(scale, scale, scale);
+	}
+
+	{ // target
+		azimuth.target.position.copy(p1.position);
+		azimuth.target.position.z = azimuth.north.position.z;
+
+		let distance = azimuth.target.position.distanceTo(camera.position);
+		let pr = Utils.projectedRadius(1, camera, distance, width, height);
+
+		let scale = (5 / pr);
+		azimuth.target.scale.set(scale, scale, scale);
+	}
+
+
+	azimuth.circle.position.copy(p0.position);
+	azimuth.circle.scale.set(r, r, r);
+	azimuth.circle.material.resolution.set(width, height);
+
+	// to target
+	azimuth.centerToTarget.geometry.setPositions([
+		0, 0, 0,
+		...p1.position.clone().sub(p0.position).toArray(),
+	]);
+	azimuth.centerToTarget.position.copy(p0.position);
+	azimuth.centerToTarget.geometry.verticesNeedUpdate = true;
+	azimuth.centerToTarget.geometry.computeBoundingSphere();
+	azimuth.centerToTarget.computeLineDistances();
+	azimuth.centerToTarget.material.resolution.set(width, height);
+
+	// to target ground
+	azimuth.centerToTargetground.geometry.setPositions([
+		0, 0, 0,
+		p1.position.x - p0.position.x,
+		p1.position.y - p0.position.y,
+		0,
+	]);
+	azimuth.centerToTargetground.position.copy(p0.position);
+	azimuth.centerToTargetground.geometry.verticesNeedUpdate = true;
+	azimuth.centerToTargetground.geometry.computeBoundingSphere();
+	azimuth.centerToTargetground.computeLineDistances();
+	azimuth.centerToTargetground.material.resolution.set(width, height);
+
+	// to north
+	azimuth.centerToNorth.geometry.setPositions([
+		0, 0, 0,
+		northPos.x - p0.position.x,
+		northPos.y - p0.position.y,
+		0,
+	]);
+	azimuth.centerToNorth.position.copy(p0.position);
+	azimuth.centerToNorth.geometry.verticesNeedUpdate = true;
+	azimuth.centerToNorth.geometry.computeBoundingSphere();
+	azimuth.centerToNorth.computeLineDistances();
+	azimuth.centerToNorth.material.resolution.set(width, height);
+
+	// label
+	const radians = Utils.computeAzimuth(p0.position, p1.position, viewer.getProjection());
+	let degrees = THREE.Math.radToDeg(radians);
+	if(degrees < 0){
+		degrees = 360 + degrees;
+	}
+	const txtDegrees = `${degrees.toFixed(2)}°`;
+	const labelDir = northPos.clone().add(p1.position).multiplyScalar(0.5).sub(p0.position);
+	if(labelDir.length() > 0){
+		labelDir.z = 0;
+		labelDir.normalize();
+		const labelVec = labelDir.clone().multiplyScalar(r);
+		const labelPos = p0.position.clone().add(labelVec);
+		azimuth.label.position.copy(labelPos);
+	}
+	azimuth.label.setText(txtDegrees);
+	let distance = azimuth.label.position.distanceTo(camera.position);
+	let pr = Utils.projectedRadius(1, camera, distance, width, height);
+	let scale = (70 / pr);
+	azimuth.label.scale.set(scale, scale, scale);
+}
+
+export class MeasuringTool extends EventDispatcher{
 	constructor (viewer) {
 		super();
 
@@ -12,6 +132,7 @@ Potree.MeasuringTool = class MeasuringTool extends THREE.EventDispatcher {
 			});
 		});
 
+		this.showLabels = true;
 		this.scene = new THREE.Scene();
 		this.scene.name = 'scene_measurement';
 		this.light = new THREE.PointLight(0xffffff, 1.0);
@@ -47,20 +168,33 @@ Potree.MeasuringTool = class MeasuringTool extends THREE.EventDispatcher {
 	startInsertion (args = {}) {
 		let domElement = this.viewer.renderer.domElement;
 
-		let measure = new Potree.Measure();
+		let measure = new Measure();
 
 		this.dispatchEvent({
 			type: 'start_inserting_measurement',
 			measure: measure
 		});
 
+		const pick = (defaul, alternative) => {
+			if(defaul != null){
+				return defaul;
+			}else{
+				return alternative;
+			}
+		};
+
 		measure.showDistances = (args.showDistances === null) ? true : args.showDistances;
-		measure.showArea = args.showArea || false;
-		measure.showAngles = args.showAngles || false;
-		measure.showCoordinates = args.showCoordinates || false;
-		measure.showHeight = args.showHeight || false;
-		measure.closed = args.closed || false;
-		measure.maxMarkers = args.maxMarkers || Infinity;
+
+		measure.showArea = pick(args.showArea, false);
+		measure.showAngles = pick(args.showAngles, false);
+		measure.showCoordinates = pick(args.showCoordinates, false);
+		measure.showHeight = pick(args.showHeight, false);
+		measure.showCircle = pick(args.showCircle, false);
+		measure.showAzimuth = pick(args.showAzimuth, false);
+		measure.showEdges = pick(args.showEdges, true);
+		measure.closed = pick(args.closed, false);
+		measure.maxMarkers = pick(args.maxMarkers, Infinity);
+
 		measure.name = args.name || 'Measurement';
 
 		this.scene.add(measure);
@@ -112,20 +246,24 @@ Potree.MeasuringTool = class MeasuringTool extends THREE.EventDispatcher {
 		let domElement = this.renderer.domElement;
 		let measurements = this.viewer.scene.measurements;
 
-		let clientWidth = this.renderer.getSize().width;
-		let clientHeight = this.renderer.getSize().height;
+		const renderAreaSize = this.renderer.getSize(new THREE.Vector2());
+		let clientWidth = renderAreaSize.width;
+		let clientHeight = renderAreaSize.height;
 
 		this.light.position.copy(camera.position);
 
 		// make size independant of distance
 		for (let measure of measurements) {
 			measure.lengthUnit = this.viewer.lengthUnit;
+			measure.lengthUnitDisplay = this.viewer.lengthUnitDisplay;
 			measure.update();
 
+			updateAzimuth(viewer, measure);
+
 			// spheres
-			for(let sphere of measure.spheres){			
-				let distance = camera.position.distanceTo(sphere.getWorldPosition());
-				let pr = Potree.utils.projectedRadius(1, camera, distance, clientWidth, clientHeight);
+			for(let sphere of measure.spheres){
+				let distance = camera.position.distanceTo(sphere.getWorldPosition(new THREE.Vector3()));
+				let pr = Utils.projectedRadius(1, camera, distance, clientWidth, clientHeight);
 				let scale = (15 / pr);
 				sphere.scale.set(scale, scale, scale);
 			}
@@ -133,9 +271,14 @@ Potree.MeasuringTool = class MeasuringTool extends THREE.EventDispatcher {
 			// labels
 			let labels = measure.edgeLabels.concat(measure.angleLabels);
 			for(let label of labels){
-				let distance = camera.position.distanceTo(label.getWorldPosition());
-				let pr = Potree.utils.projectedRadius(1, camera, distance, clientWidth, clientHeight);
+				let distance = camera.position.distanceTo(label.getWorldPosition(new THREE.Vector3()));
+				let pr = Utils.projectedRadius(1, camera, distance, clientWidth, clientHeight);
 				let scale = (70 / pr);
+
+				if(Potree.debug.scale){
+					scale = (Potree.debug.scale / pr);
+				}
+
 				label.scale.set(scale, scale, scale);
 			}
 
@@ -143,11 +286,10 @@ Potree.MeasuringTool = class MeasuringTool extends THREE.EventDispatcher {
 			for (let j = 0; j < measure.coordinateLabels.length; j++) {
 				let label = measure.coordinateLabels[j];
 				let sphere = measure.spheres[j];
-				// measure.points[j]
 
-				let distance = camera.position.distanceTo(sphere.getWorldPosition());
+				let distance = camera.position.distanceTo(sphere.getWorldPosition(new THREE.Vector3()));
 
-				let screenPos = sphere.getWorldPosition().clone().project(camera);
+				let screenPos = sphere.getWorldPosition(new THREE.Vector3()).clone().project(camera);
 				screenPos.x = Math.round((screenPos.x + 1) * clientWidth / 2);
 				screenPos.y = Math.round((-screenPos.y + 1) * clientHeight / 2);
 				screenPos.z = 0;
@@ -158,14 +300,14 @@ Potree.MeasuringTool = class MeasuringTool extends THREE.EventDispatcher {
 					-(screenPos.y / clientHeight) * 2 + 1, 
 					0.5 );
 				labelPos.unproject(camera);
-				if(this.viewer.scene.cameraMode == Potree.CameraMode.PERSPECTIVE) {
+				if(this.viewer.scene.cameraMode == CameraMode.PERSPECTIVE) {
 					let direction = labelPos.sub(camera.position).normalize();
 					labelPos = new THREE.Vector3().addVectors(
 						camera.position, direction.multiplyScalar(distance));
 
 				}
 				label.position.copy(labelPos);
-				let pr = Potree.utils.projectedRadius(1, camera, distance, clientWidth, clientHeight);
+				let pr = Utils.projectedRadius(1, camera, distance, clientWidth, clientHeight);
 				let scale = (70 / pr);
 				label.scale.set(scale, scale, scale);
 			}
@@ -176,18 +318,24 @@ Potree.MeasuringTool = class MeasuringTool extends THREE.EventDispatcher {
 
 				{
 					let distance = label.position.distanceTo(camera.position);
-					let pr = Potree.utils.projectedRadius(1, camera, distance, clientWidth, clientHeight);
+					let pr = Utils.projectedRadius(1, camera, distance, clientWidth, clientHeight);
 					let scale = (70 / pr);
 					label.scale.set(scale, scale, scale);
 				}
 
 				{ // height edge
 					let edge = measure.heightEdge;
-					let lowpoint = edge.geometry.vertices[0].clone().add(edge.position);
-					let start = edge.geometry.vertices[2].clone().add(edge.position);
-					let end = edge.geometry.vertices[3].clone().add(edge.position);
 
-					let lowScreen = lowpoint.clone().project(camera);
+					let sorted = measure.points.slice().sort((a, b) => a.position.z - b.position.z);
+					let lowPoint = sorted[0].position.clone();
+					let highPoint = sorted[sorted.length - 1].position.clone();
+					let min = lowPoint.z;
+					let max = highPoint.z;
+
+					let start = new THREE.Vector3(highPoint.x, highPoint.y, min);
+					let end = new THREE.Vector3(highPoint.x, highPoint.y, max);
+
+					let lowScreen = lowPoint.clone().project(camera);
 					let startScreen = start.clone().project(camera);
 					let endScreen = end.clone().project(camera);
 
@@ -218,10 +366,49 @@ Potree.MeasuringTool = class MeasuringTool extends THREE.EventDispatcher {
 			{ // area label
 				let label = measure.areaLabel;
 				let distance = label.position.distanceTo(camera.position);
-				let pr = Potree.utils.projectedRadius(1, camera, distance, clientWidth, clientHeight);
+				let pr = Utils.projectedRadius(1, camera, distance, clientWidth, clientHeight);
 
 				let scale = (70 / pr);
 				label.scale.set(scale, scale, scale);
+			}
+
+			{ // radius label
+				let label = measure.circleRadiusLabel;
+				let distance = label.position.distanceTo(camera.position);
+				let pr = Utils.projectedRadius(1, camera, distance, clientWidth, clientHeight);
+
+				let scale = (70 / pr);
+				label.scale.set(scale, scale, scale);
+			}
+
+			{ // edges
+				const materials = [
+					measure.circleRadiusLine.material,
+					...measure.edges.map( (e) => e.material),
+					measure.heightEdge.material,
+					measure.circleLine.material,
+				];
+
+				for(const material of materials){
+					material.resolution.set(clientWidth, clientHeight);
+				}
+			}
+
+			if(!this.showLabels){
+
+				const labels = [
+					...measure.sphereLabels, 
+					...measure.edgeLabels, 
+					...measure.angleLabels, 
+					...measure.coordinateLabels,
+					measure.heightLabel,
+					measure.areaLabel,
+					measure.circleRadiusLabel,
+				];
+
+				for(const label of labels){
+					label.visible = false;
+				}
 			}
 		}
 	}

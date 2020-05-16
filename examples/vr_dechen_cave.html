@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<meta name="description" content="">
+	<meta name="author" content="">
+	<!-- <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no"> -->
+	<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+	<title>Potree Viewer</title>
+
+	<link rel="stylesheet" type="text/css" href="../build/potree/potree.css">
+	<link rel="stylesheet" type="text/css" href="../libs/jquery-ui/jquery-ui.min.css">
+	<link rel="stylesheet" type="text/css" href="../libs/openlayers3/ol.css">
+	<link rel="stylesheet" type="text/css" href="../libs/spectrum/spectrum.css">
+	<link rel="stylesheet" type="text/css" href="../libs/jstree/themes/mixed/style.css">
+</head>
+
+<body>
+	<script src="../libs/jquery/jquery-3.1.1.min.js"></script>
+	<script src="../libs/spectrum/spectrum.js"></script>
+	<script src="../libs/jquery-ui/jquery-ui.min.js"></script>
+	<script src="../libs/three.js/build/three.min.js"></script>
+	<script src="../libs/three.js/extra/lines.js"></script>
+	<script src="../libs/other/BinaryHeap.js"></script>
+	<script src="../libs/tween/tween.min.js"></script>
+	<script src="../libs/d3/d3.js"></script>
+	<script src="../libs/proj4/proj4.js"></script>
+	<script src="../libs/openlayers3/ol.js"></script>
+	<script src="../libs/i18next/i18next.js"></script>
+	<script src="../libs/jstree/jstree.js"></script>
+	<script src="../build/potree/potree.js"></script>
+	<script src="../libs/plasio/js/laslaz.js"></script>
+	<script src="../libs/other/OBJLoader.js"></script>
+	
+	<!-- INCLUDE ADDITIONAL DEPENDENCIES HERE -->
+	<!-- INCLUDE SETTINGS HERE -->
+	
+	<div class="potree_container" style="position: absolute; width: 100%; height: 100%; left: 0px; top: 0px; ">
+		<div id="potree_render_area" style="background-image: url('../build/potree/resources/images/background.jpg');"></div>
+		<div id="potree_sidebar_container"> </div>
+	</div>
+	
+	<script>
+	
+		window.viewer = new Potree.Viewer(document.getElementById("potree_render_area"));
+		
+		viewer.setEDLEnabled(true);
+		viewer.setFOV(60);
+		viewer.setPointBudget(3 * 1000 * 1000);
+		viewer.loadSettingsFromURL();
+		
+		viewer.loadGUI(() => {
+			viewer.setLanguage('en');
+			$("#menu_tools").next().show();
+			$("#menu_clipping").next().show();
+			//viewer.toggleSidebar();
+		});
+		
+		Potree.loadPointCloud("http://5.9.65.151/mschuetz/potree/resources/pointclouds/uni_heidelberg/dechen_cave/cloud.js", "Dechen Cave", function(e){
+			viewer.scene.addPointCloud(e.pointcloud);
+
+			e.pointcloud.position.set(-10, -15, -2);
+			e.pointcloud.scale.set(1, 1, 1);
+			
+			const material = e.pointcloud.material;
+
+			material.size = 0.4;
+			material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
+			material.rgbGamma = 0.35;
+			material.rgbBrightness = -0.26;
+		});
+
+
+		{ // Load OBJ File
+			let manager = new THREE.LoadingManager();
+			
+			manager.onProgress = function ( item, loaded, total ) {
+				console.log( item, loaded, total );
+			};
+
+			let textureLoader = new THREE.TextureLoader( manager );
+			let texture = textureLoader.load(`${Potree.resourcePath}/textures/brick_pavement.jpg`);
+			let onProgress = function ( xhr ) {
+				if ( xhr.lengthComputable ) {
+					let percentComplete = xhr.loaded / xhr.total * 100;
+					console.log( Math.round(percentComplete, 2) + '% downloaded' );
+				}
+			};
+			texture.wrapS = THREE.RepeatWrapping;
+			texture.wrapT = THREE.RepeatWrapping;
+
+			let onError = function ( xhr ) {};
+			let loader = new THREE.OBJLoader( manager );
+			loader.load(`${Potree.resourcePath}/models/stanford_bunny_reduced.obj`, function ( object ) {
+				object.traverse( function ( child ) {
+					if ( child instanceof THREE.Mesh ) {
+						child.material.map = texture;
+					}
+				});
+
+				//object.position.set(589871.587, 231528.213, 725.634);
+				object.scale.multiplyScalar(3);
+				object.rotation.set(Math.PI / 2, Math.PI, 0)
+
+				viewer.scene.scene.add( object );
+			}, onProgress, onError );
+		}
+
+		{
+			const light1 = new THREE.PointLight( 0xffffff, 0.8); 
+			light1.position.set( 15, -15, 3 ); 
+			viewer.scene.scene.add(light1);
+
+			const light2 = new THREE.PointLight( 0xffffff, 0.8); 
+			light2.position.set( 0, 0, 3 ); 
+			viewer.scene.scene.add(light2);
+		}
+
+
+	</script>
+
+
+	
+	<div style="position: absolute; z-index: 10000; right: 10px; bottom: 10px;" 
+		onclick="viewer.toggleVR()">
+
+		<img src="../resources/icons/vr_button.svg" />
+
+	</div>
+	
+  </body>
+</html>

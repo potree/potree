@@ -1,7 +1,16 @@
 
 
-class HQSplatRenderer {
-	constructor (viewer) {
+import {NormalizationMaterial} from "../materials/NormalizationMaterial.js";
+import {NormalizationEDLMaterial} from "../materials/NormalizationEDLMaterial.js";
+import {PointCloudMaterial} from "../materials/PointCloudMaterial.js";
+import {PointShape} from "../defines.js";
+import {SphereVolume} from "../utils/Volume.js";
+import {Utils} from "../utils.js";
+
+
+export class HQSplatRenderer{
+	
+	constructor(viewer){
 		this.viewer = viewer;
 
 		this.depthMaterials = new Map();
@@ -10,7 +19,7 @@ class HQSplatRenderer {
 
 		this.rtDepth = null;
 		this.rtAttribute = null;
-		this.gl = viewer.renderer.context;
+		this.gl = viewer.renderer.getContext();
 
 		this.initialized = false;
 	}
@@ -20,12 +29,12 @@ class HQSplatRenderer {
 			return;
 		}
 
-		this.normalizationMaterial = new Potree.NormalizationMaterial();
+		this.normalizationMaterial = new NormalizationMaterial();
 		this.normalizationMaterial.depthTest = true;
 		this.normalizationMaterial.depthWrite = true;
 		this.normalizationMaterial.transparent = true;
 
-		this.normalizationEDLMaterial = new Potree.NormalizationEDLMaterial();
+		this.normalizationEDLMaterial = new NormalizationEDLMaterial();
 		this.normalizationEDLMaterial.depthTest = true;
 		this.normalizationEDLMaterial.depthWrite = true;
 		this.normalizationEDLMaterial.transparent = true;
@@ -44,63 +53,80 @@ class HQSplatRenderer {
 			format: THREE.RGBAFormat,
 			type: THREE.FloatType,
 			depthTexture: this.rtDepth.depthTexture,
-			//depthTexture: new THREE.DepthTexture(undefined, undefined, THREE.UnsignedIntType)
 		});
-		
-		//{
-		//	let geometry = new THREE.PlaneBufferGeometry( 1, 1, 32, 32);
-		//	let material = new THREE.MeshBasicMaterial( {side: THREE.DoubleSide, map: this.rtDepth.texture} );
-		//	let plane = new THREE.Mesh( geometry, material );
-		//	plane.scale.set(0.3, 0.3, 1.0);
-		//	plane.position.set(plane.scale.x / 2, plane.scale.y / 2, 0);
-		//	this.viewer.overlay.add(plane);
-		//}
 
 		this.initialized = true;
 	};
 
-	resize () {
-		const viewer = this.viewer;
-
-		let pixelRatio = viewer.renderer.getPixelRatio();
-		let width = viewer.renderer.getSize().width;
-		let height = viewer.renderer.getSize().height;
-		this.rtDepth.setSize(width * pixelRatio , height * pixelRatio);
-		this.rtAttribute.setSize(width * pixelRatio , height * pixelRatio);
+	resize(width, height){
+		this.rtDepth.setSize(width, height);
+		this.rtAttribute.setSize(width, height);
 	}
 
-	render () {
-		this.init();
+	clearTargets(){
 		const viewer = this.viewer;
+		const {renderer} = viewer;
+
+		const oldTarget = renderer.getRenderTarget();
+
+		renderer.setClearColor(0x000000, 0);
+
+		renderer.setRenderTarget( this.rtDepth );
+		renderer.clear( true, true, true );
+
+		renderer.setRenderTarget( this.rtAttribute );
+		renderer.clear( true, true, true );
+
+		renderer.setRenderTarget(oldTarget);
+	}
+
+
+	clear(){
+		this.init();
+
+		const {renderer, background} = this.viewer;
+
+		if(background === "skybox"){
+			renderer.setClearColor(0x000000, 0);
+		} else if (background === 'gradient') {
+			renderer.setClearColor(0x000000, 0);
+		} else if (background === 'black') {
+			renderer.setClearColor(0x000000, 1);
+		} else if (background === 'white') {
+			renderer.setClearColor(0xFFFFFF, 1);
+		} else {
+			renderer.setClearColor(0x000000, 0);
+		}
+
+		renderer.clear();
+
+		this.clearTargets();
+	}
+
+	render (params) {
+		this.init();
+
+		const viewer = this.viewer;
+		const camera = params.camera ? params.camera : viewer.scene.getActiveCamera();
+		const {width, height} = this.viewer.renderer.getSize(new THREE.Vector2());
 
 		viewer.dispatchEvent({type: "render.pass.begin",viewer: viewer});
 
-		this.resize();
+		this.resize(width, height);
 
-		let camera = viewer.scene.getActiveCamera();
-		
-		viewer.renderer.setClearColor(0x000000, 0);
-		viewer.renderer.clearTarget( this.rtDepth, true, true, true );
-		viewer.renderer.clearTarget( this.rtAttribute, true, true, true );
-
-		let width = viewer.renderer.getSize().width;
-		let height = viewer.renderer.getSize().height;
-
-		let queryHQSplats = Potree.startQuery('HQSplats', viewer.renderer.getContext());
-
-		let visiblePointClouds = viewer.scene.pointclouds.filter(pc => pc.visible);
-		let originalMaterials = new Map();
+		const visiblePointClouds = viewer.scene.pointclouds.filter(pc => pc.visible);
+		const originalMaterials = new Map();
 
 		for(let pointcloud of visiblePointClouds){
 			originalMaterials.set(pointcloud, pointcloud.material);
 
 			if(!this.attributeMaterials.has(pointcloud)){
-				let attributeMaterial = new Potree.PointCloudMaterial();
+				let attributeMaterial = new PointCloudMaterial();
 				this.attributeMaterials.set(pointcloud, attributeMaterial);
 			}
 
 			if(!this.depthMaterials.has(pointcloud)){
-				let depthMaterial = new Potree.PointCloudMaterial();
+				let depthMaterial = new PointCloudMaterial();
 
 				depthMaterial.setDefine("depth_pass", "#define hq_depth_pass");
 				depthMaterial.setDefine("use_edl", "#define use_edl");
@@ -111,7 +137,7 @@ class HQSplatRenderer {
 
 		{ // DEPTH PASS
 			for (let pointcloud of visiblePointClouds) {
-				let octreeSize = pointcloud.pcoGeometry.boundingBox.getSize().x;
+				let octreeSize = pointcloud.pcoGeometry.boundingBox.getSize(new THREE.Vector3()).x;
 
 				let material = originalMaterials.get(pointcloud);
 				let depthMaterial = this.depthMaterials.get(pointcloud);
@@ -124,12 +150,19 @@ class HQSplatRenderer {
 				depthMaterial.visibleNodesTexture = material.visibleNodesTexture;
 				depthMaterial.weighted = false;
 				depthMaterial.screenWidth = width;
-				depthMaterial.shape = Potree.PointShape.CIRCLE;
+				depthMaterial.shape = PointShape.CIRCLE;
 				depthMaterial.screenHeight = height;
 				depthMaterial.uniforms.visibleNodes.value = material.visibleNodesTexture;
 				depthMaterial.uniforms.octreeSize.value = octreeSize;
 				depthMaterial.spacing = pointcloud.pcoGeometry.spacing * Math.max(...pointcloud.scale.toArray());
 				depthMaterial.classification = material.classification;
+				depthMaterial.uniforms.classificationLUT.value.image.data = material.uniforms.classificationLUT.value.image.data;
+				depthMaterial.classificationTexture.needsUpdate = true;
+
+				depthMaterial.uniforms.uFilterReturnNumberRange.value = material.uniforms.uFilterReturnNumberRange.value;
+				depthMaterial.uniforms.uFilterNumberOfReturnsRange.value = material.uniforms.uFilterNumberOfReturnsRange.value;
+				depthMaterial.uniforms.uFilterGPSTimeClipRange.value = material.uniforms.uFilterGPSTimeClipRange.value;
+				depthMaterial.uniforms.uFilterPointSourceIDClipRange.value = material.uniforms.uFilterPointSourceIDClipRange.value;
 
 				depthMaterial.clipTask = material.clipTask;
 				depthMaterial.clipMethod = material.clipMethod;
@@ -140,13 +173,13 @@ class HQSplatRenderer {
 			}
 			
 			viewer.pRenderer.render(viewer.scene.scenePointCloud, camera, this.rtDepth, {
-				//material: this.depthMaterial
+				clipSpheres: viewer.scene.volumes.filter(v => (v instanceof SphereVolume)),
 			});
 		}
 
 		{ // ATTRIBUTE PASS
 			for (let pointcloud of visiblePointClouds) {
-				let octreeSize = pointcloud.pcoGeometry.boundingBox.getSize().x;
+				let octreeSize = pointcloud.pcoGeometry.boundingBox.getSize(new THREE.Vector3()).x;
 
 				let material = originalMaterials.get(pointcloud);
 				let attributeMaterial = this.attributeMaterials.get(pointcloud);
@@ -156,18 +189,28 @@ class HQSplatRenderer {
 				attributeMaterial.maxSize = material.maxSize;
 
 				attributeMaterial.pointSizeType = material.pointSizeType;
-				attributeMaterial.pointColorType = material.pointColorType;
+				attributeMaterial.activeAttributeName = material.activeAttributeName;
 				attributeMaterial.visibleNodesTexture = material.visibleNodesTexture;
 				attributeMaterial.weighted = true;
 				attributeMaterial.screenWidth = width;
 				attributeMaterial.screenHeight = height;
-				attributeMaterial.shape = Potree.PointShape.CIRCLE;
+				attributeMaterial.shape = PointShape.CIRCLE;
 				attributeMaterial.uniforms.visibleNodes.value = material.visibleNodesTexture;
 				attributeMaterial.uniforms.octreeSize.value = octreeSize;
 				attributeMaterial.spacing = pointcloud.pcoGeometry.spacing * Math.max(...pointcloud.scale.toArray());
 				attributeMaterial.classification = material.classification;
+				attributeMaterial.uniforms.classificationLUT.value.image.data = material.uniforms.classificationLUT.value.image.data;
+				attributeMaterial.classificationTexture.needsUpdate = true;
+
+				attributeMaterial.uniforms.uFilterReturnNumberRange.value = material.uniforms.uFilterReturnNumberRange.value;
+				attributeMaterial.uniforms.uFilterNumberOfReturnsRange.value = material.uniforms.uFilterNumberOfReturnsRange.value;
+				attributeMaterial.uniforms.uFilterGPSTimeClipRange.value = material.uniforms.uFilterGPSTimeClipRange.value;
+				attributeMaterial.uniforms.uFilterPointSourceIDClipRange.value = material.uniforms.uFilterPointSourceIDClipRange.value;
+
+				attributeMaterial.elevationGradientRepeat = material.elevationGradientRepeat;
 				attributeMaterial.elevationRange = material.elevationRange;
 				attributeMaterial.gradient = material.gradient;
+				attributeMaterial.matcap = material.matcap;
 
 				attributeMaterial.intensityRange = material.intensityRange;
 				attributeMaterial.intensityGamma = material.intensityGamma;
@@ -200,6 +243,7 @@ class HQSplatRenderer {
 
 			viewer.renderer.setRenderTarget(null);
 			viewer.pRenderer.render(viewer.scene.scenePointCloud, camera, this.rtAttribute, {
+				clipSpheres: viewer.scene.volumes.filter(v => (v instanceof SphereVolume)),
 				//material: this.attributeMaterial,
 				blendFunc: [gl.SRC_ALPHA, gl.ONE],
 				//depthTest: false,
@@ -249,14 +293,12 @@ class HQSplatRenderer {
 			normalizationMaterial.uniforms.uWeightMap.value = this.rtAttribute.texture;
 			normalizationMaterial.uniforms.uDepthMap.value = this.rtAttribute.depthTexture;
 			
-			Potree.utils.screenPass.render(viewer.renderer, normalizationMaterial);
+			Utils.screenPass.render(viewer.renderer, normalizationMaterial);
 		}
 
 		viewer.renderer.render(viewer.scene.scene, camera);
 
 		viewer.dispatchEvent({type: "render.pass.scene", viewer: viewer});
-
-		Potree.endQuery(queryHQSplats, viewer.renderer.getContext());
 
 		viewer.renderer.clearDepth();
 
@@ -277,5 +319,6 @@ class HQSplatRenderer {
 		viewer.dispatchEvent({type: "render.pass.end",viewer: viewer});
 
 	}
-};
+
+}
 

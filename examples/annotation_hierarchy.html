@@ -9,7 +9,6 @@
 
 	<link rel="stylesheet" type="text/css" href="../build/potree/potree.css">
 	<link rel="stylesheet" type="text/css" href="../libs/jquery-ui/jquery-ui.min.css">
-	<link rel="stylesheet" type="text/css" href="../libs/perfect-scrollbar/css/perfect-scrollbar.css">
 	<link rel="stylesheet" type="text/css" href="../libs/openlayers3/ol.css">
 	<link rel="stylesheet" type="text/css" href="../libs/spectrum/spectrum.css">
 	<link rel="stylesheet" type="text/css" href="../libs/jstree/themes/mixed/style.css">
@@ -19,9 +18,9 @@
 <body>
 	<script src="../libs/jquery/jquery-3.1.1.min.js"></script>
 	<script src="../libs/spectrum/spectrum.js"></script>
-	<script src="../libs/perfect-scrollbar/js/perfect-scrollbar.jquery.js"></script>
 	<script src="../libs/jquery-ui/jquery-ui.min.js"></script>
 	<script src="../libs/three.js/build/three.min.js"></script>
+	<script src="../libs/three.js/extra/lines.js"></script>
 	<script src="../libs/other/BinaryHeap.js"></script>
 	<script src="../libs/tween/tween.min.js"></script>
 	<script src="../libs/d3/d3.js"></script>
@@ -37,7 +36,7 @@
 	<!-- INCLUDE SETTINGS HERE -->
 	
 	<div class="potree_container" style="position: absolute; width: 100%; height: 100%; left: 0px; top: 0px; ">
-		<div id="potree_render_area">
+		<div id="potree_render_area" style="background-image: url('../build/potree/resources/images/background.jpg');">
 			<div id="cesiumContainer" style="position: absolute; width: 100%; height: 100%; background-color:green"></div>
 		</div>
 		<div id="potree_sidebar_container"> </div>
@@ -207,7 +206,7 @@
 
 				elTitle.find("img[name=action_return_number]").click( () => {
 					event.stopPropagation();
-					material.pointColorType = Potree.PointColorType.RETURN_NUMBER;
+					material.activeAttributeName = "return_number";
 					material.pointSizeType = Potree.PointSizeType.FIXED;
 					material.size = 5;
 					potreeViewer.setClipTask(Potree.ClipTask.SHOW_INSIDE);
@@ -215,7 +214,7 @@
 				
 				elTitle.find("img[name=action_rgb]").click( () => {
 					event.stopPropagation();
-					material.pointColorType = Potree.PointColorType.RGB;
+					material.activeAttributeName = "rgba";
 					material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
 					material.size = 1;
 					potreeViewer.setClipTask(Potree.ClipTask.HIGHLIGHT);
@@ -233,7 +232,7 @@
 				aRoot.add(aTreeReturns);
 				aTreeReturns.domElement.find(".annotation-action-icon:first").css("filter", "invert(1)");
 
-				let volume = new Potree.Volume();
+				let volume = new Potree.BoxVolume();
 				volume.position.set(675755.4039368022, 3937586.911614576, 85);
 				volume.scale.set(119.87189835418388, 68.3925257233834, 51.757483718373265);
 				volume.rotation.set(0, 0, 0.8819755090987993, "XYZ");

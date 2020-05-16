@@ -1,188 +1,227 @@
 
 
-class ProfilePointCloudEntry{
+import {Utils} from "../utils.js";
+import {Points} from "../Points.js";
+import {CSVExporter} from "../exporter/CSVExporter.js";
+import {LASExporter} from "../exporter/LASExporter.js";
+import { EventDispatcher } from "../EventDispatcher.js";
+import {PointCloudTree} from "../PointCloudTree.js";
+import {Renderer} from "../PotreeRenderer.js";
+import {PointCloudMaterial} from "../materials/PointCloudMaterial.js";
+import {PointSizeType} from "../defines.js";
 
-	constructor(){
 
-		this.points = [];
+function copyMaterial(source, target){
 
-		//let geometry = new THREE.BufferGeometry();
-		let material = ProfilePointCloudEntry.getMaterialInstance();
-		material.uniforms.minSize.value = 2;
-		material.uniforms.maxSize.value = 2;
-		material.pointColorType = Potree.PointColorType.RGB;
-		material.opacity = 1.0;
+	for(let name of Object.keys(target.uniforms)){
+		target.uniforms[name].value = source.uniforms[name].value;
+	}
 
+	target.gradientTexture = source.gradientTexture;
+	target.visibleNodesTexture = source.visibleNodesTexture;
+	target.classificationTexture = source.classificationTexture;
+	target.matcapTexture = source.matcapTexture;
+
+	target.activeAttributeName = source.activeAttributeName;
+	target.ranges = source.ranges;
+
+	//target.updateShaderSource();
+}
+
+
+class Batch{
+
+	constructor(geometry, material){
+		this.geometry = geometry;
 		this.material = material;
 
-		this.sceneNode = new THREE.Object3D();
-		//this.sceneNode = new THREE.Points(geometry, material);
+		this.sceneNode = new THREE.Points(geometry, material);
+
+		this.geometryNode = {
+			estimatedSpacing: 1.0,
+			geometry: geometry,
+		};
 	}
 
-	static releaseMaterialInstance(instance){
-		ProfilePointCloudEntry.materialPool.add(instance);
+	getLevel(){
+		return 0;
 	}
 
-	static getMaterialInstance(){
+}
 
-		let instance = ProfilePointCloudEntry.materialPool.values().next().value;
-		if(!instance){
-			instance = new Potree.PointCloudMaterial();
-		}else{
-			ProfilePointCloudEntry.materialPool.delete(instance);
-		}
+class ProfileFakeOctree extends PointCloudTree{
 
-		return instance;
+	constructor(octree){
+		super();
+
+		this.trueOctree = octree;
+		this.pcoGeometry = octree.pcoGeometry;
+		this.points = [];
+		this.visibleNodes = [];
+		
+		//this.material = this.trueOctree.material;
+		this.material = new PointCloudMaterial();
+		//this.material.copy(this.trueOctree.material);
+		copyMaterial(this.trueOctree.material, this.material);
+		this.material.pointSizeType = PointSizeType.FIXED;
+
+		this.batchSize = 100 * 1000;
+		this.currentBatch = null
+	}
+
+	getAttribute(name){
+		return this.trueOctree.getAttribute(name);
 	}
 
 	dispose(){
-
-		for(let child of this.sceneNode.children){
-			ProfilePointCloudEntry.releaseMaterialInstance(child.material);
-			child.geometry.dispose();
+		for(let node of this.visibleNodes){
+			node.geometry.dispose();
 		}
 
-		this.sceneNode.children = [];		
+		this.visibleNodes = [];
+		this.currentBatch = null;
+		this.points = [];
 	}
 
 	addPoints(data){
+		// since each call to addPoints can deliver very very few points,
+		// we're going to batch them into larger buffers for efficiency.
+
+		if(this.currentBatch === null){
+			this.currentBatch = this.createNewBatch(data);
+		}
 
 		this.points.push(data);
 
-		let batchSize = 10*1000;
 
-		let createNewBatch = () => {
-			let geometry = new THREE.BufferGeometry();
+		let updateRange = {
+			start: this.currentBatch.geometry.drawRange.count,
+			count: 0
+		};
+		let projectedBox = new THREE.Box3();
 
-			let buffers = {
-				position: new Float32Array(3 * batchSize),
-				color: new Uint8Array(4 * batchSize),
-				intensity: new Uint16Array(batchSize),
-				classification: new Uint8Array(batchSize),
-				returnNumber: new Uint8Array(batchSize),
-				numberOfReturns: new Uint8Array(batchSize),
-				pointSourceID: new Uint16Array(batchSize)
-			};
+		for(let i = 0; i < data.numPoints; i++){
 
-			geometry.addAttribute('position', new THREE.BufferAttribute(buffers.position, 3));
-			geometry.addAttribute('color', new THREE.BufferAttribute(buffers.color, 4, true));
-			geometry.addAttribute('intensity', new THREE.BufferAttribute(buffers.intensity, 1, false));
-			geometry.addAttribute('classification', new THREE.BufferAttribute(buffers.classification, 1, false));
-			geometry.addAttribute('returnNumber', new THREE.BufferAttribute(buffers.returnNumber, 1, false));
-			geometry.addAttribute('numberOfReturns', new THREE.BufferAttribute(buffers.numberOfReturns, 1, false));
-			geometry.addAttribute('pointSourceID', new THREE.BufferAttribute(buffers.pointSourceID, 1, false));
+			if(updateRange.start + updateRange.count >= this.batchSize){
+				// current batch full, start new batch
 
-			geometry.drawRange.start = 0;
-			geometry.drawRange.count = 0;
-
-			this.currentBatch = new THREE.Points(geometry, this.material);
-			this.sceneNode.add(this.currentBatch);
-		}
-
-		if(!this.currentBatch){
-			createNewBatch();
-		}
-		
-		{ // REBUILD MODEL
-
-			let pointsProcessed = 0;
-			let updateRange = {
-				start: this.currentBatch.geometry.drawRange.count,
-				count: 0
-			};
-
-			let projectedBox = new THREE.Box3();
-			
-			for(let i = 0; i < data.numPoints; i++){
-
-				if(updateRange.start + updateRange.count >= batchSize){
-					// finalize current batch, start new batch
-
-					for(let key of Object.keys(this.currentBatch.geometry.attributes)){
-						let attribute = this.currentBatch.geometry.attributes[key];
-						attribute.updateRange.offset = updateRange.start;
-						attribute.updateRange.count = updateRange.count;
-						attribute.needsUpdate = true;
-					}
-					this.currentBatch.geometry.computeBoundingBox();
-					this.currentBatch.geometry.computeBoundingSphere();
-
-					createNewBatch();
-					updateRange = {
-						start: 0,
-						count: 0
-					};
+				for(let key of Object.keys(this.currentBatch.geometry.attributes)){
+					let attribute = this.currentBatch.geometry.attributes[key];
+					attribute.updateRange.offset = updateRange.start;
+					attribute.updateRange.count = updateRange.count;
+					attribute.needsUpdate = true;
 				}
 
+				this.currentBatch.geometry.computeBoundingBox();
+				this.currentBatch.geometry.computeBoundingSphere();
 
-				let x = data.data.mileage[i];
-				let y = 0;
-				let z = data.data.position[3 * i + 2];
-
-				projectedBox.expandByPoint(new THREE.Vector3(x, y, z));
-
-				let currentIndex = updateRange.start + updateRange.count;
-
-				let attributes = this.currentBatch.geometry.attributes;
-
-				{
-					attributes.position.array[3 * currentIndex + 0] = x;
-					attributes.position.array[3 * currentIndex + 1] = y;
-					attributes.position.array[3 * currentIndex + 2] = z;
-				}
-
-				if(data.data.color){
-					attributes.color.array[4 * currentIndex + 0] = data.data.color[4 * i + 0];
-					attributes.color.array[4 * currentIndex + 1] = data.data.color[4 * i + 1];
-					attributes.color.array[4 * currentIndex + 2] = data.data.color[4 * i + 2];
-					attributes.color.array[4 * currentIndex + 3] = 255;
-				}
-
-				if(data.data.intensity){
-					attributes.intensity.array[currentIndex] = data.data.intensity[i];
-				}
-
-				if(data.data.classification){
-					attributes.classification.array[currentIndex] = data.data.classification[i];
-				}
-
-				if(data.data.returnNumber){
-					attributes.returnNumber.array[currentIndex] = data.data.returnNumber[i];
-				}
-
-				if(data.data.numberOfReturns){
-					attributes.numberOfReturns.array[currentIndex] = data.data.numberOfReturns[i];
-				}
-
-				if(data.data.pointSourceID){
-					attributes.pointSourceID.array[currentIndex] = data.data.pointSourceID[i];
-				}
-
-				updateRange.count++;
-				this.currentBatch.geometry.drawRange.count++;
+				this.currentBatch = this.createNewBatch();
+				updateRange = {
+					start: 0,
+					count: 0
+				};
 			}
 
-			//for(let attribute of Object.values(this.currentBatch.geometry.attributes)){
-			for(let key of Object.keys(this.currentBatch.geometry.attributes)){
-				let attribute = this.currentBatch.geometry.attributes[key];
-				attribute.updateRange.offset = updateRange.start;
-				attribute.updateRange.count = updateRange.count;
-				attribute.needsUpdate = true;
+			let x = data.data.mileage[i];
+			let y = 0;
+			let z = data.data.position[3 * i + 2];
+
+			projectedBox.expandByPoint(new THREE.Vector3(x, y, z));
+
+			let index = updateRange.start + updateRange.count;
+			let geometry = this.currentBatch.geometry;
+
+			for(let attributeName of Object.keys(data.data)){
+				let source = data.data[attributeName];
+				let target = geometry.attributes[attributeName];
+				let numElements = target.itemSize;
+				
+				for(let item = 0; item < numElements; item++){
+					target.array[numElements * index + item] = source[numElements * i + item];
+				}
 			}
 
-			data.projectedBox = projectedBox;
-			
-			this.projectedBox = this.points.reduce( (a, i) => a.union(i.projectedBox), new THREE.Box3());
+			{
+				let position = geometry.attributes.position;
+
+				position.array[3 * index + 0] = x;
+				position.array[3 * index + 1] = y;
+				position.array[3 * index + 2] = z;
+			}
+
+			updateRange.count++;
+			this.currentBatch.geometry.drawRange.count++;
 		}
 
+		for(let key of Object.keys(this.currentBatch.geometry.attributes)){
+			let attribute = this.currentBatch.geometry.attributes[key];
+			attribute.updateRange.offset = updateRange.start;
+			attribute.updateRange.count = updateRange.count;
+			attribute.needsUpdate = true;
+		}
 
+		data.projectedBox = projectedBox;
+
+		this.projectedBox = this.points.reduce( (a, i) => a.union(i.projectedBox), new THREE.Box3());
 	}
 
-};
+	createNewBatch(data){
+		let geometry = new THREE.BufferGeometry();
 
-ProfilePointCloudEntry.materialPool = new Set();
+		// create new batches with batch_size elements of the same type as the attribute
+		for(let attributeName of Object.keys(data.data)){
+			let buffer = data.data[attributeName];
+			let numElements = buffer.length / data.numPoints; // 3 for pos, 4 for col, 1 for scalars
+			let constructor = buffer.constructor;
+			let normalized = false;
+			
+			if(this.trueOctree.root.sceneNode){
+				if(this.trueOctree.root.sceneNode.geometry.attributes[attributeName]){
+					normalized = this.trueOctree.root.sceneNode.geometry.attributes[attributeName].normalized;
+				}
+			}
+			
 
-Potree.ProfileWindow = class ProfileWindow extends THREE.EventDispatcher {
+			let batchBuffer = new constructor(numElements * this.batchSize);
+
+			let bufferAttribute = new THREE.BufferAttribute(batchBuffer, numElements, normalized);
+			bufferAttribute.potree = {
+				range: [0, 1],
+			};
+
+			geometry.addAttribute(attributeName, bufferAttribute);
+		}
+
+		geometry.drawRange.start = 0;
+		geometry.drawRange.count = 0;
+
+		let batch = new Batch(geometry, this.material);
+
+		this.visibleNodes.push(batch);
+
+		return batch;
+	}
+	
+	computeVisibilityTextureData(){
+		let data = new Uint8Array(this.visibleNodes.length * 4);
+		let offsets = new Map();
+
+		for(let i = 0; i < this.visibleNodes.length; i++){
+			let node = this.visibleNodes[i];
+
+			offsets[node] = i;
+		}
+
+
+		return {
+			data: data,
+			offsets: offsets,
+		};
+	}
+
+}
+
+export class ProfileWindow extends EventDispatcher {
 	constructor (viewer) {
 		super();
 
@@ -200,25 +239,44 @@ Potree.ProfileWindow = class ProfileWindow extends THREE.EventDispatcher {
 		this.mouse = new THREE.Vector2(0, 0);
 		this.scale = new THREE.Vector3(1, 1, 1);
 
-		let csvIcon = `${Potree.resourcePath}/icons/file_csv_2d.svg`;
+		this.autoFitEnabled = true; // completely disable/enable
+		this.autoFit = false; // internal
+
+		let cwIcon = `${exports.resourcePath}/icons/arrow_cw.svg`;
+		$('#potree_profile_rotate_cw').attr('src', cwIcon);
+
+		let ccwIcon = `${exports.resourcePath}/icons/arrow_ccw.svg`;
+		$('#potree_profile_rotate_ccw').attr('src', ccwIcon);
+		
+		let forwardIcon = `${exports.resourcePath}/icons/arrow_up.svg`;
+		$('#potree_profile_move_forward').attr('src', forwardIcon);
+
+		let backwardIcon = `${exports.resourcePath}/icons/arrow_down.svg`;
+		$('#potree_profile_move_backward').attr('src', backwardIcon);
+
+		let csvIcon = `${exports.resourcePath}/icons/file_csv_2d.svg`;
 		$('#potree_download_csv_icon').attr('src', csvIcon);
 
-		let lasIcon = `${Potree.resourcePath}/icons/file_las_3d.svg`;
+		let lasIcon = `${exports.resourcePath}/icons/file_las_3d.svg`;
 		$('#potree_download_las_icon').attr('src', lasIcon);
 
-		let closeIcon = `${Potree.resourcePath}/icons/close.svg`;
+		let closeIcon = `${exports.resourcePath}/icons/close.svg`;
 		$('#closeProfileContainer').attr("src", closeIcon);
 
 		this.initTHREE();
 		this.initSVG();
 		this.initListeners();
 
+		this.pRenderer = new Renderer(this.renderer);
+
 		this.elRoot.i18n();
 	}
 
 	initListeners () {
 		$(window).resize(() => {
+			if (this.enabled) {
 			this.render();
+			}
 		});
 
 		this.renderArea.mousedown(e => {
@@ -233,7 +291,7 @@ Potree.ProfileWindow = class ProfileWindow extends THREE.EventDispatcher {
 			let camera = this.viewer.scene.getActiveCamera();
 			let domElement = this.viewer.renderer.domElement;
 			let distance = this.viewerPickSphere.position.distanceTo(camera.position);
-			let pr = Potree.utils.projectedRadius(1, camera, distance, domElement.clientWidth, domElement.clientHeight);
+			let pr = Utils.projectedRadius(1, camera, distance, domElement.clientWidth, domElement.clientHeight);
 			let scale = (10 / pr);
 			this.viewerPickSphere.scale.set(scale, scale, scale);
 		};
@@ -267,15 +325,23 @@ Potree.ProfileWindow = class ProfileWindow extends THREE.EventDispatcher {
 				let mileage = this.scaleX.invert(newMouse.x);
 				let elevation = this.scaleY.invert(newMouse.y);
 
-				let point = this.selectPoint(mileage, elevation, radius);
+				let closest = this.selectPoint(mileage, elevation, radius);
 
-				if (point) {
+				if (closest) {
+					let point = closest.point;
+
+					let position = new Float64Array([
+						point.position[0] + closest.pointcloud.position.x,
+						point.position[1] + closest.pointcloud.position.y,
+						point.position[2] + closest.pointcloud.position.z
+					]);
+
 					this.elRoot.find('#profileSelectionProperties').fadeIn(200);
 					this.pickSphere.visible = true;
 					this.pickSphere.scale.set(0.5 * radius, 0.5 * radius, 0.5 * radius);
 					this.pickSphere.position.set(point.mileage, 0, point.position[2]);
 
-					this.viewerPickSphere.position.set(...point.position);
+					this.viewerPickSphere.position.set(...position);
 					
 					if(!this.viewer.scene.scene.children.includes(this.viewerPickSphere)){
 						this.viewer.scene.scene.add(this.viewerPickSphere);
@@ -287,10 +353,26 @@ Potree.ProfileWindow = class ProfileWindow extends THREE.EventDispatcher {
 
 					let info = this.elRoot.find('#profileSelectionProperties');
 					let html = '<table>';
-					for (let attribute of Object.keys(point)) {
-						let value = point[attribute];
-						if (attribute === 'position') {
-							let values = [...value].map(v => Potree.utils.addCommas(v.toFixed(3)));
+
+					for (let attributeName of Object.keys(point)) {
+
+						let value = point[attributeName];
+						let attribute = closest.pointcloud.getAttribute(attributeName);
+
+						let transform = value => value;
+						if(attribute && attribute.type.size > 4){
+							let range = attribute.initialRange;
+							let scale = 1 / (range[1] - range[0]);
+							let offset = range[0];
+							transform = value => value / scale + offset;
+						}
+
+						
+
+						
+
+						if (attributeName === 'position') {
+							let values = [...position].map(v => Utils.addCommas(v.toFixed(3)));
 							html += `
 								<tr>
 									<td>x</td>
@@ -304,25 +386,25 @@ Potree.ProfileWindow = class ProfileWindow extends THREE.EventDispatcher {
 									<td>z</td>
 									<td>${values[2]}</td>
 								</tr>`;
-						} else if (attribute === 'color') {
+						} else if (attributeName === 'rgba') {
 							html += `
 								<tr>
-									<td>${attribute}</td>
+									<td>${attributeName}</td>
 									<td>${value.join(', ')}</td>
 								</tr>`;
-						} else if (attribute === 'normal') {
+						} else if (attributeName === 'normal') {
 							continue;
-						} else if (attribute === 'mileage') {
+						} else if (attributeName === 'mileage') {
 							html += `
 								<tr>
-									<td>${attribute}</td>
+									<td>${attributeName}</td>
 									<td>${value.toFixed(3)}</td>
 								</tr>`;
 						} else {
 							html += `
 								<tr>
-									<td>${attribute}</td>
-									<td>${value}</td>
+									<td>${attributeName}</td>
+									<td>${transform(value)}</td>
 								</tr>`;
 						}
 					}
@@ -352,6 +434,7 @@ Potree.ProfileWindow = class ProfileWindow extends THREE.EventDispatcher {
 
 		let onWheel = e => {
 			this.autoFit = false;
+
 			let delta = 0;
 			if (e.wheelDelta !== undefined) { // WebKit / Opera / Explorer 9
 				delta = e.wheelDelta;
@@ -388,7 +471,7 @@ Potree.ProfileWindow = class ProfileWindow extends THREE.EventDispatcher {
 		});
 
 		$('#potree_download_csv_icon').click(() => {
-			let points = new Potree.Points();
+			let points = new Points();
 			
 			for(let [pointcloud, entry] of this.pointclouds){
 				for(let pointSet of entry.points){
@@ -396,7 +479,7 @@ Potree.ProfileWindow = class ProfileWindow extends THREE.EventDispatcher {
 				}
 			}
 
-			let string = Potree.CSVExporter.toString(points);
+			let string = CSVExporter.toString(points);
 
 			let blob = new Blob([string], {type: "text/string"});
 			$('#potree_download_profile_ortho_link').attr('href', URL.createObjectURL(blob));
@@ -407,7 +490,7 @@ Potree.ProfileWindow = class ProfileWindow extends THREE.EventDispatcher {
 
 		$('#potree_download_las_icon').click(() => {
 
-			let points = new Potree.Points();
+			let points = new Points();
 
 			for(let [pointcloud, entry] of this.pointclouds){
 				for(let pointSet of entry.points){
@@ -415,19 +498,10 @@ Potree.ProfileWindow = class ProfileWindow extends THREE.EventDispatcher {
 				}
 			}
 
-			let buffer = Potree.LASExporter.toLAS(points);
+			let buffer = LASExporter.toLAS(points);
 
 			let blob = new Blob([buffer], {type: "application/octet-binary"});
 			$('#potree_download_profile_link').attr('href', URL.createObjectURL(blob));
-
-			//let u8view = new Uint8Array(buffer);
-			//let binString = '';
-			//for (let i = 0; i < u8view.length; i++) {
-			//	binString += String.fromCharCode(u8view[i]);
-			//}
-			//
-			//let uri = 'data:application/octet-stream;base64,' + btoa(binString);
-			//$('#potree_download_profile_link').attr('href', uri);
 		});
 	}
 
@@ -442,19 +516,6 @@ Potree.ProfileWindow = class ProfileWindow extends THREE.EventDispatcher {
 		let pointBox = new THREE.Box2(
 			new THREE.Vector2(mileage - radius, elevation - radius),
 			new THREE.Vector2(mileage + radius, elevation + radius));
-
-		//let debugNode = this.scene.getObjectByName("select_debug_node");
-		//if(!debugNode){
-		//	debugNode = new THREE.Object3D();
-		//	debugNode.name = "select_debug_node";
-		//	this.scene.add(debugNode);
-		//}
-		//debugNode.children = [];
-		//let debugPointBox = new THREE.Box3(
-		//	new THREE.Vector3(...pointBox.min.toArray(), -1),
-		//	new THREE.Vector3(...pointBox.max.toArray(), +1)
-		//);
-		//debugNode.add(new Potree.Box3Helper(debugPointBox, 0xff0000));
 
 		let numTested = 0;
 		let numSkipped = 0;
@@ -477,12 +538,6 @@ Potree.ProfileWindow = class ProfileWindow extends THREE.EventDispatcher {
 					continue;
 				}
 
-				//let debugCollisionBox = new THREE.Box3(
-				//	new THREE.Vector3(...collisionBox.min.toArray(), -1),
-				//	new THREE.Vector3(...collisionBox.max.toArray(), +1)
-				//);
-				//debugNode.add(new Potree.Box3Helper(debugCollisionBox));
-
 				numTested++;
 				numTestedPoints += points.numPoints
 
@@ -490,10 +545,23 @@ Potree.ProfileWindow = class ProfileWindow extends THREE.EventDispatcher {
 
 					let m = points.data.mileage[i] - mileage;
 					let e = points.data.position[3 * i + 2] - elevation;
-
 					let r = Math.sqrt(m * m + e * e);
 
-					if (r < radius && r < closest.distance) {
+					const withinDistance = r < radius && r < closest.distance;
+					let unfilteredClass = true;
+
+					if(points.data.classification){
+						const classification = pointcloud.material.classification;
+
+						const pointClassID = points.data.classification[i];
+						const pointClassValue = classification[pointClassID];
+
+						if(pointClassValue && (!pointClassValue.visible || pointClassValue.color.w === 0)){
+							unfilteredClass = false;
+						}
+					}
+
+					if (withinDistance && unfilteredClass) {
 						closest = {
 							distance: r,
 							pointcloud: pointcloud,
@@ -526,7 +594,9 @@ Potree.ProfileWindow = class ProfileWindow extends THREE.EventDispatcher {
 				}
 			}
 
-			return point;
+			closest.point = point;
+
+			return closest;
 		} else {
 			return null;
 		}
@@ -536,32 +606,51 @@ Potree.ProfileWindow = class ProfileWindow extends THREE.EventDispatcher {
 		this.renderer = new THREE.WebGLRenderer({alpha: true, premultipliedAlpha: false});
 		this.renderer.setClearColor(0x000000, 0);
 		this.renderer.setSize(10, 10);
-		this.renderer.autoClear = true;
+		this.renderer.autoClear = false;
 		this.renderArea.append($(this.renderer.domElement));
 		this.renderer.domElement.tabIndex = '2222';
-		this.renderer.context.getExtension('EXT_frag_depth');
 		$(this.renderer.domElement).css('width', '100%');
 		$(this.renderer.domElement).css('height', '100%');
+
+
+		{
+			let gl = this.renderer.getContext();
+
+			let extVAO = gl.getExtension('OES_vertex_array_object');
+
+			if(!extVAO){
+				throw new Error("OES_vertex_array_object extension not supported");
+			}
+
+			gl.createVertexArray = extVAO.createVertexArrayOES.bind(extVAO);
+			gl.bindVertexArray = extVAO.bindVertexArrayOES.bind(extVAO);
+		}
 
 		this.camera = new THREE.OrthographicCamera(-1000, 1000, 1000, -1000, -1000, 1000);
 		this.camera.up.set(0, 0, 1);
 		this.camera.rotation.order = "ZXY";
 		this.camera.rotation.x = Math.PI / 2.0;
-		
-
+	
 
 		this.scene = new THREE.Scene();
+		this.profileScene = new THREE.Scene();
 
 		let sg = new THREE.SphereGeometry(1, 16, 16);
 		let sm = new THREE.MeshNormalMaterial();
 		this.pickSphere = new THREE.Mesh(sg, sm);
-		//this.pickSphere.visible = false;
 		this.scene.add(this.pickSphere);
 
-		this.viewerPickSphere = new THREE.Mesh(sg, sm);
+		{
+			const sg = new THREE.SphereGeometry(2);
+			const sm = new THREE.MeshNormalMaterial();
+			const s = new THREE.Mesh(sg, sm);
 
-		this.pointCloudRoot = new THREE.Object3D();
-		this.scene.add(this.pointCloudRoot);
+			s.position.set(589530.450, 231398.860, 769.735);
+
+			this.scene.add(s);
+		}
+
+		this.viewerPickSphere = new THREE.Mesh(sg, sm);
 	}
 
 	initSVG () {
@@ -605,20 +694,20 @@ Potree.ProfileWindow = class ProfileWindow extends THREE.EventDispatcher {
 			.call(this.yAxis);
 	}
 
-	setProfile (profile) {
-		this.render();
-	}
-
 	addPoints (pointcloud, points) {
-
-		//this.lastAddPointsTimestamp = new Date().getTime();
 
 		let entry = this.pointclouds.get(pointcloud);
 		if(!entry){
-			entry = new ProfilePointCloudEntry();
+			entry = new ProfileFakeOctree(pointcloud);
 			this.pointclouds.set(pointcloud, entry);
+			this.profileScene.add(entry);
 
-			let materialChanged = () => this.render();
+			let materialChanged = () => {
+				this.render();
+			};
+
+			materialChanged();
+
 			pointcloud.material.addEventListener('material_property_changed', materialChanged);
 			this.addEventListener("on_reset_once", () => {
 				pointcloud.material.removeEventListener('material_property_changed', materialChanged);
@@ -626,22 +715,19 @@ Potree.ProfileWindow = class ProfileWindow extends THREE.EventDispatcher {
 		}
 
 		entry.addPoints(points);
-		this.pointCloudRoot.add(entry.sceneNode);
 		this.projectedBox.union(entry.projectedBox);
-		//console.log(this.projectedBox.min.toArray().map(v => v.toFixed(2)).join(", "));
-		//console.log(this.projectedBox.getSize().toArray().map(v => v.toFixed(2)).join(", "));
 
-		if (this.autoFit) { 
+		if (this.autoFit && this.autoFitEnabled) { 
 			let width = this.renderArea[0].clientWidth;
 			let height = this.renderArea[0].clientHeight;
 
-			let size = this.projectedBox.getSize();
+			let size = this.projectedBox.getSize(new THREE.Vector3());
 
 			let sx = width / size.x;
 			let sy = height / size.z;
 			let scale = Math.min(sx, sy);
 
-			let center = this.projectedBox.getCenter();
+			let center = this.projectedBox.getCenter(new THREE.Vector3());
 			this.scale.set(scale, scale, 1);
 			this.camera.position.copy(center);
 
@@ -656,7 +742,7 @@ Potree.ProfileWindow = class ProfileWindow extends THREE.EventDispatcher {
 		for (let [key, value] of this.pointclouds.entries()) {
 			numPoints += value.points.reduce( (a, i) => a + i.numPoints, 0);
 		}
-		$(`#profile_num_points`).html(Potree.utils.addCommas(numPoints));
+		$(`#profile_num_points`).html(Utils.addCommas(numPoints));
 
 	}
 
@@ -676,10 +762,11 @@ Potree.ProfileWindow = class ProfileWindow extends THREE.EventDispatcher {
 		this.pointclouds.clear();
 		this.mouseIsDown = false;
 		this.mouse.set(0, 0);
-		this.scale.set(1, 1, 1);
-		this.pickSphere.visible = false;
 
-		this.pointCloudRoot.children = [];
+		if(this.autoFitEnabled){
+			this.scale.set(1, 1, 1);
+		}
+		this.pickSphere.visible = false;
 
 		this.elRoot.find('#profileSelectionProperties').hide();
 
@@ -697,6 +784,7 @@ Potree.ProfileWindow = class ProfileWindow extends THREE.EventDispatcher {
 	}
 
 	updateScales () {
+
 		let width = this.renderArea[0].clientWidth;
 		let height = this.renderArea[0].clientHeight;
 
@@ -766,58 +854,48 @@ Potree.ProfileWindow = class ProfileWindow extends THREE.EventDispatcher {
 		let width = this.renderArea[0].clientWidth;
 		let height = this.renderArea[0].clientHeight;
 
-		//this.updateScales();
+		let {renderer, pRenderer, camera, profileScene, scene} = this;
+		let {scaleX, pickSphere} = this;
 
-		{ // THREEJS
-			let radius = Math.abs(this.scaleX.invert(0) - this.scaleX.invert(5));
-			this.pickSphere.scale.set(radius, radius, radius);
-			//this.pickSphere.position.z = this.camera.far - radius;
-			//this.pickSphere.position.y = 0;
+		renderer.setSize(width, height);
 
-			for (let [pointcloud, entry] of this.pointclouds) {
-				let material = entry.material;
+		renderer.setClearColor(0x000000, 0);
+		renderer.clear(true, true, false);
+
+		for(let pointcloud of this.pointclouds.keys()){
+			let source = pointcloud.material;
+			let target = this.pointclouds.get(pointcloud).material;
 			
-				material.pointColorType = pointcloud.material.pointColorType;
-				material.uniforms.uColor = pointcloud.material.uniforms.uColor;
-				material.uniforms.intensityRange.value = pointcloud.material.uniforms.intensityRange.value;
-				material.elevationRange = pointcloud.material.elevationRange;
-
-				material.rgbGamma = pointcloud.material.rgbGamma;
-				material.rgbContrast = pointcloud.material.rgbContrast;
-				material.rgbBrightness = pointcloud.material.rgbBrightness;
-
-				material.intensityRange = pointcloud.material.intensityRange;
-				material.intensityGamma = pointcloud.material.intensityGamma;
-				material.intensityContrast = pointcloud.material.intensityContrast;
-				material.intensityBrightness = pointcloud.material.intensityBrightness;
-
-				material.uniforms.wRGB.value = pointcloud.material.uniforms.wRGB.value;
-				material.uniforms.wIntensity.value = pointcloud.material.uniforms.wIntensity.value;
-				material.uniforms.wElevation.value = pointcloud.material.uniforms.wElevation.value;
-				material.uniforms.wClassification.value = pointcloud.material.uniforms.wClassification.value;
-				material.uniforms.wReturnNumber.value = pointcloud.material.uniforms.wReturnNumber.value;
-				material.uniforms.wSourceID.value = pointcloud.material.uniforms.wSourceID.value;
-
-			}
-
-			this.pickSphere.visible = true;
-
-			this.renderer.setSize(width, height);
-
-			this.renderer.render(this.scene, this.camera);
+			copyMaterial(source, target);
+			target.size = 2;
 		}
+		
+		pRenderer.render(profileScene, camera, null);
+
+		let radius = Math.abs(scaleX.invert(0) - scaleX.invert(5));
+
+		if (radius === 0) {
+			pickSphere.visible = false;
+		} else {
+			pickSphere.scale.set(radius, radius, radius);
+			pickSphere.visible = true;
+		}
+		
+		renderer.render(scene, camera);
 
 		this.requestScaleUpdate();
 	}
 };
 
-Potree.ProfileWindowController = class ProfileWindowController {
+export class ProfileWindowController {
 	constructor (viewer) {
 		this.viewer = viewer;
 		this.profileWindow = viewer.profileWindow;
 		this.profile = null;
 		this.numPoints = 0;
 		this.threshold = 60 * 1000;
+		this.rotateAmount = 10;
+
 		this.scheduledRecomputeTime = null;
 
 		this.enabled = true;
@@ -831,6 +909,88 @@ Potree.ProfileWindowController = class ProfileWindowController {
 			e.scene.addEventListener("pointcloud_added", this._recompute);
 		});
 		this.viewer.scene.addEventListener("pointcloud_added", this._recompute);
+
+		$("#potree_profile_rotate_amount").val(parseInt(this.rotateAmount));
+		$("#potree_profile_rotate_amount").on("input", (e) => {
+			const str = $("#potree_profile_rotate_amount").val();
+
+			if(!isNaN(str)){
+				const value = parseFloat(str);
+				this.rotateAmount = value;
+				$("#potree_profile_rotate_amount").css("background-color", "")
+			}else{
+				$("#potree_profile_rotate_amount").css("background-color", "#ff9999")
+			}
+
+		});
+
+		const rotate = (radians) => {
+			const profile = this.profile;
+			const points = profile.points;
+			const start = points[0];
+			const end = points[points.length - 1];
+			const center = start.clone().add(end).multiplyScalar(0.5);
+
+			const mMoveOrigin = new THREE.Matrix4().makeTranslation(-center.x, -center.y, -center.z);
+			const mRotate = new THREE.Matrix4().makeRotationZ(radians);
+			const mMoveBack = new THREE.Matrix4().makeTranslation(center.x, center.y, center.z);
+			//const transform = mMoveOrigin.multiply(mRotate).multiply(mMoveBack);
+			const transform = mMoveBack.multiply(mRotate).multiply(mMoveOrigin);
+
+			const rotatedPoints = points.map( point => point.clone().applyMatrix4(transform) );
+
+			this.profileWindow.autoFitEnabled = false;
+
+			for(let i = 0; i < points.length; i++){
+				profile.setPosition(i, rotatedPoints[i]);
+			}
+		}
+
+		$("#potree_profile_rotate_cw").click( () => {
+			const radians = THREE.Math.degToRad(this.rotateAmount);
+			rotate(-radians);
+		});
+
+		$("#potree_profile_rotate_ccw").click( () => {
+			const radians = THREE.Math.degToRad(this.rotateAmount);
+			rotate(radians);
+		});
+
+		$("#potree_profile_move_forward").click( () => {
+			const profile = this.profile;
+			const points = profile.points;
+			const start = points[0];
+			const end = points[points.length - 1];
+
+			const dir = end.clone().sub(start).normalize();
+			const up = new THREE.Vector3(0, 0, 1);
+			const forward = up.cross(dir);
+			const move = forward.clone().multiplyScalar(profile.width / 2);
+
+			this.profileWindow.autoFitEnabled = false;
+
+			for(let i = 0; i < points.length; i++){
+				profile.setPosition(i, points[i].clone().add(move));
+			}
+		});
+
+		$("#potree_profile_move_backward").click( () => {
+			const profile = this.profile;
+			const points = profile.points;
+			const start = points[0];
+			const end = points[points.length - 1];
+
+			const dir = end.clone().sub(start).normalize();
+			const up = new THREE.Vector3(0, 0, 1);
+			const forward = up.cross(dir);
+			const move = forward.clone().multiplyScalar(-profile.width / 2);
+
+			this.profileWindow.autoFitEnabled = false;
+
+			for(let i = 0; i < points.length; i++){
+				profile.setPosition(i, points[i].clone().add(move));
+			}
+		});
 	}
 
 	setProfile (profile) {

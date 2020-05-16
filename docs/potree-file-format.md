@@ -223,9 +223,9 @@ Compressed [`.las`](#las-data-files) files. See [LasZip][LasZip].
 [JSON]: http://www.json.org/
 [proj.4]: http://proj4.org/projections/index.html
 [Octree]: https://en.wikipedia.org/wiki/Octree
-[LasSpec]: https://www.liblas.org/development/specifications.html#specifications
-[LasSpec1.3]: https://www.liblas.org/_static/files/specifications/asprs_las_format_v13.pdf]
-[LasZip]: http://www.laszip.org/
+[LasSpec]: https://liblas.org/development/specifications.html#specifications
+[LasSpec1.3]: https://liblas.org/_static/files/specifications/asprs_las_format_v13.pdf]
+[LasZip]: https://laszip.org/
 [LittleEndian]: https://en.wikipedia.org/wiki/Endianness#Little-endian
 [bin]: http://www.javascripttutorial.net/es6/octal-and-binary-literals/
 [breadth-first]: https://en.wikipedia.org/wiki/Breadth-first_search

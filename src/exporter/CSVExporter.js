@@ -1,5 +1,5 @@
 
-Potree.CSVExporter = class CSVExporter {
+export class CSVExporter {
 	static toString (points) {
 		let string = '';
 
@@ -8,8 +8,8 @@ Potree.CSVExporter = class CSVExporter {
 			.sort((a, b) => {
 				if (a === 'position') return -1;
 				if (b === 'position') return 1;
-				if (a === 'color') return -1;
-				if (b === 'color') return 1;
+				if (a === 'rgba') return -1;
+				if (b === 'rgba') return 1;
 			});
 
 		let headerValues = [];
@@ -18,7 +18,7 @@ Potree.CSVExporter = class CSVExporter {
 
 			if (attribute === 'position') {
 				headerValues = headerValues.concat(['x', 'y', 'z']);
-			} else if (attribute === 'color') {
+			} else if (attribute === 'rgba') {
 				headerValues = headerValues.concat(['r', 'g', 'b', 'a']);
 			} else if (itemSize > 1) {
 				for (let i = 0; i < itemSize; i++) {

@@ -6,7 +6,10 @@
  *
  */
 
-Potree.GeoJSONExporter = class GeoJSONExporter {
+import {Measure} from "../utils/Measure.js";
+
+export class GeoJSONExporter{
+
 	static measurementToFeatures (measurement) {
 		let coords = measurement.points.map(e => e.position.toArray());
 
@@ -90,11 +93,11 @@ Potree.GeoJSONExporter = class GeoJSONExporter {
 			measurements = [measurements];
 		}
 
-		measurements = measurements.filter(m => m instanceof Potree.Measure);
+		measurements = measurements.filter(m => m instanceof Measure);
 
 		let features = [];
 		for (let measure of measurements) {
-			let f = Potree.GeoJSONExporter.measurementToFeatures(measure);
+			let f = GeoJSONExporter.measurementToFeatures(measure);
 
 			features = features.concat(f);
 		}
@@ -106,4 +109,5 @@ Potree.GeoJSONExporter = class GeoJSONExporter {
 
 		return JSON.stringify(geojson, null, '\t');
 	}
-};
+
+}

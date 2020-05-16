@@ -1,0 +1,451 @@
+{
+	"type": "Potree",
+	"version": 1.7,
+	"settings": {
+		"pointBudget": 1000000,
+		"fov": 60,
+		"edlEnabled": true,
+		"edlRadius": 1.4,
+		"edlStrength": 0.4,
+		"background": "gradient",
+		"minNodeSize": 30,
+		"showBoundingBoxes": false
+	},
+	"view": {
+		"position": [
+			589974.341,
+			231698.397,
+			986.146
+		],
+		"target": [
+			589851.587,
+			231428.213,
+			715.634
+		]
+	},
+	"classification": {
+		"0": {
+			"visible": true,
+			"name": "never classified",
+			"color": [
+				0.5,
+				0.5,
+				0.5,
+				1
+			]
+		},
+		"1": {
+			"visible": true,
+			"name": "unclassified",
+			"color": [
+				0.5,
+				0.5,
+				0.5,
+				1
+			]
+		},
+		"2": {
+			"visible": true,
+			"name": "ground",
+			"color": [
+				0.63,
+				0.32,
+				0.18,
+				1
+			]
+		},
+		"3": {
+			"visible": true,
+			"name": "low vegetation",
+			"color": [
+				0,
+				1,
+				0,
+				1
+			]
+		},
+		"4": {
+			"visible": true,
+			"name": "medium vegetation",
+			"color": [
+				0,
+				0.8,
+				0,
+				1
+			]
+		},
+		"5": {
+			"visible": true,
+			"name": "high vegetation",
+			"color": [
+				0,
+				0.6,
+				0,
+				1
+			]
+		},
+		"6": {
+			"visible": true,
+			"name": "building",
+			"color": [
+				1,
+				0.66,
+				0,
+				1
+			]
+		},
+		"7": {
+			"visible": true,
+			"name": "low point(noise)",
+			"color": [
+				1,
+				0,
+				1,
+				1
+			]
+		},
+		"8": {
+			"visible": true,
+			"name": "key-point",
+			"color": [
+				1,
+				0,
+				0,
+				1
+			]
+		},
+		"9": {
+			"visible": true,
+			"name": "water",
+			"color": [
+				0,
+				0,
+				1,
+				1
+			]
+		},
+		"12": {
+			"visible": true,
+			"name": "overlap",
+			"color": [
+				1,
+				1,
+				0,
+				1
+			]
+		},
+		"DEFAULT": {
+			"visible": true,
+			"name": "default",
+			"color": [
+				0.3,
+				0.6,
+				0.6,
+				0.5
+			]
+		}
+	},
+	"pointclouds": [
+		{
+			"name": "sigeom.sa",
+			"url": "../pointclouds/vol_total/cloud.js",
+			"position": [
+				589500,
+				231300,
+				722.505
+			],
+			"rotation": [
+				0,
+				0,
+				0,
+				"XYZ"
+			],
+			"scale": [
+				1,
+				1,
+				1
+			],
+			"activeAttributeName": "rgba"
+		}
+	],
+	"measurements": [
+		{
+			"uuid": "CCFEDDB1-7CEE-4B2C-BBFD-64405DED63C3",
+			"name": "Measure_0",
+			"points": [
+				[
+					589803.18,
+					231357.35,
+					745.38
+				],
+				[
+					589795.74,
+					231323.42,
+					746.21
+				],
+				[
+					589822.5,
+					231315.9,
+					744.45
+				]
+			],
+			"showDistances": true,
+			"showCoordinates": false,
+			"showArea": false,
+			"closed": false,
+			"showAngles": false,
+			"showHeight": false,
+			"color": [
+				1,
+				0,
+				0
+			]
+		},
+		{
+			"uuid": "92086379-896A-4608-9584-855A04B915D0",
+			"name": "Angle Sample",
+			"points": [
+				[
+					589866.11,
+					231372.25,
+					737.41
+				],
+				[
+					589842.15,
+					231366.82,
+					743.61
+				],
+				[
+					589860.61,
+					231348.01,
+					740.33
+				]
+			],
+			"showDistances": false,
+			"showCoordinates": false,
+			"showArea": false,
+			"closed": true,
+			"showAngles": true,
+			"showHeight": false,
+			"color": [
+				1,
+				0,
+				0
+			]
+		},
+		{
+			"uuid": "D62705BF-C151-49FD-991B-9CEFD223FAFB",
+			"name": "Canopy",
+			"points": [
+				[
+					589853.73,
+					231300.24,
+					775.48
+				]
+			],
+			"showDistances": false,
+			"showCoordinates": true,
+			"showArea": false,
+			"closed": true,
+			"showAngles": false,
+			"showHeight": false,
+			"color": [
+				1,
+				0,
+				0
+			]
+		},
+		{
+			"uuid": "19D13159-B509-4CB0-8CA2-A58FB60B6D50",
+			"name": "Tree Height",
+			"points": [
+				[
+					589849.69,
+					231327.26,
+					766.32
+				],
+				[
+					589840.96,
+					231329.53,
+					744.52
+				]
+			],
+			"showDistances": false,
+			"showCoordinates": false,
+			"showArea": false,
+			"closed": false,
+			"showAngles": false,
+			"showHeight": true,
+			"color": [
+				1,
+				0,
+				0
+			]
+		},
+		{
+			"uuid": "E46A0D60-EA59-4589-88AA-788DE0A91DF4",
+			"name": "Area",
+			"points": [
+				[
+					589899.37,
+					231300.16,
+					750.25
+				],
+				[
+					589874.6,
+					231326.06,
+					743.4
+				],
+				[
+					589911.61,
+					231352.57,
+					743.58
+				],
+				[
+					589943.5,
+					231300.08,
+					754.62
+				]
+			],
+			"showDistances": true,
+			"showCoordinates": false,
+			"showArea": true,
+			"closed": true,
+			"showAngles": false,
+			"showHeight": false,
+			"color": [
+				1,
+				0,
+				0
+			]
+		}
+	],
+	"volumes": [
+		{
+			"uuid": "1A553B0B-D35B-4B26-84BD-F8CFD287A200",
+			"type": "BoxVolume",
+			"name": "Test Volume",
+			"position": [
+				589688.5173246722,
+				231341.79786558595,
+				792.7726157084892
+			],
+			"rotation": [
+				0,
+				0,
+				0.6338484063020134,
+				"XYZ"
+			],
+			"scale": [
+				87.70990081104037,
+				65.01472874807978,
+				95.53770288101325
+			],
+			"visible": true,
+			"clip": true
+		}
+	],
+	"cameraAnimations": [],
+	"profiles": [
+		{
+			"uuid": "C08F6835-4E6E-47BB-8D13-7428BAEA48CE",
+			"name": "Profile_0",
+			"points": [
+				[
+					589641.6098756103,
+					231453.76974998094,
+					760.4950016784668
+				],
+				[
+					589514.4799995422,
+					231309.46000003815,
+					775.6249989318848
+				],
+				[
+					589512.4600000381,
+					231504.9597490845,
+					764.6350010681152
+				]
+			],
+			"height": 20,
+			"width": 6
+		}
+	],
+	"annotations": {
+		"items": [
+			{
+				"uuid": "96E6ECB5-BED1-4903-B8C9-252AC78E864D",
+				"title": "Sorvilier",
+				"description": "",
+				"position": [
+					589847.17,
+					231436.78,
+					892.6
+				],
+				"offset": [
+					0,
+					0,
+					0
+				],
+				"cameraPosition": [590034.03, 231814.02, 961.68],
+				"cameraTarget": [589851.587, 231428.213, 715.634]
+			},{
+				"uuid": "D94E1D0B-7AA5-46FB-A513-A42282D3BD18",
+				"title": "Trees",
+				"description": "Point cloud of a small section in Sorvilier, Switzerland. <br>\n\t\t\t\tCourtesy of sigeom.sa",
+				"position": [
+					589850.15,
+					231300.1,
+					770.94
+				],
+				"offset": [
+					0,
+					0,
+					0
+				]
+			},
+			{
+				"uuid": "8B6543FC-64CA-4FD6-9C8D-ACE446D4A711",
+				"title": "About Annotations",
+				"description": "<ul><li>Click on the annotation label to move a predefined view.</li> \n\t\t\t\t<li>Click on the icon to execute the specified action.</li>\n\t\t\t\tIn this case, the action will bring you to another scene and point cloud.</ul>",
+				"position": [
+					590043.63,
+					231490.79,
+					740.78
+				],
+				"cameraPosition": [590105.53, 231541.63, 782.05],
+				"cameraTarget": [590043.63, 231488.79, 740.78]
+			},
+			{
+				"uuid": "EE329482-3EF6-448C-A12B-46BF95143F79",
+				"title": "About Annotations 2",
+				"description": "\n\t\t\t\tSuitable annotation positions and views can be obtained by \n\t\t\t\tlooking up the current camera position and target in the \"Scene\" panel, \n\t\t\t\tor by evaluating following lines in your browser's developer console:<br><br>\n\t\t\t\t<code>viewer.scene.view.position</code><br>\n\t\t\t\t<code>viewer.scene.view.getPivot()</code><br>\n\t\t\t\t",
+				"position": [
+					589621,
+					231437,
+					784
+				],
+				"cameraPosition": [
+					589585.81,
+					231463.63,
+					804
+				],
+				"cameraTarget": [
+					589625.86,
+					231439,
+					775.38
+				]
+			}
+		],
+		"hierarchy": {
+			"0": {},
+			"1": {},
+			"2": {},
+			"3": {},
+			"4": {},
+			"5": {},
+			"6": {}
+		}
+	},
+	"objects": []
+}

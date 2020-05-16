@@ -1,9 +1,7 @@
 
-<div id="sidebar_root" 
-	class="perfect_scrollbar navmenu navmenu-default navmenu-fixed-left unselectable" 
-	style="position: absolute; min-height: 100%; height: 100%; width: calc(100% - 1px); border-right: 1px solid black !important; overflow: hidden">
+<div id="sidebar_root" class="">
 	<div id="sidebar_header">
-		<span id="potree_branding" class="potree_sidebar_brand" style="display: flex; flex-direction: row">
+		<span id="potree_branding" class="potree_sidebar_brand">
 			<a href="http://potree.org" target="_blank">potree.org</a> 
 			<span style="margin: 0px 3px; color: #9AA1A4"> - </span> 
 			<a href="https://github.com/potree/potree" target="_blank">github</a>
@@ -14,9 +12,11 @@
 		</span>
 		<div id="potree_languages" style="font-family:arial;"></div>
 	</div>
-	<div>
+	<div> 
+
 	<div id="potree_menu" class="accordion">
-	
+
+		
 		<!-- APPEARANCE -->
 		<h3 id="menu_appearance"><span data-i18n="tb.rendering_opt"></span></h3>
 		<div>
@@ -29,6 +29,7 @@
 				<li><label><input type="checkbox" id="chkEDLEnabled"/><span data-i18n="appearance.edl_enable"></span></label></li>
 				<li><span data-i18n="appearance.edl_radius"></span>: <span id="lblEDLRadius"></span><div id="sldEDLRadius"></div></li>
 				<li><span data-i18n="appearance.edl_strength"></span>: <span id="lblEDLStrength"></span><div id="sldEDLStrength"></div></li>
+				<li><span data-i18n="appearance.edl_opacity"></span>: <span id="lblEDLOpacity"></span><div id="sldEDLOpacity"></div></li>
 				
 				<div class="divider"><span>Background</span></div>
 
@@ -62,11 +63,18 @@
 		<h3 id="menu_tools"><span data-i18n="tb.tools_opt"></span></h3>
 		<div class="pv-menu-list">
 
-			<div class="divider" style="padding: 10px 0px 15px 0px"><span>Measurement</span></div>
+			<div class="divider"><span>Measurement</span></div>
 
 			<li id="tools"></li>
 
-			<div class="divider" style="padding: 10px 0px 15px 0px"><span>Clipping</span></div>
+			<li>
+				<selectgroup id="measurement_options_show">
+					<option id="measurement_options_show_yes" value="SHOW">Show</option>
+					<option id="measurement_options_show_no" value="HIDE">Hide</option>
+				</selectgroup>
+			</li>
+
+			<div class="divider"><span>Clipping</span></div>
 
 			<li id="clipping_tools"></li>
 
@@ -86,7 +94,7 @@
 				</selectgroup>
 			</li>
 			
-			<div class="divider" style="padding: 10px 0px 15px 0px"><span>Navigation</span></div>
+			<div class="divider"><span>Navigation</span></div>
 
 			<li id="navigation"></li>
 
@@ -99,19 +107,62 @@
 
 			<div id="scene_export"></div>
 
-			<div class="divider" style="padding: 10px 0px 15px 0px"><span>Objects</span></div>
+			<div class="divider"><span>Objects</span></div>
 
 			<div id="scene_objects"></div>
 
-			<div class="divider" style="padding: 10px 0px 15px 0px"><span>Properties</span></div>
+			<div class="divider"><span>Properties</span></div>
 
 			<div id="scene_object_properties"></div>
 		</div>
 
 		<!-- Classification -->
-		<h3 id="menu_classification"><span data-i18n="tb.classification_filter_opt"></span></h3>
+		<h3 id="menu_filters"><span data-i18n="tb.filters_opt"></span></h3>
 		<div>
+
+			<div class="divider"><span>Classification</span></div>
+
 			<ul id="classificationList" class="pv-menu-list"></ul>
+
+			<div class="divider"><span>Returns</span></div>
+
+			<div id="return_filter_panel">
+				<ul class="pv-menu-list">
+					
+					<li><span data-i18n="filters.return_number"></span>: <span id="lblReturnNumber"></span> <div id="sldReturnNumber"></div></li>
+					<li><span data-i18n="filters.number_of_returns"></span>: <span id="lblNumberOfReturns"></span> <div id="sldNumberOfReturns"></div></li>
+
+				</ul>
+			</div>
+
+			<div class="divider"><span>Point Source ID</span></div>
+
+			<div>
+				<ul class="pv-menu-list" id="pointsourceid_filter_panel">
+
+				</ul>
+			</div>
+
+			<div class="divider"><span>GPS Time</span></div>
+
+			<div id="gpstime_filter_panel">
+
+				<ul class="pv-menu-list">
+					<div id="gpstime_multilevel_range_container">
+
+						<li>
+							<span style="display: flex">
+								<span>Time: </span>
+								<input id="txtGpsTime" type="text" style="margin: auto 10px"/>
+								<input id="btnFindGpsTime" type="button" value="find" />
+							</span>
+						</li>
+
+					</div>
+
+				</ul>
+
+			</div>
 		</div>
 		
 		<!-- ABOUT -->
@@ -125,24 +176,48 @@
 				<li>License: <a target="_blank" href="http://potree.org/wp/potree_license/">FreeBSD (2-clause BSD)<a></li>
 				<li>Libraries:
 					<ul>
-						<li><a target="_blank" href="http://threejs.org/">three.js</a></li>
+						<li><a target="_blank" href="https://cesium.com/">Cesium</a></li>
+						<li><a target="_blank" href="https://d3js.org/">D3.js</a></li>
+						<li><a target="_blank" href="https://entwine.io/entwine-point-tile.html/">Entwine / EPT</a></li>
+						<li><a target="_blank" href="https://github.com/ngageoint/geopackage-js/">geopackage-js</a></li>
+						<li><a target="_blank" href="https://www.i18next.com/">i18next</a></li>
 						<li><a target="_blank" href="https://jquery.com/">Jquery</a></li>
-						<li><a target="_blank" href="http://www.laszip.org/">laszip</a></li>
-						<li><a target="_blank" href="https://github.com/verma/plasio">Plas.io (laslaz) </a></li>
+						<li><a target="_blank" href="https://jqueryui.com/">jQuery user interface</a></li>
+						<li><a target="_blank" href="https://www.jstree.com/">jstree</a></li>
+						<li><a target="_blank" href="https://www.clicktorelease.com/code/THREE.MeshLine/demo/index.html/">MeshLine</a></li>
 						<li><a target="_blank" href="http://openlayers.org/">OpenLayers3</a></li>
+						<li><a target="_blank" href="https://eloquentjavascript.net/1st_edition/appendix2.html/">BinaryHeap</a></li>
+						<li><a target="_blank" href="https://github.com/dataarts/dat.gui/">dat.gui</a></li>
+						<li><a target="_blank" href="https://github.com/mrdoob/stats.js/">stats.js</a></li>
+						<li><a target="_blank" href="https://github.com/verma/plasio">Plas.io (laslaz) </a></li>
 						<li><a target="_blank" href="http://proj4js.org/">proj4js</a></li>
+						<li><a target="_blank" href="https://github.com/mbostock/shapefile/">shapefile</a></li>
+						<li><a target="_blank" href="http://bgrins.github.io/spectrum/">Spectrum</a></li>
+						<li><a target="_blank" href="https://github.com/sql-js/sql.js/">sql.js</a></li>
+						<li><a target="_blank" href="http://threejs.org/">three.js</a></li>
 						<li><a target="_blank" href="https://github.com/tweenjs/tween.js/">tween</a></li>
-						<li><a target="_blank" href="https://github.com/i18next/i18next/">i18next</a></li>
+						<li><a target="_blank" href="http://www.laszip.org/">laszip</a></li>
+
 					</ul>
 				</li>
 				<li>Donators:
 					<ul>
+						<li><a target="_blank" href="http://www.ne.ch/autorites/DDTE/SGRF/SITN/Pages/accueil.aspx/">SITN</a></li>
+						<li><a target="_blank" href="http://www.synth3d.co/">Synth3D</a></li>
+						<li><a target="_blank" href="http://www.geocue.com/">GeoCue</a></li>
 						<li><a target="_blank" href="http://rapidlasso.com/">rapidlasso</a></li>
+
+						<li><a target="_blank" href="https://www.bart.gov/">BART</a></li>
+
 						<li><a target="_blank" href="https://georepublic.info/en/">georepublic</a></li>
-						<li><a target="_blank" href="http://sitn.ne.ch/">sitn</a></li>
+
+						<li><a target="_blank" href="http://www.helimap.com">Helimap</a></li>
+						<li><a target="_blank" href="http://www.vevey.ch">Vevey</a></li>
+						<li><a target="_blank" href="https://www.yverdon-les-bains.ch">Yverdon-les-Bains</a></li>
+						<li><a target="_blank" href="http://archpro.lbg.ac.at/">LBI ArchPro</a></li>
+						<li><a target="_blank" href="http://www.kts.co.jp/">KTS</a></li>
 						<li><a target="_blank" href="http://www.veesus.com/veesus/index.php">Veesus</a></li>
 						<li><a target="_blank" href="http://sigeom.ch/">sigeom sa</a></li>
-						<li><a target="_blank" href="http://archpro.lbg.ac.at/">LBI ArchPro</a></li>
 					</ul>
 				</li>
 				<li>Credits:
@@ -161,6 +236,7 @@
 			
 			</ul>
 		</div>
+
 	</div>
 
 	<div>

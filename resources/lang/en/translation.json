@@ -44,7 +44,9 @@
 		"perspective_camera_control": "Perspective camera",
 		"orthographic_camera_control": "Orthographic camera",
 		"navigation_cube_control": "Navigation cube",
-		"remove_all_clipping_volumes": "Remove all clipping volumes"
+		"remove_all_clipping_volumes": "Remove all clipping volumes",
+		"compass": "Compass",
+		"camera_animation": "Camera Animation"
 	},
 	"appearance": {
 		"nb_max_pts": "Point budget", 

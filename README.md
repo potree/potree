@@ -1,9 +1,7 @@
 
 # About
 
-Potree is a free open-source WebGL based point cloud renderer for large point clouds.
-It is based on the [TU Wien Scanopy project](https://www.cg.tuwien.ac.at/research/projects/Scanopy/)
-and it was part of the [Harvest4D Project](https://harvest4d.org/).
+Potree is a free open-source WebGL based point cloud renderer for large point clouds. It is based on the [TU Wien Scanopy project](https://www.cg.tuwien.ac.at/research/projects/Scanopy/) and research projects [Harvest4D](https://harvest4d.org/), [GCD Doctoral College](https://gcd.tuwien.ac.at/) and [Superhumans](https://www.cg.tuwien.ac.at/research/projects/Superhumans/).
 
 
 <a href="http://potree.org/wp/demo/" target="_blank"> ![](./docs/images/potree_screens.png) </a>
@@ -46,7 +44,8 @@ Copy the converted directory into &lt;potreeDirectory&gt;/pointclouds/data_conve
 
 # Downloads
 
-[PotreeConverter source and Win64 binaries](https://github.com/potree/PotreeConverter/releases)
+* [Potree](https://github.com/potree/potree/releases)
+* [PotreeConverter ](https://github.com/potree/PotreeConverter/releases)
 
 # Examples
 
@@ -224,7 +223,29 @@ Take a look at the [potree showcase](http://potree.org/wp/demo/) for more exampl
 	</tr>
 </table>
 
-# Donations
+# Funding
+
+Potree is funded by a combination of research projects, companies and institutions. 
+
+<table>
+	<tr>
+		<th>Project Name</th>
+		<th>Funding Agency</th>
+	</tr>
+	<tr>
+		<td><a href="https://harvest4d.org/">Harvest4D</a></td>
+		<td>EU 7th Framework Program 323567</td>
+		<td></td>
+	</tr>
+	<tr>
+		<td><a href="https://gcd.tuwien.ac.at/">GCD Doctoral College</a></td>
+		<td>TU Wien</td>
+	</tr>
+	<tr>
+		<td><a href="https://www.cg.tuwien.ac.at/research/projects/Superhumans/">Superhumans</a></td>
+		<td>FWF</td>
+	</tr>
+</table>
 
 We would like to thank our sponsors for their financial contributions that keep this project up and running!
 

@@ -1381,7 +1381,7 @@ export class Sidebar{
 
 		elNavigation.append(this.createToolIcon(
 			Potree.resourcePath + "/images/compas.svg",
-			"Compass",
+			"[title]tt.compass",
 			() => {
 				const visible = !this.viewer.compass.isVisible();
 				this.viewer.compass.setVisible(visible);
@@ -1390,7 +1390,7 @@ export class Sidebar{
 
 		elNavigation.append(this.createToolIcon(
 			Potree.resourcePath + "/icons/camera_animation.svg",
-			"Camera Animation",
+			"[title]tt.camera_animation",
 			() => {
 				const animation = CameraAnimation.defaultFromView(this.viewer);
 

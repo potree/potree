@@ -413,10 +413,15 @@ export class PropertiesPanel{
 				let selectedValue = attributeSelection.selectmenu().val();
 				material.activeAttributeName = selectedValue;
 
-				const attribute = pointcloud.getAttribute(selectedValue);
+				let attribute = pointcloud.getAttribute(selectedValue);
 
-				const isIntensity = attribute !== null 
-					&& (attribute.name === "intensity" || attribute.name === "intensity gradient");
+				if(selectedValue === "intensity gradient"){
+					attribute = pointcloud.getAttribute("intensity");
+				}
+
+				
+
+				const isIntensity = ["intensity", "intensity gradient"].includes(attribute.name);
 				if(isIntensity){
 					if(pointcloud.material.intensityRange[0] === Infinity){
 						pointcloud.material.intensityRange = attribute.range;

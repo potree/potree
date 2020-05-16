@@ -86,7 +86,7 @@ export class CameraAnimationPanel{
 				let elNewKeyframe = $(`
 					<div style="display: flex; margin: 0.2em 0em">
 						<span style="flex-grow: 1"></span>
-						<input type="button" name="add" value="create control point" />
+						<input type="button" name="add" value="insert control point" />
 						<span style="flex-grow: 1"></span>
 					</div>
 				`);

@@ -44,6 +44,10 @@
 		viewer.setFOV(60);
 		viewer.setPointBudget(3_000_000);
 		viewer.loadSettingsFromURL();
+		viewer.setDescription(`
+		Create a new animation path via "Tools -> Navigation -> Camera Animation"<br>
+		Modify and play animation via "Scene -> Objects -> Other -> [animation object]".
+		`);
 		
 		viewer.loadGUI(() => {
 			viewer.setLanguage('en');

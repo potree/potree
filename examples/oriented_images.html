@@ -29,7 +29,6 @@
 	<script src="../libs/jstree/jstree.js"></script>
 	<script src="../build/potree/potree.js"></script>
 	<script src="../libs/plasio/js/laslaz.js"></script>
-	<script src="../libs/other/stats.min.js"></script>
 
 	<div class="potree_container" style="position: absolute; width: 100%; height: 100%; left: 0px; top: 0px; ">
 		<div id="potree_render_area" style="background-image: url('../build/potree/resources/images/background.jpg');"></div>
@@ -46,7 +45,7 @@
 		viewer.setPointBudget(3_000_000);
 		
 		viewer.setDescription(`
-			Use Potree.OrientedImages.load(...) to populate the scene with captured images. 
+			Use Potree.OrientedImageLoader.load(...) to populate the scene with captured images. 
 			Clicking an image will move the scene camera towards the image and overlay it over the point cloud. 
 			You can use the measurement tools while the scene camera is bound to an image. Zoom in and out of the image via the mouse wheel. 
 			Go back to 3D mode by clicking the button on the bottom right. 

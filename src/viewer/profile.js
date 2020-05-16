@@ -879,9 +879,9 @@ export class ProfileWindow extends EventDispatcher {
 
 		let radius = Math.abs(scaleX.invert(0) - scaleX.invert(5));
 
-		if(radius === 0){
+		if (radius === 0) {
 			pickSphere.visible = false;
-		}else{
+		} else {
 			pickSphere.scale.set(radius, radius, radius);
 			pickSphere.visible = true;
 		}

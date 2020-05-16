@@ -879,12 +879,13 @@ export class ProfileWindow extends EventDispatcher {
 
 		let radius = Math.abs(scaleX.invert(0) - scaleX.invert(5));
 
-		if (radius === 0) { 	// If 0, all matrix elements will be 0 and therefore invalid (cannot be inversed)
-			radius = 0.000000001;
+		if(radius === 0){
+			pickSphere.visible = false;
+		}else{
+			pickSphere.scale.set(radius, radius, radius);
+			pickSphere.visible = true;
 		}
-
-		pickSphere.scale.set(radius, radius, radius);
-		pickSphere.visible = true;
+		
 		renderer.render(scene, camera);
 
 		this.requestScaleUpdate();

@@ -1758,7 +1758,8 @@ export class Viewer extends EventDispatcher{
 				boxes.push(...profile.boxes);
 			}
 			
-			let degenerate = (box) => box.matrixWorld.determinant() !== 0;
+			// Needed for .getInverse(), pre-empt a determinant of 0, see #814
+			let degenerate = (box) => box.matrixWorld.elements[0] || box.matrixWorld.elements[1] || box.matrixWorld.elements[2] || box.matrixWorld.elements[3];
 			
 			let clipBoxes = boxes.filter(degenerate).map( box => {
 				box.updateMatrixWorld();

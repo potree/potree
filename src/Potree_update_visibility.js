@@ -1,6 +1,6 @@
 
-import {ClipTask, ClipMethod} from "./defines";
-import {Box3Helper} from "./utils/Box3Helper";
+import {ClipTask, ClipMethod} from "./defines.js";
+import {Box3Helper} from "./utils/Box3Helper.js";
 
 export function updatePointClouds(pointclouds, camera, renderer){
 
@@ -179,14 +179,6 @@ export function updateVisibility(pointclouds, camera, renderer){
 		visible = visible && !(numVisiblePointsInPointclouds.get(pointcloud) + node.getNumPoints() > pointcloud.pointBudget);
 		visible = visible && level < maxLevel;
 		//visible = visible && node.name !== "r613";
-
-		
-
-
-		if(!window.warned125){
-			console.log("TODO");
-			window.warned125 = true;
-		}
 
 		let clipBoxes = pointcloud.material.clipBoxes;
 		if(true && clipBoxes.length > 0){

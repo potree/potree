@@ -1,8 +1,4 @@
 
-import {MeasuringTool} from "../utils/MeasuringTool.js";
-import {ProfileTool} from "../utils/ProfileTool.js";
-import {VolumeTool} from "../utils/VolumeTool.js";
-
 import {GeoJSONExporter} from "../exporter/GeoJSONExporter.js"
 import {DXFExporter} from "../exporter/DXFExporter.js"
 import {Volume, SphereVolume} from "../utils/Volume.js"
@@ -15,22 +11,19 @@ import {Annotation} from "../Annotation.js"
 import {CameraMode, ClipTask, ClipMethod} from "../defines.js"
 import {ScreenBoxSelectTool} from "../utils/ScreenBoxSelectTool.js"
 import {Utils} from "../utils.js"
-
-import {EarthControls} from "../navigation/EarthControls.js"
-import {FirstPersonControls} from "../navigation/FirstPersonControls.js"
-import {OrbitControls} from "../navigation/OrbitControls.js"
-
-import {ZoomableSlider} from "./ZoomableSlider.js"
+import {CameraAnimation} from "../modules/CameraAnimation/CameraAnimation.js"
+import {HierarchicalSlider} from "./HierarchicalSlider.js"
 
 export class Sidebar{
 
 	constructor(viewer){
 		this.viewer = viewer;
 
-		this.measuringTool = new MeasuringTool(this.viewer);
-		this.profileTool = new ProfileTool(this.viewer);
-		this.volumeTool = new VolumeTool(this.viewer);
+		this.measuringTool = viewer.measuringTool;
+		this.profileTool = viewer.profileTool;
+		this.volumeTool = viewer.volumeTool;
 
+		this.dom = $("#sidebar_root");
 	}
 
 	createToolIcon(icon, title, callback){
@@ -58,7 +51,6 @@ export class Sidebar{
 		this.initSettings();
 		
 		$('#potree_version_number').html(Potree.version.major + "." + Potree.version.minor + Potree.version.suffix);
-		$('.perfect_scrollbar').perfectScrollbar();
 	}
 
 		
@@ -149,6 +141,53 @@ export class Sidebar{
 			}
 		));
 
+		// CIRCLE
+		elToolbar.append(this.createToolIcon(
+			Potree.resourcePath + '/icons/circle.svg',
+			'[title]tt.circle_measurement',
+			() => {
+				$('#menu_measurements').next().slideDown();
+				let measurement = this.measuringTool.startInsertion({
+					showDistances: false,
+					showHeight: false,
+					showArea: false,
+					showCircle: true,
+					showEdges: false,
+					closed: false,
+					maxMarkers: 3,
+					name: 'Circle'});
+
+				let measurementsRoot = $("#jstree_scene").jstree().get_json("measurements");
+				let jsonNode = measurementsRoot.children.find(child => child.data.uuid === measurement.uuid);
+				$.jstree.reference(jsonNode.id).deselect_all();
+				$.jstree.reference(jsonNode.id).select_node(jsonNode.id);
+			}
+		));
+
+		// AZIMUTH
+		elToolbar.append(this.createToolIcon(
+			Potree.resourcePath + '/icons/azimuth.svg',
+			'Azimuth',
+			() => {
+				$('#menu_measurements').next().slideDown();
+				let measurement = this.measuringTool.startInsertion({
+					showDistances: false,
+					showHeight: false,
+					showArea: false,
+					showCircle: false,
+					showEdges: false,
+					showAzimuth: true,
+					closed: false,
+					maxMarkers: 2,
+					name: 'Azimuth'});
+
+				let measurementsRoot = $("#jstree_scene").jstree().get_json("measurements");
+				let jsonNode = measurementsRoot.children.find(child => child.data.uuid === measurement.uuid);
+				$.jstree.reference(jsonNode.id).deselect_all();
+				$.jstree.reference(jsonNode.id).select_node(jsonNode.id);
+			}
+		));
+
 		// AREA
 		elToolbar.append(this.createToolIcon(
 			Potree.resourcePath + '/icons/area.svg',
@@ -211,6 +250,21 @@ export class Sidebar{
 			}
 		));
 
+		// ANNOTATION
+		elToolbar.append(this.createToolIcon(
+			Potree.resourcePath + '/icons/annotation.svg',
+			'[title]tt.annotation',
+			() => {
+				$('#menu_measurements').next().slideDown(); ;
+				let annotation = this.viewer.annotationTool.startInsertion();
+
+				let annotationsRoot = $("#jstree_scene").jstree().get_json("annotations");
+				let jsonNode = annotationsRoot.children.find(child => child.data.uuid === annotation.uuid);
+				$.jstree.reference(jsonNode.id).deselect_all();
+				$.jstree.reference(jsonNode.id).select_node(jsonNode.id);
+			}
+		));
+
 		// REMOVE ALL
 		elToolbar.append(this.createToolIcon(
 			Potree.resourcePath + '/icons/reset_tools.svg',
@@ -219,6 +273,20 @@ export class Sidebar{
 				this.viewer.scene.removeAllMeasurements();
 			}
 		));
+
+
+		{ // SHOW / HIDE Measurements
+			let elShow = $("#measurement_options_show");
+			elShow.selectgroup({title: "Show/Hide labels"});
+
+			elShow.find("input").click( (e) => {
+				const show = e.target.value === "SHOW";
+				this.measuringTool.showLabels = show;
+			});
+
+			let currentShow = this.measuringTool.showLabels ? "SHOW" : "HIDE";
+			elShow.find(`input[value=${currentShow}]`).trigger("click");
+		}
 	}
 
 	initScene(){
@@ -233,11 +301,13 @@ export class Sidebar{
 
 			let geoJSONIcon = `${Potree.resourcePath}/icons/file_geojson.svg`;
 			let dxfIcon = `${Potree.resourcePath}/icons/file_dxf.svg`;
+			let potreeIcon = `${Potree.resourcePath}/icons/file_potree.svg`;
 
 			elExport.append(`
 				Export: <br>
 				<a href="#" download="measure.json"><img name="geojson_export_button" src="${geoJSONIcon}" class="button-icon" style="height: 24px" /></a>
 				<a href="#" download="measure.dxf"><img name="dxf_export_button" src="${dxfIcon}" class="button-icon" style="height: 24px" /></a>
+				<a href="#" download="potree.json"><img name="potree_export_button" src="${potreeIcon}" class="button-icon" style="height: 24px" /></a>
 			`);
 
 			let elDownloadJSON = elExport.find("img[name=geojson_export_button]").parent();
@@ -270,6 +340,16 @@ export class Sidebar{
 					this.viewer.postError("no measurements to export");
 					event.preventDefault();
 				}
+			});
+
+			let elDownloadPotree = elExport.find("img[name=potree_export_button]").parent();
+			elDownloadPotree.click( (event) => {
+
+				let data = Potree.saveProject(this.viewer);
+				let dataString = JSON.stringify(data, null, "\t")
+
+				let url = window.URL.createObjectURL(new Blob([dataString], {type: 'data:application/octet-stream'}));
+				elDownloadPotree.attr('href', url);
 			});
 		}
 
@@ -320,11 +400,15 @@ export class Sidebar{
 		let measurementID = tree.jstree('create_node', "#", { "text": "<b>Measurements</b>", "id": "measurements" }, "last", false, false);
 		let annotationsID = tree.jstree('create_node', "#", { "text": "<b>Annotations</b>", "id": "annotations" }, "last", false, false);
 		let otherID = tree.jstree('create_node', "#", { "text": "<b>Other</b>", "id": "other" }, "last", false, false);
+		let vectorsID = tree.jstree('create_node', "#", { "text": "<b>Vectors</b>", "id": "vectors" }, "last", false, false);
+		let imagesID = tree.jstree('create_node', "#", { "text": "<b> Images</b>", "id": "images" }, "last", false, false);
 
 		tree.jstree("check_node", pcID);
 		tree.jstree("check_node", measurementID);
 		tree.jstree("check_node", annotationsID);
 		tree.jstree("check_node", otherID);
+		tree.jstree("check_node", vectorsID);
+		tree.jstree("check_node", imagesID);
 
 		tree.on('create_node.jstree', (e, data) => {
 			tree.jstree("open_all");
@@ -427,6 +511,18 @@ export class Sidebar{
 					node.boundingBox = box;
 					this.viewer.zoomTo(node, 1, 500);
 				}
+			}else if(object instanceof OrientedImage){
+				// TODO zoom to images
+
+				// let box = new THREE.Box3().setFromObject(object);
+
+				// if(box.getSize(new THREE.Vector3()).length() > 0){
+				// 	let node = new THREE.Object3D();
+				// 	node.boundingBox = box;
+				// 	this.viewer.zoomTo(node, 1, 500);
+				// }
+			}else if(object instanceof Geopackage){
+				// TODO
 			}
 		});
 
@@ -495,14 +591,65 @@ export class Sidebar{
 			let annotationID = createNode(parentID, annotation.title, annotationIcon, annotation);
 			this.annotationMapping.set(annotation, annotationID);
 
-			//let node = createNode(annotationsID, annotation.name, icon, volume);
-			//oldScene.annotations.removeEventListener('annotation_added', this.onAnnotationAdded);
+			annotation.addEventListener("annotation_changed", (e) => {
+				let annotationsRoot = $("#jstree_scene").jstree().get_json("annotations");
+				let jsonNode = annotationsRoot.children.find(child => child.data.uuid === annotation.uuid);
+				
+				$.jstree.reference(jsonNode.id).rename_node(jsonNode.id, annotation.title);
+			});
+		};
+
+		let onCameraAnimationAdded = (e) => {
+			const animation = e.animation;
+
+			const animationIcon = `${Potree.resourcePath}/icons/camera_animation.svg`;
+			createNode(otherID, "animation", animationIcon, animation);
+		};
+
+		let onOrientedImagesAdded = (e) => {
+			const images = e.images;
+
+			const imagesIcon = `${Potree.resourcePath}/icons/picture.svg`;
+			const node = createNode(imagesID, "images", imagesIcon, images);
+
+			images.addEventListener("visibility_changed", () => {
+				if(images.visible){
+					tree.jstree('check_node', node);
+				}else{
+					tree.jstree('uncheck_node', node);
+				}
+			});
+		};
+
+		const onGeopackageAdded = (e) => {
+			const geopackage = e.geopackage;
+
+			const geopackageIcon = `${Potree.resourcePath}/icons/triangle.svg`;
+			const tree = $(`#jstree_scene`);
+			const parentNode = "vectors";
+
+			for(const layer of geopackage.node.children){
+				const name = layer.name;
+
+				let shpPointsID = tree.jstree('create_node', parentNode, { 
+						"text": name, 
+						"icon": geopackageIcon,
+						"object": layer,
+						"data": layer,
+					}, 
+					"last", false, false);
+				tree.jstree(layer.visible ? "check_node" : "uncheck_node", shpPointsID);
+			}
+
 		};
 
 		this.viewer.scene.addEventListener("pointcloud_added", onPointCloudAdded);
 		this.viewer.scene.addEventListener("measurement_added", onMeasurementAdded);
 		this.viewer.scene.addEventListener("profile_added", onProfileAdded);
 		this.viewer.scene.addEventListener("volume_added", onVolumeAdded);
+		this.viewer.scene.addEventListener("camera_animation_added", onCameraAnimationAdded);
+		this.viewer.scene.addEventListener("oriented_images_added", onOrientedImagesAdded);
+		this.viewer.scene.addEventListener("geopackage_added", onGeopackageAdded);
 		this.viewer.scene.addEventListener("polygon_clip_volume_added", onVolumeAdded);
 		this.viewer.scene.annotations.addEventListener("annotation_added", onAnnotationAdded);
 
@@ -520,6 +667,13 @@ export class Sidebar{
 			tree.jstree("delete_node", jsonNode.id);
 		};
 
+		let onPolygonClipVolumeRemoved = (e) => {
+			let measurementsRoot = $("#jstree_scene").jstree().get_json("measurements");
+			let jsonNode = measurementsRoot.children.find(child => child.data.uuid === e.volume.uuid);
+			
+			tree.jstree("delete_node", jsonNode.id);
+		};
+
 		let onProfileRemoved = (e) => {
 			let measurementsRoot = $("#jstree_scene").jstree().get_json("measurements");
 			let jsonNode = measurementsRoot.children.find(child => child.data.uuid === e.profile.uuid);
@@ -529,6 +683,7 @@ export class Sidebar{
 
 		this.viewer.scene.addEventListener("measurement_removed", onMeasurementRemoved);
 		this.viewer.scene.addEventListener("volume_removed", onVolumeRemoved);
+		this.viewer.scene.addEventListener("polygon_clip_volume_removed", onPolygonClipVolumeRemoved);
 		this.viewer.scene.addEventListener("profile_removed", onProfileRemoved);
 
 		{
@@ -542,20 +697,32 @@ export class Sidebar{
 			});
 		}
 
-		for(let pointcloud of this.viewer.scene.pointclouds){
+		const scene = this.viewer.scene;
+		for(let pointcloud of scene.pointclouds){
 			onPointCloudAdded({pointcloud: pointcloud});
 		}
 
-		for(let measurement of this.viewer.scene.measurements){
+		for(let measurement of scene.measurements){
 			onMeasurementAdded({measurement: measurement});
 		}
 
-		for(let volume of [...this.viewer.scene.volumes, ...this.viewer.scene.polygonClipVolumes]){
+		for(let volume of [...scene.volumes, ...scene.polygonClipVolumes]){
 			onVolumeAdded({volume: volume});
 		}
 
+		for(let animation of scene.cameraAnimations){
+			onCameraAnimationAdded({animation: animation});
+		}
 
-		for(let profile of this.viewer.scene.profiles){
+		for(let images of scene.orientedImages){
+			onOrientedImagesAdded({images: images});
+		}
+
+		for(const geopackage of scene.geopackages){
+			onGeopackageAdded({geopackage: geopackage});
+		}
+
+		for(let profile of scene.profiles){
 			onProfileAdded({profile: profile});
 		}
 
@@ -690,6 +857,7 @@ export class Sidebar{
 		this.initClassificationList();
 		this.initReturnFilters();
 		this.initGPSTimeFilters();
+		this.initPointSourceIDFilters();
 
 	}
 
@@ -748,38 +916,143 @@ export class Sidebar{
 	}
 
 	initGPSTimeFilters(){
+
 		let elGPSTimeFilterPanel = $('#gpstime_filter_panel');
 
-		let lblGPSTime = elGPSTimeFilterPanel.find("#lblGPSTime");
-		let elGPS = elGPSTimeFilterPanel.find("#spnGPSTime");
+		{
+			let slider = new HierarchicalSlider({
+				levels: 4,
+				slide: (event) => {
+					this.viewer.setFilterGPSTimeRange(...event.values);
+				},
+			});
 
-		let slider = new ZoomableSlider();
-		elGPS[0].appendChild(slider.element);
-		slider.update();
+			let initialized = false;
 
-		slider.change( () => {
-			let range = slider.chosenRange;
-			this.viewer.setFilterGPSTimeRange(range[0], range[1]);
-		});
+			let initialize = () => {
+				
+				let elRangeContainer = $("#gpstime_multilevel_range_container");
+				elRangeContainer[0].prepend(slider.element);
 
-		let onGPSTimeExtentChanged = (event) => {
-			let range = this.viewer.filterGPSTimeExtent;
-			slider.setVisibleRange(range);
-		};
+				let extent = this.viewer.getGpsTimeExtent();
 
-		let onGPSTimeChanged = (event) => {
-			let range = this.viewer.filterGPSTimeRange;
+				slider.setRange(extent);
+				slider.setValues(extent);
 
-			let precision = 1;
-			let from = `${Utils.addCommas(range[0].toFixed(precision))}`;
-			let to = `${Utils.addCommas(range[1].toFixed(precision))}`;
-			lblGPSTime[0].innerHTML = `${from} to ${to}`;
+
+				initialized = true;
+			};
+
+			this.viewer.addEventListener("update", (e) => {
+				let extent = this.viewer.getGpsTimeExtent();
+				let gpsTimeAvailable = extent[0] !== Infinity;
+
+				if(!initialized && gpsTimeAvailable){
+					initialize();
+				}
+
+				slider.setRange(extent);
+			});
+		}
+
+
+		{
 			
-			slider.setRange(range);
-		};
+			const txtGpsTime = elGPSTimeFilterPanel.find("#txtGpsTime");
+			const btnFindGpsTime = elGPSTimeFilterPanel.find("#btnFindGpsTime");
 
-		this.viewer.addEventListener('filter_gps_time_range_changed', onGPSTimeChanged);
-		this.viewer.addEventListener('filter_gps_time_extent_changed', onGPSTimeExtentChanged);
+			let targetTime = null;
+
+			txtGpsTime.on("input", (e) => {
+				const str = txtGpsTime.val();
+
+				if(!isNaN(str)){
+					const value = parseFloat(str);
+					targetTime = value;
+
+					txtGpsTime.css("background-color", "")
+				}else{
+					targetTime = null;
+
+					txtGpsTime.css("background-color", "#ff9999")
+				}
+
+			});
+
+			btnFindGpsTime.click( () => {
+				
+				if(targetTime !== null){
+					viewer.moveToGpsTimeVicinity(targetTime);
+				}
+			});
+		}
+
+	}
+
+	initPointSourceIDFilters() {
+		let elPointSourceIDFilterPanel = $('#pointsourceid_filter_panel');
+
+		{
+			let slider = new HierarchicalSlider({
+				levels: 4,
+				range: [0, 65535],
+				precision: 1,
+				slide: (event) => {
+					let values = event.values;
+					this.viewer.setFilterPointSourceIDRange(values[0], values[1]);
+				}
+			});
+
+			let initialized = false;
+
+			let initialize = () => {
+				elPointSourceIDFilterPanel[0].prepend(slider.element);
+
+				initialized = true;
+			};
+
+			this.viewer.addEventListener("update", (e) => {
+				let extent = this.viewer.filterPointSourceIDRange;
+
+				if(!initialized){
+					initialize();
+
+					slider.setValues(extent);
+				}
+				
+			});
+		}
+
+		// let lblPointSourceID = elPointSourceIDFilterPanel.find("#lblPointSourceID");
+		// let elPointSourceID = elPointSourceIDFilterPanel.find("#spnPointSourceID");
+
+		// let slider = new ZoomableSlider();
+		// elPointSourceID[0].appendChild(slider.element);
+		// slider.update();
+
+		// slider.change( () => {
+		// 	let range = slider.chosenRange;
+		// 	this.viewer.setFilterPointSourceIDRange(range[0], range[1]);
+		// });
+
+		// let onPointSourceIDExtentChanged = (event) => {
+		// 	let range = this.viewer.filterPointSourceIDExtent;
+		// 	slider.setVisibleRange(range);
+		// };
+
+		// let onPointSourceIDChanged = (event) => {
+		// 	let range = this.viewer.filterPointSourceIDRange;
+
+		// 	let precision = 1;
+		// 	let from = `${Utils.addCommas(range[0].toFixed(precision))}`;
+		// 	let to = `${Utils.addCommas(range[1].toFixed(precision))}`;
+		// 	lblPointSourceID[0].innerHTML = `${from} to ${to}`;
+
+		// 	slider.setRange(range);
+		// };
+
+		// this.viewer.addEventListener('filter_point_source_id_range_changed', onPointSourceIDChanged);
+		// this.viewer.addEventListener('filter_point_source_id_extent_changed', onPointSourceIDExtentChanged);
 
 	}
 
@@ -787,13 +1060,61 @@ export class Sidebar{
 		let elClassificationList = $('#classificationList');
 
 		let addClassificationItem = (code, name) => {
-			let inputID = 'chkClassification_' + code;
+			const classification = this.viewer.classifications[code];
+			const inputID = 'chkClassification_' + code;
+			const colorPickerID = 'colorPickerClassification_' + code;
+
+			const checked = classification.visible ? "checked" : "";
 
 			let element = $(`
 				<li>
+					<label style="whitespace: nowrap; display: flex">
+						<input id="${inputID}" type="checkbox" ${checked}/>
+						<span style="flex-grow: 1">${name}</span>
+						<input id="${colorPickerID}" style="zoom: 0.5" />
+					</label>
+				</li>
+			`);
+
+			const elInput = element.find('input');
+			const elColorPicker = element.find(`#${colorPickerID}`);
+
+			elInput.click(event => {
+				this.viewer.setClassificationVisibility(code, event.target.checked);
+			});
+
+			let defaultColor = classification.color.map(c => c *  255).join(", ");
+			defaultColor = `rgb(${defaultColor})`;
+
+
+			elColorPicker.spectrum({
+				// flat: true,
+				color: defaultColor,
+				showInput: true,
+				preferredFormat: 'rgb',
+				cancelText: '',
+				chooseText: 'Apply',
+				move: color => {
+					let rgb = color.toRgb();
+					const c = [rgb.r / 255, rgb.g / 255, rgb.b / 255, 1];
+					classification.color = c;
+				},
+				change: color => {
+					let rgb = color.toRgb();
+					const c = [rgb.r / 255, rgb.g / 255, rgb.b / 255, 1];
+					classification.color = c;
+				}
+			});
+
+			elClassificationList.append(element);
+		};
+
+		const addToggleAllButton = () => { // toggle all button
+			const element = $(`
+				<li>
 					<label style="whitespace: nowrap">
-						<input id="${inputID}" type="checkbox" checked/>
-						<span>${name}</span>
+						<input id="toggleClassificationFilters" type="checkbox" checked/>
+						<span>show/hide all</span>
 					</label>
 				</li>
 			`);
@@ -801,15 +1122,74 @@ export class Sidebar{
 			let elInput = element.find('input');
 
 			elInput.click(event => {
-				this.viewer.setClassificationVisibility(code, event.target.checked);
+				this.viewer.toggleAllClassificationsVisibility();
+			});
+
+			elClassificationList.append(element);
+		}
+
+		const addInvertButton = () => { 
+			const element = $(`
+				<li>
+					<input type="button" value="invert" />
+				</li>
+			`);
+
+			let elInput = element.find('input');
+
+			elInput.click( () => {
+				const classifications = this.viewer.classifications;
+	
+				for(let key of Object.keys(classifications)){
+					let value = classifications[key];
+					this.viewer.setClassificationVisibility(key, !value.visible);
+				}
 			});
 
 			elClassificationList.append(element);
 		};
 
-		for (var classID in viewer.classifications) {
-			addClassificationItem(classID, viewer.classifications[classID].name);
-		}
+		const populate = () => {
+			addToggleAllButton();
+			for (let classID in this.viewer.classifications) {
+				addClassificationItem(classID, this.viewer.classifications[classID].name);
+			}
+			addInvertButton();
+		};
+
+		populate();
+
+		this.viewer.addEventListener("classifications_changed", () => {
+			elClassificationList.empty();
+			populate();
+		});
+
+		this.viewer.addEventListener("classification_visibility_changed", () => {
+
+			{ // set checked state of classification buttons
+				for(const classID of Object.keys(this.viewer.classifications)){
+					const classValue = this.viewer.classifications[classID];
+
+					let elItem = elClassificationList.find(`#chkClassification_${classID}`);
+					elItem.prop("checked", classValue.visible);
+				}
+			}
+
+			{ // set checked state of toggle button based on state of all other buttons
+				let numVisible = 0;
+				let numItems = 0;
+				for(const key of Object.keys(this.viewer.classifications)){
+					if(this.viewer.classifications[key].visible){
+						numVisible++;
+					}
+					numItems++;
+				}
+				const allVisible = numVisible === numItems;
+
+				let elToggle = elClassificationList.find("#toggleClassificationFilters");
+				elToggle.prop("checked", allVisible);
+			}
+		});
 	}
 
 	initAccordion(){
@@ -831,7 +1211,9 @@ export class Sidebar{
 			["EN", "en"],
 			["FR", "fr"],
 			["DE", "de"],
-			["JP", "jp"]
+			["JP", "jp"],
+			["ES", "es"],
+			["SE", "se"]
 		];
 
 		let elLanguages = $('#potree_languages');
@@ -861,7 +1243,9 @@ export class Sidebar{
 
 	initAppearance(){
 
-		$('#sldPointBudget').slider({
+		const sldPointBudget = this.dom.find('#sldPointBudget');
+
+		sldPointBudget.slider({
 			value: this.viewer.getPointBudget(),
 			min: 100 * 1000,
 			max: 10 * 1000 * 1000,
@@ -869,7 +1253,7 @@ export class Sidebar{
 			slide: (event, ui) => { this.viewer.setPointBudget(ui.value); }
 		});
 
-		$('#sldFOV').slider({
+		this.dom.find('#sldFOV').slider({
 			value: this.viewer.getFOV(),
 			min: 20,
 			max: 100,
@@ -893,9 +1277,17 @@ export class Sidebar{
 			slide: (event, ui) => { this.viewer.setEDLStrength(ui.value); }
 		});
 
+		$('#sldEDLOpacity').slider({
+			value: this.viewer.getEDLOpacity(),
+			min: 0,
+			max: 1,
+			step: 0.01,
+			slide: (event, ui) => { this.viewer.setEDLOpacity(ui.value); }
+		});
+
 		this.viewer.addEventListener('point_budget_changed', (event) => {
 			$('#lblPointBudget')[0].innerHTML = Utils.addCommas(this.viewer.getPointBudget());
-			$('#sldPointBudget').slider({value: this.viewer.getPointBudget()});
+			sldPointBudget.slider({value: this.viewer.getPointBudget()});
 		});
 
 		this.viewer.addEventListener('fov_changed', (event) => {
@@ -948,14 +1340,14 @@ export class Sidebar{
 		elNavigation.append(this.createToolIcon(
 			Potree.resourcePath + '/icons/earth_controls_1.png',
 			'[title]tt.earth_control',
-			() => { this.viewer.setNavigationMode(EarthControls); }
+			() => { this.viewer.setControls(this.viewer.earthControls); }
 		));
 
 		elNavigation.append(this.createToolIcon(
 			Potree.resourcePath + '/icons/fps_controls.svg',
 			'[title]tt.flight_control',
 			() => {
-				this.viewer.setNavigationMode(FirstPersonControls);
+				this.viewer.setControls(this.viewer.fpControls);
 				this.viewer.fpControls.lockElevation = false;
 			}
 		));
@@ -964,7 +1356,7 @@ export class Sidebar{
 			Potree.resourcePath + '/icons/helicopter_controls.svg',
 			'[title]tt.heli_control',
 			() => { 
-				this.viewer.setNavigationMode(FirstPersonControls);
+				this.viewer.setControls(this.viewer.fpControls);
 				this.viewer.fpControls.lockElevation = true;
 			}
 		));
@@ -972,7 +1364,7 @@ export class Sidebar{
 		elNavigation.append(this.createToolIcon(
 			Potree.resourcePath + '/icons/orbit_controls.svg',
 			'[title]tt.orbit_control',
-			() => { this.viewer.setNavigationMode(OrbitControls); }
+			() => { this.viewer.setControls(this.viewer.orbitControls); }
 		));
 
 		elNavigation.append(this.createToolIcon(
@@ -981,13 +1373,31 @@ export class Sidebar{
 			() => { this.viewer.fitToScreen(); }
 		));
 
-
-		
 		elNavigation.append(this.createToolIcon(
 			Potree.resourcePath + "/icons/navigation_cube.svg",
 			"[title]tt.navigation_cube_control",
 			() => {this.viewer.toggleNavigationCube()}
 		));
+
+		elNavigation.append(this.createToolIcon(
+			Potree.resourcePath + "/images/compas.svg",
+			"[title]tt.compass",
+			() => {
+				const visible = !this.viewer.compass.isVisible();
+				this.viewer.compass.setVisible(visible);
+			}
+		));
+
+		elNavigation.append(this.createToolIcon(
+			Potree.resourcePath + "/icons/camera_animation.svg",
+			"[title]tt.camera_animation",
+			() => {
+				const animation = CameraAnimation.defaultFromView(this.viewer);
+
+				viewer.scene.addCameraAnimation(animation);
+			}
+		));
+
 
 		elNavigation.append("<br>");
 

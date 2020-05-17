@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<meta name="description" content="">
+	<meta name="author" content="">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+	<title>Potree Viewer</title>
+
+	<link rel="stylesheet" type="text/css" href="../build/potree/potree.css">
+	<link rel="stylesheet" type="text/css" href="../libs/jquery-ui/jquery-ui.min.css">
+	<link rel="stylesheet" type="text/css" href="../libs/openlayers3/ol.css">
+	<link rel="stylesheet" type="text/css" href="../libs/spectrum/spectrum.css">
+	<link rel="stylesheet" type="text/css" href="../libs/jstree/themes/mixed/style.css">
+	
+
+	<style>
+	
+	#potree_toolbar{
+		position: absolute; 
+		z-index: 10000; 
+		left: 100px; 
+		top: 0px;
+		background: black;
+		color: white;
+		padding: 0.3em 0.8em;
+		font-family: "system-ui";
+		border-radius: 0em 0em 0.3em 0.3em;
+		display: flex;
+	}
+
+	.potree_toolbar_label{
+		text-align: center;
+		font-size: smaller;
+		opacity: 0.9;
+	}
+
+	.potree_toolbar_separator{
+		background: white;
+		padding: 0px;
+		margin: 5px 10px;
+		width: 1px;
+	}
+	
+	</style>
+</head>
+
+<body>
+	<script src="../libs/jquery/jquery-3.1.1.min.js"></script>
+	<script src="../libs/spectrum/spectrum.js"></script>
+	<script src="../libs/jquery-ui/jquery-ui.min.js"></script>
+	<script src="../libs/three.js/build/three.js"></script>
+	<script src="../libs/other/BinaryHeap.js"></script>
+	<script src="../libs/tween/tween.min.js"></script>
+	<script src="../libs/d3/d3.js"></script>
+	<script src="../libs/proj4/proj4.js"></script>
+	<script src="../libs/openlayers3/ol.js"></script>
+	<script src="../libs/i18next/i18next.js"></script>
+	<script src="../libs/jstree/jstree.js"></script>
+	<script src="../build/potree/potree.js"></script>
+	<script src="../libs/plasio/js/laslaz.js"></script>
+
+	<script src='../libs/sql.js/sql-wasm.js'></script>
+	<script src='../libs/geopackage/geopackage.js'></script>
+	<script src="../libs/three.js/extra/lines/LineSegmentsGeometry.js"></script>
+	<script src="../libs/three.js/extra/lines/LineGeometry.js"></script>
+	<script src="../libs/three.js/extra/lines/LineMaterial.js"></script>
+	<script src="../libs/three.js/extra/lines/LineSegments2.js"></script>
+	<script src="../libs/three.js/extra/lines/Line2.js"></script>
+
+	<div class="potree_container" style="position: absolute; width: 100%; height: 100%; left: 0px; top: 0px; ">
+		<div id="potree_render_area">
+			<div id="potree_toolbar"></div>
+		</div>
+		<div id="potree_sidebar_container"> </div>
+	</div>
+	
+	<script>
+	
+		window.viewer = new Potree.Viewer(document.getElementById("potree_render_area"));
+		
+		viewer.setEDLEnabled(false);
+		viewer.setFOV(60);
+		viewer.setPointBudget(1_000_000);
+		viewer.loadSettingsFromURL();
+		viewer.setBackground("skybox");
+		
+		viewer.loadGUI(() => {
+			viewer.setLanguage('en');
+			$("#menu_tools").next().show();
+			//$("#menu_scene").next().show();
+			//viewer.toggleSidebar();
+		});
+
+		const elevationRange = [730, 790];
+		
+		Potree.loadPointCloud("../pointclouds/vol_total/cloud.js", "Sorvilier", e => {
+			const scene = viewer.scene;
+			const pointcloud = e.pointcloud;
+			
+			const material = pointcloud.material;
+			material.size = 1;
+			material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
+			material.shape = Potree.PointShape.SQUARE;
+			material.elevationRange = elevationRange;
+			
+			scene.addPointCloud(pointcloud);
+			
+			scene.view.setView(
+				[590144.208, 231895.191, 1077.020],
+				[589800.000, 231432.852, 756.242],
+			);
+
+			//viewer.fitToScreen();
+		});
+
+	</script>
+
+	<script>
+	
+	// 1: define html of toolbar first 
+	// 2: then populate with content and actions 
+	//
+	// Following files can be used as references on how to add certain functionality to the toolbar:
+	// - sidebar.html
+	// - sidebar.js
+	// - PropertiesPanel.html and its dependencies (DistancePanel, ProfilePanel, ...)
+	// 
+
+	// HTML
+	const elToolbar = $("#potree_toolbar");
+	elToolbar.html(`
+		<span>
+			<div class="potree_toolbar_label">
+				Attribute
+			</div>
+			<div>
+				<img name="action_elevation" src="${Potree.resourcePath}/icons/profile.svg" class="annotation-action-icon" style="width: 2em; height: auto;"/>
+				<img name="action_rgb" src="${Potree.resourcePath}/icons/rgb.svg" class="annotation-action-icon" style="width: 2em; height: auto;"/>
+			</div>
+		</span>
+
+		<span class="potree_toolbar_separator" />
+
+		<span>
+			<div class="potree_toolbar_label">
+				Gradient
+			</div>
+			<div>
+				<span name="gradient_schemes"></span>
+			</div>
+		</span>
+
+		<span class="potree_toolbar_separator" />
+
+		<span>
+			<div class="potree_toolbar_label">
+				Measure
+			</div>
+			<div>
+				<img name="action_measure_point" src="${Potree.resourcePath}/icons/point.svg" class="annotation-action-icon" style="width: 2em; height: auto;"/>
+				<img name="action_measure_distance" src="${Potree.resourcePath}/icons/distance.svg" class="annotation-action-icon" style="width: 2em; height: auto;"/>
+				<img name="action_measure_circle" src="${Potree.resourcePath}/icons/circle.svg" class="annotation-action-icon" style="width: 2em; height: auto;"/>
+			</div>
+		</span>
+
+		<span class="potree_toolbar_separator" />
+
+		<span>
+			<div class="potree_toolbar_label" style="width: 12em">
+				Material
+			</div>
+			<div>
+				<select id="optMaterial" name="optMaterial"></select>
+			</div>
+		</span>
+
+		<span class="potree_toolbar_separator" />
+
+		<span>
+			<div class="potree_toolbar_label">
+				<span data-i18n="appearance.nb_max_pts">Point Budget</span>: 
+				<span name="lblPointBudget" style="display: inline-block; width: 4em;"></span>
+			</div>
+			<div>
+				<div id="sldPointBudget"></div>
+			</div>
+		</span>
+	`);
+
+	// CONTENT & ACTIONS
+
+	{ // ATTRIBUTE
+		elToolbar.find("img[name=action_elevation]").click( () => {
+			viewer.scene.pointclouds.forEach( pc => pc.material.activeAttributeName = "elevation" );
+		});
+
+		elToolbar.find("img[name=action_rgb]").click( () => {
+			viewer.scene.pointclouds.forEach( pc => pc.material.activeAttributeName = "rgba" );
+		});
+	}
+
+	{ // GRADIENT
+		const schemes = Object.keys(Potree.Gradients).map(name => ({name: name, values: Potree.Gradients[name]}));
+		const elGradientSchemes = elToolbar.find("span[name=gradient_schemes]");
+
+		for(const scheme of schemes){
+			const elButton = $(`
+				<span style=""></span>
+			`);
+
+			const svg = Potree.Utils.createSvgGradient(scheme.values);
+			svg.setAttributeNS(null, "class", `button-icon`);
+			svg.style.height = "2em";
+			svg.style.width = "1.3em";
+
+			elButton.append($(svg));
+
+			elButton.click( () => {
+				for(const pointcloud of viewer.scene.pointclouds){
+					pointcloud.material.activeAttributeName = "elevation";
+					pointcloud.material.gradient = Potree.Gradients[scheme.name];
+				}
+			});
+
+			elGradientSchemes.append(elButton);
+		}
+	}
+
+	{ // MEASURE
+		elToolbar.find("img[name=action_measure_point]").click( () => {
+			const measurement = viewer.measuringTool.startInsertion({
+				showDistances: false,
+				showAngles: false,
+				showCoordinates: true,
+				showArea: false,
+				closed: true,
+				maxMarkers: 1,
+				name: 'Point'
+			});
+		});
+
+		elToolbar.find("img[name=action_measure_distance]").click( () => {
+			const measurement = viewer.measuringTool.startInsertion({
+				showDistances: true,
+				showArea: false,
+				closed: false,
+				name: 'Distance'
+			});
+		});
+
+		elToolbar.find("img[name=action_measure_circle]").click( () => {
+			const measurement = viewer.measuringTool.startInsertion({
+				showDistances: false,
+				showHeight: false,
+				showArea: false,
+				showCircle: true,
+				showEdges: false,
+				closed: false,
+				maxMarkers: 3,
+				name: 'Circle'
+			});
+		});
+	}
+
+	{ // MATERIAL
+		let options = [
+			"rgba", 
+			"elevation",
+			"level of detail",
+			"indices",
+			// "intensity",
+			// "classification",
+			// "source id",
+		];
+
+		let attributeSelection = elToolbar.find('#optMaterial');
+		for(let option of options){
+			let elOption = $(`<option>${option}</option>`);
+			attributeSelection.append(elOption);
+		}
+
+		const updateMaterialSelection = (event, ui) => {
+			let selectedValue = attributeSelection.selectmenu().val();
+
+			for(const pointcloud of viewer.scene.pointclouds){
+				pointcloud.material.activeAttributeName = selectedValue;
+			}
+		};
+
+		attributeSelection.selectmenu({change: updateMaterialSelection});
+	}
+
+	{ // POINT BUDGET
+		elToolbar.find('#sldPointBudget').slider({
+			value: viewer.getPointBudget(),
+			min: 100 * 1000,
+			max: 1 * 1000 * 1000,
+			step: 100 * 1000,
+			slide: (event, ui) => { this.viewer.setPointBudget(ui.value); }
+		});
+
+		const onBudgetChange = () => {
+			let budget = (viewer.getPointBudget() / (1000 * 1000)).toFixed(1) + "M";
+			elToolbar.find('span[name=lblPointBudget]').html(budget);
+		};
+
+		onBudgetChange();
+		viewer.addEventListener("point_budget_changed", onBudgetChange);
+	}
+
+	
+	</script>
+	
+  </body>
+</html>

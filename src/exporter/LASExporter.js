@@ -34,7 +34,7 @@ export class LASExporter {
 		// system identifier o:26 l:32
 
 		// generating software o:58 l:32
-		setString('Potree 1.6', 58, buffer);
+		setString('Potree 1.7', 58, buffer);
 
 		// file creation day of year o:90 l:2
 		// file creation year o:92 l:2

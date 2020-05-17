@@ -1,10 +1,18 @@
 import {XHRFactory} from "../../XHRFactory.js";
 
 export class EptBinaryLoader {
+	extension() {
+		return '.bin';
+	}
+
+	workerPath() {
+		return Potree.scriptPath + '/workers/EptBinaryDecoderWorker.js';
+	}
+
 	load(node) {
 		if (node.loaded) return;
 
-		let url = node.url() + '.bin';
+		let url = node.url() + this.extension();
 
 		let xhr = XHRFactory.createXMLHttpRequest();
 		xhr.open('GET', url, true);
@@ -30,8 +38,7 @@ export class EptBinaryLoader {
 	}
 
 	parse(node, buffer) {
-		let workerPath = Potree.scriptPath +
-			'/workers/EptBinaryDecoderWorker.js';
+		let workerPath = this.workerPath();
 		let worker = Potree.workerPool.getWorker(workerPath);
 
 		worker.onmessage = function(e) {
@@ -46,8 +53,7 @@ export class EptBinaryLoader {
 
 			if (e.data.color) {
 				let color = new Uint8Array(e.data.color);
-				g.addAttribute('color',
-						new THREE.BufferAttribute(color, 4, true));
+				g.addAttribute('color', new THREE.BufferAttribute(color, 4, true));
 			}
 			if (e.data.intensity) {
 				let intensity = new Float32Array(e.data.intensity);
@@ -61,17 +67,17 @@ export class EptBinaryLoader {
 			}
 			if (e.data.returnNumber) {
 				let returnNumber = new Uint8Array(e.data.returnNumber);
-				g.addAttribute('returnNumber',
+				g.addAttribute('return number',
 						new THREE.BufferAttribute(returnNumber, 1));
 			}
 			if (e.data.numberOfReturns) {
 				let numberOfReturns = new Uint8Array(e.data.numberOfReturns);
-				g.addAttribute('numberOfReturns',
+				g.addAttribute('number of returns',
 						new THREE.BufferAttribute(numberOfReturns, 1));
 			}
 			if (e.data.pointSourceId) {
 				let pointSourceId = new Uint16Array(e.data.pointSourceId);
-				g.addAttribute('pointSourceID',
+				g.addAttribute('source id',
 						new THREE.BufferAttribute(pointSourceId, 1));
 			}
 

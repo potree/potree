@@ -9,7 +9,6 @@
 
 	<link rel="stylesheet" type="text/css" href="../build/potree/potree.css">
 	<link rel="stylesheet" type="text/css" href="../libs/jquery-ui/jquery-ui.min.css">
-	<link rel="stylesheet" type="text/css" href="../libs/perfect-scrollbar/css/perfect-scrollbar.css">
 	<link rel="stylesheet" type="text/css" href="../libs/openlayers3/ol.css">
 	<link rel="stylesheet" type="text/css" href="../libs/spectrum/spectrum.css">
 	<link rel="stylesheet" type="text/css" href="../libs/jstree/themes/mixed/style.css">
@@ -18,9 +17,9 @@
 <body>
 	<script src="../libs/jquery/jquery-3.1.1.min.js"></script>
 	<script src="../libs/spectrum/spectrum.js"></script>
-	<script src="../libs/perfect-scrollbar/js/perfect-scrollbar.jquery.js"></script>
 	<script src="../libs/jquery-ui/jquery-ui.min.js"></script>
 	<script src="../libs/three.js/build/three.min.js"></script>
+	<script src="../libs/three.js/extra/lines.js"></script>
 	<script src="../libs/other/BinaryHeap.js"></script>
 	<script src="../libs/tween/tween.min.js"></script>
 	<script src="../libs/d3/d3.js"></script>
@@ -35,7 +34,7 @@
 	<!-- INCLUDE SETTINGS HERE -->
 	
 	<div class="potree_container" style="position: absolute; width: 100%; height: 100%; left: 0px; top: 0px; ">
-		<div id="potree_render_area"></div>
+		<div id="potree_render_area" style="background-image: url('../build/potree/resources/images/background.jpg');"></div>
 		<div id="potree_sidebar_container"> </div>
 	</div>
 	
@@ -133,10 +132,10 @@
 							<img name="action_rgb" src="${Potree.resourcePath}/icons/rgb.svg" class="annotation-action-icon"/>
 						</span>`);
 					elTitle.find("img[name=action_elevation]").click( () => {
-						viewer.scene.pointclouds.forEach( pc => pc.material.pointColorType = Potree.PointColorType.ELEVATION );
+						viewer.scene.pointclouds.forEach( pc => pc.material.activeAttributeName = "elevation" );
 					});
 					elTitle.find("img[name=action_rgb]").click( () => {
-						viewer.scene.pointclouds.forEach( pc => pc.material.pointColorType = Potree.PointColorType.RGB );
+						viewer.scene.pointclouds.forEach( pc => pc.material.activeAttributeName = "rgba" );
 					});
 
 					// Give the annotation a meaningful string representation for the sidebar
@@ -166,7 +165,7 @@
 						let button = $(`<img src="${scheme.icon}" class="annotation-action-icon" style="width: 2em; height: auto;"/>`);
 						button.click( () => {
 							for(let pointcloud of viewer.scene.pointclouds){
-								pointcloud.material.pointColorType = Potree.PointColorType.ELEVATION;
+								pointcloud.material.activeAttributeName = "elevation";
 								pointcloud.material.gradient = Potree.Gradients[scheme.name];
 							}
 						});

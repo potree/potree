@@ -1,5 +1,5 @@
 
-import {Points} from "./Points";
+import {Points} from "./Points.js";
 
 export class ProfileData {
 	constructor (profile) {
@@ -211,6 +211,8 @@ export class ProfileRequest {
 				accepted[numAccepted] = i;
 				mileage[numAccepted] = localMileage + totalMileage;
 				points.boundingBox.expandByPoint(pos);
+
+				pos.sub(this.pointcloud.position);
 
 				acceptedPositions[3 * numAccepted + 0] = pos.x;
 				acceptedPositions[3 * numAccepted + 1] = pos.y;

@@ -66,8 +66,8 @@ export class MeasurePanel{
 		for(let attributeName of Object.keys(point)){
 			if(attributeName === "position"){
 			
-			}else if(attributeName === "color"){
-				let color = point.color;
+			}else if(attributeName === "rgba"){
+				let color = point.rgba;
 				let text = color.join(', ');
 
 				elTable.append($(`

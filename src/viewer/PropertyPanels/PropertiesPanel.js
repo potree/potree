@@ -2,10 +2,12 @@
 
 import {Utils} from "../../utils.js";
 import {PointCloudTree} from "../../PointCloudTree.js";
+import {Annotation} from "../../Annotation.js";
 import {Measure} from "../../utils/Measure.js";
 import {Profile} from "../../utils/Profile.js";
 import {Volume, BoxVolume, SphereVolume} from "../../utils/Volume.js";
-import {PointSizeType, PointShape} from "../../defines.js";
+import {CameraAnimation} from "../../modules/CameraAnimation/CameraAnimation.js";
+import {PointSizeType, PointShape, ElevationGradientRepeat} from "../../defines.js";
 import {Gradients} from "../../materials/Gradients.js";
 
 import {MeasurePanel} from "./MeasurePanel.js";
@@ -13,10 +15,13 @@ import {DistancePanel} from "./DistancePanel.js";
 import {PointPanel} from "./PointPanel.js";
 import {AreaPanel} from "./AreaPanel.js";
 import {AnglePanel} from "./AnglePanel.js";
+import {CirclePanel} from "./CirclePanel.js";
 import {HeightPanel} from "./HeightPanel.js";
 import {VolumePanel} from "./VolumePanel.js";
 import {ProfilePanel} from "./ProfilePanel.js";
 import {CameraPanel} from "./CameraPanel.js";
+import {AnnotationPanel} from "./AnnotationPanel.js";
+import { CameraAnimationPanel } from "./CameraAnimationPanel.js";
 
 export class PropertiesPanel{
 
@@ -51,6 +56,10 @@ export class PropertiesPanel{
 			this.setMeasurement(object);
 		}else if(object instanceof THREE.Camera){
 			this.setCamera(object);
+		}else if(object instanceof Annotation){
+			this.setAnnotation(object);
+		}else if(object instanceof CameraAnimation){
+			this.setCameraAnimation(object);
 		}
 		
 	}
@@ -76,7 +85,10 @@ export class PropertiesPanel{
 				<ul class="pv-menu-list">
 
 				<li>
-				<span data-i18n="appearance.point_size"></span>:<span id="lblPointSize"></span> <div id="sldPointSize"></div>
+				<span data-i18n="appearance.point_size"></span>:&nbsp;<span id="lblPointSize"></span> <div id="sldPointSize"></div>
+				</li>
+				<li>
+				<span data-i18n="appearance.min_point_size"></span>:&nbsp;<span id="lblMinPointSize"></span> <div id="sldMinPointSize"></div>
 				</li>
 
 				<!-- SIZE TYPE -->
@@ -99,6 +111,10 @@ export class PropertiesPanel{
 					</select>
 				</li>
 
+				<li id="materials_backface_container">
+				<label><input id="set_backface_culling" type="checkbox" /><span data-i18n="appearance.backface_culling"></span></label>
+				</li>
+				
 				<!-- OPACITY -->
 				<li><span data-i18n="appearance.point_opacity"></span>:<span id="lblOpacity"></span><div id="sldOpacity"></div></li>
 
@@ -107,9 +123,7 @@ export class PropertiesPanel{
 				</div>
 
 				<li>
-					<!--<label for="optMaterial" class="pv-select-label">Attributes:</label><br>-->
-					<select id="optMaterial" name="optMaterial">
-					</select>
+					<select id="optMaterial" name="optMaterial"></select>
 				</li>
 
 				<div id="materials.composite_weight_container">
@@ -135,6 +149,28 @@ export class PropertiesPanel{
 					<li>Contrast: <span id="lblRGBContrast"></span> <div id="sldRGBContrast"></div>	</li>
 				</div>
 
+				<div id="materials.extra_container">
+					<div class="divider">
+						<span>Extra Attribute</span>
+					</div>
+
+					<li><span data-i18n="appearance.extra_range"></span>: <span id="lblExtraRange"></span> <div id="sldExtraRange"></div></li>
+
+					<li>Gamma: <span id="lblExtraGamma"></span> <div id="sldExtraGamma"></div></li>
+					<li>Brightness: <span id="lblExtraBrightness"></span> <div id="sldExtraBrightness"></div></li>
+					<li>Contrast: <span id="lblExtraContrast"></span> <div id="sldExtraContrast"></div></li>
+				</div>
+				
+				<div id="materials.matcap_container">
+					<div class="divider">
+						<span>MATCAP</span>
+					</div>
+
+					<li>
+						<div id="matcap_scheme_selection" style="display: flex; flex-wrap: wrap;"> </div>
+					</li>
+				</div>
+
 				<div id="materials.color_container">
 					<div class="divider">
 						<span>Color</span>
@@ -150,26 +186,18 @@ export class PropertiesPanel{
 					</div>
 
 					<li><span data-i18n="appearance.elevation_range"></span>: <span id="lblHeightRange"></span> <div id="sldHeightRange"></div>	</li>
+
+					<li>
+						<selectgroup id="gradient_repeat_option">
+							<option id="gradient_repeat_clamp" value="CLAMP">Clamp</option>
+							<option id="gradient_repeat_repeat" value="REPEAT">Repeat</option>
+							<option id="gradient_repeat_mirrored_repeat" value="MIRRORED_REPEAT">Mirrored Repeat</option>
+						</selectgroup>
+					</li>
+
 					<li>
 						<span>Gradient Scheme:</span>
-						<div id="elevation_gradient_scheme_selection" style="display: flex">
-						<!--
-							<span style="flex-grow: 1;">
-								<img id="gradient_spectral" class="button-icon" style="max-width: 100%" src="${Potree.resourcePath}/icons/gradients_spectral.png" />
-							</span>
-							<span style="flex-grow: 1;">
-								<img id="gradient_yellow_green" class="button-icon" style="max-width: 100%" src="${Potree.resourcePath}/icons/gradients_yellow_green.png" />
-							</span>
-							<span style="flex-grow: 1;">
-								<img class="button-icon" style="max-width: 100%" src="${Potree.resourcePath}/icons/gradients_plasma.png" />
-							</span>
-							<span style="flex-grow: 1;">
-								<img class="button-icon" style="max-width: 100%" src="${Potree.resourcePath}/icons/gradients_grayscale.png" />
-							</span>
-							<span style="flex-grow: 1;">
-								<img class="button-icon" style="max-width: 100%" src="${Potree.resourcePath}/icons/gradients_rainbow.png" />
-							</span>
-							-->
+						<div id="elevation_gradient_scheme_selection" style="display: flex; padding: 1em 0em">
 						</div>
 					</li>
 				</div>
@@ -235,6 +263,27 @@ export class PropertiesPanel{
 			update();
 		}
 
+		{ // MINIMUM POINT SIZE
+			let sldMinPointSize = panel.find(`#sldMinPointSize`);
+			let lblMinPointSize = panel.find(`#lblMinPointSize`);
+
+			sldMinPointSize.slider({
+				value: material.size,
+				min: 0,
+				max: 3,
+				step: 0.01,
+				slide: function (event, ui) { material.minSize = ui.value; }
+			});
+
+			let update = (e) => {
+				lblMinPointSize.html(material.minSize.toFixed(2));
+				sldMinPointSize.slider({value: material.minSize});
+			};
+			this.addVolatileListener(material, "point_size_changed", update);
+			
+			update();
+		}
+
 		{ // POINT SIZING
 			let strSizeType = Object.keys(PointSizeType)[material.pointSizeType];
 
@@ -270,6 +319,39 @@ export class PropertiesPanel{
 			update();
 		}
 
+		{ // BACKFACE CULLING
+			
+			let opt = panel.find(`#set_backface_culling`);
+			opt.click(() => {
+				material.backfaceCulling = opt.prop("checked");
+			});
+			let update = () => {
+				let value = material.backfaceCulling;
+				opt.prop("checked", value);
+			};
+			this.addVolatileListener(material, "backface_changed", update);
+			update();
+
+			let blockBackface = $('#materials_backface_container');
+			blockBackface.css('display', 'none');
+
+			const pointAttributes = pointcloud.pcoGeometry.pointAttributes;
+			const hasNormals = pointAttributes.hasNormals ? pointAttributes.hasNormals() : false;
+			if(hasNormals) {
+				blockBackface.css('display', 'block');
+			}
+			/*
+			opt.checkboxradio({
+				clicked: (event, ui) => {
+					// let value = ui.item.value;
+					let value = ui.item.checked;
+					console.log(value);
+					material.backfaceCulling = value; // $('#set_freeze').prop("checked");
+				}
+			});
+			*/
+		}
+
 		{ // OPACITY
 			let sldOpacity = panel.find(`#sldOpacity`);
 			let lblOpacity = panel.find(`#lblOpacity`);
@@ -294,21 +376,32 @@ export class PropertiesPanel{
 		}
 
 		{
-			let options = [
-				'RGB',
-				'RGB and Elevation',
-				'Color',
-				'Elevation',
-				'Intensity',
-				'Intensity Gradient',
-				'Classification',
-				'Return Number',
-				'Source',
-				'GPS Time',
-				'Index',
-				'Level of Detail',
-				'Composite'
+
+			const attributes = pointcloud.pcoGeometry.pointAttributes.attributes;
+
+			let options = [];
+
+			options.push(...attributes.map(a => a.name));
+
+			const intensityIndex = options.indexOf("intensity");
+			if(intensityIndex >= 0){
+				options.splice(intensityIndex + 1, 0, "intensity gradient");
+			}
+
+			options.push(
+				"elevation",
+				"color",
+				'matcap',
+				'indices',
+				'level of detail',
+				'composite'
+			);
+
+			const blacklist = [
+				"POSITION_CARTESIAN",
 			];
+
+			options = options.filter(o => !blacklist.includes(o));
 
 			let attributeSelection = panel.find('#optMaterial');
 			for(let option of options){
@@ -318,75 +411,145 @@ export class PropertiesPanel{
 
 			let updateMaterialPanel = (event, ui) => {
 				let selectedValue = attributeSelection.selectmenu().val();
-				material.pointColorType = Utils.toMaterialID(selectedValue);
+				material.activeAttributeName = selectedValue;
+
+				let attribute = pointcloud.getAttribute(selectedValue);
+
+				if(selectedValue === "intensity gradient"){
+					attribute = pointcloud.getAttribute("intensity");
+				}
+
+				
+
+				const isIntensity = ["intensity", "intensity gradient"].includes(attribute.name);
+				if(isIntensity){
+					if(pointcloud.material.intensityRange[0] === Infinity){
+						pointcloud.material.intensityRange = attribute.range;
+					}
+
+					const [min, max] = attribute.range;
+
+					panel.find('#sldIntensityRange').slider({
+						range: true,
+						min: min, max: max, step: 0.01,
+						values: [min, max],
+						slide: (event, ui) => {
+							let min = ui.values[0];
+							let max = ui.values[1];
+							material.intensityRange = [min, max];
+						}
+					});
+				} else if(attribute){
+					const [min, max] = attribute.range;
+
+					let selectedRange = material.getRange(attribute.name);
+
+					if(!selectedRange){
+						selectedRange = [...attribute.range];
+					}
+
+					panel.find('#sldExtraRange').slider({
+						range: true,
+						min: min, 
+						max: max, 
+						step: 0.01,
+						values: selectedRange,
+						slide: (event, ui) => {
+							let [a, b] = ui.values;
+
+							material.setRange(attribute.name, [a, b]);
+						}
+					});
+
+					// material.extraRange = [min, max];
+				}
 
 				let blockWeights = $('#materials\\.composite_weight_container');
 				let blockElevation = $('#materials\\.elevation_container');
 				let blockRGB = $('#materials\\.rgb_container');
+				let blockExtra = $('#materials\\.extra_container');
 				let blockColor = $('#materials\\.color_container');
 				let blockIntensity = $('#materials\\.intensity_container');
 				let blockIndex = $('#materials\\.index_container');
 				let blockTransition = $('#materials\\.transition_container');
+				let blockGps = $('#materials\\.gpstime_container');
+				let blockMatcap = $('#materials\\.matcap_container');
 
 				blockIndex.css('display', 'none');
 				blockIntensity.css('display', 'none');
 				blockElevation.css('display', 'none');
 				blockRGB.css('display', 'none');
+				blockExtra.css('display', 'none');
 				blockColor.css('display', 'none');
 				blockWeights.css('display', 'none');
 				blockTransition.css('display', 'none');
+				blockMatcap.css('display', 'none');
+				blockGps.css('display', 'none');
 
-				if (selectedValue === 'Composite') {
+				if (selectedValue === 'composite') {
 					blockWeights.css('display', 'block');
 					blockElevation.css('display', 'block');
 					blockRGB.css('display', 'block');
 					blockIntensity.css('display', 'block');
-				} else if (selectedValue === 'Elevation') {
+				} else if (selectedValue === 'elevation') {
 					blockElevation.css('display', 'block');
 				} else if (selectedValue === 'RGB and Elevation') {
 					blockRGB.css('display', 'block');
 					blockElevation.css('display', 'block');
-				} else if (selectedValue === 'RGB') {
+				} else if (selectedValue === 'rgba') {
 					blockRGB.css('display', 'block');
-				} else if (selectedValue === 'Color') {
+				} else if (selectedValue === 'color') {
 					blockColor.css('display', 'block');
-				} else if (selectedValue === 'Intensity') {
+				} else if (selectedValue === 'intensity') {
 					blockIntensity.css('display', 'block');
-				} else if (selectedValue === 'Intensity Gradient') {
+				} else if (selectedValue === 'intensity gradient') {
 					blockIntensity.css('display', 'block');
-				} else if (selectedValue === "Index" ){
+				} else if (selectedValue === "indices" ){
 					blockIndex.css('display', 'block');
+				} else if (selectedValue === "matcap" ){
+					blockMatcap.css('display', 'block');
+				} else if (selectedValue === "classification" ){
+					// add classification color selctor?
+				} else if (selectedValue === "gps-time" ){
+					blockGps.css('display', 'block');
+				} else if(selectedValue === "number of returns"){
+					
+				} else if(selectedValue === "return number"){
+					
+				} else if(selectedValue === "source id"){
+					
+				} else{
+					blockExtra.css('display', 'block');
 				}
 			};
 
 			attributeSelection.selectmenu({change: updateMaterialPanel});
 
 			let update = () => {
-				attributeSelection.val(Utils.toMaterialName(material.pointColorType)).selectmenu('refresh');
+				attributeSelection.val(material.activeAttributeName).selectmenu('refresh');
 			};
 			this.addVolatileListener(material, "point_color_type_changed", update);
+			this.addVolatileListener(material, "active_attribute_changed", update);
 
 			update();
 			updateMaterialPanel();
 		}
 
 		{
-			let schemes = [
-				{name: "SPECTRAL", icon: `${Potree.resourcePath}/icons/gradients_spectral.png`},
-				{name: "YELLOW_GREEN", icon: `${Potree.resourcePath}/icons/gradients_yellow_green.png`},
-				{name: "PLASMA", icon: `${Potree.resourcePath}/icons/gradients_plasma.png`},
-				{name: "GRAYSCALE", icon: `${Potree.resourcePath}/icons/gradients_grayscale.png`},
-				{name: "RAINBOW", icon: `${Potree.resourcePath}/icons/gradients_rainbow.png`},
-			];
+			const schemes = Object.keys(Potree.Gradients).map(name => ({name: name, values: Gradients[name]}));
 
 			let elSchemeContainer = panel.find("#elevation_gradient_scheme_selection");
 
 			for(let scheme of schemes){
 				let elScheme = $(`
 					<span style="flex-grow: 1;">
-						<img src="${scheme.icon}" class="button-icon" style="max-width: 100%" />
 					</span>
 				`);
+
+				const svg = Potree.Utils.createSvgGradient(scheme.values);
+				svg.setAttributeNS(null, "class", `button-icon`);
+
+				elScheme.append($(svg));
 
 				elScheme.click( () => {
 					material.gradient = Gradients[scheme.name];
@@ -394,14 +557,51 @@ export class PropertiesPanel{
 
 				elSchemeContainer.append(elScheme);
 			}
+		}
 
-			//panel.find("#gradient_spectral").click( () => {
-			//	pointcloud.material.gradient = Potree.Gradients.SPECTRAL;
-			//});
+		{
+			let matcaps = [
+				{name: "Normals", icon: `${Potree.resourcePath}/icons/matcap/check_normal+y.jpg`}, 
+				{name: "Basic 1", icon: `${Potree.resourcePath}/icons/matcap/basic_1.jpg`}, 
+				{name: "Basic 2", icon: `${Potree.resourcePath}/icons/matcap/basic_2.jpg`}, 
+				{name: "Basic Dark", icon: `${Potree.resourcePath}/icons/matcap/basic_dark.jpg`}, 
+				{name: "Basic Side", icon: `${Potree.resourcePath}/icons/matcap/basic_side.jpg`}, 
+				{name: "Ceramic Dark", icon: `${Potree.resourcePath}/icons/matcap/ceramic_dark.jpg`}, 
+				{name: "Ceramic Lightbulb", icon: `${Potree.resourcePath}/icons/matcap/ceramic_lightbulb.jpg`}, 
+				{name: "Clay Brown", icon: `${Potree.resourcePath}/icons/matcap/clay_brown.jpg`}, 
+				{name: "Clay Muddy", icon: `${Potree.resourcePath}/icons/matcap/clay_muddy.jpg`}, 
+				{name: "Clay Studio", icon: `${Potree.resourcePath}/icons/matcap/clay_studio.jpg`}, 
+				{name: "Resin", icon: `${Potree.resourcePath}/icons/matcap/resin.jpg`}, 
+				{name: "Skin", icon: `${Potree.resourcePath}/icons/matcap/skin.jpg`}, 
+				{name: "Jade", icon: `${Potree.resourcePath}/icons/matcap/jade.jpg`}, 
+				{name: "Metal_ Anisotropic", icon: `${Potree.resourcePath}/icons/matcap/metal_anisotropic.jpg`}, 
+				{name: "Metal Carpaint", icon: `${Potree.resourcePath}/icons/matcap/metal_carpaint.jpg`}, 
+				{name: "Metal Lead", icon: `${Potree.resourcePath}/icons/matcap/metal_lead.jpg`}, 
+				{name: "Metal Shiny", icon: `${Potree.resourcePath}/icons/matcap/metal_shiny.jpg`}, 
+				{name: "Pearl", icon: `${Potree.resourcePath}/icons/matcap/pearl.jpg`}, 
+				{name: "Toon", icon: `${Potree.resourcePath}/icons/matcap/toon.jpg`},
+				{name: "Check Rim Light", icon: `${Potree.resourcePath}/icons/matcap/check_rim_light.jpg`}, 
+				{name: "Check Rim Dark", icon: `${Potree.resourcePath}/icons/matcap/check_rim_dark.jpg`}, 
+				{name: "Contours 1", icon: `${Potree.resourcePath}/icons/matcap/contours_1.jpg`}, 
+				{name: "Contours 2", icon: `${Potree.resourcePath}/icons/matcap/contours_2.jpg`}, 
+				{name: "Contours 3", icon: `${Potree.resourcePath}/icons/matcap/contours_3.jpg`}, 
+				{name: "Reflection Check Horizontal", icon: `${Potree.resourcePath}/icons/matcap/reflection_check_horizontal.jpg`}, 
+				{name: "Reflection Check Vertical", icon: `${Potree.resourcePath}/icons/matcap/reflection_check_vertical.jpg`}, 
+			];
 
-			//panel.find("#gradient_yellow_green").click( () => {
-			//	pointcloud.material.gradient = Potree.Gradients.YELLOW_GREEN;
-			//});
+			let elMatcapContainer = panel.find("#matcap_scheme_selection");
+
+			for(let matcap of matcaps){
+				let elMatcap = $(`
+						<img src="${matcap.icon}" class="button-icon" style="width: 25%;" />
+				`);
+
+				elMatcap.click( () => {
+					material.matcap = matcap.icon.substring(matcap.icon.lastIndexOf('/'));
+				});
+
+				elMatcapContainer.append(elMatcap);
+			}
 		}
 
 		{
@@ -423,6 +623,24 @@ export class PropertiesPanel{
 				slide: (event, ui) => {material.rgbBrightness = ui.value}
 			});
 
+			panel.find('#sldExtraGamma').slider({
+				value: material.extraGamma,
+				min: 0, max: 4, step: 0.01,
+				slide: (event, ui) => {material.extraGamma = ui.value}
+			});
+
+			panel.find('#sldExtraBrightness').slider({
+				value: material.extraBrightness,
+				min: -1, max: 1, step: 0.01,
+				slide: (event, ui) => {material.extraBrightness = ui.value}
+			});
+
+			panel.find('#sldExtraContrast').slider({
+				value: material.extraContrast,
+				min: -1, max: 1, step: 0.01,
+				slide: (event, ui) => {material.extraContrast = ui.value}
+			});
+
 			panel.find('#sldHeightRange').slider({
 				range: true,
 				min: 0, max: 1000, step: 0.01,
@@ -430,17 +648,6 @@ export class PropertiesPanel{
 				slide: (event, ui) => {
 					material.heightMin = ui.values[0];
 					material.heightMax = ui.values[1];
-				}
-			});
-
-			panel.find('#sldIntensityRange').slider({
-				range: true,
-				min: 0, max: 1, step: 0.01,
-				values: [0, 1],
-				slide: (event, ui) => {
-					let min = (Number(ui.values[0]) === 0) ? 0 : parseInt(Math.pow(2, 16 * ui.values[0]));
-					let max = parseInt(Math.pow(2, 16 * ui.values[1]));
-					material.intensityRange = [min, max];
 				}
 			});
 
@@ -539,18 +746,53 @@ export class PropertiesPanel{
 				panel.find('#sldHeightRange').slider({min: bMin, max: bMax, values: range});
 			};
 
+			let updateExtraRange = function () {
+
+				let attributeName = material.activeAttributeName;
+				let attribute = pointcloud.getAttribute(attributeName);
+
+				if(attribute == null){
+					return;
+				}
+
+				
+				let range = material.getRange(attributeName);
+
+				if(range == null){
+					range = attribute.range;
+				}
+
+				if(range){
+					let msg = `${range[0].toFixed(2)} to ${range[1].toFixed(2)}`;
+					panel.find('#lblExtraRange').html(msg);
+				}else{
+					panel.find("could not deduce range");
+				}
+			};
+
 			let updateIntensityRange = function () {
 				let range = material.intensityRange;
-				let [min, max] = range.map(v => Math.log2(v) / 16);
 
 				panel.find('#lblIntensityRange').html(`${parseInt(range[0])} to ${parseInt(range[1])}`);
-				panel.find('#sldIntensityRange').slider({values: [min, max]});
 			};
 
 			{
 				updateHeightRange();
 				panel.find(`#sldHeightRange`).slider('option', 'min');
 				panel.find(`#sldHeightRange`).slider('option', 'max');
+			}
+
+			{
+				let elGradientRepeat = panel.find("#gradient_repeat_option");
+				elGradientRepeat.selectgroup({title: "Gradient"});
+
+				elGradientRepeat.find("input").click( (e) => {
+					this.viewer.setElevationGradientRepeat(ElevationGradientRepeat[e.target.value]);
+				});
+
+				let current = Object.keys(ElevationGradientRepeat)
+					.filter(key => ElevationGradientRepeat[key] === this.viewer.elevationGradientRepeat);
+				elGradientRepeat.find(`input[value=${current}]`).trigger("click");
 			}
 
 			let onIntensityChange = () => {
@@ -583,10 +825,12 @@ export class PropertiesPanel{
 				panel.find('#sldRGBBrightness').slider({value: brightness});
 			};
 
+			this.addVolatileListener(material, "material_property_changed", updateExtraRange);
 			this.addVolatileListener(material, "material_property_changed", updateHeightRange);
 			this.addVolatileListener(material, "material_property_changed", onIntensityChange);
 			this.addVolatileListener(material, "material_property_changed", onRGBChange);
 
+			updateExtraRange();
 			updateHeightRange();
 			onIntensityChange();
 			onRGBChange();
@@ -605,7 +849,9 @@ export class PropertiesPanel{
 			ANGLE: {panel: AnglePanel},
 			HEIGHT: {panel: HeightPanel},
 			PROFILE: {panel: ProfilePanel},
-			VOLUME: {panel: VolumePanel}
+			VOLUME: {panel: VolumePanel},
+			CIRCLE: {panel: CirclePanel},
+			OTHER: {panel: PointPanel},
 		};
 
 		let getType = (measurement) => {
@@ -620,6 +866,8 @@ export class PropertiesPanel{
 					return TYPE.ANGLE;
 				} else if (measurement.showHeight) {
 					return TYPE.HEIGHT;
+				} else if (measurement.showCircle) {
+					return TYPE.CIRCLE;
 				} else {
 					return TYPE.OTHER;
 				}
@@ -641,6 +889,16 @@ export class PropertiesPanel{
 
 	setCamera(camera){
 		let panel = new CameraPanel(this.viewer, this);
+		this.container.append(panel.elContent);
+	}
+
+	setAnnotation(annotation){
+		let panel = new AnnotationPanel(this.viewer, this, annotation);
+		this.container.append(panel.elContent);
+	}
+
+	setCameraAnimation(animation){
+		let panel = new CameraAnimationPanel(this.viewer, this, animation)
 		this.container.append(panel.elContent);
 	}
 

@@ -97,6 +97,9 @@ export class Viewer extends EventDispatcher{
 		this.useEDL = false;
 		this.description = "";
 
+		this.fpsInterval=Math.round(1000/30);
+		this.lastFrameRenderTime=Date.now();
+
 		this.classifications = ClassificationScheme.DEFAULT;
 
 		this.moveSpeed = 10;
@@ -411,6 +414,12 @@ export class Viewer extends EventDispatcher{
 		//$('#potree_description').text(value);
 	}
 
+	setFps(fps){
+		this.fpsInterval=Math.round(1000/fps);
+	}
+	getFps(){
+		return(1000/this.fpsInterval);
+	}
 	getDescription(){
 		return this.description;
 	}
@@ -2169,19 +2178,26 @@ export class Viewer extends EventDispatcher{
 
 			display.requestAnimationFrame(this.loop.bind(this));
 
-			display.getFrameData(frameData);
+			const now=Date.now();
+			const elapsed=now-this.lastFrameRenderTime;
+			if(elapsed>this.fpsInterval){
+				this.lastFrameRenderTime=now - (elapsed % this.fpsInterval);
+				display.getFrameData(frameData);
+				this.update(this.clock.getDelta(), timestamp);
 
-			this.update(this.clock.getDelta(), timestamp);
-
-			this.render();
-
-			this.vr.display.submitFrame();
+				this.render();
+				this.vr.display.submitFrame();
+			}
 		}else{
 			requestAnimationFrame(this.loop.bind(this));
+			const now=Date.now();
+			const elapsed=now-this.lastFrameRenderTime;
+			if(elapsed>this.fpsInterval){
+				this.lastFrameRenderTime=now - (elapsed % this.fpsInterval);
+				this.update(this.clock.getDelta(), timestamp);
 
-			this.update(this.clock.getDelta(), timestamp);
-
-			this.render();
+				this.render();
+			}
 		}
 
 

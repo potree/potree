@@ -45,7 +45,8 @@ Copy the converted directory into &lt;potreeDirectory&gt;/pointclouds/data_conve
 # Downloads
 
 * [Potree](https://github.com/potree/potree/releases)
-* [PotreeConverter ](https://github.com/potree/PotreeConverter/releases)
+* [PotreeConverter ](https://github.com/potree/PotreeConverter/releases) - Convert your point cloud to the Potree format.
+* [PotreeDesktop ](https://github.com/potree/PotreeDesktop/releases) - Desktop version of Potree. Allows drag&drop of point clouds into the viewer.
 
 # Examples
 
@@ -234,16 +235,15 @@ Potree is funded by a combination of research projects, companies and institutio
 	</tr>
 	<tr>
 		<td><a href="https://harvest4d.org/">Harvest4D</a></td>
-		<td>EU 7th Framework Program 323567</td>
-		<td></td>
+		<td><a href="https://ec.europa.eu/transport/themes/research/fp7_en">EU 7th Framework Program 323567</a></td>
 	</tr>
 	<tr>
 		<td><a href="https://gcd.tuwien.ac.at/">GCD Doctoral College</a></td>
-		<td>TU Wien</td>
+		<td><a href="https://www.tuwien.at/en/">TU Wien</a></td>
 	</tr>
 	<tr>
 		<td><a href="https://www.cg.tuwien.ac.at/research/projects/Superhumans/">Superhumans</a></td>
-		<td>FWF</td>
+		<td><a href="https://www.fwf.ac.at/">FWF</a></td>
 	</tr>
 </table>
 

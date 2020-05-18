@@ -421,7 +421,7 @@ export class PropertiesPanel{
 
 				
 
-				const isIntensity = ["intensity", "intensity gradient"].includes(attribute.name);
+				const isIntensity = attribute && ["intensity", "intensity gradient"].includes(attribute.name);
 				if(isIntensity){
 					if(pointcloud.material.intensityRange[0] === Infinity){
 						pointcloud.material.intensityRange = attribute.range;

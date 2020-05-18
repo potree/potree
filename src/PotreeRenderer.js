@@ -276,9 +276,18 @@ class Shader {
 					};
 				}
 			}
-
+			
+			let uniformBlocksSupported = true;
+			if (typeof WebGL2RenderingContext !== 'undefined') {
+				console.log('your browser appears to support WebGL2 but it might be disabled. Try enabling it in your browser\'s (advanced) settings and/or try updating your OS and/or video card drivers');
+				uniformBlocksSupported = false;
+			} else {
+				console.log('your browser has no WebGL2 support at all'); 
+				uniformBlocksSupported = false;
+			}
+			
 			// uniform blocks
-			if(gl instanceof WebGL2RenderingContext){ 
+			if(uniformBlocksSupported == true && gl instanceof WebGL2RenderingContext){
 				let numBlocks = gl.getProgramParameter(program, gl.ACTIVE_UNIFORM_BLOCKS);
 
 				for (let i = 0; i < numBlocks; i++) {

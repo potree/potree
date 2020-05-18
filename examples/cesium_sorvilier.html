@@ -57,9 +57,17 @@
 		selectionIndicator: false,
 		timeline: false,
 		navigationHelpButton: false,
-		imageryProvider : Cesium.createOpenStreetMapImageryProvider({url : 'https://a.tile.openstreetmap.org/'}),
+		imageryProvider : Cesium.createWorldImagery(),
+		//imageryProvider : Cesium.createOpenStreetMapImageryProvider({url : 'https://a.tile.openstreetmap.org/'}),
 		terrainShadows: Cesium.ShadowMode.DISABLED,
 	});
+	
+	var layers = window.cesiumViewer.scene.imageryLayers;
+	var osm = layers.addImageryProvider(
+		new Cesium.OpenStreetMapImageryProvider()
+	);
+	osm.alpha = 1.0;
+	//osm.brightness = 0.5;
 
 	let cp = new Cesium.Cartesian3(4303414.154026048, 552161.235598733, 4660771.704035539);
 	cesiumViewer.camera.setView({

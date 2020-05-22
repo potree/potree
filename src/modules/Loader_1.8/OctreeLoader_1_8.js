@@ -77,8 +77,9 @@ export class NodeLoader{
 			let pointAttributes = node.octreeGeometry.pointAttributes;
 			let scale = node.octreeGeometry.scale;
 
-			//let min = node.octreeGeometry.offset.clone().add(node.boundingBox.min);
-			let min = node.boundingBox.min;
+			let min = node.octreeGeometry.offset.clone().add(node.boundingBox.min);
+			//let min = node.boundingBox.min;
+			let offset = node.octreeGeometry.loader.offset;
 
 			let message = {
 				name: node.name,
@@ -86,6 +87,7 @@ export class NodeLoader{
 				pointAttributes: pointAttributes,
 				scale: scale,
 				min: min,
+				offset: offset,
 				//min: node.boundingBox.min,
 			};
 

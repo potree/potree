@@ -50,10 +50,6 @@ Copy the converted directory into &lt;potreeDirectory&gt;/pointclouds/data_conve
 
 # Examples
 
-Take a look at the [potree showcase](http://potree.org/wp/demo/) for more examples.
-
-
-
 <table>
 	<tr>
 		<td>

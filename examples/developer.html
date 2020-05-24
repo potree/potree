@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<meta name="description" content="This example uses full sources where available to enable better debugging and error tracing.">
+	<meta name="author" content="@midnight-dev">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+	<title>Potree - Dev Example</title>
+
+	<link rel="stylesheet" type="text/css" href="../build/potree/potree.css">
+	<link rel="stylesheet" type="text/css" href="../libs/jquery-ui/jquery-ui.css">
+	<link rel="stylesheet" type="text/css" href="../libs/openlayers3/ol.css">
+	<link rel="stylesheet" type="text/css" href="../libs/spectrum/spectrum.css">
+	<link rel="stylesheet" type="text/css" href="../libs/jstree/themes/mixed/style.css">
+	<style>
+		/* Change the position of the frames per second stats to top-right (default top-left) */
+		#fpsStats {
+			top: 0;
+			right: 0 !important;
+			left: unset !important;
+			bottom: unset;
+		}
+	</style>
+</head>
+
+<body>
+	<script src="../libs/jquery/jquery-3.1.1.js"></script>
+	<script src="../libs/spectrum/spectrum.js"></script>
+	<script src="../libs/jquery-ui/jquery-ui.js"></script>
+	<script src="../libs/three.js/build/three.js"></script>
+	<script src="../libs/three.js/extra/lines.js"></script>
+	<script src="../libs/other/BinaryHeap.js"></script>
+	<script src="../libs/tween/tween.js"></script>
+	<script src="../libs/d3/d3.js"></script>
+	<script src="../libs/proj4/proj4.js"></script>
+	<script src="../libs/openlayers3/ol.js"></script>
+	<script src="../libs/i18next/i18next.js"></script>
+	<script src="../libs/jstree/jstree.js"></script>
+	<script src="../build/potree/potree.js"></script>
+	<!-- <script src="../libs/plasio/js/laslaz.js"></script> -->
+	<script src="../libs/other/stats.js"></script>
+	
+	<!-- INCLUDE ADDITIONAL DEPENDENCIES HERE -->
+	<!-- INCLUDE SETTINGS HERE -->
+	
+	<div class="potree_container" style="position: absolute; width: 100%; height: 100%; left: 0px; top: 0px; ">
+		<div id="potree_render_area" style="background-image: url('../build/potree/resources/images/background.jpg');"></div>
+		<div id="potree_sidebar_container"> </div>
+	</div>
+	
+	<script>
+		window.viewer = new Potree.Viewer(document.getElementById("potree_render_area"),);
+		
+		viewer.setEDLEnabled(false); 	// Broken on many mobile devices (esp iOS), grants more realistic lighting / depth if enabled
+		viewer.setFOV(30); 	// The higher the value, the more distorted an image will appear in peripheral vision
+		viewer.setPointBudget(100 * 1000); 	// Lower values load more quickly but leave gaps
+		viewer.loadSettingsFromURL();
+
+		viewer.setShowBoundingBox(true);  // Shows bounding boxes by default for debugging
+		
+		viewer.setDescription("Developer example includes full sources to libraries for better debugging");
+		
+		viewer.loadGUI(() => {
+			viewer.setLanguage('en');
+			$("#menu_appearance").next().show();
+			$("#menu_scene").next().show();
+			$("#menu_tools").next().show();
+			viewer.toggleSidebar();
+		});
+
+		Potree.loadPointCloud("../pointclouds/lion_takanawa/cloud.js", "Lion - Binary Point Cloud", function(e) {
+			viewer.scene.addPointCloud(e.pointcloud);
+			
+			const material = e.pointcloud.material;
+			material.size = 2.0;
+			material.minSize = 1.0;
+			material.pointSizeType = Potree.PointSizeType.FIXED;
+			material.shape = Potree.PointShape.CIRCLE;
+			material.opacity = 0.15; 	// Normally, you'd want this at 1.0 (that's 100%), but you can set this as a default if you need it
+			material.activeAttributeName = "level of detail";
+			
+			viewer.fitToScreen();
+		});
+		
+	</script>
+	
+	
+  </body>
+</html>

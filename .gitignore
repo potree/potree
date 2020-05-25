@@ -1,6 +1,7 @@
 /build
 /dist
 /test
+/test-libs
 node_modules
 docs/.marking_your_own_pointcloud_loader.md.html
 docs/.file_format.md.html

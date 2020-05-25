@@ -1,11 +1,19 @@
 
+
+import {
+	Frustum,
+	NumberParameter,
+	GLTexture2D,
+	GLPass
+} from '@zeainc/zea-engine'
+
 import { PotreeAsset } from "./PotreeAsset.js";
 import { GLPotreeAsset } from "./GLPotreeAsset.js";
 import { BinaryHeap } from "../../libs/other/BinaryHeap.js";
 import { PotreePointsShader, PotreePointsGeomDataShader, PotreePointsHilighlightShader } from "./PotreePointsShader.js";
 import {LRU} from "../LRU.js";
 
-export class GLPotreePass extends ZeaEngine.GLPass {
+export class GLPotreePass extends GLPass {
   constructor(){
     super();
     
@@ -18,18 +26,18 @@ export class GLPotreePass extends ZeaEngine.GLPass {
     this.visibleNodesNeedUpdating = false;
 
     // Size, not in pixels, but a fraction of scnreen V height.
-    const minimumNodeVSizeParam = this.addParameter(new ZeaEngine.NumberParameter('minimumNodeVSize',0.0))
+    const minimumNodeVSizeParam = this.addParameter(new NumberParameter('minimumNodeVSize',0.0))
     minimumNodeVSizeParam.valueChanged.connect(mode => {
         this.minimumNodeVSize = minimumNodeVSizeParam.getValue();
     });
 
-    const visiblePointsTargetParam = this.addParameter(new ZeaEngine.NumberParameter('visiblePointsTarget', 0))
+    const visiblePointsTargetParam = this.addParameter(new NumberParameter('visiblePointsTarget', 0))
     visiblePointsTargetParam.valueChanged.connect(() => {
       this.pointBudget = visiblePointsTargetParam.getValue()
         this.lru.pointLoadLimit = this.pointBudget * 2
     });
 
-    const pointSizeParam = this.addParameter(new ZeaEngine.NumberParameter('Points Size', 0))
+    const pointSizeParam = this.addParameter(new NumberParameter('Points Size', 0))
     pointSizeParam.valueChanged.connect(() => {
       this.pointSize = pointSizeParam.getValue()
     });
@@ -54,7 +62,7 @@ export class GLPotreePass extends ZeaEngine.GLPass {
     const data = new Uint8Array(size * 4);
     for (let i = 0; i < size * 4; i++) data[i] = 255;
 
-    this.visibleNodesTexture = new ZeaEngine.GLTexture2D(gl, {
+    this.visibleNodesTexture = new GLTexture2D(gl, {
       format: 'RGBA',
       type: 'UNSIGNED_BYTE',
       width: size,
@@ -137,7 +145,7 @@ export class GLPotreePass extends ZeaEngine.GLPass {
         const potreeAsset = glpotreeAsset.getGeomItem()
         const model = potreeAsset.getGlobalMat4()
         const modelViewProj = viewProj.multiply(model);
-        const frustum = new ZeaEngine.Frustum();
+        const frustum = new Frustum();
         frustum.setFromMatrix(modelViewProj);
 
         // camera  position in object space

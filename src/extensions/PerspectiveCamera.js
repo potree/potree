@@ -17,7 +17,7 @@ THREE.PerspectiveCamera.prototype.zoomTo = function (node, factor) {
 	} else if (node.geometry && node.geometry.boundingSphere) {
 		bs = node.geometry.boundingSphere;
 	} else {
-		bs = node.boundingBox.getBoundingSphere();
+		bs = node.boundingBox.getBoundingSphere(new THREE.Sphere());
 	}
 
 	let _factor = factor || 1;
@@ -32,6 +32,6 @@ THREE.PerspectiveCamera.prototype.zoomTo = function (node, factor) {
 
 	let distanceFactor = Math.abs(radius / Math.sin(fovr / 2)) * _factor;
 
-	let offset = this.getWorldDirection().multiplyScalar(-distanceFactor);
+	let offset = this.getWorldDirection(new THREE.Vector3()).multiplyScalar(-distanceFactor);
 	this.position.copy(bs.center.clone().add(offset));
 };

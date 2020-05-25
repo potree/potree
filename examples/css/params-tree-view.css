@@ -1,0 +1,8 @@
+.MainWrapper {
+  display: grid;
+  grid-template-columns: 400px 1fr 400px;
+}
+
+.InputSearch {
+  border: 1px solid gray;
+}

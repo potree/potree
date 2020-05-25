@@ -1,6 +1,8 @@
 
 
-Potree.TransformationTool = class TransformationTool {
+import {Utils} from "../utils.js";
+
+export class TransformationTool {
 	constructor(viewer) {
 		this.viewer = viewer;
 
@@ -180,7 +182,7 @@ Potree.TransformationTool = class TransformationTool {
 		let sgPlane = new THREE.PlaneGeometry(4, 4, 1, 1);
 		let sgLowPolySphere = new THREE.SphereGeometry(1, 16, 16);
 
-		let texture = new THREE.TextureLoader().load(`${Potree.resourcePath}/icons/eye_2.png`);
+		let texture = new THREE.TextureLoader().load(`${exports.resourcePath}/icons/eye_2.png`);
 
 		for(let handleName of Object.keys(this.focusHandles)){
 			let handle = this.focusHandles[handleName];
@@ -281,9 +283,9 @@ Potree.TransformationTool = class TransformationTool {
 				let alignment = new THREE.Vector3(...handle.alignment).multiplyScalar(2 * maxScale / handleLength);
 				alignment.applyMatrix4(selected.matrixWorld);
 				let newCamPos = alignment;
-				let newCamTarget = selected.getWorldPosition();
+				let newCamTarget = selected.getWorldPosition(new THREE.Vector3());
 
-				Potree.utils.moveTo(this.viewer.scene, newCamPos, newCamTarget);
+				Utils.moveTo(this.viewer.scene, newCamPos, newCamTarget);
 			});
 
 			pickSphere.addEventListener("mouseover", e => {
@@ -423,8 +425,8 @@ Potree.TransformationTool = class TransformationTool {
 
 
 			//pickVolume.addEventListener("mouseover", (e) => {
-			//	//let a = this.viewer.scene.getActiveCamera().getWorldDirection().dot(pickVolume.getWorldDirection());
-			//	console.log(pickVolume.getWorldDirection());
+			//	//let a = this.viewer.scene.getActiveCamera().getWorldDirection(new THREE.Vector3()).dot(pickVolume.getWorldDirection(new THREE.Vector3()));
+			//	console.log(pickVolume.getWorldDirection(new THREE.Vector3()));
 			//});
 			
 			pickVolume.addEventListener("drag", (e) => {this.dragRotationHandle(e)});
@@ -451,12 +453,12 @@ Potree.TransformationTool = class TransformationTool {
 			//this.viewer.scene.scene.remove(this.debug);
 			//this.debug = new THREE.Object3D();
 			//this.viewer.scene.scene.add(this.debug);
-			//Potree.utils.debugSphere(this.debug, drag.location, 3, 0xaaaaaa);
+			//Utils.debugSphere(this.debug, drag.location, 3, 0xaaaaaa);
 			//let debugEnd = drag.location.clone().add(n.clone().multiplyScalar(20));
-			//Potree.utils.debugLine(this.debug, drag.location, debugEnd, 0xff0000);
+			//Utils.debugLine(this.debug, drag.location, debugEnd, 0xff0000);
 
 			drag.intersectionStart = drag.location;
-			drag.objectStart = drag.object.getWorldPosition();
+			drag.objectStart = drag.object.getWorldPosition(new THREE.Vector3());
 			drag.handle = handle;
 
 			let plane = new THREE.Plane().setFromNormalAndCoplanarPoint(n, drag.intersectionStart);
@@ -471,12 +473,12 @@ Potree.TransformationTool = class TransformationTool {
 
 		let mouse = drag.end;
 		let domElement = this.viewer.renderer.domElement;
-		let ray = Potree.utils.mouseToRay(mouse, camera, domElement.clientWidth, domElement.clientHeight);
+		let ray = Utils.mouseToRay(mouse, camera, domElement.clientWidth, domElement.clientHeight);
 		
-		let I = ray.intersectPlane(drag.dragPlane);
+		let I = ray.intersectPlane(drag.dragPlane, new THREE.Vector3());
 
 		if (I) {
-			let center = this.scene.getWorldPosition();
+			let center = this.scene.getWorldPosition(new THREE.Vector3());
 			let from = drag.pivot;
 			let to = I;
 
@@ -515,7 +517,7 @@ Potree.TransformationTool = class TransformationTool {
 			
 		if(!drag.intersectionStart && handle){
 			drag.intersectionStart = drag.location;
-			drag.objectStart = drag.object.getWorldPosition();
+			drag.objectStart = drag.object.getWorldPosition(new THREE.Vector3());
 
 			let start = drag.intersectionStart;
 			let dir = new THREE.Vector4(...handle.alignment, 0).applyMatrix4(this.scene.matrixWorld);
@@ -523,7 +525,7 @@ Potree.TransformationTool = class TransformationTool {
 			let line = new THREE.Line3(start.clone(), end.clone());
 			drag.line = line;
 
-			let camOnLine = line.closestPointToPoint(camera.position, false);
+			let camOnLine = line.closestPointToPoint(camera.position, false, new THREE.Vector3());
 			let normal = new THREE.Vector3().subVectors(camera.position, camOnLine);
 			let plane = new THREE.Plane().setFromNormalAndCoplanarPoint(normal, drag.intersectionStart);
 			drag.dragPlane = plane;
@@ -537,11 +539,11 @@ Potree.TransformationTool = class TransformationTool {
 		{
 			let mouse = drag.end;
 			let domElement = this.viewer.renderer.domElement;
-			let ray = Potree.utils.mouseToRay(mouse, camera, domElement.clientWidth, domElement.clientHeight);
-			let I = ray.intersectPlane(drag.dragPlane);
+			let ray = Utils.mouseToRay(mouse, camera, domElement.clientWidth, domElement.clientHeight);
+			let I = ray.intersectPlane(drag.dragPlane, new THREE.Vector3());
 
 			if (I) {
-				let iOnLine = drag.line.closestPointToPoint(I, false);
+				let iOnLine = drag.line.closestPointToPoint(I, false, new THREE.Vector3());
 
 				let diff = new THREE.Vector3().subVectors(iOnLine, drag.pivot);
 
@@ -575,7 +577,7 @@ Potree.TransformationTool = class TransformationTool {
 
 		if(!drag.intersectionStart){
 			drag.intersectionStart = drag.location;
-			drag.objectStart = drag.object.getWorldPosition();
+			drag.objectStart = drag.object.getWorldPosition(new THREE.Vector3());
 			drag.handle = handle;
 
 			let start = drag.intersectionStart;
@@ -584,13 +586,13 @@ Potree.TransformationTool = class TransformationTool {
 			let line = new THREE.Line3(start.clone(), end.clone());
 			drag.line = line;
 
-			let camOnLine = line.closestPointToPoint(camera.position, false);
+			let camOnLine = line.closestPointToPoint(camera.position, false, new THREE.Vector3());
 			let normal = new THREE.Vector3().subVectors(camera.position, camOnLine);
 			let plane = new THREE.Plane().setFromNormalAndCoplanarPoint(normal, drag.intersectionStart);
 			drag.dragPlane = plane;
 			drag.pivot = drag.intersectionStart;
 
-			//Potree.utils.debugSphere(viewer.scene.scene, drag.pivot, 0.05);
+			//Utils.debugSphere(viewer.scene.scene, drag.pivot, 0.05);
 		}else{
 			handle = drag.handle;
 		}
@@ -600,11 +602,11 @@ Potree.TransformationTool = class TransformationTool {
 		{
 			let mouse = drag.end;
 			let domElement = this.viewer.renderer.domElement;
-			let ray = Potree.utils.mouseToRay(mouse, camera, domElement.clientWidth, domElement.clientHeight);
-			let I = ray.intersectPlane(drag.dragPlane);
+			let ray = Utils.mouseToRay(mouse, camera, domElement.clientWidth, domElement.clientHeight);
+			let I = ray.intersectPlane(drag.dragPlane, new THREE.Vector3());
 
 			if (I) {
-				let iOnLine = drag.line.closestPointToPoint(I, false);
+				let iOnLine = drag.line.closestPointToPoint(I, false, new THREE.Vector3());
 				let direction = handle.alignment.reduce( (a, v) => a + v, 0);
 
 				let toObjectSpace = new THREE.Matrix4().getInverse( this.selection[0].matrixWorld);
@@ -638,7 +640,7 @@ Potree.TransformationTool = class TransformationTool {
 				}
 
 				drag.pivot.copy(iOnLine);
-				//Potree.utils.debugSphere(viewer.scene.scene, drag.pivot, 0.05);
+				//Utils.debugSphere(viewer.scene.scene, drag.pivot, 0.05);
 			}
 		}
 	}
@@ -745,9 +747,9 @@ Potree.TransformationTool = class TransformationTool {
 			let domElement = this.viewer.renderer.domElement;
 			let mouse = this.viewer.inputHandler.mouse;
 
-			let center = selected.boundingBox.getCenter().clone().applyMatrix4(selected.matrixWorld);
+			let center = selected.boundingBox.getCenter(new THREE.Vector3()).clone().applyMatrix4(selected.matrixWorld);
 
-			this.scene.scale.copy(selected.boundingBox.getSize().multiply(selected.scale));
+			this.scene.scale.copy(selected.boundingBox.getSize(new THREE.Vector3()).multiply(selected.scale));
 			this.scene.position.copy(center);
 			this.scene.rotation.copy(selected.rotation);
 
@@ -759,11 +761,11 @@ Potree.TransformationTool = class TransformationTool {
 					let handle = this.handles[handleName];
 					let node = handle.node;
 
-					let handlePos = node.getWorldPosition();
+					let handlePos = node.getWorldPosition(new THREE.Vector3());
 					let distance = handlePos.distanceTo(camera.position);
-					let pr = Potree.utils.projectedRadius(1, camera, distance, domElement.clientWidth, domElement.clientHeight);
+					let pr = Utils.projectedRadius(1, camera, distance, domElement.clientWidth, domElement.clientHeight);
 
-					let ws = node.parent.getWorldScale();
+					let ws = node.parent.getWorldScale(new THREE.Vector3());
 
 					let s = (7 / pr);
 					let scale = new THREE.Vector3(s, s, s).divide(ws);
@@ -783,7 +785,7 @@ Potree.TransformationTool = class TransformationTool {
 				if(!this.dragging){
 					let tWorld = this.scene.matrixWorld;
 					let tObject = new THREE.Matrix4().getInverse(tWorld)
-					let camObjectPos = camera.getWorldPosition().applyMatrix4(tObject);
+					let camObjectPos = camera.getWorldPosition(new THREE.Vector3()).applyMatrix4(tObject);
 
 					let x = this.rotationHandles["rotation.x"].node.rotation;
 					let y = this.rotationHandles["rotation.y"].node.rotation;
@@ -836,7 +838,7 @@ Potree.TransformationTool = class TransformationTool {
 				}
 
 				{
-					let ray = Potree.utils.mouseToRay(mouse, camera, domElement.clientWidth, domElement.clientHeight);
+					let ray = Utils.mouseToRay(mouse, camera, domElement.clientWidth, domElement.clientHeight);
 					let raycaster = new THREE.Raycaster(ray.origin, ray.direction);
 					let intersects = raycaster.intersectObjects(this.pickVolumes.filter(v => v.visible), true);
 
@@ -864,7 +866,7 @@ Potree.TransformationTool = class TransformationTool {
 			{
 				let axisScale = (alignment) => {
 					let transformed = new THREE.Vector3(...alignment).applyMatrix4(selected.matrixWorld);
-					let distance = transformed.distanceTo(selected.getWorldPosition());
+					let distance = transformed.distanceTo(selected.getWorldPosition(new THREE.Vector3()));
 
 					return distance;
 				};

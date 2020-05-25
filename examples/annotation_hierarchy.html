@@ -9,7 +9,6 @@
 
 	<link rel="stylesheet" type="text/css" href="../build/potree/potree.css">
 	<link rel="stylesheet" type="text/css" href="../libs/jquery-ui/jquery-ui.min.css">
-	<link rel="stylesheet" type="text/css" href="../libs/perfect-scrollbar/css/perfect-scrollbar.css">
 	<link rel="stylesheet" type="text/css" href="../libs/openlayers3/ol.css">
 	<link rel="stylesheet" type="text/css" href="../libs/spectrum/spectrum.css">
 	<link rel="stylesheet" type="text/css" href="../libs/jstree/themes/mixed/style.css">
@@ -19,7 +18,6 @@
 <body>
 	<script src="../libs/jquery/jquery-3.1.1.min.js"></script>
 	<script src="../libs/spectrum/spectrum.js"></script>
-	<script src="../libs/perfect-scrollbar/js/perfect-scrollbar.jquery.js"></script>
 	<script src="../libs/jquery-ui/jquery-ui.min.js"></script>
 	<script src="../libs/three.js/build/three.min.js"></script>
 	<script src="../libs/other/BinaryHeap.js"></script>
@@ -233,7 +231,7 @@
 				aRoot.add(aTreeReturns);
 				aTreeReturns.domElement.find(".annotation-action-icon:first").css("filter", "invert(1)");
 
-				let volume = new Potree.Volume();
+				let volume = new Potree.BoxVolume();
 				volume.position.set(675755.4039368022, 3937586.911614576, 85);
 				volume.scale.set(119.87189835418388, 68.3925257233834, 51.757483718373265);
 				volume.rotation.set(0, 0, 0.8819755090987993, "XYZ");

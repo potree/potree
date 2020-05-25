@@ -1,5 +1,9 @@
 
-Potree.Measure = class Measure extends THREE.Object3D {
+import {TextSprite} from "../TextSprite.js";
+import {Utils} from "../utils.js";
+
+
+export class Measure extends THREE.Object3D {
 	constructor () {
 		super();
 
@@ -18,7 +22,7 @@ Potree.Measure = class Measure extends THREE.Object3D {
 		this.sphereGeometry = new THREE.SphereGeometry(0.4, 10, 10);
 		this.color = new THREE.Color(0xff0000);
 
-		this.lengthUnit = {code: 'm'};
+		//this.lengthUnit = {code: 'm'};
 
 		this.spheres = [];
 		this.edges = [];
@@ -49,7 +53,7 @@ Potree.Measure = class Measure extends THREE.Object3D {
 			}
 
 			{ // height label
-				this.heightLabel = new Potree.TextSprite('');
+				this.heightLabel = new TextSprite('');
 				this.heightLabel.setBorderColor({r: 0, g: 0, b: 0, a: 0.8});
 				this.heightLabel.setBackgroundColor({r: 0, g: 0, b: 0, a: 0.3});
 				this.heightLabel.setTextColor({r: 180, g: 220, b: 180, a: 1.0});
@@ -60,7 +64,7 @@ Potree.Measure = class Measure extends THREE.Object3D {
 			}
 		}
 
-		this.areaLabel = new Potree.TextSprite('');
+		this.areaLabel = new TextSprite('');
 		this.areaLabel.setBorderColor({r: 0, g: 0, b: 0, a: 0.8});
 		this.areaLabel.setBackgroundColor({r: 0, g: 0, b: 0, a: 0.3});
 		this.areaLabel.setTextColor({r: 180, g: 220, b: 180, a: 1.0});
@@ -72,7 +76,7 @@ Potree.Measure = class Measure extends THREE.Object3D {
 
 	createSphereMaterial () {
 		let sphereMaterial = new THREE.MeshLambertMaterial({
-			shading: THREE.SmoothShading,
+			//shading: THREE.SmoothShading,
 			color: this.color,
 			depthTest: false,
 			depthWrite: false}
@@ -111,7 +115,7 @@ Potree.Measure = class Measure extends THREE.Object3D {
 		}
 
 		{ // edge labels
-			let edgeLabel = new Potree.TextSprite();
+			let edgeLabel = new TextSprite();
 			edgeLabel.setBorderColor({r: 0, g: 0, b: 0, a: 0.8});
 			edgeLabel.setBackgroundColor({r: 0, g: 0, b: 0, a: 0.3});
 			edgeLabel.material.depthTest = false;
@@ -121,7 +125,7 @@ Potree.Measure = class Measure extends THREE.Object3D {
 		}
 
 		{ // angle labels
-			let angleLabel = new Potree.TextSprite();
+			let angleLabel = new TextSprite();
 			angleLabel.setBorderColor({r: 0, g: 0, b: 0, a: 0.8});
 			angleLabel.setBackgroundColor({r: 0, g: 0, b: 0, a: 0.3});
 			angleLabel.material.depthTest = false;
@@ -132,7 +136,7 @@ Potree.Measure = class Measure extends THREE.Object3D {
 		}
 
 		{ // coordinate labels
-			let coordinateLabel = new Potree.TextSprite();
+			let coordinateLabel = new TextSprite();
 			coordinateLabel.setBorderColor({r: 0, g: 0, b: 0, a: 0.8});
 			coordinateLabel.setBackgroundColor({r: 0, g: 0, b: 0, a: 0.3});
 			coordinateLabel.material.depthTest = false;
@@ -144,7 +148,7 @@ Potree.Measure = class Measure extends THREE.Object3D {
 
 		{ // Event Listeners
 			let drag = (e) => {
-				let I = Potree.utils.getMousePointCloudIntersection(
+				let I = Utils.getMousePointCloudIntersection(
 					e.drag.end, 
 					e.viewer.scene.getActiveCamera(), 
 					e.viewer, 
@@ -312,8 +316,7 @@ Potree.Measure = class Measure extends THREE.Object3D {
 			{ // coordinate labels
 				let coordinateLabel = this.coordinateLabels[0];
 				
-				let msg = position.toArray().map(p => Potree.utils.addCommas(p.toFixed(2))).join(", ");
-				//let msg = Potree.utils.addCommas(position.z.toFixed(2) + " " + this.lengthUnit.code);
+				let msg = position.toArray().map(p => Utils.addCommas(p.toFixed(2))).join(" / ");
 				coordinateLabel.setText(msg);
 
 				coordinateLabel.visible = this.showCoordinates;
@@ -370,7 +373,15 @@ Potree.Measure = class Measure extends THREE.Object3D {
 				let distance = point.position.distanceTo(nextPoint.position);
 
 				edgeLabel.position.copy(center);
-				edgeLabel.setText(Potree.utils.addCommas(distance.toFixed(2)) + ' ' + this.lengthUnit.code);
+
+				let suffix = "";
+				if(this.lengthUnit != null && this.lengthUnitDisplay != null){
+					distance = distance / this.lengthUnit.unitspermeter * this.lengthUnitDisplay.unitspermeter;  //convert to meters then to the display unit
+					suffix = this.lengthUnitDisplay.code;
+				}
+
+				let txtLength = Utils.addCommas(distance.toFixed(2));
+				edgeLabel.setText(`${txtLength} ${suffix}`);
 				edgeLabel.visible = this.showDistances && (index < lastIndex || this.closed) && this.points.length >= 2 && distance > 0;
 			}
 
@@ -388,7 +399,7 @@ Potree.Measure = class Measure extends THREE.Object3D {
 				let labelPos = point.position.clone().add(dir.multiplyScalar(dist));
 				angleLabel.position.copy(labelPos);
 
-				let msg = Potree.utils.addCommas((angle * (180.0 / Math.PI)).toFixed(1)) + '\u00B0';
+				let msg = Utils.addCommas((angle * (180.0 / Math.PI)).toFixed(1)) + '\u00B0';
 				angleLabel.setText(msg);
 
 				angleLabel.visible = this.showAngles && (index < lastIndex || this.closed) && this.points.length >= 3 && angle > 0;
@@ -428,7 +439,15 @@ Potree.Measure = class Measure extends THREE.Object3D {
 
 				let heightLabelPosition = start.clone().add(end).multiplyScalar(0.5);
 				this.heightLabel.position.copy(heightLabelPosition);
-				let msg = Potree.utils.addCommas(height.toFixed(2)) + ' ' + this.lengthUnit.code;
+
+				let suffix = "";
+				if(this.lengthUnit != null && this.lengthUnitDisplay != null){
+					height = height / this.lengthUnit.unitspermeter * this.lengthUnitDisplay.unitspermeter;  //convert to meters then to the display unit
+					suffix = this.lengthUnitDisplay.code;
+				}
+
+				let txtHeight = Utils.addCommas(height.toFixed(2));
+				let msg = `${txtHeight} ${suffix}`;
 				this.heightLabel.setText(msg);
 			}
 		}
@@ -436,7 +455,16 @@ Potree.Measure = class Measure extends THREE.Object3D {
 		{ // update area label
 			this.areaLabel.position.copy(centroid);
 			this.areaLabel.visible = this.showArea && this.points.length >= 3;
-			let msg = Potree.utils.addCommas(this.getArea().toFixed(1)) + ' ' + this.lengthUnit.code + '\u00B2';
+			let area = this.getArea();
+
+			let suffix = "";
+			if(this.lengthUnit != null && this.lengthUnitDisplay != null){
+				area = area / Math.pow(this.lengthUnit.unitspermeter, 2) * Math.pow(this.lengthUnitDisplay.unitspermeter, 2);  //convert to square meters then to the square display unit
+				suffix = this.lengthUnitDisplay.code;
+			}
+
+			let txtArea = Utils.addCommas(area.toFixed(1));
+			let msg =  `${txtArea} ${suffix}\u00B2`;
 			this.areaLabel.setText(msg);
 		}
 	};
@@ -512,4 +540,5 @@ Potree.Measure = class Measure extends THREE.Object3D {
 		this._showDistances = value;
 		this.update();
 	}
-};
+
+}

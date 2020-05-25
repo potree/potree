@@ -1,5 +1,10 @@
 
-Potree.VolumeTool = class VolumeTool extends THREE.EventDispatcher {
+
+import {Volume, BoxVolume} from "./Volume.js";
+import {Utils} from "../utils.js";
+import { EventDispatcher } from "../EventDispatcher.js";
+
+export class VolumeTool extends EventDispatcher{
 	constructor (viewer) {
 		super();
 
@@ -30,7 +35,7 @@ Potree.VolumeTool = class VolumeTool extends THREE.EventDispatcher {
 		}
 
 		this.viewer.inputHandler.addEventListener('delete', e => {
-			let volumes = e.selection.filter(e => (e instanceof Potree.Volume));
+			let volumes = e.selection.filter(e => (e instanceof Volume));
 			volumes.forEach(e => this.viewer.scene.removeVolume(e));
 		});
 
@@ -53,7 +58,13 @@ Potree.VolumeTool = class VolumeTool extends THREE.EventDispatcher {
 	}
 
 	startInsertion (args = {}) {
-		let volume = new Potree.Volume();
+		let volume;
+		if(args.type){
+			volume = new args.type();
+		}else{
+			volume = new BoxVolume();
+		}
+		
 		volume.clip = args.clip || false;
 		volume.name = args.name || 'Volume';
 
@@ -72,16 +83,17 @@ Potree.VolumeTool = class VolumeTool extends THREE.EventDispatcher {
 		let drag = e => {
 			let camera = this.viewer.scene.getActiveCamera();
 			
-			let I = Potree.utils.getMousePointCloudIntersection(
+			let I = Utils.getMousePointCloudIntersection(
 				e.drag.end, 
 				this.viewer.scene.getActiveCamera(), 
 				this.viewer, 
-				this.viewer.scene.pointclouds);
+				this.viewer.scene.pointclouds, 
+				{pickClipped: false});
 
 			if (I) {
 				volume.position.copy(I.location);
 
-				let wp = volume.getWorldPosition().applyMatrix4(camera.matrixWorldInverse);
+				let wp = volume.getWorldPosition(new THREE.Vector3()).applyMatrix4(camera.matrixWorldInverse);
 				// let pp = new THREE.Vector4(wp.x, wp.y, wp.z).applyMatrix4(camera.projectionMatrix);
 				let w = Math.abs((wp.z / 5));
 				volume.scale.set(w, w, w);
@@ -126,13 +138,15 @@ Potree.VolumeTool = class VolumeTool extends THREE.EventDispatcher {
 			{
 
 				let distance = label.position.distanceTo(camera.position);
-				let pr = Potree.utils.projectedRadius(1, camera, distance, clientWidth, clientHeight);
+				let pr = Utils.projectedRadius(1, camera, distance, clientWidth, clientHeight);
 
 				let scale = (70 / pr);
 				label.scale.set(scale, scale, scale);
 			}
 
-			let text = Potree.utils.addCommas(volume.getVolume().toFixed(3)) + '\u00B3';
+			let calculatedVolume = volume.getVolume();
+			calculatedVolume = calculatedVolume / Math.pow(this.viewer.lengthUnit.unitspermeter, 3) * Math.pow(this.viewer.lengthUnitDisplay.unitspermeter, 3);  //convert to cubic meters then to the cubic display unit
+			let text = Utils.addCommas(calculatedVolume.toFixed(3)) + ' ' + this.viewer.lengthUnitDisplay.code + '\u00B3';
 			label.setText(text);
 		}
 	}
@@ -141,4 +155,4 @@ Potree.VolumeTool = class VolumeTool extends THREE.EventDispatcher {
 		this.viewer.renderer.render(this.scene, this.viewer.scene.getActiveCamera(), params.renderTarget);
 	}
 
-};
+}

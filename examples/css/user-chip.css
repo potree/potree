@@ -1,0 +1,17 @@
+.user-chip {
+  display: flex;
+  align-items: center;
+}
+
+.user-chip--selected {
+  background-color: #76d2bb;
+}
+
+.user-image {
+  width: 30px;
+  max-width: 30px;
+  height: 30px;
+  max-height: 30px;
+  border-width: 0px;
+  display: inline-block;
+}

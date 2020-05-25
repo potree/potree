@@ -1,5 +1,5 @@
 
-Potree.PolygonClipVolume = class extends THREE.Object3D{
+export class PolygonClipVolume extends THREE.Object3D{
 	
 	constructor(camera){
 		super();

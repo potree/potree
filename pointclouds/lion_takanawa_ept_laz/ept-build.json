@@ -1,0 +1,7 @@
+{
+	"overflowDepth" : 0,
+	"overflowThreshold" : 32768,
+	"software" : "Entwine",
+	"trustHeaders" : true,
+	"version" : "2.0.0"
+}

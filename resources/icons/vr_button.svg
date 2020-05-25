@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="64"
+   height="64"
+   id="svg2"
+   version="1.1"
+   inkscape:version="0.92.4 (5da689c313, 2019-01-14)"
+   sodipodi:docname="vr_button.svg">
+  <defs
+     id="defs4" />
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="5.6"
+     inkscape:cx="56.4906"
+     inkscape:cy="8.6390114"
+     inkscape:document-units="px"
+     inkscape:current-layer="layer1"
+     showgrid="false"
+     inkscape:window-width="2560"
+     inkscape:window-height="1377"
+     inkscape:window-x="-8"
+     inkscape:window-y="-8"
+     inkscape:window-maximized="1" />
+  <metadata
+     id="metadata7">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(0,-988.36218)">
+    <path
+       sodipodi:type="inkscape:offset"
+       inkscape:radius="1.1206636"
+       inkscape:original="M 12.8125 997.1875 C 10.612493 997.1875 8.8125 998.95624 8.8125 1001.1562 L 8.8125 1039.5625 C 8.8125 1041.7625 10.612493 1043.5312 12.8125 1043.5312 L 51.1875 1043.5312 C 53.387507 1043.5312 55.1875 1041.7625 55.1875 1039.5625 L 55.1875 1001.1562 C 55.1875 998.95624 53.387507 997.1875 51.1875 997.1875 L 12.8125 997.1875 z "
+       style="fill:none;stroke:#000000;stroke-width:2;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:3"
+       id="path3811"
+       d="m 12.8125,996.0625 c -2.80066,0 -5.125,2.28251 -5.125,5.0937 l 0,38.4063 c 0,2.8113 2.324353,5.0937 5.125,5.0937 l 38.375,0 c 2.800647,0 5.125,-2.2824 5.125,-5.0937 l 0,-38.4063 c 0,-2.81119 -2.32434,-5.0937 -5.125,-5.0937 l -38.375,0 z"
+       transform="matrix(1.2641814,0,0,1.2649957,-8.4538063,-270.38804)" />
+    <rect
+       style="fill:none;stroke:#ffffff;stroke-width:2.52917719;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:3"
+       id="rect2985"
+       width="58.588169"
+       height="58.625908"
+       x="2.7059135"
+       y="991.05286"
+       ry="5.0234642" />
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:43.03525543px;line-height:1.25;font-family:Calibri;-inkscape-font-specification:'Calibri Bold';letter-spacing:0px;word-spacing:0px;fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:2;stroke-opacity:1;stroke-miterlimit:4;stroke-dasharray:none"
+       x="7.0184255"
+       y="1035.6426"
+       id="text819"><tspan
+         sodipodi:role="line"
+         id="tspan817"
+         x="7.0184255"
+         y="1035.6426"
+         style="stroke-width:2;fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-opacity:1;stroke-miterlimit:4;stroke-dasharray:none">VR</tspan></text>
+  </g>
+</svg>

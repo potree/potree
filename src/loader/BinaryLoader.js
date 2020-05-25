@@ -1,9 +1,15 @@
 
-Potree.BinaryLoader = class BinaryLoader{
+import {Version} from "../Version.js";
+import {XHRFactory} from "../XHRFactory.js";
+import {workerPool} from "../WorkerPool.js"
+
+const BinaryDecoderWorker = require('worker-loader?inline!../workers/BinaryDecoderWorker.js')
+
+export class BinaryLoader{
 
 	constructor(version, boundingBox, scale){
 		if (typeof (version) === 'string') {
-			this.version = new Potree.Version(version);
+			this.version = new Version(version);
 		} else {
 			this.version = version;
 		}
@@ -13,6 +19,7 @@ Potree.BinaryLoader = class BinaryLoader{
 	}
 
 	load(node){
+		return new Promise((resolve, reject)=>{
 		if (node.loaded) {
 			return;
 		}
@@ -23,7 +30,7 @@ Potree.BinaryLoader = class BinaryLoader{
 			url += '.bin';
 		}
 
-		let xhr = Potree.XHRFactory.createXMLHttpRequest();
+		let xhr = XHRFactory.createXMLHttpRequest();
 		xhr.open('GET', url, true);
 		xhr.responseType = 'arraybuffer';
 		xhr.overrideMimeType('text/plain; charset=x-user-defined');
@@ -31,7 +38,9 @@ Potree.BinaryLoader = class BinaryLoader{
 			if (xhr.readyState === 4) {
 				if((xhr.status === 200 || xhr.status === 0) &&  xhr.response !== null){
 					let buffer = xhr.response;
-					this.parse(node, buffer);
+					this.parse(node, buffer).then(()=>{
+						resolve();
+					});
 				} else {
 					throw new Error(`Failed to load file! HTTP status: ${xhr.status}, file: ${url}`);
 				}
@@ -43,56 +52,75 @@ Potree.BinaryLoader = class BinaryLoader{
 		} catch (e) {
 			console.log('fehler beim laden der punktwolke: ' + e);
 		}
+		});
 	};
 
 	parse(node, buffer){
+		return new Promise((resolve, reject)=>{
 		let pointAttributes = node.pcoGeometry.pointAttributes;
-		let numPoints = buffer.byteLength / node.pcoGeometry.pointAttributes.byteSize;
 
-		if (this.version.upTo('1.5')) {
-			node.numPoints = numPoints;
-		}
+		// if (this.version.upTo('1.5')) {
+		// 	let numPoints = buffer.byteLength / pointAttributes.byteSize;
+		// 	node.numPoints = numPoints;
+		// }
 
-		let workerPath = Potree.scriptPath + '/workers/BinaryDecoderWorker.js';
-		let worker = Potree.workerPool.getWorker(workerPath);
-
+		let workerCls = BinaryDecoderWorker;
+		let worker = workerPool.getWorker(workerCls);
+		const version  = this.version;
 		worker.onmessage = function (e) {
+			workerPool.returnWorker(workerCls, worker);
 
 			let data = e.data;
+			node.parse(data, version)
+			resolve();
+			/*
+
 			let buffers = data.attributeBuffers;
 			let tightBoundingBox = new THREE.Box3(
 				new THREE.Vector3().fromArray(data.tightBoundingBox.min),
 				new THREE.Vector3().fromArray(data.tightBoundingBox.max)
 			);
 
-			Potree.workerPool.returnWorker(workerPath, worker);
-
 			let geometry = new THREE.BufferGeometry();
 
 			for(let property in buffers){
 				let buffer = buffers[property].buffer;
 
-				if (parseInt(property) === Potree.PointAttributeNames.POSITION_CARTESIAN) {
+				if (parseInt(property) === PointAttributeNames.POSITION_CARTESIAN) {
 					geometry.addAttribute('position', new THREE.BufferAttribute(new Float32Array(buffer), 3));
-				} else if (parseInt(property) === Potree.PointAttributeNames.COLOR_PACKED) {
+				} else if (parseInt(property) === PointAttributeNames.COLOR_PACKED) {
 					geometry.addAttribute('color', new THREE.BufferAttribute(new Uint8Array(buffer), 4, true));
-				} else if (parseInt(property) === Potree.PointAttributeNames.INTENSITY) {
+				} else if (parseInt(property) === PointAttributeNames.INTENSITY) {
 					geometry.addAttribute('intensity', new THREE.BufferAttribute(new Float32Array(buffer), 1));
-				} else if (parseInt(property) === Potree.PointAttributeNames.CLASSIFICATION) {
+				} else if (parseInt(property) === PointAttributeNames.CLASSIFICATION) {
 					geometry.addAttribute('classification', new THREE.BufferAttribute(new Uint8Array(buffer), 1));
-				} else if (parseInt(property) === Potree.PointAttributeNames.NORMAL_SPHEREMAPPED) {
+				} else if (parseInt(property) === PointAttributeNames.RETURN_NUMBER) {
+					geometry.addAttribute('returnNumber', new THREE.BufferAttribute(new Uint8Array(buffer), 1));
+				} else if (parseInt(property) === PointAttributeNames.NUMBER_OF_RETURNS) {
+					geometry.addAttribute('numberOfReturns', new THREE.BufferAttribute(new Uint8Array(buffer), 1));
+				} else if (parseInt(property) === PointAttributeNames.SOURCE_ID) {
+					geometry.addAttribute('pointSourceID', new THREE.BufferAttribute(new Uint16Array(buffer), 1));
+				} else if (parseInt(property) === PointAttributeNames.NORMAL_SPHEREMAPPED) {
 					geometry.addAttribute('normal', new THREE.BufferAttribute(new Float32Array(buffer), 3));
-				} else if (parseInt(property) === Potree.PointAttributeNames.NORMAL_OCT16) {
+				} else if (parseInt(property) === PointAttributeNames.NORMAL_OCT16) {
 					geometry.addAttribute('normal', new THREE.BufferAttribute(new Float32Array(buffer), 3));
-				} else if (parseInt(property) === Potree.PointAttributeNames.NORMAL) {
+				} else if (parseInt(property) === PointAttributeNames.NORMAL) {
 					geometry.addAttribute('normal', new THREE.BufferAttribute(new Float32Array(buffer), 3));
-				} else if (parseInt(property) === Potree.PointAttributeNames.INDICES) {
+				} else if (parseInt(property) === PointAttributeNames.INDICES) {
 					let bufferAttribute = new THREE.BufferAttribute(new Uint8Array(buffer), 4);
 					bufferAttribute.normalized = true;
 					geometry.addAttribute('indices', bufferAttribute);
-				} else if (parseInt(property) === Potree.PointAttributeNames.SPACING) {
+				} else if (parseInt(property) === PointAttributeNames.SPACING) {
 					let bufferAttribute = new THREE.BufferAttribute(new Float32Array(buffer), 1);
 					geometry.addAttribute('spacing', bufferAttribute);
+				} else if (parseInt(property) === PointAttributeNames.GPS_TIME) {
+					let bufferAttribute = new THREE.BufferAttribute(new Float32Array(buffer), 1);
+					geometry.addAttribute('gpsTime', bufferAttribute);
+
+					node.gpsTime = {
+						offset: buffers[property].offset,
+						range: buffers[property].range,
+					};
 				}
 			}
 
@@ -110,6 +138,7 @@ Potree.BinaryLoader = class BinaryLoader{
 			node.loading = false;
 			node.estimatedSpacing = data.estimatedSpacing;
 			Potree.numNodesLoading--;
+			*/
 		};
 
 		let message = {
@@ -124,8 +153,9 @@ Potree.BinaryLoader = class BinaryLoader{
 			name: node.name
 		};
 		worker.postMessage(message, [message.buffer]);
+		});
 	};
 
 	
-};
+}
 

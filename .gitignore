@@ -1,4 +1,5 @@
 /build
+/dist
 /test
 node_modules
 docs/.marking_your_own_pointcloud_loader.md.html
@@ -15,6 +16,8 @@ libs/CesiumUnminified
 /pointclouds/D
 /pointclouds/wrneustadt
 /pointclouds/alszeile
+/pointclouds/heidentor
 /examples/page.html
 /resources/icons/index.html
 /examples/page.html
+pointclouds/C

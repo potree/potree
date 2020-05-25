@@ -1,4 +1,8 @@
 
+
+import {Version} from "../Version.js";
+import {XHRFactory} from "../XHRFactory.js";
+
 /**
  * laslaz code taken and adapted from plas.io js-laslaz
  *	http://plas.io/
@@ -8,16 +12,18 @@
  *
  */
 
-Potree.LasLazLoader = class LasLazLoader {
+export class LasLazLoader {
+
 	constructor (version) {
 		if (typeof (version) === 'string') {
-			this.version = new Potree.Version(version);
+			this.version = new Version(version);
 		} else {
 			this.version = version;
 		}
 	}
 
 	static progressCB () {
+
 	}
 
 	load (node) {
@@ -33,13 +39,13 @@ Potree.LasLazLoader = class LasLazLoader {
 			url += '.' + pointAttributes.toLowerCase();
 		}
 
-		let xhr = Potree.XHRFactory.createXMLHttpRequest();
+		let xhr = XHRFactory.createXMLHttpRequest();
 		xhr.open('GET', url, true);
 		xhr.responseType = 'arraybuffer';
 		xhr.overrideMimeType('text/plain; charset=x-user-defined');
 		xhr.onreadystatechange = () => {
 			if (xhr.readyState === 4) {
-				if (xhr.status === 200) {
+				if (xhr.status === 200 || xhr.status === 0) {
 					let buffer = xhr.response;
 					this.parse(node, buffer);
 				} else {
@@ -53,7 +59,7 @@ Potree.LasLazLoader = class LasLazLoader {
 
 	parse(node, buffer){
 		let lf = new LASFile(buffer);
-		let handler = new Potree.LasLazBatcher(node);
+		let handler = new LasLazBatcher(node);
 
 
 		//
@@ -119,7 +125,7 @@ Potree.LasLazLoader = class LasLazLoader {
 						header.mins, header.maxs));
 
 					totalRead += data.count;
-					Potree.LasLazLoader.progressCB(totalRead / totalToRead);
+					LasLazLoader.progressCB(totalRead / totalToRead);
 
 					if (data.hasMoreData) {
 						return reader();
@@ -137,7 +143,7 @@ Potree.LasLazLoader = class LasLazLoader {
 			let lf = v[0];
 			// we're done loading this file
 			//
-			Potree.LasLazLoader.progressCB(1);
+			LasLazLoader.progressCB(1);
 
 			// Close it
 			return lf.close().then(function () {
@@ -163,7 +169,8 @@ Potree.LasLazLoader = class LasLazLoader {
 	}
 };
 
-Potree.LasLazBatcher = class LasLazBatcher {
+export class LasLazBatcher{
+
 	constructor (node) {
 		this.node = node;
 	}
@@ -229,4 +236,4 @@ Potree.LasLazBatcher = class LasLazBatcher {
 		};
 		worker.postMessage(message, [message.buffer]);
 	};
-};
+}

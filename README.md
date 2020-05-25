@@ -18,7 +18,9 @@ Contact: Markus Schütz (mschuetz@potree.org)
 
 Reference: [Potree: Rendering Large Point Clouds in Web Browsers](https://www.cg.tuwien.ac.at/research/publications/2016/SCHUETZ-2016-POT/SCHUETZ-2016-POT-thesis.pdf)
 
-## Build
+## Getting Started
+
+### Build and Run
 
 Make sure you have [node.js](http://nodejs.org/) installed
 
@@ -26,18 +28,28 @@ Install all dependencies, as specified in package.json,
 then, install the gulp build tool:
 
     cd <potree_directory>
-    npm install 
-    npm install -g gulp
+    yarn install
+    yarn build:dev
 
-Use the ```gulp watch``` command to 
+Use the ```yarn build:dev``` command to 
 
-* create ./build/potree 
+* create ./dist 
 * watch for changes to the source code and automatically create a new build on change
-* start a web server at localhost:1234. Go to http://localhost:1234/examples/ to test the examples.
+* start a web server at localhost:1234. 
 
 ```
 gulp watch
 ```
+
+Go to http://localhost:1234/examples/ to test the examples.
+
+### Convert
+
+Download [PotreeConverter](https://github.com/potree/PotreeConverter) and run it like this:
+
+    ./PotreeConverter.exe C:/pointclouds/data.las -o C:/pointclouds/data_converted
+
+Copy the converted directory into &lt;potreeDirectory&gt;/pointclouds/data_converted. Then, duplicate and rename one of the examples and modify the path in the html file to your own point cloud.
 
 ## Downloads
 

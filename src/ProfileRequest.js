@@ -1,5 +1,7 @@
 
-Potree.ProfileData = class ProfileData {
+import {Points} from "./Points";
+
+export class ProfileData {
 	constructor (profile) {
 		this.profile = profile;
 
@@ -28,7 +30,7 @@ Potree.ProfileData = class ProfileData {
 				cutPlane: cutPlane,
 				halfPlane: halfPlane,
 				length: length,
-				points: new Potree.Points()
+				points: new Points()
 			};
 
 			this.segments.push(segment);
@@ -45,13 +47,13 @@ Potree.ProfileData = class ProfileData {
 	}
 };
 
-Potree.ProfileRequest = class ProfileRequest {
+export class ProfileRequest {
 	constructor (pointcloud, profile, maxDepth, callback) {
 		this.pointcloud = pointcloud;
 		this.profile = profile;
 		this.maxDepth = maxDepth || Number.MAX_VALUE;
 		this.callback = callback;
-		this.temporaryResult = new Potree.ProfileData(this.profile);
+		this.temporaryResult = new ProfileData(this.profile);
 		this.pointsServed = 0;
 		this.highestLevelServed = 0;
 
@@ -125,11 +127,15 @@ Potree.ProfileRequest = class ProfileRequest {
 			if (node.loaded) {
 				// add points to result
 				intersectedNodes.push(node);
-				Potree.getLRU().touch(node);
+				exports.lru.touch(node);
 				this.highestLevelServed = Math.max(node.getLevel(), this.highestLevelServed);
 
-				let doTraverse = (node.level % node.pcoGeometry.hierarchyStepSize) === 0 && node.hasChildren;
-				doTraverse = doTraverse || node.getLevel() === 0;
+				var geom = node.pcoGeometry;
+				var hierarchyStepSize = geom ? geom.hierarchyStepSize : 1;
+
+				var doTraverse = node.getLevel() === 0 ||
+					(node.level % hierarchyStepSize === 0 && node.hasChildren);
+
 				if (doTraverse) {
 					this.traverse(node);
 				}
@@ -150,7 +156,7 @@ Potree.ProfileRequest = class ProfileRequest {
 			if (this.temporaryResult.size() > 100) {
 				this.pointsServed += this.temporaryResult.size();
 				this.callback.onProgress({request: this, points: this.temporaryResult});
-				this.temporaryResult = new Potree.ProfileData(this.profile);
+				this.temporaryResult = new ProfileData(this.profile);
 			}
 		}
 
@@ -160,7 +166,7 @@ Potree.ProfileRequest = class ProfileRequest {
 			if (this.temporaryResult.size() > 0) {
 				this.pointsServed += this.temporaryResult.size();
 				this.callback.onProgress({request: this, points: this.temporaryResult});
-				this.temporaryResult = new Potree.ProfileData(this.profile);
+				this.temporaryResult = new ProfileData(this.profile);
 			}
 
 			this.callback.onFinish({request: this});
@@ -193,7 +199,7 @@ Potree.ProfileRequest = class ProfileRequest {
 				view[i * 3 + 0],
 				view[i * 3 + 1],
 				view[i * 3 + 2]);
-		
+
 			pos.applyMatrix4(matrix);
 			let distance = Math.abs(segment.cutPlane.distanceToPoint(pos));
 			let centerDistance = Math.abs(segment.halfPlane.distanceToPoint(pos));
@@ -253,12 +259,12 @@ Potree.ProfileRequest = class ProfileRequest {
 
 				{ // skip if current node doesn't intersect current segment
 					let bbWorld = node.boundingBox.clone().applyMatrix4(this.pointcloud.matrixWorld);
-					let bsWorld = bbWorld.getBoundingSphere();
+					let bsWorld = bbWorld.getBoundingSphere(new THREE.Sphere());
 
 					let start = new THREE.Vector3(segment.start.x, segment.start.y, bsWorld.center.z);
 					let end = new THREE.Vector3(segment.end.x, segment.end.y, bsWorld.center.z);
-						
-					let closest = new THREE.Line3(start, end).closestPointToPoint(bsWorld.center, true);
+
+					let closest = new THREE.Line3(start, end).closestPointToPoint(bsWorld.center, true, new THREE.Vector3());
 					let distance = closest.distanceTo(bsWorld.center);
 
 					let intersects = (distance < (bsWorld.radius + target.profile.width));
@@ -279,7 +285,7 @@ Potree.ProfileRequest = class ProfileRequest {
 				let sv = new THREE.Vector3().subVectors(segment.end, segment.start).setZ(0);
 				let segmentDir = sv.clone().normalize();
 
-				let points = new Potree.Points();
+				let points = new Points();
 
 				let nodeMatrix = new THREE.Matrix4().makeTranslation(...node.boundingBox.min.toArray());
 
@@ -331,7 +337,7 @@ Potree.ProfileRequest = class ProfileRequest {
 					for(let i = 0; i < accepted.length; i++){
 
 						let index = accepted[i];
-						
+
 						let start = index * numElements;
 						let end = start + numElements;
 						let sub = source.subarray(start, end);
@@ -380,4 +386,4 @@ Potree.ProfileRequest = class ProfileRequest {
 			this.pointcloud.profileRequests.splice(index, 1);
 		}
 	};
-};
+}

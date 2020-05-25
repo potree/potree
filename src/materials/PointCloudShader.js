@@ -1,9 +1,14 @@
 
+import {
+	GLShader,
+	sgFactory,
+} from '@zeainc/zea-engine'
+
 import {Shaders} from "../../build/shaders/shaders.js";
 
 // Note: shaders are registered to a global factory, so thier
 // names need to be globally unique. 
-export class Potree_PointCloudShader extends ZeaEngine.GLShader {
+export class Potree_PointCloudShader extends GLShader {
   constructor (gl) {
     super(gl);
     this.__shaderStages['VERTEX_SHADER'] = Shaders['pointcloud.vs'];
@@ -104,4 +109,4 @@ export class Potree_PointCloudShader extends ZeaEngine.GLShader {
   }
 }
 
-ZeaEngine.sgFactory.registerClass('Potree_PointCloudShader', Potree_PointCloudShader)
+sgFactory.registerClass('Potree_PointCloudShader', Potree_PointCloudShader)

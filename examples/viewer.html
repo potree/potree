@@ -10,9 +10,9 @@
 </head>
 
 <body>
-	<script src="../node_modules/@zeainc/zea-engine/dist/zea-engine.js"></script>
+	<!-- <script src="../node_modules/@zeainc/zea-engine/dist/zea-engine.js"></script> -->
 	<!-- <script src="../build/potree/potree.js"></script> -->
-	<script src="../dist/zea-potree.js"></script>
+	<!-- <script src="../dist/zea-potree.js"></script> -->
 	
 	<link rel="stylesheet" href="./css/third-party/tachyons.min.css"/>
 	<link rel="stylesheet" href="./css/third-party/icon_family_Material_Icons.css">
@@ -47,25 +47,28 @@
 		</div> 
 	  </div> 
 	
-	<script>
+	<script type="module">
+
+import { Color, Vec3, Mat4, Quat, Scene, GLRenderer, BinReader, PassType, EnvMap } from "../test-libs/zea-engine/dist/index.esm.js"
+import { PotreeAsset, GLPotreePass } from "../test-libs/zea-pointclouds/dist/index.rawimport.js"
 	
-		const scene = new ZeaEngine.Scene();
+		const scene = new Scene();
 		scene.setupGrid(600, 50);
 
-		const renderer = new ZeaEngine.GLRenderer(document.getElementById("viewport"), {
+		const renderer = new GLRenderer(document.getElementById("viewport"), {
 			enableTextures:false
 		});
-		const potreePass = new ZeaPotree.GLPotreePass();
+		const potreePass = new GLPotreePass();
 		// potreePass.setPointBudget(1*1000*1000);
-		renderer.addPass(potreePass, ZeaEngine.PassType.OPAQUE);
+		renderer.addPass(potreePass, PassType.OPAQUE);
 		renderer.setScene(scene);
 		renderer.resumeDrawing();
 
-		const potreeAsset = new ZeaPotree.PotreeAsset();
+		const potreeAsset = new PotreeAsset();
 		scene.getRoot().addChild(potreeAsset);
 		
 		const urlParams = new URLSearchParams(window.location.search);
-		const file = urlParams.get('file');
+		const file = urlParams.get('file') || 'Cloud_10mm';
 		// Load and add point cloud to scene
 		let url;
 		switch (file) {
@@ -94,6 +97,10 @@
 			url = "http://5.9.65.151/mschuetz/potree/resources/pointclouds/faro/westend_palais/cloud.js"
 			break;
 			}
+		case 'Cloud_10mm':{
+			url = "https://storage.googleapis.com/visualive-tmp/BuildIT/Cloud_10mm/cloud.js"
+			break;
+			}
 		}
 		// url = "../pointclouds/vol_total/cloud.js"
 		// url = "http://www.kkapc.co.jp/potree-1.5RC/pointclouds/apc_tatumi/cloud.js" // No CORS
@@ -115,7 +122,7 @@
 			potreePass.setViewport(renderer.getViewport());
 
 			// setTimeout(()=>{
-			// 	potreeAsset.addHighlight('fppp', new ZeaEngine.Color(1,0.6,0.8, 0.1));
+			// 	potreeAsset.addHighlight('fppp', new Color(1,0.6,0.8, 0.1));
 			// }, 3000);
 		});
 		

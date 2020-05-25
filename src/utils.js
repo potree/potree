@@ -6,6 +6,10 @@ import {XHRFactory} from "./XHRFactory.js";
 // import {PolygonClipVolume} from "./utils/PolygonClipVolume.js";
 import {PointColorType} from "./defines.js";
 
+import {
+	Box3,
+} from '@zeainc/zea-engine'
+
 
 export class Utils {
 	/*
@@ -661,7 +665,7 @@ export class Utils {
 			max.x -= size.x / 2;
 		}
 
-		return new ZeaEngine.Box3(min, max);
+		return new Box3(min, max);
 	}
 /*
 	// see https://stackoverflow.com/questions/400212/how-do-i-copy-to-the-clipboard-in-javascript

@@ -1,9 +1,14 @@
 
+import {
+	GLShader,
+	sgFactory,
+	shaderLibrary
+} from '@zeainc/zea-engine'
 
-class PotreePointsShader extends ZeaEngine.GLShader {
+class PotreePointsShader extends GLShader {
   constructor(gl) {
     super(gl)
-    this.__shaderStages['VERTEX_SHADER'] = ZeaEngine.shaderLibrary.parseShader(
+    this.__shaderStages['VERTEX_SHADER'] = shaderLibrary.parseShader(
       'PointsShader.vertexShader',
       `
 precision highp float;
@@ -179,7 +184,7 @@ void main(void) {
 `
     )
 
-    this.__shaderStages['FRAGMENT_SHADER'] = ZeaEngine.shaderLibrary.parseShader(
+    this.__shaderStages['FRAGMENT_SHADER'] = shaderLibrary.parseShader(
       'PointsShader.fragmentShader',
       `
 precision highp float;
@@ -223,7 +228,7 @@ void main(void) {
   }
 }
 
-ZeaEngine.sgFactory.registerClass('PotreePointsShader', PotreePointsShader)
+sgFactory.registerClass('PotreePointsShader', PotreePointsShader)
 
 
 
@@ -231,7 +236,7 @@ class PotreePointsGeomDataShader extends PotreePointsShader {
   constructor(gl) {
     super(gl)
 
-    this.__shaderStages['FRAGMENT_SHADER'] = ZeaEngine.shaderLibrary.parseShader(
+    this.__shaderStages['FRAGMENT_SHADER'] = shaderLibrary.parseShader(
       'PointsShader.fragmentShader',
       `
 precision highp float;
@@ -273,13 +278,13 @@ void main(void) {
   }
 }
 
-ZeaEngine.sgFactory.registerClass('PotreePointsGeomDataShader', PotreePointsGeomDataShader)
+sgFactory.registerClass('PotreePointsGeomDataShader', PotreePointsGeomDataShader)
 
 class PotreePointsHilighlightShader extends PotreePointsShader {
   constructor(gl) {
     super(gl)
 
-    this.__shaderStages['FRAGMENT_SHADER'] = ZeaEngine.shaderLibrary.parseShader(
+    this.__shaderStages['FRAGMENT_SHADER'] = shaderLibrary.parseShader(
       'PointsShader.fragmentShader',
       `
 precision highp float;
@@ -315,6 +320,6 @@ void main(void) {
   }
 }
 
-ZeaEngine.sgFactory.registerClass('PotreePointsHilighlightShader', PotreePointsHilighlightShader)
+sgFactory.registerClass('PotreePointsHilighlightShader', PotreePointsHilighlightShader)
 
 export { PotreePointsShader, PotreePointsGeomDataShader, PotreePointsHilighlightShader }

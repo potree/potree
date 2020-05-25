@@ -8,6 +8,11 @@ import {BinaryLoader} from "./BinaryLoader.js";
 import {Utils} from "../utils.js";
 import {PointAttribute, PointAttributes} from "./PointAttributes.js";
 
+import {
+	Vec3,
+	Box3,
+} from '@zeainc/zea-engine'
+
 export class POCLoader {
 
 	static load(url, callback){
@@ -36,9 +41,9 @@ export class POCLoader {
 
 					pco.pointAttributes = fMno.pointAttributes;
 
-					let min = new ZeaEngine.Vec3(fMno.boundingBox.lx, fMno.boundingBox.ly, fMno.boundingBox.lz);
-					let max = new ZeaEngine.Vec3(fMno.boundingBox.ux, fMno.boundingBox.uy, fMno.boundingBox.uz);
-					let boundingBox = new ZeaEngine.Box3(min, max);
+					let min = new Vec3(fMno.boundingBox.lx, fMno.boundingBox.ly, fMno.boundingBox.lz);
+					let max = new Vec3(fMno.boundingBox.ux, fMno.boundingBox.uy, fMno.boundingBox.uz);
+					let boundingBox = new Box3(min, max);
 					let tightBoundingBox = boundingBox.clone();
 
 					if (fMno.tightBoundingBox) {
@@ -139,7 +144,7 @@ export class POCLoader {
 	createChildAABB(aabb, index){
 		let min = aabb.min.clone();
 		let max = aabb.max.clone();
-		// let size = new ZeaEngine.Vec3().subVectors(max, min);
+		// let size = new Vec3().subVectors(max, min);
 		let size = max.subtract(min);
 
 		if ((index & 0b0001) > 0) {
@@ -160,7 +165,7 @@ export class POCLoader {
 			max.x -= size.x / 2;
 		}
 
-		return new ZeaEngine.Box3(min, max);
+		return new Box3(min, max);
 	}
 }
 

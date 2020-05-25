@@ -1,8 +1,15 @@
+import {
+	Box3,
+	ValueSetMode,
+	NumberParameter,
+	AssetItem,
+} from '@zeainc/zea-engine'
+
 import {POCLoader} from "../loader/POCLoader";
 
 // Note: replaces PointCloudOctree.
 // 
-export class PotreeAsset extends ZeaEngine.AssetItem {
+export class PotreeAsset extends AssetItem {
 
   constructor(){
     super();
@@ -16,13 +23,13 @@ export class PotreeAsset extends ZeaEngine.AssetItem {
 
     this.__loaded = false;
 
-    // this.fileParam = this.addParameter(new ZeaEngine.FilePathParameter('File'))
+    // this.fileParam = this.addParameter(new FilePathParameter('File'))
     // this.fileParam.valueChanged.connect(mode => {
     //   this.loaded.untoggle()
   	//   this.loadPointCloud(path, name)
     // })
-    this.addParameter(new ZeaEngine.NumberParameter('Version', 0))
-    this.addParameter(new ZeaEngine.NumberParameter('Num Points', 0))
+    this.addParameter(new NumberParameter('Version', 0))
+    this.addParameter(new NumberParameter('Num Points', 0))
   }
 
   getGlobalMat4() {
@@ -32,7 +39,7 @@ export class PotreeAsset extends ZeaEngine.AssetItem {
   _cleanBoundingBox(bbox) {
     bbox = super._cleanBoundingBox(bbox)
     const mat4 = this.getGlobalMat4();
-    const geomBox = new ZeaEngine.Box3();
+    const geomBox = new Box3();
     const { min, max } = this.pcoGeometry.tightBoundingBox
     geomBox.min.set(min.x, min.y, min.z);
     geomBox.max.set(max.x, max.y, max.z);
@@ -43,7 +50,7 @@ export class PotreeAsset extends ZeaEngine.AssetItem {
   setGeometry(pcoGeometry) {
 
     this.pcoGeometry = pcoGeometry;
-	const mode = ZeaEngine.ValueSetMode.DATA_LOAD;
+	const mode = ValueSetMode.DATA_LOAD;
 
     // const xfo = this.getGlobalXfo();
     // xfo.tr = this.pcoGeometry.offset;

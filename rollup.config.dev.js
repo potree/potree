@@ -1,5 +1,4 @@
 import webWorkerLoader from 'rollup-plugin-web-worker-loader'
-import { terser } from 'rollup-plugin-terser'
 
 import pkg from './package.json'
 
@@ -34,7 +33,7 @@ export default [
   {
     input: 'src/zea/index.js',
     external: [...Object.keys(pkg.dependencies)],
-    plugins: [terser(), webWorkerLoader()],
+    plugins: [webWorkerLoader()],
     output: [
       { file: pkg.main, format: 'cjs' },
       { file: pkg.module, format: 'es' },

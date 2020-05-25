@@ -1,7 +1,14 @@
 
+
+import {
+	Signal,
+  GLPoints,
+	GLPass
+} from '@zeainc/zea-engine'
+
 let globalCounter = 0;
 
-class GLOctTreeNode extends ZeaEngine.GLPoints {
+class GLOctTreeNode extends GLPoints {
   constructor(gl, node, ) {
     super(gl, node.points)
     this.node = node;
@@ -30,7 +37,7 @@ class GLOctTreeNode extends ZeaEngine.GLPoints {
   }
 }
 
-export class GLPotreeAsset extends ZeaEngine.GLPass {
+export class GLPotreeAsset extends GLPass {
   constructor(gl, potreeAsset, glshader){
 
     super();
@@ -55,7 +62,7 @@ export class GLPotreeAsset extends ZeaEngine.GLPass {
     this.map = new Map();
     this.freeList = [];
 
-    this.updated = new ZeaEngine.Signal();
+    this.updated = new Signal();
   }
 
   setVisibleNodes(visibleNodes, lru, offsets){

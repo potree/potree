@@ -3,7 +3,8 @@ import {Version} from "../Version.js";
 import {XHRFactory} from "../XHRFactory.js";
 import {workerPool} from "../WorkerPool.js"
 
-const BinaryDecoderWorker = require('worker-loader?inline!../workers/BinaryDecoderWorker.js')
+// const BinaryDecoderWorker = require('worker-loader?inline!../workers/BinaryDecoderWorker.js')
+import BinaryDecoderWorker from 'web-worker:../workers/BinaryDecoderWorker.js'
 
 export class BinaryLoader{
 

@@ -5,6 +5,7 @@ import {PointColorType} from "../defines.js";
 import {SphereVolume} from "../utils/Volume.js";
 import {Utils} from "../utils.js";
 
+// Edge detection Renderer
 export class EDLRenderer{
 	constructor(viewer){
 		this.viewer = viewer;

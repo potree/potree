@@ -1,15 +1,35 @@
 {
-  "name": "potree",
-  "private": true,
-  "version": "0.0.1",
-  "description": "WebGL point cloud viewer",
+  "name": "@zeainc/zea-potree",
+  "filename": "zea-potree.js",
+  "library": "ZeaPotree",
+  "private": false,
+  "version": "0.0.2",
+  "description": "WebGL point cloud viewer for Zea Engine",
+  "files": [
+    "/dist/zea-potree.js"
+  ],
+  "scripts": {
+    "build:dev": "webpack --watch --config webpack-dev.config.js",
+    "build": "webpack --config webpack-prod.config.js",
+    "dist": "webpack --config webpack-prod.config.js && yarn publish --access=public",
+    "docs": "documentation build src/index.js -f html -o docs",
+    "docs:serve": "documentation serve --watch src/index.js",
+    "docs:lint": "documentation lint src/index.js"
+  },
   "dependencies": {
+    "@zeainc/zea-engine": "^0.0.86",
+    "binaryheap": "^0.0.3",
     "gulp": "^4.0.2",
     "gulp-concat": "^2.6.1",
     "gulp-connect": "^5.7.0",
     "gulp-util": "^3.0.8",
-    "through": "~2.3.4"
+    "through": "~2.3.4",
+    "webpack": "^4.41.2",
+    "worker-loader": "^2.0.0"
   },
   "author": "Markus Schütz",
-  "license": "BSD-2-CLAUSE"
+  "license": "BSD-2-CLAUSE",
+  "devDependencies": {
+    "webpack-cli": "^3.3.9"
+  }
 }

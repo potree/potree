@@ -99,6 +99,7 @@ export class PointCloudOctreeNode extends PointCloudTreeNode {
 	}
 };
 
+/*
 export class PointCloudOctree extends PointCloudTree {
 	constructor (geometry, material) {
 		super();
@@ -108,15 +109,16 @@ export class PointCloudOctree extends PointCloudTree {
 		this.boundingBox = this.pcoGeometry.boundingBox;
 		this.boundingSphere = this.boundingBox.getBoundingSphere(new THREE.Sphere());
 		this.material = material || new PointCloudMaterial();
-		this.visiblePointsTarget = 2 * 1000 * 1000;
+		// this.visiblePointsTarget = 2 * 1000 * 1000; // Never used
 		this.minimumNodePixelSize = 150;
+		this.minimumNodeVSize = 0.15;
 		this.level = 0;
-		this.position.copy(geometry.offset);
+		// this.position.copy(geometry.offset);
 		this.updateMatrix();
 
 		this.showBoundingBox = false;
 		this.boundingBoxNodes = [];
-		this.loadQueue = [];
+		// this.loadQueue = []; // Never used
 		this.visibleBounds = new THREE.Box3();
 		this.visibleNodes = [];
 		this.visibleGeometry = [];
@@ -158,6 +160,7 @@ export class PointCloudOctree extends PointCloudTree {
 
 	toTreeNode (geometryNode, parent) {
 		let node = new PointCloudOctreeNode();
+		// console.log("toTreeNode:", geometryNode.name, geometryNode.boundingBox.min);
 
 		// if(geometryNode.name === "r40206"){
 		//	console.log("creating node for r40206");
@@ -165,8 +168,10 @@ export class PointCloudOctree extends PointCloudTree {
 		let sceneNode = new THREE.Points(geometryNode.geometry, this.material);
 		sceneNode.name = geometryNode.name;
 		sceneNode.position.copy(geometryNode.boundingBox.min);
+		// console.log(geometryNode.boundingBox.min);
 		sceneNode.frustumCulled = false;
 		sceneNode.onBeforeRender = (_this, scene, camera, geometry, material, group) => {
+			// Note: I never see this code being called.
 			if (material.program) {
 				_this.getContext().useProgram(material.program.program);
 
@@ -214,17 +219,23 @@ export class PointCloudOctree extends PointCloudTree {
 		}
 
 		if (!parent) {
+			// Whaat!!? The Root is a PointCloudOctreeGeometryNode and now is 
+			// reassigned as a PointCloudOctreeNode. This code is extremely difficult 
+			// to follow.
 			this.root = node;
 			this.add(sceneNode);
 		} else {
-			let childIndex = parseInt(geometryNode.name[geometryNode.name.length - 1]);
 			parent.sceneNode.add(sceneNode);
+			let childIndex = parseInt(geometryNode.name[geometryNode.name.length - 1]);
+			
+			// Whaat!!? The children of the parent are reassigned as well.
+			// This means that the tree is converted to PointCloudOctreeNodes
 			parent.children[childIndex] = node;
 		}
 
 		let disposeListener = function () {
-			let childIndex = parseInt(geometryNode.name[geometryNode.name.length - 1]);
 			parent.sceneNode.remove(node.sceneNode);
+			let childIndex = parseInt(geometryNode.name[geometryNode.name.length - 1]);
 			parent.children[childIndex] = geometryNode;
 		};
 		geometryNode.oneTimeDisposeHandlers.push(disposeListener);
@@ -488,7 +499,7 @@ export class PointCloudOctree extends PointCloudTree {
 	 * that segments point coordinates to line up along the x-axis.
 	 *
 	 *
-	 */
+	 * /
 	getPointsInProfile (profile, maxDepth, callback) {
 		if (callback) {
 			let request = new Potree.ProfileRequest(this, profile, maxDepth, callback);
@@ -582,7 +593,7 @@ export class PointCloudOctree extends PointCloudTree {
 	 * callback:	if specified, points are loaded before searching
 	 *
 	 *
-	 */
+	 * /
 	getProfile (start, end, width, depth, callback) {
 		let request = new Potree.ProfileRequest(start, end, width, depth, callback);
 		this.profileRequests.push(request);
@@ -602,7 +613,7 @@ export class PointCloudOctree extends PointCloudTree {
 	 *
 	 * TODO: only draw pixels that are actually read with readPixels().
 	 *
-	 */
+	 * /
 	pick(viewer, camera, ray, params = {}){
 
 		let renderer = viewer.renderer;
@@ -1012,7 +1023,7 @@ export class PointCloudOctree extends PointCloudTree {
 
 
 
-
+*/
 
 
 

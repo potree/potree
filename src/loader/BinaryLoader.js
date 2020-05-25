@@ -1,9 +1,9 @@
 
-
-import {PointAttributeNames} from "./PointAttributes.js";
 import {Version} from "../Version.js";
 import {XHRFactory} from "../XHRFactory.js";
+import {workerPool} from "../WorkerPool.js"
 
+const BinaryDecoderWorker = require('worker-loader?inline!../workers/BinaryDecoderWorker.js')
 
 export class BinaryLoader{
 
@@ -19,6 +19,7 @@ export class BinaryLoader{
 	}
 
 	load(node){
+		return new Promise((resolve, reject)=>{
 		if (node.loaded) {
 			return;
 		}
@@ -37,7 +38,9 @@ export class BinaryLoader{
 			if (xhr.readyState === 4) {
 				if((xhr.status === 200 || xhr.status === 0) &&  xhr.response !== null){
 					let buffer = xhr.response;
-					this.parse(node, buffer);
+					this.parse(node, buffer).then(()=>{
+						resolve();
+					});
 				} else {
 					throw new Error(`Failed to load file! HTTP status: ${xhr.status}, file: ${url}`);
 				}
@@ -49,29 +52,34 @@ export class BinaryLoader{
 		} catch (e) {
 			console.log('fehler beim laden der punktwolke: ' + e);
 		}
+		});
 	};
 
 	parse(node, buffer){
+		return new Promise((resolve, reject)=>{
 		let pointAttributes = node.pcoGeometry.pointAttributes;
-		let numPoints = buffer.byteLength / node.pcoGeometry.pointAttributes.byteSize;
 
-		if (this.version.upTo('1.5')) {
-			node.numPoints = numPoints;
-		}
+		// if (this.version.upTo('1.5')) {
+		// 	let numPoints = buffer.byteLength / pointAttributes.byteSize;
+		// 	node.numPoints = numPoints;
+		// }
 
-		let workerPath = Potree.scriptPath + '/workers/BinaryDecoderWorker.js';
-		let worker = Potree.workerPool.getWorker(workerPath);
-
+		let workerCls = BinaryDecoderWorker;
+		let worker = workerPool.getWorker(workerCls);
+		const version  = this.version;
 		worker.onmessage = function (e) {
+			workerPool.returnWorker(workerCls, worker);
 
 			let data = e.data;
+			node.parse(data, version)
+			resolve();
+			/*
+
 			let buffers = data.attributeBuffers;
 			let tightBoundingBox = new THREE.Box3(
 				new THREE.Vector3().fromArray(data.tightBoundingBox.min),
 				new THREE.Vector3().fromArray(data.tightBoundingBox.max)
 			);
-
-			Potree.workerPool.returnWorker(workerPath, worker);
 
 			let geometry = new THREE.BufferGeometry();
 
@@ -130,6 +138,7 @@ export class BinaryLoader{
 			node.loading = false;
 			node.estimatedSpacing = data.estimatedSpacing;
 			Potree.numNodesLoading--;
+			*/
 		};
 
 		let message = {
@@ -144,6 +153,7 @@ export class BinaryLoader{
 			name: node.name
 		};
 		worker.postMessage(message, [message.buffer]);
+		});
 	};
 
 	

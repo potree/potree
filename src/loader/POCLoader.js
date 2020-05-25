@@ -30,34 +30,35 @@ export class POCLoader {
 						pco.octreeDir = url + '/../' + fMno.octreeDir;
 					}
 
+					pco.numPoints = fMno.points;
 					pco.spacing = fMno.spacing;
 					pco.hierarchyStepSize = fMno.hierarchyStepSize;
 
 					pco.pointAttributes = fMno.pointAttributes;
 
-					let min = new THREE.Vector3(fMno.boundingBox.lx, fMno.boundingBox.ly, fMno.boundingBox.lz);
-					let max = new THREE.Vector3(fMno.boundingBox.ux, fMno.boundingBox.uy, fMno.boundingBox.uz);
-					let boundingBox = new THREE.Box3(min, max);
+					let min = new ZeaEngine.Vec3(fMno.boundingBox.lx, fMno.boundingBox.ly, fMno.boundingBox.lz);
+					let max = new ZeaEngine.Vec3(fMno.boundingBox.ux, fMno.boundingBox.uy, fMno.boundingBox.uz);
+					let boundingBox = new ZeaEngine.Box3(min, max);
 					let tightBoundingBox = boundingBox.clone();
 
 					if (fMno.tightBoundingBox) {
-						tightBoundingBox.min.copy(new THREE.Vector3(fMno.tightBoundingBox.lx, fMno.tightBoundingBox.ly, fMno.tightBoundingBox.lz));
-						tightBoundingBox.max.copy(new THREE.Vector3(fMno.tightBoundingBox.ux, fMno.tightBoundingBox.uy, fMno.tightBoundingBox.uz));
+						tightBoundingBox.min.set(fMno.tightBoundingBox.lx, fMno.tightBoundingBox.ly, fMno.tightBoundingBox.lz);
+						tightBoundingBox.max.set(fMno.tightBoundingBox.ux, fMno.tightBoundingBox.uy, fMno.tightBoundingBox.uz);
 					}
 
 					let offset = min.clone();
 
-					boundingBox.min.sub(offset);
-					boundingBox.max.sub(offset);
+					boundingBox.min.subtractInPlace(offset);
+					boundingBox.max.subtractInPlace(offset);
 
-					tightBoundingBox.min.sub(offset);
-					tightBoundingBox.max.sub(offset);
+					tightBoundingBox.min.subtractInPlace(offset);
+					tightBoundingBox.max.subtractInPlace(offset);
 
 					pco.projection = fMno.projection;
 					pco.boundingBox = boundingBox;
 					pco.tightBoundingBox = tightBoundingBox;
-					pco.boundingSphere = boundingBox.getBoundingSphere(new THREE.Sphere());
-					pco.tightBoundingSphere = tightBoundingBox.getBoundingSphere(new THREE.Sphere());
+					pco.boundingSphere = boundingBox.getBoundingSphere();
+					pco.tightBoundingSphere = tightBoundingBox.getBoundingSphere();
 					pco.offset = offset;
 					if (fMno.pointAttributes === 'LAS') {
 						pco.loader = new LasLazLoader(fMno.version);
@@ -138,7 +139,8 @@ export class POCLoader {
 	createChildAABB(aabb, index){
 		let min = aabb.min.clone();
 		let max = aabb.max.clone();
-		let size = new THREE.Vector3().subVectors(max, min);
+		// let size = new ZeaEngine.Vec3().subVectors(max, min);
+		let size = max.subtract(min);
 
 		if ((index & 0b0001) > 0) {
 			min.z += size.z / 2;
@@ -158,7 +160,7 @@ export class POCLoader {
 			max.x -= size.x / 2;
 		}
 
-		return new THREE.Box3(min, max);
+		return new ZeaEngine.Box3(min, max);
 	}
 }
 

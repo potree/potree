@@ -1,0 +1,20 @@
+{
+  "description": "",
+  "title": "Zea Potree",
+  "preview": "",
+  "appsIntegration": [
+    {
+      "extensions": [
+        "las"
+      ],
+      "icon": "https://storage.googleapis.com/visualive-icons/potree-icon.png",
+      "handlers": [
+        {
+          "title": "Zea Editor",
+          "url": "https://editor.zea.live/",
+          "default": true
+        }
+      ]
+    }
+  ]
+}

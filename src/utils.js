@@ -1,13 +1,14 @@
 
 import {XHRFactory} from "./XHRFactory.js";
-import {Volume} from "./utils/Volume.js";
-import {Profile} from "./utils/Profile.js";
-import {Measure} from "./utils/Measure.js";
-import {PolygonClipVolume} from "./utils/PolygonClipVolume.js";
+// import {Volume} from "./utils/Volume.js";
+// import {Profile} from "./utils/Profile.js";
+// import {Measure} from "./utils/Measure.js";
+// import {PolygonClipVolume} from "./utils/PolygonClipVolume.js";
 import {PointColorType} from "./defines.js";
 
 
 export class Utils {
+	/*
 	static async loadShapefileFeatures (file, callback) {
 		let features = [];
 
@@ -139,10 +140,11 @@ export class Utils {
 		parent.add(planehelper);
 
 	}
+	*/
 
 	/**
 	 * adapted from mhluska at https://github.com/mrdoob/three.js/issues/1561
-	 */
+	 * /
 	static computeTransformedBoundingBox (box, transform) {
 		let vertices = [
 			new THREE.Vector3(box.min.x, box.min.y, box.min.z).applyMatrix4(transform),
@@ -167,7 +169,7 @@ export class Utils {
 	 *
 	 * @param nStr
 	 * @returns
-	 */
+	 * /
 	static addCommas (nStr) {
 		nStr += '';
 		let x = nStr.split('.');
@@ -182,7 +184,7 @@ export class Utils {
 
 	static removeCommas (str) {
 		return str.replace(/,/g, '');
-	}
+	}*/
 
 	/**
 	 * create worker from a string
@@ -195,7 +197,7 @@ export class Utils {
 
 		return worker;
 	};
-
+	/*
 	static moveTo(scene, endPosition, endTarget){
 
 		let view = scene.view;
@@ -497,7 +499,8 @@ export class Utils {
 
 		return ray;
 	}
-
+	*/
+/*
 	static projectedRadius(radius, camera, distance, screenWidth, screenHeight){
 		if(camera instanceof THREE.OrthographicCamera){
 			return Utils.projectedRadiusOrtho(radius, camera.projectionMatrix, screenWidth, screenHeight);
@@ -560,7 +563,7 @@ export class Utils {
 	 * 0: no intersection
 	 * 1: intersection
 	 * 2: fully inside
-	 */
+	 * /
 	static frustumSphereIntersection (frustum, sphere) {
 		let planes = frustum.planes;
 		let center = sphere.center;
@@ -634,11 +637,11 @@ export class Utils {
 		}
 		window.history.replaceState({}, '', url);
 	}
-
+*/
 	static createChildAABB(aabb, index){
 		let min = aabb.min.clone();
 		let max = aabb.max.clone();
-		let size = new THREE.Vector3().subVectors(max, min);
+		let size = max.subtract(min);
 
 		if ((index & 0b0001) > 0) {
 			min.z += size.z / 2;
@@ -658,9 +661,9 @@ export class Utils {
 			max.x -= size.x / 2;
 		}
 
-		return new THREE.Box3(min, max);
+		return new ZeaEngine.Box3(min, max);
 	}
-
+/*
 	// see https://stackoverflow.com/questions/400212/how-do-i-copy-to-the-clipboard-in-javascript
 	static clipboardCopy(text){
 		let textArea = document.createElement("textarea");
@@ -799,25 +802,25 @@ export class Utils {
 			return 'Matcap';
 		}
 	};
-
+*/
 }
 
-Utils.screenPass = new function () {
-	this.screenScene = new THREE.Scene();
-	this.screenQuad = new THREE.Mesh(new THREE.PlaneBufferGeometry(2, 2, 0));
-	this.screenQuad.material.depthTest = true;
-	this.screenQuad.material.depthWrite = true;
-	this.screenQuad.material.transparent = true;
-	this.screenScene.add(this.screenQuad);
-	this.camera = new THREE.Camera();
+// Utils.screenPass = new function () {
+// 	this.screenScene = new THREE.Scene();
+// 	this.screenQuad = new THREE.Mesh(new THREE.PlaneBufferGeometry(2, 2, 0));
+// 	this.screenQuad.material.depthTest = true;
+// 	this.screenQuad.material.depthWrite = true;
+// 	this.screenQuad.material.transparent = true;
+// 	this.screenScene.add(this.screenQuad);
+// 	this.camera = new THREE.Camera();
 
-	this.render = function (renderer, material, target) {
-		this.screenQuad.material = material;
+// 	this.render = function (renderer, material, target) {
+// 		this.screenQuad.material = material;
 
-		if (typeof target === 'undefined') {
-			renderer.render(this.screenScene, this.camera);
-		} else {
-			renderer.render(this.screenScene, this.camera, target);
-		}
-	};
-}();
+// 		if (typeof target === 'undefined') {
+// 			renderer.render(this.screenScene, this.camera);
+// 		} else {
+// 			renderer.render(this.screenScene, this.camera, target);
+// 		}
+// 	};
+// }();

@@ -1,16 +1,13 @@
 
-# README
-
-* [Getting Started](./docs/getting_started.md)
-
 ## About
 
 Potree is a free open-source WebGL based point cloud renderer for large point clouds.
 It is based on the [TU Wien Scanopy project](https://www.cg.tuwien.ac.at/research/projects/Scanopy/)
 and it was part of the [Harvest4D Project](https://harvest4d.org/).
 
+Zea Potree provides integration of Potree into the Zea Engine. Potree was simplified and a faster rendering path implemented based on the Model View architecture of Zea Engine. 
 
-<a href="http://potree.org/wp/demo/" target="_blank"> ![](./docs/images/potree_screens.png) </a>
+### Potree
 
 Newest information and work in progress is usually available on [twitter](https://twitter.com/m_schuetz)
 
@@ -18,46 +15,6 @@ Contact: Markus Schütz (mschuetz@potree.org)
 
 Reference: [Potree: Rendering Large Point Clouds in Web Browsers](https://www.cg.tuwien.ac.at/research/publications/2016/SCHUETZ-2016-POT/SCHUETZ-2016-POT-thesis.pdf)
 
-## Getting Started
-
-### Build and Run
-
-Make sure you have [node.js](http://nodejs.org/) installed
-
-Install all dependencies, as specified in package.json, 
-then, install the gulp build tool:
-
-    cd <potree_directory>
-    yarn install
-    yarn build:dev
-
-Use the ```yarn build:dev``` command to 
-
-* create ./dist 
-* watch for changes to the source code and automatically create a new build on change
-* start a web server at localhost:1234. 
-
-```
-gulp watch
-```
-
-Go to http://localhost:1234/examples/ to test the examples.
-
-### Convert
-
-Download [PotreeConverter](https://github.com/potree/PotreeConverter) and run it like this:
-
-    ./PotreeConverter.exe C:/pointclouds/data.las -o C:/pointclouds/data_converted
-
-Copy the converted directory into &lt;potreeDirectory&gt;/pointclouds/data_converted. Then, duplicate and rename one of the examples and modify the path in the html file to your own point cloud.
-
-## Downloads
-
-[PotreeConverter source and Win64 binaries](https://github.com/potree/PotreeConverter/releases)
-
-## Showcase
-
-Take a look at the [potree showcase](http://potree.org/wp/demo/) for some live examples.
 
 ## Compatibility
 
@@ -79,3 +36,5 @@ Take a look at the [potree showcase](http://potree.org/wp/demo/) for some live e
 * Christian Boucheny (EDL developer) and Daniel Girardeau-Montaut ([CloudCompare](http://www.danielgm.net/cc/)). The EDL shader was adapted from the CloudCompare source code!
 * [Martin Isenburg](http://rapidlasso.com/), [Georepublic](http://georepublic.de/en/),
 [Veesus](http://veesus.com/), [Sigeom Sa](http://www.sigeom.ch/), [SITN](http://www.ne.ch/sitn), [LBI ArchPro](http://archpro.lbg.ac.at/),  [Pix4D](http://pix4d.com/) as well as all the contributers to potree and PotreeConverter and many more for their support.
+
+

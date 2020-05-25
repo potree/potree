@@ -22,7 +22,8 @@ export function updatePointClouds(pointclouds, camera, renderer){
 	let result = updateVisibility(pointclouds, camera, renderer);
 
 	for (let pointcloud of pointclouds) {
-		pointcloud.updateMaterial(pointcloud.material, pointcloud.visibleNodes, camera, renderer);
+		// console.log("Num Visible Nodes:", pointcloud.visibleNodes.length);
+		pointcloud.updateMaterial(pointcloud.material, pointcloud.visibleNodes/*never used*/, camera, renderer);
 		pointcloud.updateVisibleBounds();
 	}
 
@@ -45,9 +46,9 @@ export function updateVisibilityStructures(pointclouds, camera, renderer) {
 			continue;
 		}
 
-		pointcloud.numVisibleNodes = 0;
+		// pointcloud.numVisibleNodes = 0; // Never used.
 		pointcloud.numVisiblePoints = 0;
-		pointcloud.deepestVisibleLevel = 0;
+		// pointcloud.deepestVisibleLevel = 0; // Never used.
 		pointcloud.visibleNodes = [];
 		pointcloud.visibleGeometry = [];
 
@@ -57,14 +58,16 @@ export function updateVisibilityStructures(pointclouds, camera, renderer) {
 		let viewI = camera.matrixWorldInverse;
 		let world = pointcloud.matrixWorld;
 		
-		// use close near plane for frustum intersection
-		let frustumCam = camera.clone();
-		frustumCam.near = Math.min(camera.near, 0.1);
-		frustumCam.updateProjectionMatrix();
+		// use close near plane for frustum intersection.
+		// So weird. The frustumCam is never used. Commenting out.
+		// let frustumCam = camera.clone();
+		// frustumCam.near = Math.min(camera.near, 0.1);
+		// frustumCam.updateProjectionMatrix();
 		let proj = camera.projectionMatrix;
 
 		let fm = new THREE.Matrix4().multiply(proj).multiply(viewI).multiply(world);
 		frustum.setFromMatrix(fm);
+		// console.log(fm, frustum);
 		frustums.push(frustum);
 
 		// camera position in object space
@@ -101,16 +104,16 @@ export function updateVisibilityStructures(pointclouds, camera, renderer) {
 
 export function updateVisibility(pointclouds, camera, renderer){
 
-	let numVisibleNodes = 0;
-	let numVisiblePoints = 0;
+	// let numVisibleNodes = 0;
+	let numVisiblePoints = 0; // The global count of visible points across all trees.
 
-	let numVisiblePointsInPointclouds = new Map(pointclouds.map(pc => [pc, 0]));
+	// let numVisiblePointsInPointclouds = new Map(pointclouds.map(pc => [pc, 0]));
 
-	let visibleNodes = [];
-	let visibleGeometry = [];
+	let visibleNodes = []; // Never used in consuming code
+	// let visibleGeometry = [];// Populated but never used.
 	let unloadedGeometry = [];
 
-	let lowestSpacing = Infinity;
+	let lowestSpacing = Infinity; // Commented out during debugging.
 
 	// calculate object space frustum and cam pos and setup priority queue
 	let s = updateVisibilityStructures(pointclouds, camera, renderer);
@@ -120,8 +123,8 @@ export function updateVisibility(pointclouds, camera, renderer){
 
 	let loadedToGPUThisFrame = 0;
 	
-	let domWidth = renderer.domElement.clientWidth;
-	let domHeight = renderer.domElement.clientHeight;
+	// let domWidth = renderer.domElement.clientWidth;
+	// let domHeight = renderer.domElement.clientHeight;
 
 	// check if pointcloud has been transformed
 	// some code will only be executed if changes have been detected
@@ -154,9 +157,15 @@ export function updateVisibility(pointclouds, camera, renderer){
 		}
 	}
 
+	const visibleNodeNames = []
 	while (priorityQueue.size() > 0) {
 		let element = priorityQueue.pop();
 		let node = element.node;
+		
+		if (numVisiblePoints + node.getNumPoints() > Potree.pointBudget) {
+			break;
+		}
+
 		let parent = element.parent;
 		let pointcloud = pointclouds[element.pointcloud];
 
@@ -172,14 +181,18 @@ export function updateVisibility(pointclouds, camera, renderer){
 		let camObjPos = camObjPositions[element.pointcloud];
 
 		let insideFrustum = frustum.intersectsBox(box);
-		let maxLevel = pointcloud.maxLevel || Infinity;
-		let level = node.getLevel();
-		let visible = insideFrustum;
-		visible = visible && !(numVisiblePoints + node.getNumPoints() > Potree.pointBudget);
-		visible = visible && !(numVisiblePointsInPointclouds.get(pointcloud) + node.getNumPoints() > pointcloud.pointBudget);
-		visible = visible && level < maxLevel;
+		if (!insideFrustum) {
+			continue;
+		}
+		// let maxLevel = pointcloud.maxLevel || Infinity;
+		// let level = node.getLevel();
+		// let visible = insideFrustum;
+		
+		// visible = visible && !(numVisiblePoints + node.getNumPoints() > Potree.pointBudget);
+		// visible = visible && !(numVisiblePointsInPointclouds.get(pointcloud) + node.getNumPoints() > pointcloud.pointBudget);
+		// visible = visible && level < maxLevel;
 		//visible = visible && node.name !== "r613";
-
+/*
 		let clipBoxes = pointcloud.material.clipBoxes;
 		if(true && clipBoxes.length > 0){
 
@@ -268,31 +281,34 @@ export function updateVisibility(pointclouds, camera, renderer){
 			
 
 		}
-
+*/
 		// visible = ["r", "r0", "r06", "r060"].includes(node.name);
 		// visible = ["r"].includes(node.name);
 
-		if (node.spacing) {
-			lowestSpacing = Math.min(lowestSpacing, node.spacing);
-		} else if (node.geometryNode && node.geometryNode.spacing) {
-			lowestSpacing = Math.min(lowestSpacing, node.geometryNode.spacing);
-		}
+		// Its strange that a node that is not visible can effect the node spacing.
+		//  // Commented out during debugging.
+		// if (node.spacing) {
+		// 	lowestSpacing = Math.min(lowestSpacing, node.spacing);
+		// } else if (node.geometryNode && node.geometryNode.spacing) {
+		// 	lowestSpacing = Math.min(lowestSpacing, node.geometryNode.spacing);
+		// }
 
-		if (numVisiblePoints + node.getNumPoints() > Potree.pointBudget) {
-			break;
-		}
+		// if (numVisiblePoints + node.getNumPoints() > Potree.pointBudget) {
+		// 	break;
+		// }
 
-		if (!visible) {
-			continue;
-		}
+		// if (!visible) {
+		// 	continue;
+		// }
+		visibleNodeNames.push(node.name)
 
 		// TODO: not used, same as the declaration?
 		// numVisibleNodes++;
 		numVisiblePoints += node.getNumPoints();
-		let numVisiblePointsInPointcloud = numVisiblePointsInPointclouds.get(pointcloud);
-		numVisiblePointsInPointclouds.set(pointcloud, numVisiblePointsInPointcloud + node.getNumPoints());
+		// let numVisiblePointsInPointcloud = numVisiblePointsInPointclouds.get(pointcloud);
+		// numVisiblePointsInPointclouds.set(pointcloud, numVisiblePointsInPointcloud + node.getNumPoints());
 
-		pointcloud.numVisibleNodes++;
+		// pointcloud.numVisibleNodes++;
 		pointcloud.numVisiblePoints += node.getNumPoints();
 
 		if (node.isGeometryNode() && (!parent || parent.isTreeNode())) {
@@ -301,7 +317,7 @@ export function updateVisibility(pointclouds, camera, renderer){
 				loadedToGPUThisFrame++;
 			} else {
 				unloadedGeometry.push(node);
-				visibleGeometry.push(node);
+				// visibleGeometry.push(node);// Populated but never used.
 			}
 		}
 
@@ -355,23 +371,32 @@ export function updateVisibility(pointclouds, camera, renderer){
 				let dd = dx * dx + dy * dy + dz * dz;
 				let distance = Math.sqrt(dd);
 				
-				
 				let radius = sphere.radius;
-				
-				let fov = (camera.fov * Math.PI) / 180;
-				let slope = Math.tan(fov / 2);
-				let projFactor = (0.5 * domHeight) / (slope * distance);
-				let screenPixelRadius = radius * projFactor;
-				
-				if(screenPixelRadius < pointcloud.minimumNodePixelSize){
-					continue;
-				}
-			
-				weight = screenPixelRadius;
-
-				if(distance - radius < 0){
+				if(distance - radius < 0) {
 					weight = Number.MAX_VALUE;
+				} else {
+					let fov = (camera.fov * Math.PI) / 180;
+					let slope = Math.tan(fov / 2);
+
+					// let projFactor = (0.5 * domHeight) / (slope * distance);
+					// let screenPixelRadius = radius * projFactor;
+					
+					// if(screenPixelRadius < pointcloud.minimumNodePixelSize){
+					// 	continue;
+					// }
+					// weight = screenPixelRadius;
+
+					// Resolution independent metrics. 
+					// Measure the size on screem as a fraction of the viewport. 
+					// 1.0 == filling the view. 0.1 being a small part of the view.
+					const projFactor = 0.5 / (slope * distance);
+					const screenRadius = radius * projFactor;
+					if(screenRadius < pointcloud.minimumNodeVSize){
+						continue;
+					}
+					weight = screenRadius;
 				}
+
 			} else {
 				// TODO ortho visibility
 				let bb = child.getBoundingBox();				
@@ -386,6 +411,17 @@ export function updateVisibility(pointclouds, camera, renderer){
 		}
 	}// end priority queue loop
 
+	let visChanged = !Potree.prevVisible || Potree.prevVisible.length != visibleNodeNames.length
+	if(!visChanged) {
+		visChanged = visibleNodeNames.some((name, index) => {
+			return Potree.prevVisible[index] != name;
+		})
+	}
+	if(visChanged) {
+		Potree.prevVisible = visibleNodeNames;
+		console.log("visibleNodeNames:", visibleNodeNames);
+	}
+/*
 	{ // update DEM
 		let maxDEMLevel = 4;
 		let candidates = pointclouds
@@ -395,9 +431,13 @@ export function updateVisibility(pointclouds, camera, renderer){
 			pointcloud.dem.update(updatingNodes);
 		}
 	}
+*/
 
 	for (let i = 0; i < Math.min(Potree.maxNodesLoading, unloadedGeometry.length); i++) {
-		unloadedGeometry[i].load();
+		if (unloadedGeometry[i].shouldLoad()) {
+			// console.log("load:", unloadedGeometry[i].name);
+			unloadedGeometry[i].load();
+		}
 	}
 
 	return {

@@ -14,7 +14,7 @@ export class Scene extends EventDispatcher{
 
 		this.annotations = new Annotation();
 		
-		this.scene = new THREE.Scene();
+		this.scene = new THREE.Scene(); // For all the stuff that is not point clouds
 		this.sceneBG = new THREE.Scene();
 		this.scenePointCloud = new THREE.Scene();
 
@@ -102,7 +102,7 @@ export class Scene extends EventDispatcher{
 		let box = new THREE.Box3();
 
 		this.scenePointCloud.updateMatrixWorld(true);
-		this.referenceFrame.updateMatrixWorld(true);
+		//this.referenceFrame.updateMatrixWorld(true);
 
 		for (let pointcloud of pointclouds) {
 			pointcloud.updateMatrixWorld(true);
@@ -116,6 +116,7 @@ export class Scene extends EventDispatcher{
 	}
 
 	addPointCloud (pointcloud) {
+		// console.log("addPointCloud");
 		this.pointclouds.push(pointcloud);
 		this.scenePointCloud.add(pointcloud);
 
@@ -251,11 +252,11 @@ export class Scene extends EventDispatcher{
 	}
 	
 	initialize(){
-		
+		/*
 		this.referenceFrame = new THREE.Object3D();
 		this.referenceFrame.matrixAutoUpdate = false;
 		this.scenePointCloud.add(this.referenceFrame);
-
+*/
 		this.cameraP.up.set(0, 0, 1);
 		this.cameraP.position.set(1000, 1000, 1000);
 		this.cameraO.up.set(0, 0, 1);
@@ -263,7 +264,7 @@ export class Scene extends EventDispatcher{
 		//this.camera.rotation.y = -Math.PI / 4;
 		//this.camera.rotation.x = -Math.PI / 6;
 		this.cameraScreenSpace.lookAt(new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, -1), new THREE.Vector3(0, 1, 0));
-		
+		/*
 		this.directionalLight = new THREE.DirectionalLight( 0xffffff, 0.5 );
 		this.directionalLight.position.set( 10, 10, 10 );
 		this.directionalLight.lookAt( new THREE.Vector3(0, 0, 0));
@@ -287,7 +288,7 @@ export class Scene extends EventDispatcher{
 			bg.material.depthWrite = false;
 			this.sceneBG.add(bg);
 		}
-
+*/
 		//{ // lights
 		//	{
 		//		let light = new THREE.DirectionalLight(0xffffff);
@@ -311,7 +312,7 @@ export class Scene extends EventDispatcher{
 		//	}
 		//}
 	}
-	
+	/*
 	addAnnotation(position, args = {}){		
 		if(position instanceof Array){
 			args.position = new THREE.Vector3().fromArray(position);
@@ -331,4 +332,5 @@ export class Scene extends EventDispatcher{
 	removeAnnotation(annotationToRemove) {
 		this.annotations.remove(annotationToRemove);
 	}
+	*/
 };

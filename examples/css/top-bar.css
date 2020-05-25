@@ -1,0 +1,10 @@
+.ActionShortcut {
+  font-size: 0.75em;
+  font-weight: bold;
+  margin-left: 15px;
+}
+
+.pure-menu-link {
+  display: flex;
+  justify-content: space-between;
+}

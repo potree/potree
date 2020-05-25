@@ -25,7 +25,7 @@ import { EventDispatcher } from "../EventDispatcher.js";
 
 
 
-export class Viewer extends EventDispatcher{
+export class Viewer extends EventDispatcher {
 	
 	constructor(domElement, args = {}){
 		super();
@@ -118,7 +118,7 @@ export class Viewer extends EventDispatcher{
 
 		this.potreeRenderer = null;
 		this.edlRenderer = null;
-		this.renderer = null;
+		this.renderer = null; // THREE.WebGLRenderer
 		this.pRenderer = null;
 
 		this.scene = null;
@@ -175,7 +175,7 @@ export class Viewer extends EventDispatcher{
 		}
 		
 
-		let scene = new Scene(this.renderer);
+		let scene = new Scene(/*this.renderer*/); // Note:  this.renderer arg is unused.
 		this.setScene(scene);
 
 		{
@@ -1372,25 +1372,26 @@ export class Viewer extends EventDispatcher{
 		//	window.urlToggle += delta;
 		//}
 		
-		{
-			let u = Math.sin(0.0005 * timestamp) * 0.5 - 0.4;
+		// {
+		// 	let u = Math.sin(0.0005 * timestamp) * 0.5 - 0.4;
 			
-			let x = Math.cos(u);
-			let y = Math.sin(u);
+		// 	let x = Math.cos(u);
+		// 	let y = Math.sin(u);
 			
-			this.shadowTestCam.position.set(7 * x, 7 * y, 8.561);
-			this.shadowTestCam.lookAt(new THREE.Vector3(0, 0, 0));
-		}
+		// 	this.shadowTestCam.position.set(7 * x, 7 * y, 8.561);
+		// 	this.shadowTestCam.lookAt(new THREE.Vector3(0, 0, 0));
+		// }
 		
 		
 		let scene = this.scene;
 		let camera = scene.getActiveCamera();
 		
-		Potree.pointLoadLimit = Potree.pointBudget * 2;
+		exports.lru.pointLoadLimit = Potree.pointBudget * 2;
+		
 
-		this.scene.directionalLight.position.copy(camera.position);
-		this.scene.directionalLight.lookAt(new THREE.Vector3().addVectors(camera.position, camera.getWorldDirection(new THREE.Vector3())));
-
+		// this.scene.directionalLight.position.copy(camera.position);
+		// this.scene.directionalLight.lookAt(new THREE.Vector3().addVectors(camera.position, camera.getWorldDirection(new THREE.Vector3())));
+/*
 		for (let pointcloud of this.scene.pointclouds) {
 			if (!pointcloud.material._defaultIntensityRangeChanged) {
 				let root = pointcloud.pcoGeometry.root;
@@ -1446,7 +1447,8 @@ export class Viewer extends EventDispatcher{
 			pointcloud.generateDEM = this.generateDEM;
 			pointcloud.minimumNodePixelSize = this.minNodeSize;
 		}
-
+*/
+/*
 		// update classification visibility
 		for (let pointcloud of this.scene.pointclouds) {
 			let classification = pointcloud.material.classification;
@@ -1472,7 +1474,6 @@ export class Viewer extends EventDispatcher{
 				pointcloud.material.recomputeClassification();
 			}
 		}
-
 		for (let pointcloud of this.scene.pointclouds) {
 			if(!pointcloud.visible){
 				continue;
@@ -1507,6 +1508,7 @@ export class Viewer extends EventDispatcher{
 			}
 		}
 
+*/
 		if (!this.freeze) {
 			let result = Potree.updatePointClouds(scene.pointclouds, camera, this.renderer);
 
@@ -1541,7 +1543,7 @@ export class Viewer extends EventDispatcher{
 
 			//	}
 			//}
-
+/*
 			if(result.lowestSpacing !== Infinity){
 				let near = result.lowestSpacing * 10.0;
 				let far = -this.getBoundingBox().applyMatrix4(camera.matrixWorldInverse).min.z;
@@ -1563,6 +1565,7 @@ export class Viewer extends EventDispatcher{
 			if(this.scene.cameraMode == CameraMode.ORTHOGRAPHIC) {
 				camera.near = -camera.far;
 			}
+			*/
 		} 
 		
 		this.scene.cameraP.fov = this.fov;
@@ -1721,7 +1724,7 @@ export class Viewer extends EventDispatcher{
 			const vrActive = (vr && vr.display.isPresenting);
 
 			if(vrActive){
-
+/*
 				const {display, frameData} = vr;
 
 				const leftEye = display.getEyeParameters("left");
@@ -1839,7 +1842,7 @@ export class Viewer extends EventDispatcher{
 
 					camera.fov = leftEye.fieldOfView.upDegrees;
 				}
-
+*/
 			}else{
 
 				{ // resize
@@ -1867,10 +1870,17 @@ export class Viewer extends EventDispatcher{
 					scene.cameraScreenSpace.updateProjectionMatrix();
 				}
 
-				pRenderer.clear();
-
-				pRenderer.render(this.renderer);
-				this.renderer.render(this.overlay, this.overlayCamera);
+				// pRenderer.clear();
+				// pRenderer.render(this.renderer);
+				
+				this.renderer.setClearColor(0x000000, 1);
+				this.renderer.clear(true, true, false);
+				const camera = this.scene.getActiveCamera();
+				this.pRenderer.render(this.scene.scenePointCloud, camera, null, {
+					clipSpheres: this.scene.volumes.filter(v => (v instanceof Potree.SphereVolume)),
+				});
+				
+				// this.renderer.render(this.overlay, this.overlayCamera);
 			}
 
 		}catch(e){
@@ -1982,7 +1992,7 @@ export class Viewer extends EventDispatcher{
 			}
 		}
 	}
-
+/*
 	async toggleVR(){
 		const vrActive = (this.vr && this.vr.display.isPresenting);
 
@@ -2019,7 +2029,7 @@ export class Viewer extends EventDispatcher{
 	async stopVR(){
 		// TODO shutdown VR
 	}
-
+*/
 	loop(timestamp){
 
 		let queryAll;
@@ -2031,6 +2041,7 @@ export class Viewer extends EventDispatcher{
 		const vrActive = (this.vr && this.vr.display.isPresenting);
 
 		if(vrActive){
+			/*
 			const {display, frameData} = this.vr;
 
 			display.requestAnimationFrame(this.loop.bind(this));
@@ -2042,6 +2053,7 @@ export class Viewer extends EventDispatcher{
 			this.render();
 
 			this.vr.display.submitFrame();
+			*/
 		}else{
 			requestAnimationFrame(this.loop.bind(this));
 

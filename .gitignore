@@ -1,4 +1,5 @@
 /build
+/dist
 /test
 node_modules
 docs/.marking_your_own_pointcloud_loader.md.html

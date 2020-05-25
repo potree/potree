@@ -898,6 +898,7 @@ export class Renderer {
 	}
 
 	renderOctree(octree, nodes, camera, target, params = {}){
+		// console.log("PoTreeRenderer.renderOctree");
 
 		let gl = this.gl;
 
@@ -1303,6 +1304,8 @@ export class Renderer {
 
 		camera.updateProjectionMatrix();
 
+		// In Zea, the pass collects octtrees from the scene
+		// as they are generated. no need to do this here.
 		const traversalResult = this.traverse(scene);
 
 

@@ -190,7 +190,7 @@ onmessage = function (event) {
 				"float":  view.getFloat32,
 				"double": view.getFloat64,
 			};
-			const getter = getterMap[pointAttribute.type.name].bind(cv);
+			const getter = getterMap[pointAttribute.type.name].bind(view);
 
 			// compute offset and scale to pack larger types into 32 bit floats
 			if(pointAttribute.type.size > 4){
@@ -270,7 +270,7 @@ onmessage = function (event) {
 			for(let sourceName of attributes){
 				let sourceBuffer = attributeBuffers[sourceName];
 				let {offset, scale} = sourceBuffer;
-				let cv = new CustomView(sourceBuffer.buffer);
+				let view = new DataView(sourceBuffer.buffer);
 
 				const getter = view.getFloat32.bind(view);
 

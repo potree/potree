@@ -68,7 +68,7 @@ import { PotreeAsset, GLPotreePass } from "../test-libs/zea-pointclouds/dist/ind
 		scene.getRoot().addChild(potreeAsset);
 		
 		const urlParams = new URLSearchParams(window.location.search);
-		const file = urlParams.get('file') || 'Cloud_10mm';
+		const file = urlParams.get('file');
 		// Load and add point cloud to scene
 		let url;
 		switch (file) {
@@ -101,6 +101,8 @@ import { PotreeAsset, GLPotreePass } from "../test-libs/zea-pointclouds/dist/ind
 			url = "https://storage.googleapis.com/visualive-tmp/BuildIT/Cloud_10mm/cloud.js"
 			break;
 			}
+		default:
+			url = "../pointclouds/Old_Aguathuna_Ship_Loading_Area-Medium_Density_Cloud2/cloud.js"
 		}
 		// url = "../pointclouds/vol_total/cloud.js"
 		// url = "http://www.kkapc.co.jp/potree-1.5RC/pointclouds/apc_tatumi/cloud.js" // No CORS

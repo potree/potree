@@ -1,9 +1,9 @@
 
 
 import {
-	Signal,
+  Signal,
   GLPoints,
-	GLPass
+  GLPass
 } from '@zeainc/zea-engine'
 
 let globalCounter = 0;
@@ -47,12 +47,18 @@ export class GLPointCloudAsset extends GLPass {
 
     const xfoParam =  pointcloudAsset.getParameter('GlobalXfo')
     const updateXfo = ()=>{
-      const xfo = pointcloudAsset.getGlobalXfo();
+      const xfo = xfoParam.getValue();
       this.spacing = pointcloudAsset.pcoGeometry.spacing * Math.max(xfo.sc.x, xfo.sc.y, xfo.sc.z);
       this.modelMatrixArray =  xfo.toMat4().asArray()
     }
     xfoParam.valueChanged.connect(updateXfo)
     updateXfo();
+
+    this.visible = pointcloudAsset.getVisible();
+    pointcloudAsset.visibilityChanged.connect(()=>{
+      this.visible = pointcloudAsset.getVisible();
+      this.updated.emit();
+    })
     
     this.octreeSize = pointcloudAsset.pcoGeometry.boundingBox.size().x;
 
@@ -151,11 +157,12 @@ export class GLPointCloudAsset extends GLPass {
   }
 
   draw(renderstate) {
-    if (this.visibleGLNodes.length == 0) return;
+    if (this.visibleGLNodes.length == 0 || !this.visible) return;
     this.__drawNodes(renderstate)
   }
 
   drawHighlightedGeoms(renderstate) {
+    if (this.visibleGLNodes.length == 0 || !this.visible) return;
     const gl = this.gl;
     const { highlightColor } = renderstate.unifs;
     if (highlightColor) {
@@ -165,7 +172,7 @@ export class GLPointCloudAsset extends GLPass {
   }
 
   drawGeomData(renderstate) {
-    if (this.visibleGLNodes.length == 0) return;
+    if (this.visibleGLNodes.length == 0 || !this.visible) return;
     this.__drawNodes(renderstate)
   }
 

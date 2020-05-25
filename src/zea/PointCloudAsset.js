@@ -50,15 +50,15 @@ export class PointCloudAsset extends AssetItem {
   setGeometry(pcoGeometry) {
 
     this.pcoGeometry = pcoGeometry;
-	const mode = ValueSetMode.DATA_LOAD;
+		const mode = ValueSetMode.DATA_LOAD;
 
-    // const xfo = this.getGlobalXfo();
-    // xfo.tr = this.pcoGeometry.offset;
-    // this.setGlobalXfo(xfo, mode);
+    const xfo = this.getGlobalXfo();
+    xfo.tr = this.pcoGeometry.offset;
+    this.setGlobalXfo(xfo, mode)
 
-	this.getParameter('Version').setValue(parseFloat(pcoGeometry.version), mode);
-	if (pcoGeometry.numPoints)
-		this.getParameter('Num Points').setValue(pcoGeometry.numPoints, mode);
+		this.getParameter('Version').setValue(parseFloat(pcoGeometry.version), mode);
+		if (pcoGeometry.numPoints)
+			this.getParameter('Num Points').setValue(pcoGeometry.numPoints, mode);
     
     // this._setBoundingBoxDirty()
 

@@ -2179,22 +2179,16 @@ export class Viewer extends EventDispatcher{
 		// TODO shutdown VR
 	}
 
-	loop(timestamp){
+	loop (timestamp) {
 
-		if(this.stats){
-			this.stats.begin();
-		}
-
-		let queryAll;
-		if(Potree.measureTimings){
+		if (Potree.measureTimings) {
 			performance.mark("loop-start");
 		}
 
+		const vrActive = this.vr && this.vr.display.isPresenting;
 
-		const vrActive = (this.vr && this.vr.display.isPresenting);
-
-		if(vrActive){
-			const {display, frameData} = this.vr;
+		if (vrActive) {
+			const { display, frameData } = this.vr;
 
 			if (!this.pauseRender && timestamp - this.timeLast >= this.timeThreshold()) {
 				if (this.stats) {
@@ -2203,12 +2197,12 @@ export class Viewer extends EventDispatcher{
 
 				this.timeLast = timestamp;
 
-			display.getFrameData(frameData);
+				display.getFrameData(frameData);
 
-			this.update(this.clock.getDelta(), timestamp);
-			this.render();
+				this.update(this.clock.getDelta(), timestamp);
+				this.render();
 
-			this.vr.display.submitFrame();
+				this.vr.display.submitFrame();
 
 				if (this.stats) {
 					this.stats.end();
@@ -2216,7 +2210,7 @@ export class Viewer extends EventDispatcher{
 			}
 
 			display.requestAnimationFrame(this.loop.bind(this));
-		}else{
+		} else {
 			if (!this.pauseRender && timestamp - this.timeLast >= this.timeThreshold()) {
 				if (this.stats) {
 					this.stats.begin();
@@ -2224,7 +2218,7 @@ export class Viewer extends EventDispatcher{
 
 				this.timeLast = timestamp;
 
-			this.update(this.clock.getDelta(), timestamp);
+				this.update(this.clock.getDelta(), timestamp);
 				this.render();
 
 				if (this.stats) {
@@ -2235,12 +2229,11 @@ export class Viewer extends EventDispatcher{
 			requestAnimationFrame(this.loop.bind(this));
 		}
 
-
-		if(Potree.measureTimings){
+		if (Potree.measureTimings) {
 			performance.mark("loop-end");
 			performance.measure("loop", "loop-start", "loop-end");
-		
-		this.resolveTimings(timestamp);
+
+			this.resolveTimings(timestamp);
 		}
 
 		this.framenumber++;

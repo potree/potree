@@ -44,6 +44,7 @@ export class Viewer extends EventDispatcher{
 		this.vr = null;
 		this.onVrListeners = [];
 
+		this.framenumber = 0;
 		this.messages = [];
 		this.elMessages = $(`
 		<div id="message_listing" 
@@ -96,6 +97,24 @@ export class Viewer extends EventDispatcher{
 		this.edlOpacity = 1.0;
 		this.useEDL = false;
 		this.description = "";
+
+		this.pauseRender = false;
+		this.pauseToggle = () => {
+			return this.pauseRender = !this.pauseRender;
+		};
+
+		this.fpsTarget = args.fpsTarget || 60;
+		this.timeLast = 0;
+		this.timeThreshold = () => {
+				return (1000 / this.fpsTarget);
+		};
+
+		if (window) {
+			// Makes it easier to change or check values on the fly
+			window.pauseRender = this.pauseRender;
+			window.pauseToggle = this.pauseToggle.bind(this);
+			window.changeFPS = this.changeFPS.bind(this);
+		}
 
 		this.classifications = ClassificationScheme.DEFAULT;
 
@@ -264,6 +283,15 @@ export class Viewer extends EventDispatcher{
 		}catch(e){
 			this.onCrash(e);
 		}
+	}
+
+	changeFPS (target, log) {
+		if (log) {
+			// Print out / log the change. Only needed when manually tuning.
+			console.log(`Changing FPS Target from ${this.fpsTarget}/s to ${target}/s`);
+		}
+		
+		this.fpsTarget = target | 0;
 	}
 
 	onCrash(error){
@@ -2048,6 +2076,7 @@ export class Viewer extends EventDispatcher{
 					group.max = Math.max(group.max, measure.duration);
 				}
 
+				// FIXME: resolveQueries doesn't exist
 				let glQueries = Potree.resolveQueries(this.renderer.getContext());
 				for(let [key, value] of glQueries){
 
@@ -2167,36 +2196,54 @@ export class Viewer extends EventDispatcher{
 		if(vrActive){
 			const {display, frameData} = this.vr;
 
-			display.requestAnimationFrame(this.loop.bind(this));
+			if (!this.pauseRender && timestamp - this.timeLast >= this.timeThreshold()) {
+				if (this.stats) {
+					this.stats.begin();
+				}
+
+				this.timeLast = timestamp;
 
 			display.getFrameData(frameData);
 
 			this.update(this.clock.getDelta(), timestamp);
-
 			this.render();
 
 			this.vr.display.submitFrame();
+
+				if (this.stats) {
+					this.stats.end();
+				}
+			}
+
+			display.requestAnimationFrame(this.loop.bind(this));
 		}else{
-			requestAnimationFrame(this.loop.bind(this));
+			if (!this.pauseRender && timestamp - this.timeLast >= this.timeThreshold()) {
+				if (this.stats) {
+					this.stats.begin();
+				}
+
+				this.timeLast = timestamp;
 
 			this.update(this.clock.getDelta(), timestamp);
+				this.render();
 
-			this.render();
+				if (this.stats) {
+					this.stats.end();
+				}
+			}
+
+			requestAnimationFrame(this.loop.bind(this));
 		}
 
 
 		if(Potree.measureTimings){
 			performance.mark("loop-end");
 			performance.measure("loop", "loop-start", "loop-end");
-		}
 		
 		this.resolveTimings(timestamp);
-
-		Potree.framenumber++;
-
-		if(this.stats){
-			this.stats.end();
 		}
+
+		this.framenumber++;
 	}
 
 	postError(content, params = {}){

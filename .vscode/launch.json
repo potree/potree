@@ -1,0 +1,81 @@
+{
+	// For Chrome debugging: Install the "Debugger for Chrome" extension
+	// For Firefox debugging: Install the "Debugger for Firefox" extension (follow instructions on ext page)
+	"version": "0.2.0",
+	"configurations": [
+		{
+			// NOTE: To attach to Firefox, start it with the remote debugging flag: -start-debugger-server
+			"name": "Firefox: Attach",
+			"type": "firefox",
+			"request": "attach",
+			"pathMappings": [
+				{
+					"url": "http://localhost",
+					"path": "${workspaceFolder}"
+				}
+			]
+		},
+		{
+			// Change the url target to the page you want to debug regularly
+			"name": "Firefox: Launch",
+			"type": "firefox",
+			"request": "launch",
+			"reAttach": true,
+			"url": "http://localhost/examples/developer.html",
+			"webRoot": "${workspaceFolder}",
+			"pathMappings": [
+				{
+					"url": "http://localhost",
+					"path": "${workspaceFolder}"
+				}
+			]
+		},
+		{
+			"name": "Firefox: Attach (1234)",
+			"type": "firefox",
+			"request": "attach",
+			"pathMappings": [
+				{
+					"url": "http://localhost:1234",
+					"path": "${workspaceFolder}"
+				}
+			]
+		},
+		{
+			"name": "Firefox: Launch (1234)",
+			"type": "firefox",
+			"request": "launch",
+			"reAttach": true,
+			"url": "http://localhost:1234/examples/developer.html",
+			"webRoot": "${workspaceFolder}",
+			"pathMappings": [
+				{
+					"url": "http://localhost:1234",
+					"path": "${workspaceFolder}"
+				}
+			]
+		},
+		{
+			// NOTE: To attach to Chrome, start it with the remote debugging flag: --remote-debugging-port=9222
+			"type": "chrome",
+			"request": "attach",
+			"name": "Chrome: Attach",
+			"port": 9222,
+			"webRoot": "${workspaceFolder}"
+		},
+		{
+			"type": "chrome",
+			"request": "launch",
+			"name": "Chrome: Launch",
+			"url": "http://localhost/examples/developer.html",
+			"webRoot": "${workspaceFolder}"
+		},
+		{
+			"type": "chrome",
+			"request": "launch",
+			"name": "Chrome: Launch (1234)",
+			"url": "http://localhost:1234/examples/developer.html",
+			"webRoot": "${workspaceFolder}"
+		}
+	]
+}

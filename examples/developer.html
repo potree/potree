@@ -49,7 +49,9 @@
 	</div>
 	
 	<script>
-		window.viewer = new Potree.Viewer(document.getElementById("potree_render_area"),);
+		window.viewer = new Potree.Viewer(document.getElementById("potree_render_area"), {
+			fpsTarget: 20 	// Set FPS limit here or use changeFPS(n) to throttle frames per second
+		});
 		
 		viewer.setEDLEnabled(false); 	// Broken on many mobile devices (esp iOS), grants more realistic lighting / depth if enabled
 		viewer.setFOV(30); 	// The higher the value, the more distorted an image will appear in peripheral vision

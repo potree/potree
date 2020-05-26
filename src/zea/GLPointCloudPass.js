@@ -89,6 +89,9 @@ export class GLPointCloudPass extends GLPass {
         return false
       }
     )
+
+		
+  	this.setViewport(renderer.getViewport());
   }
 
   addPotreeasset(pointcloudAsset){

@@ -294,7 +294,10 @@ export class MapView{
 			selectedFeatures.clear();
 		});
 
-		this.viewer.addEventListener('scene_changed', e => {
+		this.viewer.addEventListener('scene_changed', e => {						
+			this.sceneProjection = null;
+			this.getAnnotationsLayer().getSource().clear();
+			
 			this.setScene(e.scene);
 		});
 
@@ -647,6 +650,9 @@ export class MapView{
 		}
 
 		if (!pointcloud.projection) {
+			$( "#potree_map_toggle" ).css("display", "none");
+			this.elMap.css('display', 'none');
+			this.enabled = false;
 			return;
 		}
 

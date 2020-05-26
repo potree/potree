@@ -1314,6 +1314,7 @@ export class Sidebar{
 		$('#lblEDLRadius')[0].innerHTML = this.viewer.getEDLRadius().toFixed(1);
 		$('#lblEDLStrength')[0].innerHTML = this.viewer.getEDLStrength().toFixed(1);
 		$('#chkEDLEnabled')[0].checked = this.viewer.getEDLEnabled();
+		$('#show_bounding_box')[0].checked = this.viewer.getShowBoundingBox();
 		
 		{
 			let elBackground = $(`#background_options`);

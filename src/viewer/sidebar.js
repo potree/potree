@@ -13,6 +13,8 @@ import {ScreenBoxSelectTool} from "../utils/ScreenBoxSelectTool.js"
 import {Utils} from "../utils.js"
 import {CameraAnimation} from "../modules/CameraAnimation/CameraAnimation.js"
 import {HierarchicalSlider} from "./HierarchicalSlider.js"
+import {OrientedImage} from "../modules/OrientedImages/OrientedImages.js";
+import {Images360} from "../modules/Images360/Images360.js";
 
 export class Sidebar{
 
@@ -521,6 +523,8 @@ export class Sidebar{
 				// 	node.boundingBox = box;
 				// 	this.viewer.zoomTo(node, 1, 500);
 				// }
+			}else if(object instanceof Images360){
+				// TODO
 			}else if(object instanceof Geopackage){
 				// TODO
 			}
@@ -621,6 +625,21 @@ export class Sidebar{
 			});
 		};
 
+		let onImages360Added = (e) => {
+			const images = e.images;
+
+			const imagesIcon = `${Potree.resourcePath}/icons/picture.svg`;
+			const node = createNode(imagesID, "360° images", imagesIcon, images);
+
+			images.addEventListener("visibility_changed", () => {
+				if(images.visible){
+					tree.jstree('check_node', node);
+				}else{
+					tree.jstree('uncheck_node', node);
+				}
+			});
+		};
+
 		const onGeopackageAdded = (e) => {
 			const geopackage = e.geopackage;
 
@@ -649,6 +668,7 @@ export class Sidebar{
 		this.viewer.scene.addEventListener("volume_added", onVolumeAdded);
 		this.viewer.scene.addEventListener("camera_animation_added", onCameraAnimationAdded);
 		this.viewer.scene.addEventListener("oriented_images_added", onOrientedImagesAdded);
+		this.viewer.scene.addEventListener("360_images_added", onImages360Added);
 		this.viewer.scene.addEventListener("geopackage_added", onGeopackageAdded);
 		this.viewer.scene.addEventListener("polygon_clip_volume_added", onVolumeAdded);
 		this.viewer.scene.annotations.addEventListener("annotation_added", onAnnotationAdded);
@@ -716,6 +736,10 @@ export class Sidebar{
 
 		for(let images of scene.orientedImages){
 			onOrientedImagesAdded({images: images});
+		}
+
+		for(let images of scene.images360){
+			onImages360Added({images: images});
 		}
 
 		for(const geopackage of scene.geopackages){

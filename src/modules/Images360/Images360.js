@@ -11,10 +11,11 @@ let smHovered = new THREE.MeshBasicMaterial({side: THREE.BackSide, color: 0xff00
 let raycaster = new THREE.Raycaster();
 let currentlyHovered = null;
 
-// let label = new TextSprite("...");
-// label.visible = false;
-
-// window.dbg = label;
+let previousView = {
+	controls: null,
+	position: null,
+	target: null,
+};
 
 class Image360{
 
@@ -47,6 +48,7 @@ export class Images360 extends EventDispatcher{
 		this.sphere.visible = false;
 		this.sphere.scale.set(1000, 1000, 1000);
 		this.node.add(this.sphere);
+		this._visible = true;
 		// this.node.add(label);
 
 		this.focusedImage = null;
@@ -79,10 +81,40 @@ export class Images360 extends EventDispatcher{
 		
 	};
 
+	set visible(visible){
+		if(this._visible === visible){
+			return;
+		}
+
+		for(const image of this.images){
+			image.mesh.visible = visible;
+			// image.line.visible = visible;
+		}
+
+		this._visible = visible;
+		this.dispatchEvent({
+			type: "visibility_changed",
+			images: this,
+		});
+	}
+
+	get visible(){
+		return this._visible;
+	}
+
 	focus(image360){
 		if(this.focusedImage !== null){
 			this.unfocus();
 		}
+
+		previousView = {
+			controls: this.viewer.controls,
+			position: this.viewer.scene.view.position.clone(),
+			target: viewer.scene.view.getPivot(),
+		};
+
+		this.viewer.setControls(this.viewer.orbitControls);
+		this.viewer.orbitControls.doubleClockZoomEnabled = false;
 
 		for(let image of this.images){
 			image.mesh.visible = false;
@@ -112,7 +144,7 @@ export class Images360 extends EventDispatcher{
 
 		let target = new THREE.Vector3(...image360.position);
 		let dir = target.clone().sub(viewer.scene.view.position).normalize();
-		let move = dir.multiplyScalar(0.00001);
+		let move = dir.multiplyScalar(0.000001);
 		let newCamPos = target.clone().sub(move);
 
 		viewer.scene.view.setView(
@@ -150,9 +182,12 @@ export class Images360 extends EventDispatcher{
 		let move = dir.multiplyScalar(10);
 		let newCamPos = target.clone().sub(move);
 
+		viewer.orbitControls.doubleClockZoomEnabled = true;
+		viewer.setControls(previousView.controls);
+
 		viewer.scene.view.setView(
-			newCamPos, 
-			target,
+			previousView.position, 
+			previousView.target,
 			500
 		);
 
@@ -237,6 +272,11 @@ export class Images360Loader{
 		let images360 = new Images360(viewer);
 
 		for(let line of coordinateLines){
+
+			if(line.trim().length === 0){
+				continue;
+			}
+
 			let tokens = line.split(/\t/);
 
 			let [filename, time, long, lat, alt, course, pitch, roll] = tokens;

@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Old_Aguathuna_Ship_Loading_Area</title>
+    <meta charset="UTF-8"/>
+    <link rel="shortcut icon" href="img/favicon-32x32.png" type="image/x-icon">
+    <style type="text/css">
+      html, body {
+        overflow: hidden;
+        height: 100%;
+        width: 100%;
+        margin: 0;
+        padding: 0;
+      }
+    </style>  
+  </head>
+  <body>
+    <div id="viewport"></div>
+    </a>
+  </body>
+  <script type="module">
+import { Color, Vec3, EulerAngles, Scene, GLRenderer, PassType } from "./libs/zea-engine/dist/index.esm.js"
+import { PointCloudAsset, GLPointCloudPass } from "./libs/zea-pointclouds/dist/index.rawimport.js"
+
+// const socket = io('http://localhost');
+const domElement = document.getElementById("viewport");
+
+const scene = new Scene();
+scene.setupGrid(10.0, 10);
+
+const renderer = new GLRenderer( domElement, {
+  webglOptions: {
+    antialias: true
+  },
+});
+
+renderer.setScene(scene);
+renderer.resumeDrawing();
+
+////////////////////////////////////
+// Point Cloud renderer
+const pointcloudPass = new GLPointCloudPass();
+renderer.addPass(pointcloudPass, PassType.OPAQUE);
+
+const pointcloudAsset = new PointCloudAsset();
+const pointClouudUrl = "https://storage.googleapis.com/visualive-tmp/CNA/Old_Aguathuna_Ship_Loading_Area-Medium_Density_Cloud2/cloud.js"
+pointcloudAsset.loadPointCloud(pointClouudUrl, "PointCloud").then(e => {
+  renderer.frameAll()
+});
+scene.getRoot().addChild(pointcloudAsset);
+
+// renderer.getViewport().getCamera().setPositionAndTarget(
+//   new Vec3({"x":56.49008,"y":180.35938,"z":33.63845}),
+//   new Vec3({"x":92.953,"y":78.45234,"z":-0.41428})
+// );
+
+  </script>
+</html>

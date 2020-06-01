@@ -134,7 +134,7 @@ export class PointCloudOctreeGeometryNode extends PointCloudTreeNode{
 		if(this.loadPromise)
 			return this.loadPromise
 		this.loadPromise = new Promise((resolve, reject)=>{
-		// if (this.loading === true || this.loaded === true || Potree.numNodesLoading >= Potree.maxNodesLoading) {
+		// if (this.loading === true || this.loaded === true || numNodesLoading >= Potree.maxNodesLoading) {
 		// 	return;
 		// }
 
@@ -328,7 +328,7 @@ export class PointCloudOctreeGeometryNode extends PointCloudTreeNode{
 					} else {
 						const msg = 'Failed to load file! HTTP status: ' + xhr.status + ', file: ' + hurl;
 						console.log(msg);
-						Potree.numNodesLoading--;
+						numNodesLoading--;
 						reject(msg);
 					}
 				}

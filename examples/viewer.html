@@ -50,7 +50,7 @@
 	<script type="module">
 
 import { Color, Vec3, Mat4, Quat, Scene, GLRenderer, BinReader, PassType, EnvMap } from "../test-libs/zea-engine/dist/index.esm.js"
-import { PotreeAsset, GLPotreePass } from "../test-libs/zea-pointclouds/dist/index.rawimport.js"
+import { PointCloudAsset, GLPointCloudPass } from "../test-libs/zea-pointclouds/dist/index.rawimport.js"
 	
 		const scene = new Scene();
 		scene.setupGrid(600, 50);
@@ -58,13 +58,13 @@ import { PotreeAsset, GLPotreePass } from "../test-libs/zea-pointclouds/dist/ind
 		const renderer = new GLRenderer(document.getElementById("viewport"), {
 			enableTextures:false
 		});
-		const potreePass = new GLPotreePass();
+		const potreePass = new GLPointCloudPass();
 		// potreePass.setPointBudget(1*1000*1000);
 		renderer.addPass(potreePass, PassType.OPAQUE);
 		renderer.setScene(scene);
 		renderer.resumeDrawing();
 
-		const potreeAsset = new PotreeAsset();
+		const potreeAsset = new PointCloudAsset();
 		scene.getRoot().addChild(potreeAsset);
 		
 		const urlParams = new URLSearchParams(window.location.search);
@@ -99,6 +99,10 @@ import { PotreeAsset, GLPotreePass } from "../test-libs/zea-pointclouds/dist/ind
 			}
 		case 'Cloud_10mm':{
 			url = "https://storage.googleapis.com/visualive-tmp/BuildIT/Cloud_10mm/cloud.js"
+			break;
+			}
+		case 'Old_Aguathuna_Ship':{
+			url = " http://127.0.0.1:8080/Old_Aguathuna_Ship_Loading_Area-Medium_Density_Cloud2/cloud.js"
 			break;
 			}
 		default:

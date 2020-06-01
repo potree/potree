@@ -44,7 +44,7 @@ export class GLPointCloudPass extends GLPass {
 
     minimumNodeVSizeParam.setValue(0.2)
     visiblePointsTargetParam.setValue(2 * 1000 * 1000)
-    pointSizeParam.setValue(0.7)
+    pointSizeParam.setValue(1.25)
   }
   /**
    * The init method.

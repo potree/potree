@@ -162,7 +162,7 @@ export class VolumePanel extends MeasurePanel{
 			var hour =  date.getHours();
 			var min = date.getMinutes();
 			var sec = date.getSeconds();
-			var timestamp = pad(year,4)+"-"+pad(month)+"-"+pad(day)+"_"+pad(hour)+"-"+pad(min)+"-"+pad(sec);
+			var timestamp = pad(year,4)+"-"+pad(month)+"-"+pad(day)+"T"+pad(hour)+":"+pad(min)+":"+pad(sec);
 
 			var output = {
 				t_valid_min: viewer.scene.pointclouds[0].material.uniforms.uFilterGPSTimeClipRange.value[0],
@@ -176,35 +176,35 @@ export class VolumePanel extends MeasurePanel{
 			};
 
 			console.log(output);
-			console.log(JSON.stringify(output));
+			// console.log(JSON.stringify(output));
 			var outputJsonString = JSON.stringify(output, null, 2);
 
-			var config = {
-				quotes: false,
-				quoteChar: '"',
-				escapeChar: '"',
-				delimiter: ",",
-				header: true,
-				newline: "\r\n"
-			};
-			var outputCsvString = Papa.unparse([{
-				"t_valid_min": output.t_valid_min,
-				"t_valid_max": output.t_valid_max,
-				"labeling_timestamp": output.timestamp,
-				"position_x": output.position.x,
-				"position_y": output.position.y,
-				"position_z": output.position.z,
-				"rotation_x": output.rotation._x,
-				"rotation_y": output.rotation._y,
-				"rotation_z": output.rotation._z,
-				"rotation_order": output.rotation._order,
-				"label": output.label,
-				"metadata": output.metadata
-			}], config);
+			// var config = {
+			// 	quotes: false,
+			// 	quoteChar: '"',
+			// 	escapeChar: '"',
+			// 	delimiter: ",",
+			// 	header: true,
+			// 	newline: "\r\n"
+			// };
+			// var outputCsvString = Papa.unparse([{
+			// 	"t_valid_min": output.t_valid_min,
+			// 	"t_valid_max": output.t_valid_max,
+			// 	"labeling_timestamp": output.timestamp,
+			// 	"position_x": output.position.x,
+			// 	"position_y": output.position.y,
+			// 	"position_z": output.position.z,
+			// 	"rotation_x": output.rotation._x,
+			// 	"rotation_y": output.rotation._y,
+			// 	"rotation_z": output.rotation._z,
+			// 	"rotation_order": output.rotation._order,
+			// 	"label": output.label,
+			// 	"metadata": output.metadata
+			// }], config);
 
-			var filename = value+"_"+timestamp+".csv";
+			var filename = value+"_"+timestamp+".json";
 			console.log(filename);
-			download(outputCsvString, filename, "text/plain");
+			download(outputJsonString, filename, "text/plain");
 
 		}
 

@@ -16,8 +16,6 @@
 	<link rel="stylesheet" type="text/css" href="dropdown.css">
 	<script src="dropdown.js"></script>
 	<script src="download.js"></script>
-	<script src="../node_modules/papaparse/papaparse.min.js"></script>
-
 </head>
 
 <body>
@@ -36,7 +34,7 @@
 	<script src="../build/potree/potree.js"></script>
 	<script src="../libs/plasio/js/laslaz.js"></script>
 	<script src="inputform.js"></script>
-	<script src="../common/playbar.js"></script>
+	<script type="module" src="../common/playbar.js"></script>
 	<link rel="stylesheet" type="text/css" href="../common/playbar.css">
 	<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 	<script src="data-labeling.js"></script>
@@ -91,9 +89,9 @@
 		});
 
 		// Point Cloud:
-		// Potree.loadPointCloud("../pointclouds/lion_takanawa/cloud.js", "pointcloud", function(e){
+		Potree.loadPointCloud("../pointclouds/lion_takanawa/cloud.js", "pointcloud", e => {
 		// Potree.loadPointCloud("../pointclouds/veritas/full-pointcloud/cloud.js", "basemap-demo", e => {
-		Potree.loadPointCloud("../pointclouds/veritas/mini_pointcloud.csv_converted/cloud.js", "basemap-demo", e => {
+		// Potree.loadPointCloud("../pointclouds/veritas/mini_pointcloud.csv_converted/cloud.js", "basemap-demo", e => {
 
 			viewer.scene.addPointCloud(e.pointcloud);
 

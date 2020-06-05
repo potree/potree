@@ -37,14 +37,14 @@ export class GLPointCloudPass extends GLPass {
         this.lru.pointLoadLimit = this.pointBudget * 2
     });
 
-    const pointSizeParam = this.addParameter(new NumberParameter('Points Size', 0))
-    pointSizeParam.valueChanged.connect(() => {
-      this.pointSize = pointSizeParam.getValue()
-    });
+    // const pointSizeParam = this.addParameter(new NumberParameter('Points Size', 0))
+    // pointSizeParam.valueChanged.connect(() => {
+    //   this.pointSize = pointSizeParam.getValue()
+    // });
 
     minimumNodeVSizeParam.setValue(0.2)
     visiblePointsTargetParam.setValue(2 * 1000 * 1000)
-    pointSizeParam.setValue(1.25)
+    // pointSizeParam.setValue(1.25)
   }
   /**
    * The init method.
@@ -368,11 +368,11 @@ export class GLPointCloudPass extends GLPass {
 
     this.glshader.bind(renderstate);
 
-    const { visibleNodes, PointSize } = renderstate.unifs;
+    const { visibleNodes } = renderstate.unifs;
     if (visibleNodes)
       this.visibleNodesTexture.bindToUniform(renderstate, visibleNodes)
 
-    gl.uniform1f(PointSize.location, this.pointSize);
+    // gl.uniform1f(PointSize.location, this.pointSize);
     
     // RENDER
     this.glpointcloudAssets.forEach( a => a.draw(renderstate))

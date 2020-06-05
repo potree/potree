@@ -61,6 +61,16 @@ export class GLPointCloudAsset extends GLPass {
     })
     
     this.octreeSize = pointcloudAsset.pcoGeometry.boundingBox.size().x;
+    this.pointSize = pointcloudAsset.getParameter("Point Size").getValue();
+    pointcloudAsset.getParameter("Point Size").valueChanged.connect(()=>{
+    	this.pointSize = pointcloudAsset.getParameter("Point Size").getValue();
+      this.updated.emit();
+    })
+    this.pointSizeAttenuation = pointcloudAsset.getParameter("Point Size Attenuation").getValue();
+    pointcloudAsset.getParameter("Point Size Attenuation").valueChanged.connect(()=>{
+    	this.pointSizeAttenuation = pointcloudAsset.getParameter("Point Size").getValue();
+      this.updated.emit();
+    })
 
     this.visibleNodes = [];
     this.visibleGLNodes = [];
@@ -130,7 +140,8 @@ export class GLPointCloudAsset extends GLPass {
   __drawNodes(renderstate){
     const gl = this.gl;
     const { unifs } = renderstate;
-    const { modelMatrix, offset, uOctreeSize, uOctreeSpacing, uVNStart, uLevel } = unifs
+    const { modelMatrix, offset, uOctreeSize, uOctreeSpacing, uVNStart, uLevel, PointSize, PointSizeAttenuation } = unifs
+
     gl.uniformMatrix4fv(modelMatrix.location, false, this.modelMatrixArray)
     
     if (uOctreeSize)
@@ -138,6 +149,9 @@ export class GLPointCloudAsset extends GLPass {
 
     if (uOctreeSpacing)
       gl.uniform1f(uOctreeSpacing.location, this.spacing)
+
+    gl.uniform1f(PointSize.location, this.pointSize);
+    gl.uniform1f(PointSizeAttenuation.location, this.pointSizeAttenuation);
 
     this.visibleGLNodes.forEach(glpoints => {
       const node = glpoints.node
@@ -158,6 +172,8 @@ export class GLPointCloudAsset extends GLPass {
 
   draw(renderstate) {
     if (this.visibleGLNodes.length == 0 || !this.visible) return;
+		
+
     this.__drawNodes(renderstate)
   }
 

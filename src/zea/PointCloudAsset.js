@@ -2,6 +2,7 @@ import {
 	Box3,
 	ValueSetMode,
 	NumberParameter,
+	BooleanParameter,
 	AssetItem,
 } from '@zeainc/zea-engine'
 
@@ -28,8 +29,10 @@ export class PointCloudAsset extends AssetItem {
     //   this.loaded.untoggle()
   	//   this.loadPointCloud(path, name)
     // })
-    this.addParameter(new NumberParameter('Version', 0))
+    // this.addParameter(new NumberParameter('Version', 0))
     this.addParameter(new NumberParameter('Num Points', 0))
+    this.addParameter(new NumberParameter('Point Size', 1))
+    this.addParameter(new NumberParameter('Point Size Attenuation', 1.0))
   }
 
   getGlobalMat4() {
@@ -56,7 +59,7 @@ export class PointCloudAsset extends AssetItem {
     xfo.tr = this.pcoGeometry.offset;
     this.setGlobalXfo(xfo, mode)
 
-		this.getParameter('Version').setValue(parseFloat(pcoGeometry.version), mode);
+		// this.getParameter('Version').setValue(parseFloat(pcoGeometry.version), mode);
 		if (pcoGeometry.numPoints)
 			this.getParameter('Num Points').setValue(pcoGeometry.numPoints, mode);
     

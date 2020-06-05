@@ -27,6 +27,7 @@ uniform sampler2D visibleNodes;
 uniform mat4 modelMatrix;
 uniform mat4 viewMatrix;
 uniform mat4 projectionMatrix;
+uniform float PointSizeAttenuation;
 uniform float PointSize;
 
 <%include file="utils/quadVertexFromID.glsl"/>
@@ -145,7 +146,7 @@ float getPointSizeAttenuation(vec3 position){
   float lod = getLOD(position);
   // v_color = vec4(0.0, 0.0, 0.0, 1.0);
   // v_color.r = lod / 5.0;
-  return pow(2.0, lod);
+  return mix(1.0, pow(2.0, lod), PointSizeAttenuation);
 }
 
 

@@ -63,7 +63,27 @@ export class NodeLoader{
 						let bufferAttribute = new THREE.BufferAttribute(new Uint8Array(buffer), 4);
 						bufferAttribute.normalized = true;
 						geometry.addAttribute('indices', bufferAttribute);
-					} 
+					}else{
+						const bufferAttribute = new THREE.BufferAttribute(new Float32Array(buffer), 1);
+
+						let batchAttribute = buffers[property].attribute;
+						bufferAttribute.potree = {
+							offset: buffers[property].offset,
+							scale: buffers[property].scale,
+							preciseBuffer: buffers[property].preciseBuffer,
+							range: batchAttribute.range,
+						};
+
+						geometry.addAttribute(property, bufferAttribute);
+
+						const attribute = pointAttributes.attributes.find(a => a.name === batchAttribute.name);
+						attribute.range[0] = Math.min(attribute.range[0], batchAttribute.range[0]);
+						attribute.range[1] = Math.max(attribute.range[1], batchAttribute.range[1]);
+
+						if(node.getLevel() === 0){
+							attribute.initialRange = batchAttribute.range;
+						}
+					}
 
 				}
 				// indices ??

@@ -14,18 +14,16 @@ export class PointCloudAsset extends AssetItem {
 
   constructor(){
     super();
-    
-    this.loaded.setToggled(false)
 
     this.pointBudget = 5 * 1000 * 1000;
     this.minimumNodeVSize = 0.2; // Size, not in pixels, but a fraction of scnreen V height.
     this.level = 0;
     this.visibleNodes = [];
 
-    this.__loaded = false;
+    this.loaded = false;
 
     // this.fileParam = this.addParameter(new FilePathParameter('File'))
-    // this.fileParam.valueChanged.connect(mode => {
+    // this.fileParam.on('valueChanged', () => {
     //   this.loaded.untoggle()
   	//   this.loadPointCloud(path, name)
     // })
@@ -65,7 +63,8 @@ export class PointCloudAsset extends AssetItem {
     
     // this._setBoundingBoxDirty()
 
-    this.loaded.emit();
+    this.loaded = false;
+    this.emit('loaded');
 
     // if (this.viewport)
     //   this.updateVisibility();

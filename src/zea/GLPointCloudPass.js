@@ -27,18 +27,18 @@ export class GLPointCloudPass extends GLPass {
 
     // Size, not in pixels, but a fraction of scnreen V height.
     const minimumNodeVSizeParam = this.addParameter(new NumberParameter('minimumNodeVSize',0.0))
-    minimumNodeVSizeParam.valueChanged.connect(mode => {
+    minimumNodeVSizeParam.on('valueChanged', () => {
         this.minimumNodeVSize = minimumNodeVSizeParam.getValue();
     });
 
     const visiblePointsTargetParam = this.addParameter(new NumberParameter('visiblePointsTarget', 0))
-    visiblePointsTargetParam.valueChanged.connect(() => {
+    visiblePointsTargetParam.on('valueChanged', () => {
       this.pointBudget = visiblePointsTargetParam.getValue()
         this.lru.pointLoadLimit = this.pointBudget * 2
     });
 
     // const pointSizeParam = this.addParameter(new NumberParameter('Points Size', 0))
-    // pointSizeParam.valueChanged.connect(() => {
+    // pointSizeParam.on('valueChanged', () => {
     //   this.pointSize = pointSizeParam.getValue()
     // });
 
@@ -97,8 +97,8 @@ export class GLPointCloudPass extends GLPass {
   addPotreeasset(pointcloudAsset){
     const __bindAsset = pointcloudAsset => {
       const glpointcloudAsset = new GLPointCloudAsset(this.__gl, pointcloudAsset, this.glshader);
-      glpointcloudAsset.updated.connect(() => this.updated.emit());
-      pointcloudAsset.highlightChanged.connect(() => {
+      glpointcloudAsset.on('updated', () => this.emit('updated'));
+      pointcloudAsset.on('highlightChanged', () => {
         if (pointcloudAsset.isHighlighted()) {
           if (this.hilghlightedAssets.indexOf(glpointcloudAsset) == -1)
             this.hilghlightedAssets.push(glpointcloudAsset);
@@ -113,7 +113,7 @@ export class GLPointCloudPass extends GLPass {
     if (pointcloudAsset.isLoaded())
       __bindAsset(pointcloudAsset);
     else {
-      pointcloudAsset.loaded.connect(() => __bindAsset(pointcloudAsset));
+      pointcloudAsset.on('loaded', () => __bindAsset(pointcloudAsset));
     }
   }
 
@@ -127,10 +127,10 @@ export class GLPointCloudPass extends GLPass {
 
   setViewport(viewport){
     this.viewport = viewport;
-    this.viewport.viewChanged.connect(()=>{
+    this.viewport.on('viewChanged', ()=>{
       this.visibleNodesNeedUpdating = true;
     })
-    this.viewport.resized.connect(()=>{
+    this.viewport.on('resized', ()=>{
       this.visibleNodesNeedUpdating = true;
     })
     this.visibleNodesNeedUpdating = true;
@@ -280,7 +280,7 @@ export class GLPointCloudPass extends GLPass {
           //   console.log("loaded:", unloadedGeometry[i].name);
           // }
           this.visibleNodesNeedUpdating = true;
-          this.updated.emit();
+          this.emit('updated');
         });
       }
     }
@@ -288,7 +288,7 @@ export class GLPointCloudPass extends GLPass {
     // Causes unused nodes to be flushed.
     this.lru.freeMemory();
 
-    // this.updated.emit();
+    // this.emit('updated');
   }
 
   computeVisibilityTextureData(nodes){

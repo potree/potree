@@ -51,25 +51,25 @@ export class GLPointCloudAsset extends GLPass {
       this.spacing = pointcloudAsset.pcoGeometry.spacing * Math.max(xfo.sc.x, xfo.sc.y, xfo.sc.z);
       this.modelMatrixArray =  xfo.toMat4().asArray()
     }
-    xfoParam.valueChanged.connect(updateXfo)
+    xfoParam.on('valueChanged', updateXfo)
     updateXfo();
 
     this.visible = pointcloudAsset.getVisible();
-    pointcloudAsset.visibilityChanged.connect(()=>{
+    pointcloudAsset.on('visibilityChanged', ()=>{
       this.visible = pointcloudAsset.getVisible();
-      this.updated.emit();
+      this.emit('updated');
     })
     
     this.octreeSize = pointcloudAsset.pcoGeometry.boundingBox.size().x;
     this.pointSize = pointcloudAsset.getParameter("Point Size").getValue();
-    pointcloudAsset.getParameter("Point Size").valueChanged.connect(()=>{
+    pointcloudAsset.getParameter("Point Size").on('valueChanged', ()=>{
     	this.pointSize = pointcloudAsset.getParameter("Point Size").getValue();
-      this.updated.emit();
+      this.emit('updated');
     })
     this.pointSizeAttenuation = pointcloudAsset.getParameter("Point Size Attenuation").getValue();
-    pointcloudAsset.getParameter("Point Size Attenuation").valueChanged.connect(()=>{
+    pointcloudAsset.getParameter("Point Size Attenuation").on('valueChanged', ()=>{
     	this.pointSizeAttenuation = pointcloudAsset.getParameter("Point Size").getValue();
-      this.updated.emit();
+      this.emit('updated');
     })
 
     this.visibleNodes = [];
@@ -78,7 +78,6 @@ export class GLPointCloudAsset extends GLPass {
     this.map = new Map();
     this.freeList = [];
 
-    this.updated = new Signal();
   }
 
   setVisibleNodes(visibleNodes, lru, offsets){
@@ -110,7 +109,7 @@ export class GLPointCloudAsset extends GLPass {
           //   parent.children.push(gloctreenode);
           // }
 
-          gloctreenode.destructing.connect(() => {
+          gloctreenode.on('destructing', () => {
             this.map.delete(node);
             this.freeList.push(index);
             this.gloctreenodes[index] = null;
@@ -129,7 +128,7 @@ export class GLPointCloudAsset extends GLPass {
         lru.touch(gloctreenode);
       };
 
-      this.updated.emit();
+      this.emit('updated');
     }
   }
 

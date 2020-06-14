@@ -1,7 +1,7 @@
 
 
 import {Version} from "../../Version.js";
-import {PointAttributes, PointAttribute} from "../../loader/PointAttributes.js";
+import {PointAttributes, PointAttribute, PointAttributeTypes} from "../../loader/PointAttributes.js";
 
 const typedArrayMapping = {
 	"int8":   Int8Array,
@@ -160,6 +160,47 @@ onmessage = function (event) {
 		
 		attributeBuffers["INDICES"] = { buffer: buff, attribute: PointAttribute.INDICES };
 	}
+
+
+	{ // handle attribute vectors
+		let vectors = pointAttributes.vectors;
+
+		for(let vector of vectors){
+
+			let {name, attributes} = vector;
+			let numVectorElements = attributes.length;
+			let buffer = new ArrayBuffer(numVectorElements * numPoints * 4);
+			let f32 = new Float32Array(buffer);
+
+			let iElement = 0;
+			for(let sourceName of attributes){
+				let sourceBuffer = attributeBuffers[sourceName];
+				let {offset, scale} = sourceBuffer;
+				let view = new DataView(sourceBuffer.buffer);
+
+				const getter = view.getFloat32.bind(view);
+
+				for(let j = 0; j < numPoints; j++){
+					let value = getter(j * 4, true);
+
+					f32[j * numVectorElements + iElement] = (value / scale) + offset;
+				}
+
+				iElement++;
+			}
+
+			let vecAttribute = new PointAttribute(name, PointAttributeTypes.DATA_TYPE_FLOAT, 3);
+
+			attributeBuffers[name] = { 
+				buffer: buffer, 
+				attribute: vecAttribute,
+			};
+
+		}
+
+	}
+
+
 
 	let message = {
 		buffer: buffer,

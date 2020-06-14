@@ -59,6 +59,9 @@ export class NodeLoader{
 						geometry.addAttribute('position', new THREE.BufferAttribute(new Float32Array(buffer), 3));
 					}else if(property === "rgba"){
 						geometry.addAttribute('rgba', new THREE.BufferAttribute(new Uint8Array(buffer), 4, true));
+					}else if(property === "NORMAL"){
+						//geometry.addAttribute('rgba', new THREE.BufferAttribute(new Uint8Array(buffer), 4, true));
+						geometry.addAttribute('normal', new THREE.BufferAttribute(new Float32Array(buffer), 3));
 					}else if (property === "INDICES") {
 						let bufferAttribute = new THREE.BufferAttribute(new Uint8Array(buffer), 4);
 						bufferAttribute.normalized = true;
@@ -259,6 +262,22 @@ export class OctreeLoader_1_8{
 			let attribute = new PointAttribute(potreeAttributeName, type, numElements);
 
 			attributes.add(attribute);
+		}
+
+		{
+			// check if it has normals
+			let hasNormals = 
+				attributes.attributes.find(a => a.name === "NormalX") !== undefined &&
+				attributes.attributes.find(a => a.name === "NormalY") !== undefined &&
+				attributes.attributes.find(a => a.name === "NormalZ") !== undefined;
+
+			if(hasNormals){
+				let vector = {
+					name: "NORMAL",
+					attributes: ["NormalX", "NormalY", "NormalZ"],
+				};
+				attributes.addVector(vector);
+			}
 		}
 
 		return attributes;

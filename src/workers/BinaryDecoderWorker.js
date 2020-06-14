@@ -254,9 +254,6 @@ onmessage = function (event) {
 	}
 
 	{ // handle attribute vectors
-
-		
-
 		let vectors = pointAttributes.vectors;
 
 		for(let vector of vectors){
@@ -288,8 +285,6 @@ onmessage = function (event) {
 			attributeBuffers[name] = { 
 				buffer: buffer, 
 				attribute: vecAttribute,
-				// offset: offset,
-				// scale: scale,
 			};
 
 		}

@@ -25,6 +25,7 @@ pointclouds/veritas
 data/
 cals/
 scripts/__pycache__/
+.vscode/
 
 # Unwanted Data Filetypes
 *.fb

@@ -1,7 +1,6 @@
 
 import {Utils} from "../../utils.js";
 import {Volume, BoxVolume, SphereVolume} from "../../utils/Volume.js";
-
 import {MeasurePanel} from "./MeasurePanel.js";
 
 export class VolumePanel extends MeasurePanel{
@@ -29,8 +28,8 @@ export class VolumePanel extends MeasurePanel{
 		this.elContent = $(`
 
 			<div class="dropdown">
-			 <button class="dropbtn" name="label_data">Label and Download</button>
-			 <div id="myDropdown" class="dropdown-content">
+			 <button class="dropbtn" id="labelBtn" name="label_data">Label and Download</button>
+			 <div id="labelDropdown" class="dropdown-content" hidden>
 				 <a href="#" class="dropvalue" data-value="road">Road</a>
 				 <a href="#" class="dropvalue" data-value="non_road">Non-Road</a>
 				 <a href="#" class="dropvalue" data-value="road_edge">Road Edge</a>
@@ -116,7 +115,6 @@ export class VolumePanel extends MeasurePanel{
 
 		{ // download
 			this.elDownloadButton = this.elContent.find("input[name=download_volume]");
-			console.log(this.elDownloadButton);
 
 			if(this.propertiesPanel.viewer.server){
 				this.elDownloadButton.click(() => this.download());
@@ -139,121 +137,6 @@ export class VolumePanel extends MeasurePanel{
 			}
 			return stringNum;
 		}
-
-		function label(value, viewer) {
-
-			console.log("ENABLE DIALOG FORM HERE");
-			console.log(viewer);
-			// debugger;
-			var dialog = $( "#dialog-form" ).dialog("open");
-
-			var x;
-			var metadata=prompt("Please enter metadata", "");
-			// if (metadata!=null){
-			// 	 x="Hello " + name + "! How are you today?";
-			// 	alert(x);
-			// }
-
-			var date = new Date();
-			// var obj = (date.getTime());
-			var year = date.getFullYear();
-			var month = date.getMonth();
-			var day =  date.getDay();
-			var hour =  date.getHours();
-			var min = date.getMinutes();
-			var sec = date.getSeconds();
-			var timestamp = pad(year,4)+"-"+pad(month)+"-"+pad(day)+"T"+pad(hour)+":"+pad(min)+":"+pad(sec);
-
-			var output = {
-				t_valid_min: viewer.scene.pointclouds[0].material.uniforms.uFilterGPSTimeClipRange.value[0],
-				t_valid_max: viewer.scene.pointclouds[0].material.uniforms.uFilterGPSTimeClipRange.value[1],
-				timestamp: date.getTime(),
-				position: measurement.position,
-				rotation: measurement.rotation,
-				size: measurement.scale,
-				label: value,
-				metadata: metadata
-			};
-
-			console.log(output);
-			// console.log(JSON.stringify(output));
-			var outputJsonString = JSON.stringify(output, null, 2);
-
-			// var config = {
-			// 	quotes: false,
-			// 	quoteChar: '"',
-			// 	escapeChar: '"',
-			// 	delimiter: ",",
-			// 	header: true,
-			// 	newline: "\r\n"
-			// };
-			// var outputCsvString = Papa.unparse([{
-			// 	"t_valid_min": output.t_valid_min,
-			// 	"t_valid_max": output.t_valid_max,
-			// 	"labeling_timestamp": output.timestamp,
-			// 	"position_x": output.position.x,
-			// 	"position_y": output.position.y,
-			// 	"position_z": output.position.z,
-			// 	"rotation_x": output.rotation._x,
-			// 	"rotation_y": output.rotation._y,
-			// 	"rotation_z": output.rotation._z,
-			// 	"rotation_order": output.rotation._order,
-			// 	"label": output.label,
-			// 	"metadata": output.metadata
-			// }], config);
-
-			var filename = value+"_"+timestamp+".json";
-			console.log(filename);
-			download(outputJsonString, filename, "text/plain");
-
-		}
-
-		{ // label and download
-
-			// Assign Onclick Functions to drop down items:
-			// debugger;
-			var viewer = this.viewer;
-			this.elContent.find("a.dropvalue").click(function() {
-				// console.log($(this).data("value"));
-				var val = $(this).data("value");
-				label(val, viewer);
-			});
-
-			// var dropdownvalues = this.elContent.find("a.dropvalue");
-			// for (let a of dropdownvalues) {
-			// 	debugger;
-			// 	console.log(a);
-			// 	// var a = dropdownvalues[k];
-			//
-			// 	a.onclick = function() {
-			// 		label(a.value);
-			// 	};
-			// }
-
-			var dropbtn = this.elContent.find("button[name=label_data]");
-			console.log(dropbtn);
-			dropbtn.click(() => {
-				document.getElementById("myDropdown").classList.toggle("show");
-
-				//
-				// var output = {
-				// 	position: measurement.position,
-				// 	rotation: measurement.rotation,
-				// 	size: measurement.scale
-				// };
-				//
-				// console.log(output);
-				// console.log(JSON.stringify(output));
-
-
-			});
-			//
-			// debugger;
-			// console.log(this.elContent);
-
-
-		}
-
 
 		this.elCopyRotation = this.elContent.find("img[name=copyRotation]");
 		this.elCopyRotation.click( () => {

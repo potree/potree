@@ -1,7 +1,7 @@
 "use strict"
 /**
  * @file This file is intended to help add event listeners for the data-labeling on the dropdown menu
- * Used by potree/src/viewer/PropertyPanels/VolumePanel.js
+ * Used by potree/src/viewer/PropertyPanels/PropertiesPanel.js
  */
 
 /**
@@ -27,7 +27,7 @@
  * }} measurement Cuboid information
  * @note Have to use jQuery due to element being modified being created through jQuery ("this.elContent")
  */
-export function addLabelListeners(viewer, measurement) {
+export function addVolLabelListeners(viewer, measurement) {
     // add event listener to each item within container
     const labelDropdown = $("#labelDropdown")
     const labelOpts = labelDropdown.children(".dropvalue")

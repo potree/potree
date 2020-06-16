@@ -17,7 +17,7 @@ import {HeightPanel} from "./HeightPanel.js";
 import {VolumePanel} from "./VolumePanel.js";
 import {ProfilePanel} from "./ProfilePanel.js";
 import {CameraPanel} from "./CameraPanel.js";
-import { addLabelListeners } from "../../../data-labeling/dropdown.js"
+import { addVolLabelListeners } from "../../../data-labeling/dropdown.js"
 
 export class PropertiesPanel{
 
@@ -642,7 +642,7 @@ export class PropertiesPanel{
 			// can only render event listeners when volume section is added 
 			// (not in document up until this point)
 			// object contains measurement info
-			addLabelListeners(this.viewer, object);
+			addVolLabelListeners(this.viewer, object);
 		}
 	}
 

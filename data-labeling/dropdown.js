@@ -1,3 +1,4 @@
+"use strict"
 /**
  * @file This file is intended to help add event listeners for the data-labeling on the dropdown menu
  * Used by potree/src/viewer/PropertyPanels/VolumePanel.js
@@ -6,17 +7,34 @@
 /**
  * @brief Helper function that to set up the volume and label event listeners on the side panel
  * @param {Viewer} viewer The passed viewer object
+ * @param {{
+ *   "position": {
+ *     "x": -0.061213016510009766,
+ *     "y": -2.4204059839248653,
+ *     "z": 4.487650059525813
+ *   },
+ *   "rotation": {
+ *     "_x": 0,
+ *     "_y": 0,
+ *     "_z": 0,
+ *     "_order": "XYZ"
+ *   },
+ *   "size": {
+ *     "x": 1.50917380887355,
+ *     "y": 1.50917380887355,
+ *     "z": 2.6362620320941543
+ *   }
+ * }} measurement Cuboid information
  * @note Have to use jQuery due to element being modified being created through jQuery ("this.elContent")
  */
-export function addLabelListeners(viewer) {
+export function addLabelListeners(viewer, measurement) {
     // add event listener to each item within container
     const labelDropdown = $("#labelDropdown")
     const labelOpts = labelDropdown.children(".dropvalue")
     for (const item of labelOpts) {
         item.addEventListener("click", () => {
-            const val = $(this).data("value")
-            console.log(`val = ${val}`)
-            label(val, viewer)
+            const val = item.getAttribute("data-value")
+            label(val, viewer, measurement)
         })
     }
 
@@ -31,22 +49,45 @@ export function addLabelListeners(viewer) {
  * @Brief Helper function that labels based on input value
  * @param {Number} value The 
  * @param {Viewer} viewer The passed viewer object
- * 
+ * @param {JSON} measurement Postioning of the cuboid (position, rotation, size)
+ * @returns {{
+ *  t_valid_min: String
+ *  t_valid_max: String
+ *  timestamp: Number
+ *  position: {
+ *      "x": Number,
+ *      "y": Number,
+ *      "z": Number
+ *  },
+ *  rotation: {
+ *      "_x": Number,
+ *      "_y": Number,
+ *      "_z": Number,
+ *      "_order": String
+ *  },
+ *  size: {
+ *      "x": Number,
+ *      "y": Number,
+ *      "z": Number
+ *  }
+ *  label: Number
+ *  metadata: String
+ * }} The label JSON
  */
-function label(value, viewer) {
-    var metadata=prompt("Please enter metadata", "")
+function label(value, viewer, measurement) {
+    const metadata=prompt("Please enter metadata", "")
 
-    var date = new Date()
-    // var obj = (date.getTime())
-    var year = date.getFullYear()
-    var month = date.getMonth()
-    var day =  date.getDay()
-    var hour =  date.getHours()
-    var min = date.getMinutes()
-    var sec = date.getSeconds()
-    var timestamp = pad(year,4)+"-"+pad(month)+"-"+pad(day)+"T"+pad(hour)+":"+pad(min)+":"+pad(sec)
+    const date = new Date()
+    // const obj = (date.getTime())
+    const year = date.getFullYear()
+    const month = date.getMonth()
+    const day =  date.getDay()
+    const hour =  date.getHours()
+    const min = date.getMinutes()
+    const sec = date.getSeconds()
+    const timestamp = pad(year,4)+"-"+pad(month)+"-"+pad(day)+"T"+pad(hour)+":"+pad(min)+":"+pad(sec)
 
-    var output = {
+    const output = {
         t_valid_min: viewer.scene.pointclouds[0].material.uniforms.uFilterGPSTimeClipRange.value[0],
         t_valid_max: viewer.scene.pointclouds[0].material.uniforms.uFilterGPSTimeClipRange.value[1],
         timestamp: date.getTime(),
@@ -58,32 +99,19 @@ function label(value, viewer) {
     }
 
     const outputJsonString = JSON.stringify(output, null, 2)
-    console.log(outputJsonString)
-
-    // var config = {
-    // 	quotes: false,
-    // 	quoteChar: '"',
-    // 	escapeChar: '"',
-    // 	delimiter: ",",
-    // 	header: true,
-    // 	newline: "\r\n"
-    // }
-    // var outputCsvString = Papa.unparse([{
-    // 	"t_valid_min": output.t_valid_min,
-    // 	"t_valid_max": output.t_valid_max,
-    // 	"labeling_timestamp": output.timestamp,
-    // 	"position_x": output.position.x,
-    // 	"position_y": output.position.y,
-    // 	"position_z": output.position.z,
-    // 	"rotation_x": output.rotation._x,
-    // 	"rotation_y": output.rotation._y,
-    // 	"rotation_z": output.rotation._z,
-    // 	"rotation_order": output.rotation._order,
-    // 	"label": output.label,
-    // 	"metadata": output.metadata
-    // }], config)
+    // console.log(outputJsonString)
 
     const filename = value+"_"+timestamp+".json"
     console.log(`saving label to ${filename}`)
     // download(outputJsonString, filename, "text/plain")
+    return output
+}
+
+function pad(number, len=2, char='0') {
+    if (number < 0) {
+        throw "negative numbers not supported yet"
+    }
+    const strNum = String(number)
+    const numCharsNeeded = len-strNum.length
+    return strNum + char.repeat(numCharsNeeded)
 }

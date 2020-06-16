@@ -126,18 +126,6 @@ export class VolumePanel extends MeasurePanel{
 			// };
 		}
 
-
-		function pad(number, len=2, char='0') {
-			if (number < 0) {
-				throw "negative numbers not supported yet - Vinay";
-			}
-			var stringNum = String(number);
-			while (stringNum.length <  len) {
-				stringNum = char + stringNum;
-			}
-			return stringNum;
-		}
-
 		this.elCopyRotation = this.elContent.find("img[name=copyRotation]");
 		this.elCopyRotation.click( () => {
 			let rotation = this.measurement.rotation.toArray().slice(0, 3);

@@ -28,7 +28,7 @@ export class VolumePanel extends MeasurePanel{
 		this.elContent = $(`
 
 			<div class="dropdown">
-			 <button class="dropbtn" id="labelBtn" name="label_data">Label and Download</button>
+			 <button class="dropbtn" id="labelBtn" name="label_data">Label</button>
 			 <div id="labelDropdown" class="dropdown-content" hidden>
 				 <a href="#" class="dropvalue" data-value="road">Road</a>
 				 <a href="#" class="dropvalue" data-value="non_road">Non-Road</a>

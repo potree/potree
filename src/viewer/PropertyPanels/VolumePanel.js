@@ -27,17 +27,17 @@ export class VolumePanel extends MeasurePanel{
 
 		this.elContent = $(`
 
-			<div class="dropdown">
-			 <button class="dropbtn" id="labelBtn" name="label_data">Label</button>
-			 <button class="dropbtn" id="downloadLabelBtn" name="label_download">Export Labels</button>
-			 <div id="labelDropdown" class="dropdown-content" hidden>
-				 <a href="#" class="dropvalue" data-value="road">Road</a>
-				 <a href="#" class="dropvalue" data-value="non_road">Non-Road</a>
-				 <a href="#" class="dropvalue" data-value="road_edge">Road Edge</a>
-				 <a href="#" class="dropvalue" data-value="lane_marking">Lane Marking</a>
-				 <a href="#" class="dropvalue" data-value="vehicle">Vehicle</a>
-				 <a href="#" class="dropvalue" data-value="obstacle">Obstacle</a>
-			 </div>
+            <div class="dropdown">
+                <button class="dropbtn" id="labelBtn" name="label_data">Label</button>
+                <button class="dropbtn" id="downloadLabelBtn" name="label_download">Export Labels</button>
+                <div id="labelDropdown" class="dropdown-content" hidden>
+                    <a href="#" class="dropvalue" data-value="road">Road</a>
+                    <a href="#" class="dropvalue" data-value="non_road">Non-Road</a>
+                    <a href="#" class="dropvalue" data-value="road_edge">Road Edge</a>
+                    <a href="#" class="dropvalue" data-value="lane_marking">Lane Marking</a>
+                    <a href="#" class="dropvalue" data-value="vehicle">Vehicle</a>
+                    <a href="#" class="dropvalue" data-value="obstacle">Obstacle</a>
+                </div>
 			</div>
 			<div class="measurement_content selectable">
 				<span class="coordinates_table_container"></span>

@@ -45,15 +45,10 @@ export function addVolLabelListeners(viewer, measurement) {
     }
 
     $("#downloadLabelBtn").click(() => {
-        // const defaultAns = ""
-        // const dest = window.prompt("Where do you want to download to?", defaultAns)
-        // if (dest == defaultAns) return // cancelled
         const shouldCancel = !window.confirm("Are you sure you want to download?")
         if (shouldCancel) return
 
-        const outputJsonString = JSON.stringify(labels, null, 2)
-        // console.log(outputJsonString)
-        
+        const outputJsonString = JSON.stringify(labels, null, 2)        
         const timestamp = makeTimestampUTC()
         const filename = `${timestamp}_labels.json`
         console.log(`Saving label data to ${filename}`)

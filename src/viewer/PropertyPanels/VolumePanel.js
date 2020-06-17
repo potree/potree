@@ -29,6 +29,7 @@ export class VolumePanel extends MeasurePanel{
 
 			<div class="dropdown">
 			 <button class="dropbtn" id="labelBtn" name="label_data">Label</button>
+			 <button class="dropbtn" id="downloadLabelBtn" name="label_download">Export Labels</button>
 			 <div id="labelDropdown" class="dropdown-content" hidden>
 				 <a href="#" class="dropvalue" data-value="road">Road</a>
 				 <a href="#" class="dropvalue" data-value="non_road">Non-Road</a>

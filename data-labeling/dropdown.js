@@ -26,6 +26,7 @@
  *   }
  * }} measurement Cuboid information
  * @note Have to use jQuery due to element being modified being created through jQuery ("this.elContent")
+ * Element created in potree/src/viewer/PropertyPanels/VolumePanel.js
  */
 export function addVolLabelListeners(viewer, measurement) {
     // add event listener to each item within container
@@ -37,6 +38,24 @@ export function addVolLabelListeners(viewer, measurement) {
             label(val, viewer, measurement)
         })
     }
+
+    $("#downloadLabelBtn").click(() => {
+        // const defaultAns = ""
+        // const dest = window.prompt("Where do you want to download to?", defaultAns)
+        // if (dest == defaultAns) return // cancelled
+        const shouldCancel = !window.confirm("Are you sure you want to download?")
+        if (shouldCancel) return
+
+        const output = {} //stub
+        const outputJsonString = JSON.stringify(output, null, 2)
+        console.log(outputJsonString)
+        
+        const timestamp = makeTimestampUTC()
+        const filename = `${timestamp}_labels.json`
+        console.log(`Saving label to ${filename}`)
+        // from potree/data-labeling/download.js
+        download(filename, outputJsonString, 'text/plain')
+    })
 
     // When the user clicks on the button, toggle between hiding and showing the dropdown content
     $("#labelBtn").click( () => {
@@ -77,20 +96,10 @@ export function addVolLabelListeners(viewer, measurement) {
 function label(value, viewer, measurement) {
     const metadata=prompt("Please enter metadata", "")
 
-    const date = new Date()
-    // const obj = (date.getTime())
-    const year = date.getFullYear()
-    const month = date.getMonth()
-    const day =  date.getDay()
-    const hour =  date.getHours()
-    const min = date.getMinutes()
-    const sec = date.getSeconds()
-    const timestamp = pad(year,4)+"-"+pad(month)+"-"+pad(day)+"T"+pad(hour)+":"+pad(min)+":"+pad(sec)
-
     const output = {
         t_valid_min: viewer.scene.pointclouds[0].material.uniforms.uFilterGPSTimeClipRange.value[0],
         t_valid_max: viewer.scene.pointclouds[0].material.uniforms.uFilterGPSTimeClipRange.value[1],
-        timestamp: date.getTime(),
+        timestamp: new Date().getTime(),
         position: measurement.position,
         rotation: measurement.rotation,
         size: measurement.scale,
@@ -98,12 +107,6 @@ function label(value, viewer, measurement) {
         metadata: metadata
     }
 
-    const outputJsonString = JSON.stringify(output, null, 2)
-    // console.log(outputJsonString)
-
-    const filename = value+"_"+timestamp+".json"
-    console.log(`saving label to ${filename}`)
-    // download(outputJsonString, filename, "text/plain")
     return output
 }
 
@@ -114,4 +117,17 @@ function pad(number, len=2, char='0') {
     const strNum = String(number)
     const numCharsNeeded = len-strNum.length
     return strNum + char.repeat(numCharsNeeded)
+}
+
+function makeTimestampUTC () {
+    const date = new Date()
+    // const obj = (date.getTime())
+    const year = date.getFullYear()
+    const month = date.getMonth()
+    const day =  date.getDay()
+    const hour =  date.getHours()
+    const min = date.getMinutes()
+    const sec = date.getSeconds()
+    const timestamp = pad(year,4)+"-"+pad(month)+"-"+pad(day)+"T"+pad(hour)+":"+pad(min)+":"+pad(sec)
+    return timestamp
 }

@@ -4,6 +4,9 @@
  * Used by potree/src/viewer/PropertyPanels/PropertiesPanel.js
  */
 
+// keeps track of label data to eventually download
+const labels = []
+
 /**
  * @brief Helper function that to set up the volume and label event listeners on the side panel
  * @param {Viewer} viewer The passed viewer object
@@ -35,7 +38,8 @@ export function addVolLabelListeners(viewer, measurement) {
     for (const item of labelOpts) {
         item.addEventListener("click", () => {
             const val = item.getAttribute("data-value")
-            label(val, viewer, measurement)
+            const data = label(val, viewer, measurement)
+            labels.push(data)
         })
     }
 
@@ -46,13 +50,12 @@ export function addVolLabelListeners(viewer, measurement) {
         const shouldCancel = !window.confirm("Are you sure you want to download?")
         if (shouldCancel) return
 
-        const output = {} //stub
-        const outputJsonString = JSON.stringify(output, null, 2)
-        console.log(outputJsonString)
+        const outputJsonString = JSON.stringify(labels, null, 2)
+        // console.log(outputJsonString)
         
         const timestamp = makeTimestampUTC()
         const filename = `${timestamp}_labels.json`
-        console.log(`Saving label to ${filename}`)
+        console.log(`Saving label data to ${filename}`)
         // from potree/data-labeling/download.js
         download(filename, outputJsonString, 'text/plain')
     })

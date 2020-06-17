@@ -7,6 +7,9 @@
 // keeps track of label data to eventually download
 const labels = []
 
+// single point of truth for labels export
+const labelExportId = "export-labels-container"
+
 /**
  * @brief Helper function that to set up the volume and label event listeners on the side panel
  * @param {Viewer} viewer The passed viewer object
@@ -41,17 +44,13 @@ export function addVolLabelListeners(viewer, measurement) {
             const val = item.getAttribute("data-value")
             const data = label(val, viewer, measurement)
             labels.push(data)
+            // only show label exports once first element is added
+            $(`#${labelExportId}`).show()
         })
     }
 
-    $("#downloadLabelBtn").click(() => {
-        const outputJsonString = JSON.stringify(labels, null, 2)        
-        const timestamp = makeTimestampUTC()
-        const filename = `${timestamp}_labels.json`
-        console.log(`Saving label data to ${filename}`)
-        // from potree/data-labeling/download.js
-        download(filename, outputJsonString, 'text/plain')
-    })
+    // add text, button, & event listeners for label exporting in sidebar
+    addLabelExport()
 
     $("#previewLabelBtn").click(() => {
         labels.every((currLabel, idx) => {
@@ -65,6 +64,29 @@ export function addVolLabelListeners(viewer, measurement) {
     $("#labelBtn").click( () => {
         if (labelDropdown.is(":visible")) labelDropdown.hide()
         else                              labelDropdown.show()
+    })
+}
+
+function addLabelExport() {
+    // create label export
+    const geoJSONIcon = `${Potree.resourcePath}/icons/file_geojson.svg`
+    const sceneExportContainer = $("#scene_export")
+    const downloadLabelId = "download-label-btn"
+    sceneExportContainer.append(`
+        <div id="${labelExportId}" hidden>
+            Labels: <br>
+            <a href="#"><img id="${downloadLabelId}" src="${geoJSONIcon}" class="button-icon" style="height: 24px" /></a>
+        </div>
+    `)
+
+    // download labels when "JSON" button is clicked
+    $(`#${downloadLabelId}`).click(() => {
+        const outputJsonString = JSON.stringify(labels, null, 2)
+        const timestamp = makeTimestampUTC()
+        const filename = `${timestamp}_labels.json`
+        console.log(`Saving label data to ${filename}`)
+        // from potree/data-labeling/download.js
+        download(filename, outputJsonString, 'text/plain')
     })
 }
 

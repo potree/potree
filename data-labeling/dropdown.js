@@ -37,6 +37,7 @@ export function addVolLabelListeners(viewer, measurement) {
     const labelOpts = labelDropdown.children(".dropvalue")
     for (const item of labelOpts) {
         item.addEventListener("click", () => {
+            labelDropdown.hide()
             const val = item.getAttribute("data-value")
             const data = label(val, viewer, measurement)
             labels.push(data)

@@ -62,8 +62,11 @@ export function addVolLabelListeners(viewer, measurement) {
     })
 
     $("#previewLabelBtn").click(() => {
-        const outputJsonString = JSON.stringify(labels, null, 2)
-        window.alert(`Current labels: ${outputJsonString}`)
+        labels.every((currLabel, idx) => {
+            // show each label (if 'cancel' stop showing)
+            const outputJsonString = JSON.stringify(currLabel, null, 2)
+            return window.confirm(`Label #${idx}: ${outputJsonString}`)
+        })
     })
 
     // When the user clicks on the button, toggle between hiding and showing the dropdown content

@@ -97,6 +97,12 @@ function label(value, viewer) {
     if (currVolNode.data.labelData == null) currVolNode.data.labelData = {}
     currVolNode.data.labelData.metadata = prompt("Please enter metadata", "")
     currVolNode.data.labelData.label = value
+
+    // update table on side nav
+    const elLabel = $("#cell-label")
+    const elMetadata = $("#cell-metadata")
+    elLabel.html(currVolNode.data.labelData.label)
+    elMetadata.html(currVolNode.data.labelData.metadata)
 }
 
 /**
@@ -135,7 +141,7 @@ function getAllVolData() {
     *  metadata: String
     * }} The relevant info of the selected volume
  */
-function getVolData(node=null) {
+export function getVolData(node=null) {
     const currVol = node == null ? getSelectedNode() : node
     const volData =  {
         t_valid_min:    currVol.data.t_valid_min,
@@ -144,8 +150,8 @@ function getVolData(node=null) {
         position:       currVol.data.position,
         rotation:       currVol.data.rotation,
         size:           currVol.data.scale,
-        label:          currVol.data.labelData.label,
-        metadata:       currVol.data.labelData.metadata
+        label:          currVol.data.labelData ? currVol.data.labelData.label : "",
+        metadata:       currVol.data.labelData ? currVol.data.labelData.metadata : ""
     }
     return volData
 }

@@ -2,6 +2,7 @@
 import {Utils} from "../../utils.js";
 import {Volume, BoxVolume, SphereVolume} from "../../utils/Volume.js";
 import {MeasurePanel} from "./MeasurePanel.js";
+import { getVolData } from "../../../data-labeling/dropdown.js"
 
 export class VolumePanel extends MeasurePanel{
 	constructor(viewer, measurement, propertiesPanel){
@@ -374,6 +375,8 @@ export class VolumePanel extends MeasurePanel{
 	}
 
 	update(){
+		const currVolData = getVolData()
+
 		let elCoordiantesContainer = this.elContent.find('.coordinates_table_container');
 		elCoordiantesContainer.empty();
 		elCoordiantesContainer.append(this.createCoordinatesTable([this.measurement.position]));
@@ -415,6 +418,11 @@ export class VolumePanel extends MeasurePanel{
 
 		this.elCheckClip.prop("checked", this.measurement.clip);
 		this.elCheckShow.prop("checked", this.measurement.visible);
+
+		const elLabel = this.elContent.find(`#cell-label`)
+		const elMetadata = this.elContent.find(`#cell-metadata`)
+		elLabel.html(currVolData.label)
+		elMetadata.html(currVolData.metadata)
 
 	}
 };

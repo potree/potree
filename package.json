@@ -3,7 +3,7 @@
   "filename": "zea-pointclouds.js",
   "library": "ZeaPointClouds",
   "private": false,
-  "version": "0.0.4",
+  "version": "0.1.0",
   "description": "Large point cloud rendering extension for Zea Engine",
   "main": "dist/index.cjs.js",
   "module": "dist/index.esm.js",

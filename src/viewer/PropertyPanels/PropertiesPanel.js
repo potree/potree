@@ -641,8 +641,7 @@ export class PropertiesPanel{
 		if (type == TYPE.VOLUME) {
 			// can only render event listeners when volume section is added 
 			// (not in document up until this point)
-			// object contains measurement info
-			addVolLabelListeners(this.viewer, object);
+			addVolLabelListeners(this.viewer);
 		}
 	}
 

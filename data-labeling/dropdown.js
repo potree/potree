@@ -4,37 +4,16 @@
  * Used by potree/src/viewer/PropertyPanels/PropertiesPanel.js
  */
 
-// keeps track of label data to eventually download
-const labels = []
-
 // single point of truth for labels export
 const labelExportId = "export-labels-container"
 
 /**
  * @brief Helper function that to set up the volume and label event listeners on the side panel
  * @param {Viewer} viewer The passed viewer object
- * @param {{
- *   "position": {
- *     "x": -0.061213016510009766,
- *     "y": -2.4204059839248653,
- *     "z": 4.487650059525813
- *   },
- *   "rotation": {
- *     "_x": 0,
- *     "_y": 0,
- *     "_z": 0,
- *     "_order": "XYZ"
- *   },
- *   "size": {
- *     "x": 1.50917380887355,
- *     "y": 1.50917380887355,
- *     "z": 2.6362620320941543
- *   }
- * }} measurement Cuboid information
  * @note Have to use jQuery due to element being modified being created through jQuery ("this.elContent")
  * Element created in potree/src/viewer/PropertyPanels/VolumePanel.js
  */
-export function addVolLabelListeners(viewer, measurement) {
+export function addVolLabelListeners(viewer) {
     // add event listener to each item within container
     const labelDropdown = $("#labelDropdown")
     const labelOpts = labelDropdown.children(".dropvalue")
@@ -42,8 +21,7 @@ export function addVolLabelListeners(viewer, measurement) {
         item.addEventListener("click", () => {
             labelDropdown.hide()
             const val = item.getAttribute("data-value")
-            const data = label(val, viewer, measurement)
-            labels.push(data)
+            label(val, viewer)
             // only show label exports once first element is added
             $(`#${labelExportId}`).show()
         })
@@ -53,9 +31,9 @@ export function addVolLabelListeners(viewer, measurement) {
     addLabelExport()
 
     $("#previewLabelBtn").click(() => {
-        labels.every((currLabel, idx) => {
+        getAllVolData().every((currMeasure, idx) => {
             // show each label (if 'cancel' stop showing)
-            const outputJsonString = JSON.stringify(currLabel, null, 2)
+            const outputJsonString = JSON.stringify(currMeasure, null, 2)
             return window.confirm(`Label #${idx}: ${outputJsonString}`)
         })
     })
@@ -86,7 +64,8 @@ function addLabelExport() {
 
     // download labels when "JSON" button is clicked
     $(`#${downloadLabelId}`).click(() => {
-        const outputJsonString = JSON.stringify(labels, null, 2)
+        const allMeasurements = getAllVolData()
+        const outputJsonString = JSON.stringify(allMeasurements, null, 2)
         const timestamp = makeTimestampUTC()
         const filename = `${timestamp}_labels.json`
         console.log(`Saving label data to ${filename}`)
@@ -96,49 +75,86 @@ function addLabelExport() {
 }
 
 /**
- * @Brief Helper function that labels based on input value
- * @param {Number} value The 
+ * @brief Helper function that labels based on input value
+ * @param {Number} value The classification label based on the dropdown options
  * @param {Viewer} viewer The passed viewer object
- * @param {JSON} measurement Postioning of the cuboid (position, rotation, size)
- * @returns {{
- *  t_valid_min: String
- *  t_valid_max: String
- *  timestamp: Number
- *  position: {
- *      "x": Number,
- *      "y": Number,
- *      "z": Number
- *  },
- *  rotation: {
- *      "_x": Number,
- *      "_y": Number,
- *      "_z": Number,
- *      "_order": String
- *  },
- *  size: {
- *      "x": Number,
- *      "y": Number,
- *      "z": Number
- *  }
- *  label: Number
- *  metadata: String
- * }} The label JSON
  */
-function label(value, viewer, measurement) {
-    const metadata=prompt("Please enter metadata", "")
-
-    const output = {
-        t_valid_min: viewer.scene.pointclouds[0].material.uniforms.uFilterGPSTimeClipRange.value[0],
-        t_valid_max: viewer.scene.pointclouds[0].material.uniforms.uFilterGPSTimeClipRange.value[1],
-        timestamp: new Date().getTime(),
-        position: measurement.position,
-        rotation: measurement.rotation,
-        size: measurement.scale,
-        label: value,
-        metadata: metadata
+function label(value, viewer) {
+    const currVolNode = getSelectedNode()
+    if (currVolNode.text != "Volume") {
+        window.alert("Select a Volume under 'Measurements' before labelling")
+        return
     }
 
-    return output
+    // update info in .data portion of node (it already knows scale, position, and rotation)
+    // WARN: any data saved outside of '.data' cannot be found when scanning tree with other methods
+    currVolNode.data.t_valid_min = viewer.scene.pointclouds[0].material.uniforms.uFilterGPSTimeClipRange.value[0]
+    currVolNode.data.t_valid_max = viewer.scene.pointclouds[0].material.uniforms.uFilterGPSTimeClipRange.value[1]
+    currVolNode.data.timestamp = new Date().getTime()
+
+    // add json key for label data before trying to add to it
+    // (can't save to .data.label because it is already taken)
+    if (currVolNode.data.labelData == null) currVolNode.data.labelData = {}
+    currVolNode.data.labelData.metadata = prompt("Please enter metadata", "")
+    currVolNode.data.labelData.label = value
+}
+
+/**
+ * @returns {Array<getVolData()>} List of relevant data for each volume measurement
+ */
+function getAllVolData() {
+    const measurementsRoot = $("#jstree_scene").jstree().get_json("measurements")
+    return Array.from(measurementsRoot.children).map(child => getVolData(child))
+}
+
+/**
+ * @brief Helper function to get the volume's information
+ * @param {JSTree} node (optional) The desired JSTree node you want to get information from (default = selected node)
+ * @returns {{
+    *  t_valid_min: String
+    *  t_valid_max: String
+    *  timestamp: Number
+    *  position: {
+    *      "x": Number,
+    *      "y": Number,
+    *      "z": Number
+    *  },
+    *  rotation: {
+    *      "_x": Number,
+    *      "_y": Number,
+    *      "_z": Number,
+    *      "_order": String
+    *  },
+    *  size: {
+    *      "x": Number,
+    *      "y": Number,
+    *      "z": Number
+    *  }
+    *  label: Number
+    *  metadata: String
+    * }} The relevant info of the selected volume
+ */
+function getVolData(node=null) {
+    const currVol = node == null ? getSelectedNode() : node
+    const volData =  {
+        t_valid_min:    currVol.data.t_valid_min,
+        t_valid_max:    currVol.data.t_valid_max,
+        timestamp:      currVol.data.timestamp,
+        position:       currVol.data.position,
+        rotation:       currVol.data.rotation,
+        size:           currVol.data.scale,
+        label:          currVol.data.labelData.label,
+        metadata:       currVol.data.labelData.metadata
+    }
+    return volData
+}
+
+/**
+ * @brief Helper function to get data from measurements tree
+ * @note return json is strange in that it does not appear to contain position, rotation, & size (but it does)
+ */
+function getSelectedNode() {
+    return $("#jstree_scene").jstree("get_selected", true)[0]
 }
 
 function pad(number, len=2, char='0') {

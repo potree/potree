@@ -68,6 +68,11 @@ export function addVolLabelListeners(viewer, measurement) {
 }
 
 function addLabelExport() {
+    // if element already appended, do not duplicate
+    if (document.getElementById(labelExportId)) {
+        return
+    }
+
     // create label export
     const geoJSONIcon = `${Potree.resourcePath}/icons/file_geojson.svg`
     const sceneExportContainer = $("#scene_export")

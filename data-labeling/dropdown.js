@@ -30,14 +30,6 @@ export function addVolLabelListeners(viewer) {
     // add text, button, & event listeners for label exporting in sidebar
     addLabelExport()
 
-    $("#previewLabelBtn").click(() => {
-        getAllVolData().every((currMeasure, idx) => {
-            // show each label (if 'cancel' stop showing)
-            const outputJsonString = JSON.stringify(currMeasure, null, 2)
-            return window.confirm(`Label #${idx}: ${outputJsonString}`)
-        })
-    })
-
     // When the user clicks on the button, toggle between hiding and showing the dropdown content
     $("#labelBtn").click( () => {
         if (labelDropdown.is(":visible")) labelDropdown.hide()

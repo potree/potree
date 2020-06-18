@@ -38,7 +38,6 @@ export class VolumePanel extends MeasurePanel{
                     <a href="#" class="dropvalue" data-value="vehicle">Vehicle</a>
                     <a href="#" class="dropvalue" data-value="obstacle">Obstacle</a>
                 </div>
-                <button class="dropbtn" id="previewLabelBtn"">Preview Labels</button>
 			</div>
 			<div class="measurement_content selectable">
 				<span class="coordinates_table_container"></span>

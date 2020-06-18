@@ -105,6 +105,7 @@ function label(value, viewer) {
 function getAllVolData() {
     const measurementsRoot = $("#jstree_scene").jstree().get_json("measurements")
     return Array.from(measurementsRoot.children).map(child => getVolData(child))
+        .filter(volume => volume.label != null)
 }
 
 /**

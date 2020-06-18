@@ -76,6 +76,24 @@ export class VolumePanel extends MeasurePanel{
 					</tr>
 				</table>
 
+				<table class="measurement_value_table">
+				<tr>
+					<th>label</th>
+					<th>metadata</th>
+					<!--Save space (need 4 col)--->
+					<th></th>
+					<th></th>
+				</tr>
+				<tr>
+					<td align="center" id="cell-label" style="width: 33%"></td>
+					<td align="center" id="cell-metadata" style="width: 33%"></td>
+					<td align="center" style="width: 33%"></td>
+					<td align="right" style="width: 25%">
+						<img name="copyScale" title="copy" class="button-icon" src="${copyIconPath}" style="width: 16px; height: 16px"/>
+					</td>
+				</tr>
+			</table>
+
 				<br>
 				<span style="font-weight: bold">Volume: </span>
 				<span id="measurement_volume"></span>

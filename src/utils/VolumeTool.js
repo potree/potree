@@ -11,12 +11,6 @@ export class VolumeTool extends EventDispatcher{
 		this.viewer = viewer;
 		this.renderer = viewer.renderer;
 
-		this.addEventListener('start_inserting_volume', e => {
-			this.viewer.dispatchEvent({
-				type: 'cancel_insertions'
-			});
-		});
-
 		this.scene = new THREE.Scene();
 		this.scene.name = 'scene_volume';
 
@@ -68,7 +62,7 @@ export class VolumeTool extends EventDispatcher{
 		volume.clip = args.clip || false;
 		volume.name = args.name || 'Volume';
 
-		this.dispatchEvent({
+		this.viewer.dispatchEvent({
 			type: 'start_inserting_volume',
 			volume: volume
 		});
@@ -98,12 +92,22 @@ export class VolumeTool extends EventDispatcher{
 				let w = Math.abs((wp.z / 5));
 				volume.scale.set(w, w, w);
 			}
+			this.viewer.dispatchEvent({
+				type: 'volume_dragged',
+				object: volume
+			});
 		};
 
 		let drop = e => {
 			volume.removeEventListener('drag', drag);
 			volume.removeEventListener('drop', drop);
-
+			this.viewer.dispatchEvent({
+				type: 'volume_placed',
+				object: volume
+			});
+			if (args.updateVol) {
+				args.updateVol(volume)
+			}
 			cancel.callback();
 		};
 

@@ -3,6 +3,7 @@
    background-color: #3498DB;
    color: white;
    padding: 16px;
+   margin: 1%;
    font-size: 16px;
    border: none;
    cursor: pointer;
@@ -43,3 +44,9 @@
 
 /* Show the dropdown menu (use JS to add this class to the .dropdown-content container when the user clicks on the dropdown button) */
 .show {display:block;}
+
+.select-dropdown {
+   white-space: nowrap;
+   overflow: hidden;
+   text-overflow: ellipsis;
+}

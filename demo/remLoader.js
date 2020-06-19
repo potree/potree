@@ -18,7 +18,6 @@ export async function loadRem(s3, bucket, name, remShaderMaterial, animationEngi
         Bucket: bucket,
         Key: schemaFile
       });
-
       const request = await s3.getObject({Bucket: bucket,
                     Key: objectName},
                    async (err, data) => {
@@ -122,9 +121,10 @@ async function createControlMeshes(controlPoints, remShaderMaterial, FlatbufferM
   let allSpheres = [];
   let controlTimes = [];
   for(let ii=0, len=controlPoints.length; ii<len; ii++) {
-    loadingBar.set(Math.max(ii/len * 100, loadingBar.value)); // update individual task progress
-    await pause()
-
+    if (ii % 1000 == 0) {
+      loadingBar.set(Math.max(ii/len * 100, loadingBar.value)); // update individual task progress
+      await pause()
+    }
     point = controlPoints[ii];
 
     var vertex = {x: point.pos().x(), y: point.pos().y(), z: point.pos().z()};
@@ -163,7 +163,6 @@ async function createControlMeshes(controlPoints, remShaderMaterial, FlatbufferM
 export async function loadRemCallback(s3, bucket, name, animationEngine) {
 	let shaderMaterial = getShaderMaterial();
 	let remShaderMaterial = shaderMaterial.clone();
-
 	await loadRem(s3, bucket, name, remShaderMaterial, animationEngine, (sphereMeshes) => {
 		let remLayer = new THREE.Group();
 		remLayer.name = "REM Control Points";

@@ -17,6 +17,7 @@ import {HeightPanel} from "./HeightPanel.js";
 import {VolumePanel} from "./VolumePanel.js";
 import {ProfilePanel} from "./ProfilePanel.js";
 import {CameraPanel} from "./CameraPanel.js";
+import { addVolLabelListeners } from "../../../data-labeling/dropdown.js"
 
 export class PropertiesPanel{
 
@@ -637,6 +638,11 @@ export class PropertiesPanel{
 
 		let panel = new Panel(this.viewer, object, this);
 		this.container.append(panel.elContent);
+		if (type == TYPE.VOLUME) {
+			// can only render event listeners when volume section is added 
+			// (not in document up until this point)
+			addVolLabelListeners(this.viewer);
+		}
 	}
 
 	setCamera(camera){

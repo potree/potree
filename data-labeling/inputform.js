@@ -42,7 +42,7 @@ $(document).ready(function() {
     }
 
     function fillForm() {
-      // var valid = true;
+      let valid = true;
       // allFields.removeClass( "ui-state-error" );
       //
       // valid = valid && checkLength( name, "username", 3, 16 );

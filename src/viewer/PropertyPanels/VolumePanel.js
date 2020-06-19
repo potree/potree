@@ -4,6 +4,8 @@ import {Volume, BoxVolume, SphereVolume} from "../../utils/Volume.js";
 import {MeasurePanel} from "./MeasurePanel.js";
 import { getVolData } from "../../../data-labeling/dropdown.js"
 
+let haveListeners = false
+
 export class VolumePanel extends MeasurePanel{
 	constructor(viewer, measurement, propertiesPanel){
 		super(viewer, measurement, propertiesPanel);
@@ -191,6 +193,15 @@ export class VolumePanel extends MeasurePanel{
 			this.measurement.visible = event.target.checked;
 		});
 
+		// add listeners for during cuboid placement
+		if (!haveListeners) {
+			this.viewer.addEventListener("start_inserting_volume", e => this.update())
+			this.viewer.addEventListener("volume_dragged", e => this.update())
+			this.viewer.addEventListener("volume_placed", e => this.update())
+			haveListeners = true
+		}
+
+		// add listeners for post-placement transforms
 		this.propertiesPanel.addVolatileListener(measurement, "position_changed", this._update);
 		this.propertiesPanel.addVolatileListener(measurement, "orientation_changed", this._update);
 		this.propertiesPanel.addVolatileListener(measurement, "scale_changed", this._update);
@@ -375,7 +386,6 @@ export class VolumePanel extends MeasurePanel{
 
 	update(){
 		const currVolData = getVolData()
-
 		let elCoordiantesContainer = this.elContent.find('.coordinates_table_container');
 		elCoordiantesContainer.empty();
 		elCoordiantesContainer.append(this.createCoordinatesTable([this.measurement.position]));

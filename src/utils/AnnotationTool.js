@@ -55,7 +55,7 @@ export class AnnotationTool extends EventDispatcher{
 
 		domElement.addEventListener('mouseup', insertionCallback, true);
 
-		drag = (e) => {
+		let drag = (e) => {
 			let I = Utils.getMousePointCloudIntersection(
 				e.drag.end, 
 				e.viewer.scene.getActiveCamera(), 
@@ -70,7 +70,7 @@ export class AnnotationTool extends EventDispatcher{
 			}
 		};
 
-		drop = (e) => {
+		let drop = (e) => {
 			viewer.scene.scene.remove(this.s);
 			this.s.removeEventListener("drag", drag);
 			this.s.removeEventListener("drop", drop);

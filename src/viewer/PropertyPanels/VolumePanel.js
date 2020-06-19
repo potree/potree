@@ -4,14 +4,13 @@ import {Volume, BoxVolume, SphereVolume} from "../../utils/Volume.js";
 import {MeasurePanel} from "./MeasurePanel.js";
 import { getVolData } from "../../../data-labeling/dropdown.js"
 
-let haveListeners = false
-
 export class VolumePanel extends MeasurePanel{
 	constructor(viewer, measurement, propertiesPanel){
 		super(viewer, measurement, propertiesPanel);
 
 		let copyIconPath = Potree.resourcePath + '/icons/copy.svg';
 		let removeIconPath = Potree.resourcePath + '/icons/remove.svg';
+		let isPlaced = false // prevents event listener creation once already placed
 
 		let lblLengthText = new Map([
 			[BoxVolume, "length"],
@@ -194,12 +193,20 @@ export class VolumePanel extends MeasurePanel{
 		});
 
 		// add listeners for during cuboid placement
-		if (!haveListeners) {
-			this.viewer.addEventListener("start_inserting_volume", e => this.update())
-			this.viewer.addEventListener("volume_dragged", e => this.update())
-			this.viewer.addEventListener("volume_placed", e => this.update())
-			haveListeners = true
+		if (!isPlaced) {
+			isPlaced = true // prevent listeners from being restarted when clicked on in panel
+			const handleStart = (e) => {
+				e.target.removeEventListener(e.type, handleStart)
+				this.update()
+			}
+			const handlePlace = (e) => {
+				e.target.removeEventListener(e.type, handlePlace)
+				this.update()
+			}
+			this.viewer.addEventListener("start_inserting_volume", handleStart)
+			this.viewer.addEventListener("volume_placed", handlePlace)
 		}
+		
 
 		// add listeners for post-placement transforms
 		this.propertiesPanel.addVolatileListener(measurement, "position_changed", this._update);

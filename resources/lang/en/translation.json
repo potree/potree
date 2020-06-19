@@ -80,6 +80,12 @@
 		"show": "show volume"
 	},
 	"annotations": {
+		"annotation_position": "Position",
+		"annotation_title": "Title",
+		"annotation_description": "Description",		
+		"annotation_save_camera": "Save annotation camera",
+		"annotation_move" : "Move annotation",
+		"annotation_hierarchy" : "Annotation parent",
 		"show3D": "show in 3D",
 		"showMap": "show on map"
 	}, 
@@ -91,7 +97,13 @@
 	},
 	"scene": {
 		"camera_position": "Camera Position",
-		"camera_target": "Camera Target"
+		"camera_target": "Camera Target",
+		"camera_copy": "Copied value to clipboard",
+		
+		"button_copy": "Copy",
+		"button_edit": "Edit",
+		"button_valid": "Save",
+		"button_remove": "Remove"
 	},
 	"filters": {
 		"return_number": "Return Number",

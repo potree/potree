@@ -300,6 +300,14 @@ a:hover, a:visited, a:link, a:active{
 	opacity:	0.5;
 }
 
+[contenteditable="true"] {
+    background-color: rgb(47,76,84);
+	min-width: 100%;
+}
+
+[contenteditable="false"] {
+    background-color: none;
+}
 
 canvas { 
 	width: 100%; 

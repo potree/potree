@@ -403,15 +403,39 @@ export class Annotation extends EventDispatcher {
 	}
 
 	hasChild(annotation) {
-		return this.children.includes(annotation);
+		if(this.children.includes(annotation)){
+			return true;
+		} else if(this.children.length > 0) {			
+			for (let child of this.children) {
+				if(child.hasChild(annotation)) {
+					return true;
+				}
+			}
+			return false;
+		}
+	}
+	
+	filterChild(annotation){
+		if(this.children.length > 0) {
+			this.children = this.children.filter(e => e !== annotation);
+			for (let child of this.children) {
+				if(child.filterChild(annotation)) {
+					return true;
+				}
+			}
+		}
 	}
 
 	remove (annotation) {
 		if (this.hasChild(annotation)) {
 			annotation.removeAllChildren();
 			annotation.dispose();
-			this.children = this.children.filter(e => e !== annotation);
-			annotation.parent = null;
+			this.filterChild(annotation);
+			
+			this.dispatchEvent({
+				'type': 'annotation_removed',
+				'annotation': annotation
+			});
 		}
 	}
 

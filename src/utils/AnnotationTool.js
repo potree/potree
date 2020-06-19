@@ -19,15 +19,16 @@ export class AnnotationTool extends EventDispatcher{
 	startInsertion (args = {}) {
 		let domElement = this.viewer.renderer.domElement;
 
-		let annotation = new Annotation({
-			position: [589748.270, 231444.540, 753.675],
+		let annotation = (args.annotation !== undefined) ? args.annotation : new Annotation({
+			position: [0.0, 0.0, 0.0],
 			title: "Annotation Title",
 			description: `Annotation Description`
 		});
 		this.dispatchEvent({type: 'start_inserting_annotation', annotation: annotation});
 
 		const annotations = this.viewer.scene.annotations;
-		annotations.add(annotation);
+		if(args.annotation === undefined)
+			annotations.add(annotation);
 
 		let callbacks = {
 			cancel: null,
@@ -37,7 +38,7 @@ export class AnnotationTool extends EventDispatcher{
 		let insertionCallback = (e) => {
 			if (e.button === THREE.MOUSE.LEFT) {
 				callbacks.finish();
-			} else if (e.button === THREE.MOUSE.RIGHT) {
+			} else if (e.button === THREE.MOUSE.RIGHT && args.annotation === undefined) {
 				callbacks.cancel();
 			}
 		};
@@ -54,7 +55,7 @@ export class AnnotationTool extends EventDispatcher{
 
 		domElement.addEventListener('mouseup', insertionCallback, true);
 
-		let drag = (e) => {
+		drag = (e) => {
 			let I = Utils.getMousePointCloudIntersection(
 				e.drag.end, 
 				e.viewer.scene.getActiveCamera(), 
@@ -64,12 +65,12 @@ export class AnnotationTool extends EventDispatcher{
 
 			if (I) {
 				this.s.position.copy(I.location);
-
 				annotation.position.copy(I.location);
+				this.dispatchEvent({ type: 'annotation_position_changed' });				
 			}
 		};
 
-		let drop = (e) => {
+		drop = (e) => {
 			viewer.scene.scene.remove(this.s);
 			this.s.removeEventListener("drag", drag);
 			this.s.removeEventListener("drop", drop);

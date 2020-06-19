@@ -2,7 +2,7 @@
 import {Utils} from "../../utils.js";
 import {Volume, BoxVolume, SphereVolume} from "../../utils/Volume.js";
 import {MeasurePanel} from "./MeasurePanel.js";
-import { getVolData } from "../../../data-labeling/dropdown.js"
+import { getVolData, setSelectBoxByValue } from "../../../data-labeling/dropdown.js"
 
 export class VolumePanel extends MeasurePanel{
 	constructor(viewer, measurement, propertiesPanel){
@@ -28,18 +28,6 @@ export class VolumePanel extends MeasurePanel{
 		]).get(measurement.constructor);
 
 		this.elContent = $(`
-
-            <div class="dropdown">
-                <button class="dropbtn" id="labelBtn" name="label_data">Label</button>
-                <div id="labelDropdown" class="dropdown-content" hidden>
-                    <a href="#" class="dropvalue" data-value="road">Road</a>
-                    <a href="#" class="dropvalue" data-value="non_road">Non-Road</a>
-                    <a href="#" class="dropvalue" data-value="road_edge">Road Edge</a>
-                    <a href="#" class="dropvalue" data-value="lane_marking">Lane Marking</a>
-                    <a href="#" class="dropvalue" data-value="vehicle">Vehicle</a>
-                    <a href="#" class="dropvalue" data-value="obstacle">Obstacle</a>
-                </div>
-			</div>
 			<div class="measurement_content selectable">
 				<span class="coordinates_table_container"></span>
 
@@ -81,14 +69,21 @@ export class VolumePanel extends MeasurePanel{
 				<tr>
 					<th>label</th>
 					<th>metadata</th>
-					<!--Save space (need 4 col)--->
-					<th></th>
 					<th></th>
 				</tr>
 				<tr>
-					<td align="center" id="cell-label" style="width: 33%"></td>
-					<td align="center" id="cell-metadata" style="width: 33%"></td>
-					<td align="center" style="width: 33%"></td>
+					<td align="center" id="cell-label" style="width: 50%">
+						<select class="select-dropdown" id="labelDropdown" name="label_data">
+							<option></option>
+							<option value="road">Road</a>
+							<option value="non_road">Non-Road</a>
+							<option value="road_edge">Road Edge</a>
+							<option value="lane_marking">Lane Marking</a>
+							<option value="vehicle">Vehicle</a>
+							<option value="obstacle">Obstacle</a>
+						</select>
+					</td>
+					<td align="center" id="cell-metadata" style="width: 50%"></td>
 					<td align="right" style="width: 25%">
 						<img name="copyScale" title="copy" class="button-icon" src="${copyIconPath}" style="width: 16px; height: 16px"/>
 					</td>
@@ -435,9 +430,9 @@ export class VolumePanel extends MeasurePanel{
 		this.elCheckClip.prop("checked", this.measurement.clip);
 		this.elCheckShow.prop("checked", this.measurement.visible);
 
-		const elLabel = this.elContent.find(`#cell-label`)
+		const labelDropdown = this.elContent.find(`#labelDropdown`)[0]
 		const elMetadata = this.elContent.find(`#cell-metadata`)
-		elLabel.html(currVolData.label)
+		setSelectBoxByValue(labelDropdown, currVolData.label)
 		elMetadata.html(currVolData.metadata)
 
 	}

@@ -4,7 +4,7 @@
  * Used by potree/src/viewer/PropertyPanels/PropertiesPanel.js
  */
 
-// single point of truth for labels export
+// single point of truth for labels export (appended to doc by 'addLabelExport')
 const labelExportId = "export-labels-container"
 
 /**
@@ -14,27 +14,19 @@ const labelExportId = "export-labels-container"
  * Element created in potree/src/viewer/PropertyPanels/VolumePanel.js
  */
 export function addVolLabelListeners(viewer) {
-    // add event listener to each item within container
-    const labelDropdown = $("#labelDropdown")
-    const labelOpts = labelDropdown.children(".dropvalue")
-    for (const item of labelOpts) {
-        item.addEventListener("click", () => {
-            labelDropdown.hide()
-            const val = item.getAttribute("data-value")
-            label(val, viewer)
-            // only show label exports once first element is added
-            $(`#${labelExportId}`).show()
-        })
-    }
+    // add event listener for when new value selected in dropdown
+    const dropdownId = "labelDropdown"
+    const labelDropdown = $(`#${dropdownId}`)
+    labelDropdown.change( () => {
+        const sel = document.getElementById(dropdownId)
+        const val = sel.value
+        label(val, viewer)
+        // only show label exports once first element is added
+        $(`#${labelExportId}`).show()
+    })
 
     // add text, button, & event listeners for label exporting in sidebar
     addLabelExport()
-
-    // When the user clicks on the button, toggle between hiding and showing the dropdown content
-    $("#labelBtn").click( () => {
-        if (labelDropdown.is(":visible")) labelDropdown.hide()
-        else                              labelDropdown.show()
-    })
 }
 
 function addLabelExport() {
@@ -91,9 +83,7 @@ function label(value, viewer) {
     currVolNode.data.labelData.label = value
 
     // update table on side nav
-    const elLabel = $("#cell-label")
     const elMetadata = $("#cell-metadata")
-    elLabel.html(currVolNode.data.labelData.label)
     elMetadata.html(currVolNode.data.labelData.metadata)
 }
 
@@ -176,4 +166,14 @@ function makeTimestampUTC () {
     const sec = date.getSeconds()
     const timestamp = pad(year,4)+"-"+pad(month)+"-"+pad(day)+"T"+pad(hour)+":"+pad(min)+":"+pad(sec)
     return timestamp
+}
+
+/**
+ * Set Select Box Selection By Text
+ * @param {HTMLElement} dropEl Reference to the <select> tag element (cannot be jQuerry reference)
+ * @param {String} value Element value
+ */
+export function setSelectBoxByValue(dropEl, value) {
+    const target = Array.from(dropEl.options).filter(opt => opt.value == value)[0]
+    target.selected = true
 }

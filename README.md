@@ -50,7 +50,7 @@ Active EC2 instances (as of 2020-04-24):
 | Name                     | Keypair            | Potree Location   | Description |
 | ------------------------ | ------------------ | ----------------- | ----------- |
 | `prod.viz.nextdroid.com` | `NextDroidDev.pem` | `/var/www/potree` | "Production" server - runs everywhere right now, except |
-|  `dev.viz.nextdroid.com` | `NextDroidDev.pem` | `/var/www/potree` | "Development" server - running on dev, demo, and sites |
+|  `dev.viz.nextdroid.com` | `NextDroidDev.pem` | `/var/www/potree` | "Development" server - running on dev, demo, and test sites |
 
 Steps for deploying (primarily for Veritas Dev server):
 [Bob has been deploying more simply, by downloading the .zip file from GitHub to his laptop, then scp'ing the zip file to the server, unzipping, stoppig nginx, moving it to the right place, then restarting nginx.]

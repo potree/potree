@@ -99,6 +99,8 @@ export class BinaryLoader{
 					geometry.addAttribute('originalRtkPosition', new THREE.BufferAttribute(new Float32Array(buffer), 3, false));
 				} else if (parseInt(property) === PointAttributeNames.RTK_ORIENT) {
 					geometry.addAttribute('originalRtkOrientation', new THREE.BufferAttribute(new Float32Array(buffer), 3, false));
+				}  else if (parseInt(property) === PointAttributeNames.DUAL_PLUS_CONFIDENCE) {
+					geometry.addAttribute('dualPlusConfidence', new THREE.BufferAttribute(new Uint16Array(buffer), 1));
 				}
 			}
 

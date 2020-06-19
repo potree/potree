@@ -25,6 +25,13 @@ export function addVolLabelListeners(viewer) {
         $(`#${labelExportId}`).show()
     })
 
+    // update metadata when input typed into
+    const metadataId = "metadata-input"
+    const elMetadata = document.getElementById(metadataId)
+    elMetadata.addEventListener("change", (e) => {
+        setMetadataInputText(elMetadata, e.target.value)
+    })
+
     // add text, button, & event listeners for label exporting in sidebar
     addLabelExport()
 }
@@ -79,12 +86,7 @@ function label(value, viewer) {
     // add json key for label data before trying to add to it
     // (can't save to .data.label because it is already taken)
     if (currVolNode.data.labelData == null) currVolNode.data.labelData = {}
-    currVolNode.data.labelData.metadata = prompt("Please enter metadata", "")
     currVolNode.data.labelData.label = value
-
-    // update table on side nav
-    const elMetadata = $("#cell-metadata")
-    elMetadata.html(currVolNode.data.labelData.metadata)
 }
 
 /**
@@ -176,4 +178,30 @@ function makeTimestampUTC () {
 export function setSelectBoxByValue(dropEl, value) {
     const target = Array.from(dropEl.options).filter(opt => opt.value == value)[0]
     target.selected = true
+}
+
+/**
+ * @brief Helper function that updates the metadata element based on the current jstree node's data
+ * @param {HTMLElement} elMetadata The input box element to update
+ */
+export function updateMetadataText(elMetadata) {
+    const currNode = getSelectedNode()
+    const nodeMetadata = currNode.data.labelData && currNode.data.labelData.metadata ?
+        currNode.data.labelData.metadata : ""
+    elMetadata.value = nodeMetadata
+}
+
+/**
+ * @brief Helper function that sets the metadata in the jstree node & the actual input box html element
+ * @param {HTMLElement} elMetadata The input box element
+ * @param {String} newText The text to set to
+ */
+function setMetadataInputText(elMetadata, newText) {
+    // set data in actual text box
+    elMetadata.value = newText
+
+    // save to jstree node storage
+    const currNode = getSelectedNode()
+    if (currNode.data.labelData == null) currNode.data.labelData = {}
+    currNode.data.labelData.metadata = newText
 }

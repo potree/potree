@@ -2,7 +2,7 @@
 import {Utils} from "../../utils.js";
 import {Volume, BoxVolume, SphereVolume} from "../../utils/Volume.js";
 import {MeasurePanel} from "./MeasurePanel.js";
-import { getVolData, setSelectBoxByValue } from "../../../data-labeling/dropdown.js"
+import { getVolData, setSelectBoxByValue, updateMetadataText } from "../../../data-labeling/dropdown.js"
 
 export class VolumePanel extends MeasurePanel{
 	constructor(viewer, measurement, propertiesPanel){
@@ -83,7 +83,9 @@ export class VolumePanel extends MeasurePanel{
 							<option value="obstacle">Obstacle</a>
 						</select>
 					</td>
-					<td align="center" id="cell-metadata" style="width: 50%"></td>
+					<td align="center" id="cell-metadata" style="width: 50%">
+						<input type="text" id="metadata-input" style="width: 75%" placeholder="Enter to submit"></input>
+					</td>
 					<td align="right" style="width: 25%">
 						<img name="copyScale" title="copy" class="button-icon" src="${copyIconPath}" style="width: 16px; height: 16px"/>
 					</td>
@@ -431,9 +433,8 @@ export class VolumePanel extends MeasurePanel{
 		this.elCheckShow.prop("checked", this.measurement.visible);
 
 		const labelDropdown = this.elContent.find(`#labelDropdown`)[0]
-		const elMetadata = this.elContent.find(`#cell-metadata`)
+		const elMetadata = this.elContent.find(`#metadata-input`)[0]
 		setSelectBoxByValue(labelDropdown, currVolData.label)
-		elMetadata.html(currVolData.metadata)
-
+		updateMetadataText(elMetadata)
 	}
 };

@@ -60,14 +60,19 @@ if (!(s3 || window.location.hostname === 'localhost' || window.location.hostname
 // const stream = s3.getObject({Bucket: bucket,
 //                              Key: name}).createReadStream();
 
+export const defaultTimeRange = {
+    min: -0.05,
+    max:  0.05,
+    initial: 0
+}
 
 // returns a THREE.ShaderMaterial object that should be used as standard 
 export function getShaderMaterial() {
     let uniforms = {
         color: { value: new THREE.Color(0x00ff00) },
-        minGpsTime: { value: 0.0 },
-        maxGpsTime: { value: 0.5 },
-        initialTime: { value: 0 }, // TODO not used
+        minGpsTime: { value: defaultTimeRange.min },
+        maxGpsTime: { value: defaultTimeRange.max },
+        initialTime: { value: defaultTimeRange.initial }, // TODO not used
         // offset: {value: new THREE.Vector3(0,0,0)}
     };
     let shaderMaterial = new THREE.ShaderMaterial({

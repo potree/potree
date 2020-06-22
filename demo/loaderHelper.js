@@ -4,7 +4,8 @@
 import {
 	runForLocalDevelopment, params, bucket, region, names, name, visualizationMode,
 	annotateLanesAvailable, downloadLanesAvailable, calibrationModeAvailable, accessKeyId,
-	secretAccessKey, sessionToken, fonts, theme, comparisonDatasets, s3, getShaderMaterial
+	secretAccessKey, sessionToken, fonts, theme, comparisonDatasets, s3, getShaderMaterial,
+	defaultTimeRange
 } from "../demo/paramLoader.js"
 import { createViewer } from "../demo/viewer.js"
 import { AnimationEngine } from "../demo/animationEngine.js"
@@ -65,7 +66,7 @@ export function loadPotree() {
   const viewer = createViewer();
   window.viewer = viewer;
   const animationEngine = new AnimationEngine({
-    activeWindow: {backward: -0.05, forward: 0.05, step: 0.01},
+    activeWindow: {backward: defaultTimeRange.min, forward: defaultTimeRange.max, step: 0.01},
     elevationWindow: {min: -1.00, max: 2.00, step: 0.01}
   });
   window.animationEngine = animationEngine;

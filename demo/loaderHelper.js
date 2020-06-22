@@ -65,8 +65,8 @@ export function loadPotree() {
   const viewer = createViewer();
   window.viewer = viewer;
   const animationEngine = new AnimationEngine({
-    activeWindow: {backward: '-0.05', forward: '0.05', step: '0.01'},
-    elevationWindow: {min: '-1.00', max: '2.00', step: '0.01'}
+    activeWindow: {backward: -0.05, forward: 0.05, step: 0.01},
+    elevationWindow: {min: -1.00, max: 2.00, step: 0.01}
   });
   window.animationEngine = animationEngine;
 

@@ -9,9 +9,11 @@ export class AnimationEngine {
     this.tstart = undefined;  // Starting time for animation (reference time, aka GPS Time)
     this.tend = undefined;  // Ending time for animation (reference time, aka GPS Time)
     this.timeline = undefined;
+
     // Make copies of initial values, so they can be modified
-    this.activeWindow = {...initialValues.activeWindow}; // Defines the size of the window around around the current time step
-    this.elevationWindow = {...initialValues.elevationWindow};
+    // Defines the size of the window around around the current time step
+    this.activeWindow = this.initValues(initialValues.activeWindow)
+    this.elevationWindow = this.initValues(initialValues.elevationWindow)
     this.timeRange = undefined;
     this.preStartCallback = undefined; // Callback run before start() executes
     this.preStopCallback = undefined; // Callback run before stop() executes
@@ -20,6 +22,15 @@ export class AnimationEngine {
     this.tweenEngine = undefined; // Linear Tween between tstart and tend that controls all other tweens
     this.tweenTargets = []; // List of custom update functions for all targets - called by tweenEngine
     this.isPlaying = false;
+  }
+
+  initValues(dict) {
+    const toRtn = {} 
+    for (const [key, val] of Object.entries(dict)) {
+      // causes issues if not a Number
+      toRtn[key] = Number(val)
+    }
+    return toRtn
   }
 
   configure(tstart, tend, playbackRate, tweenTargets, repeat) {

@@ -296,7 +296,7 @@ onmessage = function (event) {
 			}
 			attributeBuffers[pointAttribute.name] = { buffer: buff, attribute: pointAttribute };
 		} else if (pointAttribute.name === PointAttribute.DUAL_PLUS_CONFIDENCE.name) {
-			/*let buff = new ArrayBuffer(numPoints * 2);
+			let buff = new ArrayBuffer(numPoints * 2);
 			let DPCs = new Uint16Array(buff);
 
 			for (let j = 0; j < numPoints; j++) {
@@ -304,7 +304,7 @@ onmessage = function (event) {
 				DPCs[j] = DPC;
 			}
 
-			attributeBuffers[pointAttribute.name] = { buffer: buff, attribute: pointAttribute };*/
+			attributeBuffers[pointAttribute.name] = { buffer: buff, attribute: pointAttribute };
 		}
 		inOffset += pointAttribute.byteSize;
 	}

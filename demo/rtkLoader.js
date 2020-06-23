@@ -249,7 +249,7 @@ export function animateRTK() {
 			for (let ii = 0, numClouds = clouds.length; ii < numClouds; ii++) {
 				let material = clouds[ii].material;
 				material.uniforms.currentRtkPosition.value = state.pose.clone();
-				material.uniforms.currentRtkOrientation.value = state.orient.toVector3().clone();
+				material.uniforms.currentRtkOrientation.value = state.orient.clone();
 			}
 		} catch (e) {
 			console.error("Caught error: ", e);

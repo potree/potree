@@ -2,108 +2,77 @@
 import { Measure } from "../src/utils/Measure.js";
 import { LaneSegments } from "./LaneSegments.js"
 import { visualizationMode, comparisonDatasets, s3, bucket, name } from "../demo/paramLoader.js"
-import { getLoadingBar, getLoadingBarTotal, numberTasks, setLoadingScreen, removeLoadingScreen, pause } from "../common/overlay.js";
+import { updateLoadingBar, incrementLoadingBarTotal, resetProgressBars } from "../common/overlay.js";
 
+
+const laneFiles = {objectName: null, schemaFile: null}
+export const laneDownloads = async (datasetFiles) => {
+  const isLocalLoad = datasetFiles == null
+  const localObj = `../data/lanes.fb`;
+  const localSchema = "../schemas/GroundTruth_generated.js";
+  const objNameMatch = "lanes.fb" // 2_Truth
+  const schemaMatch = "GroundTruth_generated.js" // 5_Schemas
+  laneFiles.objectName = isLocalLoad ?
+    await existsOrNull(localObj) : datasetFiles.filter(path => path.endsWith(objNameMatch))[0]
+  laneFiles.schemaFile = isLocalLoad ?
+    await existsOrNull(localSchema) : datasetFiles.filter(path => path.endsWith(schemaMatch))[0]
+  return laneFiles
+}
 
 export async function loadLanes(s3, bucket, name, fname, supplierNum, annotationMode, volumes, callback) {
   const tstart = performance.now();
-  const loadingBar = getLoadingBar();
-  const loadingBarTotal = getLoadingBarTotal();
-  let lastLoaded = 0;
 
   // Logic for dealing with Map Supplier Data:
-  const resolvedFilename = fname || 'lanes.fb';
   const resolvedSupplierNum = supplierNum || -1;
-  let folderName = "2_Truth";
-  let sep = "/";
-  let datasetName = name;
-  if (supplierNum > 0) {
-    folderName = "";
-    sep = "";
-    datasetName = name.split("¶")[0];
+
+  if (laneFiles.objectName == null || laneFiles.schemaFile == null) {
+    console.log("No lane files present")
+    return
   }
 
   if (s3 && bucket && name) {
     (async () => {
-      const objectName = `${datasetName}/${folderName}${sep}${resolvedFilename}`;
-      const schemaFile = `${name}/5_Schemas/GroundTruth_generated.js`;
-
       const schemaUrl = s3.getSignedUrl('getObject', {
         Bucket: bucket,
-        Key: schemaFile
+        Key: laneFiles.schemaFile
       });
 
-      const request = await s3.getObject({Bucket: bucket, Key: objectName },
-        async (err, data) => {
-          if (err) {
-            console.log(err, err.stack);
-            // have to increment progress bar since function that would isnt going to be called
-            if (!annotationMode) {
-              loadingBarTotal.set(Math.min(Math.ceil(loadingBarTotal.value + (100/numberTasks))), 100);
-            } else {
-              loadingBar.set(100);
-              loadingBarTotal.set(100);
-              removeLoadingScreen();
-            }
-          } else {
-            const FlatbufferModule = await import(schemaUrl);
-            const laneGeometries = await parseLanes(data.Body, FlatbufferModule, resolvedSupplierNum, annotationMode, volumes);
-            if (!annotationMode) {
-              loadingBarTotal.set(Math.min(Math.ceil(loadingBarTotal.value + (100/numberTasks))), 100);
-              loadingBar.set(0);
-              if (loadingBarTotal.value >= 100) {
-                removeLoadingScreen();
-              }
-            } else {
-              loadingBarTotal.set(100);
-              removeLoadingScreen();
-            }
-            await pause();
-            await callback( laneGeometries );
-          }
-          if (loadingBarTotal.value >= 100) {
-            removeLoadingScreen();
-          }
-        });
+      const request = await s3.getObject({Bucket: bucket,
+                    Key: laneFiles.objectName},
+                    async (err, data) => {
+                      if (err) {
+                        console.log(err, err.stack);
+                      } else {
+                        const FlatbufferModule = await import(schemaUrl);
+                        const laneGeometries = await parseLanes(data.Body, FlatbufferModule, resolvedSupplierNum, annotationMode, volumes);
+                        await callback( laneGeometries );
+                      }
+                      incrementLoadingBarTotal("loaded lanes")
+                    });
       request.on("httpDownloadProgress", async (e) => {
-        let val = e.loaded / e.total * 100;
-        val = Math.max(lastLoaded, val);
-        loadingBar.set(Math.max(val, loadingBar.value));
-        lastLoaded = val;
-        await pause();
+        await updateLoadingBar(e.loaded/e.total * 100)
       });
 
-      request.on("complete", async () => {
-        if (!annotationMode) {
-          loadingBarTotal.set(Math.min(Math.ceil(loadingBarTotal.value + (100/numberTasks))), 100);
-          loadingBar.set(0);
-          if (loadingBarTotal.value >= 100) {
-            removeLoadingScreen();
-          }
-        } else {
-          loadingBarTotal.set(50); // second half is loading in parseLanes
-          loadingBar.set(0);
-        }
-        await pause();
+      request.on("complete", () => {
+        incrementLoadingBarTotal("downloaded lanes")
       });
     })();
   } else {
-    const filename = `../data/${resolvedFilename}`;
-    const schemaFile = "../schemas/GroundTruth_generated.js";
     let t0, t1;
 
     const xhr = new XMLHttpRequest();
-    xhr.open("GET", filename);
+    xhr.open("GET", laneFiles.objectName);
     xhr.responseType = "arraybuffer";
 
-    xhr.onprogress = function(event) {
+    xhr.onprogress = async (e) => {
+      await updateLoadingBar(e.loaded/e.total*100)
       t1 = performance.now();
       t0 = t1;
     }
 
-    xhr.onload = async function(data) {
-
-      const FlatbufferModule = await import(schemaFile);
+    xhr.onload = async (data) => {
+      incrementLoadingBarTotal("downloaded lanes")
+      const FlatbufferModule = await import(laneFiles.schemaFile);
 
       const response = data.target.response;
       if (!response) {
@@ -114,6 +83,7 @@ export async function loadLanes(s3, bucket, name, fname, supplierNum, annotation
       let bytesArray = new Uint8Array(response);
       const laneGeometries = await parseLanes(bytesArray, FlatbufferModule, resolvedSupplierNum, annotationMode, volumes);
       await callback( laneGeometries );
+      incrementLoadingBarTotal("loaded lanes")
     };
 
     t0 = performance.now();
@@ -320,17 +290,12 @@ async function createLaneGeometriesOld (lanes, supplierNum, annotationMode, volu
   const rightAnomalies = [];
   let allBoxes = new THREE.Geometry();
 
-  const loadingBar = getLoadingBar();
-  const loadingBarTotal = getLoadingBarTotal();
+  // have to load left, right, spine and creatingBoxes for each (split 100% evenly)
+  const numLaneTasks = 6*lanes.length // 6 for each iteration
+  const toLoad = 100/numLaneTasks
+  let stagesComplete = 0
+
   for (let ii = 0, len = lanes.length; ii < len; ii++) {
-    if (annotationMode) {
-      // hack: bar will decrease itself over time for no reason unless continously set during annotate lanes
-      loadingBarTotal.set(50);
-    }
-    loadingBar.set(Math.max(ii / len * 100, loadingBar.value)); // update progress
-    // put in pause so running javascript can hand over temp control to the UI
-    // gives it an opportunity to repaint the UI for the loading bar element
-    await pause();
 
     const lane = lanes[ii];
 
@@ -338,6 +303,23 @@ async function createLaneGeometriesOld (lanes, supplierNum, annotationMode, volu
     var geometrySpine = new THREE.Geometry();
     var geometryRight = new THREE.Geometry();
     let isContains = false;
+
+    const calcLoaded = async (prog, total) => {
+      // always update # stages compelete
+      if (prog == total-1) {
+        stagesComplete++
+      }
+
+      // only update every so often to not inundate with pauses
+      if (prog % Math.round(total*.02) != 0) {
+        return
+      } else {
+        const thisStageLoaded = (prog/total)*toLoad
+        const baseLoaded = stagesComplete*toLoad
+        const percent = thisStageLoaded + baseLoaded
+        await updateLoadingBar(percent)
+      }
+    }
 
     const anomalyMode = !!lane.leftPointValidity;
 
@@ -359,6 +341,7 @@ async function createLaneGeometriesOld (lanes, supplierNum, annotationMode, volu
 
     isContains = false;
     for (let jj = 0, numVertices = lane.rightLength(); jj < numVertices; jj++) {
+      await calcLoaded(jj, numVertices)
       const right = lane.right(jj);
 
       if (annotationMode) {
@@ -376,6 +359,7 @@ async function createLaneGeometriesOld (lanes, supplierNum, annotationMode, volu
     }
 
     for (let jj = 0, numVertices = lane.spineLength(); jj < numVertices; jj++) {
+      await calcLoaded(jj, numVertices)
       const spine = lane.spine(jj);
       if (annotationMode) {
         // laneSpine.addMarker(new THREE.Vector3(spine.x(), spine.y(), spine.z()));
@@ -413,12 +397,13 @@ async function createLaneGeometriesOld (lanes, supplierNum, annotationMode, volu
     let firstCenter, center, lastCenter;
     // const vertices = geometryLeft.vertices;
 
-    createBoxes(geometryLeft.vertices, materialLeft);
-    createBoxes(geometrySpine.vertices, materialSpine);
-    createBoxes(geometryRight.vertices, materialRight);
+    await createBoxes(geometryLeft.vertices, materialLeft);
+    await createBoxes(geometrySpine.vertices, materialSpine);
+    await createBoxes(geometryRight.vertices, materialRight);
 
-    function createBoxes(vertices, material) {
+    async function createBoxes(vertices, material) {
       for (let ii=1, len=vertices.length; ii<len; ii++) {
+        await calcLoaded(ii, len)
         const tmp1 = vertices[ii-1];
         const tmp2 = vertices[ii];
 
@@ -646,8 +631,9 @@ async function loadLanesHelper (layerName, filename, s) {
 }
 
 // add an event listener for the reload lanes button
-export function addReloadLanesButton () {
+export function addReloadLanesButton() {
   window.annotateLanesModeActive = false; // starts off false
+
   $("#reload_lanes_button")[0].style.display = "block"
   const reloadLanesButton = $("#reload_lanes_button")[0];
   reloadLanesButton.addEventListener("mousedown", () => {
@@ -659,8 +645,8 @@ export function addReloadLanesButton () {
       // REMOVE LANES
       let removeLanes = viewer.scene.scene.getChildByName("Lanes");
       while (removeLanes) {
-        viewer.scene.scene.remove(removeLanes);
-        removeLanes = viewer.scene.scene.getChildByName("Lanes");
+	viewer.scene.scene.remove(removeLanes);
+	removeLanes = viewer.scene.scene.getChildByName("Lanes");
       }
 
       // Pause animation:
@@ -672,19 +658,21 @@ export function addReloadLanesButton () {
       // Disable Button:
       reloadLanesButton.disabled = true;
 
-      $("#loading-bar")[0].style.display = "none";
-      setLoadingScreen();
+      // prepare for progress tracking (currently only triggered on button click)
+      resetProgressBars(2) // have to download & process/load lanes
+
       loadLanesCallback(s3, bucket, name, () => {
-        removeLoadingScreen();
-        // TOGGLE BUTTON TEXT
-        if (window.annotateLanesModeActive) {
-          reload_lanes_button.innerText = "View Truth Lanes";
-          document.getElementById("download_lanes_button").style.display = "block";
-        } else {
-          reload_lanes_button.innerText = "Annotate Truth Lanes";
-          document.getElementById("download_lanes_button").style.display = "none";
-        }
-        reloadLanesButton.disabled = false
+	// TOGGLE BUTTON TEXT
+	if (window.annotateLanesModeActive) {
+	  reload_lanes_button.innerText = "View Truth Lanes";
+	  document.getElementById("download_lanes_button").style.display = "block";
+	} else {
+	  reload_lanes_button.innerText = "Annotate Truth Lanes";
+	  document.getElementById("download_lanes_button").style.display = "none";
+	}
+
+	reloadLanesButton.disabled = false
+
       });
     }
   });

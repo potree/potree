@@ -8,57 +8,8 @@ const numberOrZero = (string) => {
 // sets up playbar in window
 export function createPlaybar () {
 
-  // Insert HTML for Playbar:
-  var playbarhtml = $(`
-    <div class="overlay">
-      <div class="slidecontainer">
-        <input type="range" min="0" max="100" value=0 step="any" class="slider" id="myRange">
-        <div id="spacer">
-
-          <div id="value" class="inline">
-
-            <table id='play_pause_table'>
-              <tr>
-                <td><input type="checkbox" id="toggleplay">
-                <button class="button" class="play" id="playbutton" class="inline"><i class="material-icons">play_arrow</i></button>
-                <button class="button" class="pause" id="pausebutton"><i class="material-icons">pause</i></button></td>
-                <td><input type="number" id="time_display" min=0 value=0 step="0.001"> s</td>
-              </tr>
-            </table>
-
-            <table id="windows">
-              <tr>
-                <td style="text-align:right">Time Window</td>
-                <td>[<input type="number" id="playbar_tmin">, <input type="number" id="playbar_tmax">]</td>
-                <td style="text-align:left">s</td>
-              </tr>
-              <tr>
-                <td style="text-align:right">Elevation Window</td>
-                <td>[<input type="number" id="elevation_min">, <input type="number" id="elevation_max">]</td>
-                <td style="text-align:left">m</td>
-              </tr>
-            </table>
-
-            <label class="switch">
-              <input type="checkbox" >
-              <span class="toggleslider" id="toggleslider"></span>
-            </label>
-            <input type="range" name="playback_speed" id="playback_speed" min="1" max="8" value="4" step="any">
-            <button name="toggle_calibration_panels" id="toggle_calibration_panels">Toggle<br/>Calibration<br/>Panels</button>
-            <button name="toggle_hideshow" id="toggle_hideshow">Toggle Pointcloud<br/>Highlight Mode</button>
-            <button name="load_detections_button" id="load_detections_button">Load<br/>Detections</button>
-            <button name="load_gaps_button" id="load_gaps_button">Load<br/>Gaps</button>
-            <button name="load_radar_button" id="load_radar_button">Load<br/>Radar</button>
-            <button name="download_lanes_button" id="download_lanes_button">Download<br/>Lanes</button>
-            <button name="reload_lanes_button" id="reload_lanes_button">Annotate<br/>Lanes</button>
-          </div>
-        </div>
-      </div>
-    </div>
-    `);
-
-    // Add to DOM:
-    $("#potree_render_area").append(playbarhtml);
+    // Get HTML for Playbar:
+    const playbarhtml = $("#playbarhtml");
 
     function updateTimeWindow(disable=false) {
 

@@ -1,5 +1,5 @@
 "use strict"
-import { getLoadingBar } from "../common/overlay.js";
+import { updateLoadingBar, incrementLoadingBarTotal } from "../common/overlay.js";
 import { visualizationMode } from "../demo/paramLoader.js";
 
 const isODC = false;
@@ -18,45 +18,61 @@ function minAngle(theta) {
   return theta;
 }
 
-export async function loadRtk(s3, bucket, name, callback) {
-  let lastLoaded = 0;
-  if (s3 && bucket && name) {
-    const objectName = `${name}/0_Preprocessed/rtk.csv`;
-    const request = s3.getObject({Bucket: bucket,
-                  Key: objectName},
-                 (err, data) => {
-                   if (err) {
-                     console.log(err, err.stack);
-                   } else {
-                     const string = new TextDecoder().decode(data.Body);
-                     const {mpos, orientations, timestamps, t_init, t_range} = parseRTK(string);
-                     callback(mpos, orientations, timestamps, t_init, t_range);
-                   }});
-    request.on("httpDownloadProgress", (e) => {
-      let loadingBar = getLoadingBar();
-      let val = 100*(e.loaded/e.total);
-      val = Math.max(lastLoaded, val);
-      loadingBar.set(val);
-      lastLoaded = val;
 
+// sets local variable and returns so # files can be counted
+const rtkFiles = {objectName: null, schemaFile: null}
+export function rtkDownloads(datasetFiles) {
+  const isLocalLoad = datasetFiles == null
+  const localObj = "../data/rtk.csv"
+  const objNameMatch = "rtk.csv" // 0_Preprocessed
+  rtkFiles.objectName = isLocalLoad ? localObj : datasetFiles.filter(path => path.endsWith(objNameMatch))[0]
+  return rtkFiles
+}
+
+// not currently used -- might have been replaced by loadRtkFlatbuffer()
+export async function loadRtk(s3, bucket, name, callback) {
+  if (s3 && bucket && name) {
+    if (rtkFiles.objectName == null) {
+      console.log("No rtk files present")
+      return
+    }
+    const request = s3.getObject({Bucket: bucket,
+                  Key: rtkFiles.objectName},
+                  (err, data) => {
+                    if (err) {
+                      console.log(err, err.stack);
+                    } else {
+                      const string = new TextDecoder().decode(data.Body);
+                      const {mpos, orientations, timestamps, t_init, t_range} = parseRTK(string);
+                      callback(mpos, orientations, timestamps, t_init, t_range);
+                    }
+                    incrementLoadingBarTotal()
+                  });
+    request.on("httpDownloadProgress", async (e) => {
+      await updateLoadingBar(e.loaded/e.total*100)
+    });
+    request.on("complete", () => {
+      incrementLoadingBarTotal()
     });
 
   } else {
-    const filename = "../data/rtk.csv";
     let t0, t1;
     const tstart = performance.now();
 
     const xhr = new XMLHttpRequest();
-    xhr.open("GET", filename);
+    xhr.open("GET", rtkFiles.schemaFile);
 
-    xhr.onprogress = function(event) {
+    xhr.onprogress = async (e) => {
+      await updateLoadingBar(e.loaded/e.total*100)
       t1 = performance.now();
       t0 = t1;
     }
 
-    xhr.onload = function(data) {
+    xhr.onload = (data) => {
+      incrementLoadingBarTotal()
       const {mpos, orientations, timestamps, t_init, t_range} = parseRTK(data.target.response);
       callback(mpos, orientations, timestamps, t_init, t_range);
+      incrementLoadingBarTotal()
     };
 
     t0 = performance.now();

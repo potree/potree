@@ -1,7 +1,8 @@
 'use strict';
 
 // This file contains common constant variables (some of which are pulled from the url params)
-export const runForLocalDevelopment = location.search === "" && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
+export const isLocalDevelopment = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+export const runLocalPointCloud = location.search === "" && isLocalDevelopment
 export const params = new URLSearchParams(location.search);
 export const bucket = params.get("bucket");
 export const region = params.get("region");
@@ -10,7 +11,7 @@ export const name = params.get("clicked");
 export const visualizationMode = params.get("mode");
 export const annotateLanesAvailable = params.get('annotate') == 'Annotate';
 export const downloadLanesAvailable = annotateLanesAvailable;
-export const calibrationModeAvailable = params.get("calibrate") == "Calibrate" || runForLocalDevelopment;
+export const calibrationModeAvailable = params.get("calibrate") == "Calibrate" || runLocalPointCloud;
 export const accessKeyId = params.get("key1");
 export const secretAccessKey = params.get("key2");
 export const sessionToken = params.get("key3");

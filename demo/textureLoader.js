@@ -1,19 +1,36 @@
 'use strict';
 
 import { applyRotation } from "../demo/rtkLoader.js";
-import { removeLoadingScreen } from "../common/overlay.js";
+import { updateLoadingBar, incrementLoadingBarTotal } from "../common/overlay.js";
+
+
+const textureFiles = {texture: null, mesh: null}
+/** 
+ * @note Mustang: {texture: models/bodybkgd.JPG, mesh: models/1967-shelby-ford-mustang.obj}
+ * @note Volt: {
+ *  texture: models/Chevy_Volt_Segmented/Chevrolet_Volt_v1_exterior.png,
+ *  mesh: resources/models/Chevy_Volt_Segmented/Chevy_Volt_2016.obj
+ *}
+ */
+export function textureDownloads(datasetFiles) {
+  textureFiles.texture = `${Potree.resourcePath}/models/Chevy_Volt_Segmented/reflection_1.png`
+  textureFiles.mesh = `${Potree.resourcePath}/models/Chevy_Volt_Segmented/volt_reduce.obj`
+  return textureFiles
+}
 
 export function loadTexturedCar(rtkTrajectory, pos, rot) {
-    // CREATE VEHICLE OBJECT:
-    // NOTE for Mustang: {texture: models/bodybkgd.JPG, mesh: models/1967-shelby-ford-mustang.obj}
-    // NOTE for Volt: {texture: models/Chevy_Volt_Segmented/Chevrolet_Volt_v1_exterior.png, mesh: resources/models/Chevy_Volt_Segmented/Chevy_Volt_2016.obj}
+    // CREATE VEHICLE OBJECT
+    // encapsulates loading of both texture & mesh
     let manager = new THREE.LoadingManager();
     manager.onProgress = function (item, loaded, total) {
         console.log(item, loaded, total);
     };
+    manager.onLoad = () => {
+        incrementLoadingBarTotal("car texture loaded")
+    }
 
     let textureLoader = new THREE.TextureLoader(manager);
-    let texture = textureLoader.load(`${Potree.resourcePath}/models/Chevy_Volt_Segmented/reflection_1.png`);
+    let texture = textureLoader.load(textureFiles.texture);
     // let texture = textureLoader.load(`${Potree.resourcePath}/models/bodybkgd.JPG`);
 
     texture.wrapS = THREE.RepeatWrapping;
@@ -27,20 +44,17 @@ export function loadTexturedCar(rtkTrajectory, pos, rot) {
 
     // once texture is loaded, load the car object with the texture
     // car object loader callbacks
-    let onError = function (xhr) { };
-    let onProgress = function (xhr) {
-        if (xhr.lengthComputable) {
-            let percentComplete = xhr.loaded / xhr.total * 100;
-        }
+    const onError = (xhr) => { };
+    const onProgress = async (xhr) => {
+        // this loading is very fast so it might make the loading bar jump (<1s)
+        await updateLoadingBar(xhr.loaded / xhr.total * 100);
     };
     // wrapper to provide more args to callback
-    let onLoad = function (object) {
+    const onLoad = (object) => {
         onLoadVehicleCallback(object, rtkTrajectory, texture, pos, rot);
     };
-
     let loader = new THREE.OBJLoader(manager);
-    loader.load(`${Potree.resourcePath}/models/Chevy_Volt_Segmented/volt_reduce.obj`,
-        onLoad, onProgress, onError);
+    loader.load(textureFiles.mesh, onLoad, onProgress, onError);
 
 }
 
@@ -134,6 +148,4 @@ function onLoadVehicleCallback(object, rtkTrajectory, texture, pos, rot) {
     // None of the more obvious, more principled places worked, and I decided
     // I had more important things to do.
     window.animationEngine.updateTimeForAll();
-
-    removeLoadingScreen();
 }

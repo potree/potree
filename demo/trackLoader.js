@@ -1,80 +1,75 @@
 "use strict"
 // import { Flatbuffer } from "../schemas/GroundTruth_generated.js";
 // import { Flatbuffer } from "http://localhost:1234/schemas/GroundTruth_generated.js";
-import { getLoadingBar, getLoadingBarTotal, numberTasks, removeLoadingScreen, pause} from "../common/overlay.js";
+import { updateLoadingBar, incrementLoadingBarTotal } from "../common/overlay.js";
+import { existsOrNull } from "./loaderHelper.js"
 
+
+// sets local variable and returns so # files can be counted
+const trackFiles = {objectName: null, schemaFile: null}
+export const trackDownloads = async (datasetFiles) => {
+  const isLocalLoad = datasetFiles == null
+  const localObj = "../data/tracks.fb";
+  const localSchema = "../schemas/GroundTruth_generated.js";
+  const objNameMatch = "tracks.fb" // 2_Truth
+  const schemaMatch = "GroundTruth_generated.js" // 5_Schemas
+  trackFiles.objectName = isLocalLoad ?
+    await existsOrNull(localObj) : datasetFiles.filter(path => path.endsWith(objNameMatch))[0]
+  trackFiles.schemaFile = isLocalLoad ?
+    await existsOrNull(localSchema) : datasetFiles.filter(path => path.endsWith(schemaMatch))[0]
+  return trackFiles
+}
 
 export async function loadTracks(s3, bucket, name, shaderMaterial, animationEngine, callback) {
-  let loadingBar = getLoadingBar();
-  let loadingBarTotal = getLoadingBarTotal(); 
-  let lastLoaded = 0;
   const tstart = performance.now();
+  if (trackFiles.objectName == null || trackFiles.schemaFile == null) {
+    console.log("No track files present")
+    return
+  }
+
   if (s3 && bucket && name) {
     (async () => {
-      const objectName = `${name}/2_Truth/tracks.fb`;
-      const schemaFile = `${name}/5_Schemas/GroundTruth_generated.js`;
-
       const schemaUrl = s3.getSignedUrl('getObject', {
         Bucket: bucket,
-        Key: schemaFile
+        Key: trackFiles.schemaFile
       });
       const request = await s3.getObject({Bucket: bucket,
-                    Key: objectName},
-                   async (err, data) => {
-                     if (err) {
-                        console.log(err, err.stack);
-                        // have to increment progress bar since function that would isnt going to be called
-                        loadingBarTotal.set(Math.min(Math.ceil(loadingBarTotal.value + (100/numberTasks))), 100);
-                     } else {
-                       const FlatbufferModule = await import(schemaUrl);
-                       const trackGeometries = await parseTracks(data.Body, shaderMaterial, FlatbufferModule, animationEngine);
-                       loadingBarTotal.set(Math.min(Math.ceil(loadingBarTotal.value + (100/numberTasks))), 100);
-                       loadingBar.set(0);
-                       if (loadingBarTotal.value >= 100) {
-                         removeLoadingScreen();
-                       }
-                       await pause();
-                       await callback(trackGeometries, );
-                     }
-                     if (loadingBarTotal.value  >= 100) {
-                      removeLoadingScreen();
-                     }});
+        Key: trackFiles.objectName},
+        async (err, data) => {
+          if (err) {
+            console.log(err, err.stack);
+          } else {
+            const FlatbufferModule = await import(schemaUrl);
+            const trackGeometries = await parseTracks(data.Body, shaderMaterial, FlatbufferModule, animationEngine);
+            await callback(trackGeometries, );
+          }
+          incrementLoadingBarTotal("tracks loaded")
+        });
       request.on("httpDownloadProgress", async (e) => {
-        let val = e.loaded/e.total * 100; 
-        val = Math.max(lastLoaded, val);
-        loadingBar.set(Math.max(val, loadingBar.value));
-        lastLoaded = val;
-        await pause();
+        await updateLoadingBar(e.loaded/e.total * 100);
       });
 
-      request.on("complete", async () => {
-        // Don't check for 100% when done loading tracks because callback still has work to do
-        loadingBarTotal.set(Math.min(Math.ceil(loadingBarTotal.value + (100/numberTasks))), 100);
-        loadingBar.set(0);
-        if (loadingBarTotal.value >= 100) {
-          removeLoadingScreen();
-        }
-        await pause();
+      request.on("complete", () => {
+        incrementLoadingBarTotal("tracks downloaded")
       });
     })();
 
   } else {
-    const filename = "../data/tracks.fb";
-    const schemaFile = "../schemas/GroundTruth_generated.js";
     let t0, t1;
 
     const xhr = new XMLHttpRequest();
-    xhr.open("GET", filename);
+    xhr.open("GET", trackFiles.objectName);
     xhr.responseType = "arraybuffer";
 
-    xhr.onprogress = function(event) {
+    xhr.onprogress = async (e) => {
+      await updateLoadingBar(e.loaded/e.total*100)
       t1 = performance.now();
       t0 = t1;
     }
 
-    xhr.onload = async function(data) {
-
-      const FlatbufferModule = await import(schemaFile);
+    xhr.onload = async (data) => {
+      incrementLoadingBarTotal("tracks downloaded")
+      const FlatbufferModule = await import(trackFiles.schemaFile);
 
       const response = data.target.response;
       if (!response) {
@@ -84,13 +79,8 @@ export async function loadTracks(s3, bucket, name, shaderMaterial, animationEngi
 
       let bytesArray = new Uint8Array(response);
       const trackGeometries = await parseTracks(bytesArray, shaderMaterial, FlatbufferModule, animationEngine);
-      loadingBarTotal.set(Math.min(Math.ceil(loadingBarTotal.value + (100/numberTasks))), 100);
-      loadingBar.set(0);
-      if (loadingBarTotal.value >= 100) {
-        removeLoadingScreen();
-      }
-      await pause();
       await callback(trackGeometries, );
+      incrementLoadingBarTotal("tracks loaded")
     };
 
     t0 = performance.now();
@@ -173,13 +163,9 @@ async function createTrackGeometries(shaderMaterial, tracks, animationEngine) {
   let allBoxes = new THREE.Geometry();
   let stateTimes = [];
   let all = [];
-  let loadingBar = getLoadingBar()
   for (let ss=0, numTracks=tracks.length; ss<numTracks; ss++) {
     let track = tracks[ss];
-    loadingBar.set(Math.max(ss/numTracks * 100, loadingBar.value));
-    // put in pause so running javascript can hand over temp control to the UI
-    // gives it an opportunity to repaint the UI for the loading bar element
-    await pause(); 
+    await updateLoadingBar(ss/numTracks * 100);
 
     for (let ii=0, len=track.statesLength(); ii<len; ii++) {
 

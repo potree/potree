@@ -1,5 +1,8 @@
 'use strict';
 
+import { updateLoadingBar, incrementLoadingBarTotal } from "../common/overlay.js";
+import { existsOrNull } from "./loaderHelper.js"
+
 export async function storeCalibration(s3, bucket, name, callback) {
   // TODO
 }
@@ -15,40 +18,60 @@ export async function loadRtk2Vehicle(s3, bucket, name, callback) {
   callback(rtk2Vehicle);
 }
 
+const calFiles = {objectName: null}
+export const calDownloads = async (datasetFiles) => {
+  // ${name}/7_cals/extrinsics.txt
+  const localCal = `../cals/extrinsics.txt`
+  const isLocalLoad = datasetFiles == null
+  calFiles.objectName = isLocalLoad ?
+    await existsOrNull(localCal) : datasetFiles.filter(path => path.endsWith("extrinsics.txt"))[0]
+  return calFiles
+}
+
 export async function loadVelo2Rtk(s3, bucket, name, callback) {
   const tstart = performance.now();
+  if (calFiles.objectName == null) {
+    console.log("No calibration files present")
+    return
+  }
+
   //is name here the dataset name? We should be more careful about that....
   if (s3 && bucket && name) {
     (async () => {
-      const objectName = `${name}/7_Cals/extrinsics.txt`
-
-      try {
-        const data = await s3.getObject({Bucket: bucket, Key: objectName}).promise();
-        const calibrationText = new TextDecoder("utf-8").decode(data.Body);
-        const extrinsics = parseCalibrationFile(calibrationText);
-        await callback( extrinsics );
-      } catch (err) {
-        console.log(err, err.stack);
-        await callback(null);
-      }
-
+      const request = await s3.getObject({Bucket: bucket, Key: calFiles.objectName}, async (err, data) => {
+        if (err) {
+          console.log(err, err.stack);
+          await callback(null);
+        } else {
+          const calibrationText = new TextDecoder("utf-8").decode(data.Body);
+          const extrinsics = parseCalibrationFile(calibrationText);
+          await callback( extrinsics );
+        }
+        incrementLoadingBarTotal("cals loaded")
+      })
+      request.on("httpDownloadProgress", async (e) => {
+        await updateLoadingBar(e.loaded/e.total*100)
+      });
+      request.on("complete", async () => {
+        incrementLoadingBarTotal("cals downloaded")
+      });
     })();
 
   } else {
-    const filename = `../cals/extrinsics.txt`;
     let t0, t1;
 
     const xhr = new XMLHttpRequest();
-    xhr.open("GET", filename);
+    xhr.open("GET", calFiles.objectName);
     xhr.responseType = "text";
 
-    xhr.onprogress = function(event) {
+    xhr.onprogress = async (e) => {
+      await updateLoadingBar(e.loaded/e.total*100)
       t1 = performance.now();
       t0 = t1;
     }
 
-    xhr.onload = function(data) {
-
+    xhr.onload = async (data) => {
+      incrementLoadingBarTotal("cals downloaded")
       const calibrationText = data.target.responseText;
       if (!calibrationText) {
         console.error("Could not create load calbiration file");
@@ -56,7 +79,8 @@ export async function loadVelo2Rtk(s3, bucket, name, callback) {
       }
 
       const velo2Rtk = parseCalibrationFile(calibrationText);
-      callback( velo2Rtk );
+      await callback( velo2Rtk );
+      incrementLoadingBarTotal("cals loaded")
     };
 
     xhr.onerror = function(err) {

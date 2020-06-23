@@ -1,64 +1,79 @@
 'use strict';
-import { getLoadingBar, getLoadingBarTotal, setLoadingScreen, removeLoadingScreen } from "../common/overlay.js";
+import { incrementLoadingBarTotal, resetProgressBars, updateLoadingBar } from "../common/overlay.js";
 import { s3, bucket, name, getShaderMaterial } from "../demo/paramLoader.js"
+import { existsOrNull } from "./loaderHelper.js"
 
 
-export async function loadDetections(s3, bucket, name, shaderMaterial, animationEngine, callback) {
-  let loadingBar = getLoadingBar();
-  let loadingBarTotal = getLoadingBarTotal(); 
-  let lastLoaded = 0;
+const detectionFiles = {objectName: null, schemaFile: null}
+export const detectionDownloads = async (datasetFiles) => {
+  const isLocalLoad = datasetFiles == null
+  const localObj = "../data/detections.fb";
+  const localSchema = "../schemas/GroundTruth_generated.js";
+  const objNameMatch = "detections.fb" // 2_Truth
+  const schemaMatch = "GroundTruth_generated.js" // 5_Schemas
+
+  detectionFiles.objectName = isLocalLoad ?
+    await existsOrNull(localObj) : datasetFiles.filter(path => path.endsWith(objNameMatch))[0]
+  detectionFiles.schemaFile = isLocalLoad ?
+    await existsOrNull(localSchema) : datasetFiles.filter(path => path.endsWith(schemaMatch))[0]
+  return detectionFiles
+}
+
+export async function loadDetections(s3, bucket, name, shaderMaterial, animationEngine) {
   const tstart = performance.now();
+  if (detectionFiles.objectName == null || detectionFiles.schemaFile == null) {
+    console.log("No detection files present")
+    return null
+  } else {
+    // prepare for progress tracking (currently only triggered on button click)
+    resetProgressBars(2) // have to download & process/load detections
+  }
+
   if (s3 && bucket && name) {
     (async () => {
-      const objectName = `${name}/2_Truth/detections.fb`;
-      const schemaFile = `${name}/5_Schemas/GroundTruth_generated.js`;
-
       const schemaUrl = s3.getSignedUrl('getObject', {
         Bucket: bucket,
-        Key: schemaFile
+        Key: detectionFiles.schemaFile
       });
 
       const request = s3.getObject({Bucket: bucket,
-                    Key: objectName},
-                   async (err, data) => {
-                     if (err) {
-                       console.log(err, err.stack);
-                     } else {
-                       const FlatbufferModule = await import(schemaUrl);
-                       const detectionGeometries = parseDetections(data.Body, shaderMaterial, FlatbufferModule, animationEngine);
-                       callback(detectionGeometries, );
-                     }});
-      request.on("httpDownloadProgress", (e) => {
-        let val = e.loaded/e.total * 100;  
-        val = Math.max(lastLoaded, val);
-        loadingBar.set(val);
-        lastLoaded = val;
+        Key: detectionFiles.objectName},
+        async (err, data) => {
+          let detectionGeometries = null // default to error state
+          if (err) {
+            console.log(err, err.stack);
+          } else {
+            const FlatbufferModule = await import(schemaUrl);
+            detectionGeometries = await parseDetections(data.Body, shaderMaterial, FlatbufferModule, animationEngine);
+          }
+          incrementLoadingBarTotal()
+          return detectionGeometries
+      });
+      request.on("httpDownloadProgress", async (e) => {
+        await updateLoadingBar(e.loaded/e.total * 100)
       });
       
       request.on("complete", () => {
-        loadingBar.set(100)
-        loadingBarTotal.set(100);
-        removeLoadingScreen();
+        incrementLoadingBarTotal()
       });
     })();
 
   } else {
-    const filename = "../data/detections.fb";
-    const schemaFile = "../schemas/GroundTruth_generated.js";
     let t0, t1;
 
     const xhr = new XMLHttpRequest();
-    xhr.open("GET", filename);
+    xhr.open("GET", detectionFiles.objectName);
     xhr.responseType = "arraybuffer";
 
-    xhr.onprogress = function(event) {
+    xhr.onprogress = async (e) => {
+      await updateLoadingBar(e.loaded/e.total*100)
       t1 = performance.now();
       t0 = t1;
     }
 
-    xhr.onload = async function(data) {
-
-      const FlatbufferModule = await import(schemaFile);
+    xhr.onload = async (data) => {
+      incrementLoadingBarTotal()
+      const FlatbufferModule = await import(detectionFiles.schemaFile);
 
       const response = data.target.response;
       if (!response) {
@@ -67,8 +82,9 @@ export async function loadDetections(s3, bucket, name, shaderMaterial, animation
       }
 
       let bytesArray = new Uint8Array(response);
-      const detectionGeometries = parseDetections(bytesArray, shaderMaterial, FlatbufferModule, animationEngine);
-      callback(detectionGeometries, );
+      const detectionResult = await parseDetections(bytesArray, shaderMaterial, FlatbufferModule, animationEngine);
+      incrementLoadingBarTotal()
+      return detectionResult
     };
 
     t0 = performance.now();
@@ -76,7 +92,7 @@ export async function loadDetections(s3, bucket, name, shaderMaterial, animation
   }
 }
 
-function parseDetections(bytesArray, shaderMaterial, FlatbufferModule, animationEngine) {
+async function parseDetections(bytesArray, shaderMaterial, FlatbufferModule, animationEngine) {
 
   let numBytes = bytesArray.length;
   let detections = [];
@@ -99,14 +115,10 @@ function parseDetections(bytesArray, shaderMaterial, FlatbufferModule, animation
     segOffset += segSize;
   }
 
-  return createDetectionGeometries(shaderMaterial, detections, animationEngine);
+  return await createDetectionGeometries(shaderMaterial, detections, animationEngine);
 }
 
-function createDetectionGeometries(shaderMaterial, detections, animationEngine) {
-
-  let loadingBar = getLoadingBar();
-  loadingBar.set(0);
-
+async function createDetectionGeometries(shaderMaterial, detections, animationEngine) {
   let lineMaterial = new THREE.LineBasicMaterial({
     color: 0x00ff00,
     transparent: true
@@ -130,6 +142,7 @@ function createDetectionGeometries(shaderMaterial, detections, animationEngine) 
   let detectTimes = [];
   let all = [];
   for (let ss=0, numDetections=detections.length; ss<numDetections; ss++) {
+    await updateLoadingBar(ss/numDetections*100)
     let detection = detections[ss];
 
     for (let ii=0, len=detection.detectionsLength(); ii<len; ii++) {
@@ -218,33 +231,34 @@ window.detectionsLoaded = false;
 	// Configure Playbar
 	$("#load_detections_button")[0].style.display = "block"
 	let loadDetectionsButton = $("#load_detections_button")[0];
-	loadDetectionsButton.addEventListener("mousedown", () => {
+	loadDetectionsButton.addEventListener("mousedown", async () => {
 		if (!window.detectionsLoaded) {
-			$("#loading-bar")[0].style.display = "none";
-			setLoadingScreen();
 			let shaderMaterial = getShaderMaterial();
 			let detectionShaderMaterial = shaderMaterial.clone();
 			detectionShaderMaterial.uniforms.color.value = new THREE.Color(0xFFA500);
-			loadDetections(s3, bucket, name, detectionShaderMaterial, animationEngine, (detectionGeometries) => {
-				let detectionLayer = new THREE.Group();
-				detectionLayer.name = "Object Detections";
-				for (let ii = 0, len = detectionGeometries.bbox.length; ii < len; ii++) {
-					detectionLayer.add(detectionGeometries.bbox[ii]);
-				}
-				viewer.scene.scene.add(detectionLayer);
-				viewer.scene.dispatchEvent({
-					"type": "truth_layer_added",
-					"truthLayer": detectionLayer
-				});
-				animationEngine.tweenTargets.push((gpsTime) => {
-					let currentTime = gpsTime - animationEngine.tstart;
-					detectionShaderMaterial.uniforms.minGpsTime.value = currentTime + animationEngine.activeWindow.backward;
-					detectionShaderMaterial.uniforms.maxGpsTime.value = currentTime + animationEngine.activeWindow.forward;
-				});
-				window.detectionsLoaded = true;
-				loadDetectionsButton.disabled = true;
-			});
-			removeLoadingScreen();
+      const detectionGeometries = await loadDetections(s3, bucket, name, detectionShaderMaterial, animationEngine)
+      
+      if (detectionGeometries != null) {
+        let detectionLayer = new THREE.Group();
+        detectionLayer.name = "Object Detections";
+        for (let ii = 0, len = detectionGeometries.bbox.length; ii < len; ii++) {
+          detectionLayer.add(detectionGeometries.bbox[ii]);
+        }
+        viewer.scene.scene.add(detectionLayer);
+        viewer.scene.dispatchEvent({
+          "type": "truth_layer_added",
+          "truthLayer": detectionLayer
+        });
+        animationEngine.tweenTargets.push((gpsTime) => {
+          let currentTime = gpsTime - animationEngine.tstart;
+          detectionShaderMaterial.uniforms.minGpsTime.value = currentTime + animationEngine.activeWindow.backward;
+          detectionShaderMaterial.uniforms.maxGpsTime.value = currentTime + animationEngine.activeWindow.forward;
+        });
+      }
+
+      // either way update page & btns
+      window.detectionsLoaded = true;
+      loadDetectionsButton.disabled = true;
 		}
 	});
 }

@@ -1,63 +1,77 @@
 'use strict';
 import { getShaderMaterial, s3, bucket, name } from "../demo/paramLoader.js"
-import { getLoadingBar, getLoadingBarTotal, numberTasks, setLoadingScreen, removeLoadingScreen } from "../common/overlay.js";
+import { updateLoadingBar, incrementLoadingBarTotal, resetProgressBars } from "../common/overlay.js";
 
-export async function loadGaps(s3, bucket, name, shaderMaterial, animationEngine, callback) {
-  let loadingBar = getLoadingBar();
-  let loadingBarTotal = getLoadingBarTotal(); 
-  let lastLoaded = 0;
+
+const gapFiles = {objectName: null, schemaFile: null}
+export const gapDownloads = async (datasetFiles) => {
+  const isLocalLoad = datasetFiles == null
+  const objNameMatch = "gaps.fb" // 3_Assessments
+  const schemaMatch = "VisualizationPrimitives_generated.js" // 5_Schemas
+  const localObj = "../data/gaps.fb";
+  const localSchema = "../schemas/VisualizationPrimitives_generated.js";
+  gapFiles.objectName = isLocalLoad ?
+    await existsOrNull(localObj) : datasetFiles.filter(path => path.endsWith(objNameMatch))[0]
+  gapFiles.schemaFile = isLocalLoad ?
+    await existsOrNull(localSchema) : datasetFiles.filter(path => path.endsWith(schemaMatch))[0]
+  return gapFiles
+}
+
+export async function loadGaps(s3, bucket, name, shaderMaterial, animationEngine) {
   const tstart = performance.now();
+  let gapGeometries = null // default to error state 
+  if (gapFiles.objectName == null || gapFiles.schemaFile == null) {
+    console.log("No gaps files present")
+    return gapGeometries
+  } else {
+    // prepare for progress tracking (currently only triggered on button click)
+    resetProgressBars(2) // have to download & process/load detections
+  }
+
   if (s3 && bucket && name) {
     (async () => {
-      const objectName = `${name}/3_Assessments/gaps.fb`;
-      const schemaFile = `${name}/5_Schemas/VisualizationPrimitives_generated.js`;
-
       const schemaUrl = s3.getSignedUrl('getObject', {
         Bucket: bucket,
-        Key: schemaFile
+        Key: gapFiles.schemaFile
       });
 
       const request = s3.getObject({Bucket: bucket,
-                    Key: objectName},
-                   async (err, data) => {
-                     if (err) {
-                       console.log(err, err.stack);
-                     } else {
-                       const FlatbufferModule = await import(schemaUrl);
-                       const gapGeometries = parseGaps(data.Body, shaderMaterial, FlatbufferModule, animationEngine);
-                       callback( gapGeometries );
-                     }});
-      request.on("httpDownloadProgress", (e) => {
-        let val = e.loaded/e.total * 100;  
-        val = Math.max(lastLoaded, val);
-        loadingBar.set(val);
-        lastLoaded = val;
+                    Key: gapFiles.objectName},
+                    async (err, data) => {
+                      if (err) {
+                        console.log(err, err.stack);
+                      } else {
+                        const FlatbufferModule = await import(schemaUrl);
+                        gapGeometries = await parseGaps(data.Body, shaderMaterial, FlatbufferModule, animationEngine);
+                      }
+                      incrementLoadingBarTotal()
+                      return gapGeometries
+                    });
+      request.on("httpDownloadProgress", async (e) => {
+        await updateLoadingBar(e.loaded/e.total * 100)
       });
       
       request.on("complete", () => {
-        loadingBar.set(100)
-        loadingBarTotal.set(100);
-        removeLoadingScreen();
+        incrementLoadingBarTotal()
       });
     })();
 
   } else {
-    const filename = "../data/gaps.fb";
-    const schemaFile = "../schemas/VisualizationPrimitives_generated.js";
     let t0, t1;
 
     const xhr = new XMLHttpRequest();
-    xhr.open("GET", filename);
+    xhr.open("GET", gapFiles.objectName);
     xhr.responseType = "arraybuffer";
 
-    xhr.onprogress = function(event) {
+    xhr.onprogress = async (e) => {
+      await updateLoadingBar(e.loaded/e.total*100)
       t1 = performance.now();
       t0 = t1;
     }
 
-    xhr.onload = async function(data) {
-
-      const FlatbufferModule = await import(schemaFile);
+    xhr.onload = async (data) => {
+      incrementLoadingBarTotal()
+      const FlatbufferModule = await import(gapFiles.schemaFile);
 
       const response = data.target.response;
       if (!response) {
@@ -66,8 +80,9 @@ export async function loadGaps(s3, bucket, name, shaderMaterial, animationEngine
       }
 
       let bytesArray = new Uint8Array(response);
-      const gapGeometries = parseGaps(bytesArray, shaderMaterial, FlatbufferModule, animationEngine);
-      callback( gapGeometries );
+      const gapResult = await parseGaps(bytesArray, shaderMaterial, FlatbufferModule, animationEngine);
+      incrementLoadingBarTotal()
+      return gapResult
     };
 
     t0 = performance.now();
@@ -76,7 +91,7 @@ export async function loadGaps(s3, bucket, name, shaderMaterial, animationEngine
 }
 
 
-function parseGaps(bytesArray, shaderMaterial, FlatbufferModule, animationEngine) {
+async function parseGaps(bytesArray, shaderMaterial, FlatbufferModule, animationEngine) {
 
   let numBytes = bytesArray.length;
   let gaps = [];
@@ -98,7 +113,7 @@ function parseGaps(bytesArray, shaderMaterial, FlatbufferModule, animationEngine
     gaps.push(gap);
     segOffset += segSize;
   }
-  return createGapGeometriesOld(gaps, shaderMaterial, FlatbufferModule, animationEngine);
+  return await createGapGeometriesOld(gaps, shaderMaterial, FlatbufferModule, animationEngine);
 }
 
 function splitGapVertices(gaps) {
@@ -191,11 +206,7 @@ function createGapGeometries(vertexGroups, material) {
 }
 
 
-function createGapGeometriesOld(gaps, shaderMaterial, FlatbufferModule, animationEngine) {
-  console.log("gaps loader")
-  let loadingBar = getLoadingBar();
-  let loadingBarTotal = getLoadingBarTotal(); 
-
+async function createGapGeometriesOld(gaps, shaderMaterial, FlatbufferModule, animationEngine) {
   let gap;
   let lefts = [];
 
@@ -203,7 +214,7 @@ function createGapGeometriesOld(gaps, shaderMaterial, FlatbufferModule, animatio
   let allBoxes = new THREE.Geometry();
   let gapTimes = [];
   for(let ii=0, len=gaps.length; ii<len; ii++) {
-    loadingBar.set(ii/len * 100); // update individual task progress
+    await updateLoadingBar(ii/len * 100)
     // if (ii > 1000) {
     //   continue;
     // }
@@ -304,9 +315,6 @@ function createGapGeometriesOld(gaps, shaderMaterial, FlatbufferModule, animatio
   const output = {
     left: all
   }
-  // update total progress
-  loadingBarTotal.set(Math.min(Math.ceil(loadingBarTotal.value + (100/numberTasks))), 100);
-  loadingBar.set(0);
   return output;
 }
 
@@ -316,17 +324,15 @@ export function addLoadGapsButton() {
 
 	$("#load_gaps_button")[0].style.display = "block"
 	let loadGapsButton = $("#load_gaps_button")[0];
-	loadGapsButton.addEventListener("mousedown", () => {
+	loadGapsButton.addEventListener("mousedown", async () => {
 
 		if (!window.gapsLoaded) {
-			$("#loading-bar")[0].style.display = "none";
-			setLoadingScreen();
-
 			let shaderMaterial = getShaderMaterial();
 			let gapShaderMaterial = shaderMaterial.clone();
 			gapShaderMaterial.uniforms.color.value = new THREE.Color(0x0000ff);
 			gapShaderMaterial.depthWrite = false;
-			loadGaps(s3, bucket, name, gapShaderMaterial, animationEngine, (gapGeometries) => {
+			const gapGeometries = await loadGaps(s3, bucket, name, gapShaderMaterial, animationEngine)
+			if (gapGeometries != null) {
 				let gapsLayer = new THREE.Group();
 				gapsLayer.name = "Vehicle Gaps";
 				for (let ii = 0, len = gapGeometries.left.length; ii < len; ii++) {
@@ -344,10 +350,10 @@ export function addLoadGapsButton() {
 					gapShaderMaterial.uniforms.minGpsTime.value = currentTime + animationEngine.activeWindow.backward;
 					gapShaderMaterial.uniforms.maxGpsTime.value = currentTime + animationEngine.activeWindow.forward;
 				});
-				window.gapsLoaded = true;
-				loadGapsButton.disabled = true;
-			});
-			removeLoadingScreen();
+			}
+			// either way disable buttons
+			window.gapsLoaded = true;
+			loadGapsButton.disabled = true;
 		}
 	});
 } // end of Load Gaps Button

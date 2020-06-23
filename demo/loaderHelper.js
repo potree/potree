@@ -2,7 +2,7 @@
 
 // this file is intended to call every other function in order to get potree to load
 import {
-	runForLocalDevelopment, params, bucket, region, names, name, visualizationMode,
+	runLocalPointCloud, isLocalDevelopment, params, bucket, region, names, name, visualizationMode,
 	annotateLanesAvailable, downloadLanesAvailable, calibrationModeAvailable, accessKeyId,
 	secretAccessKey, sessionToken, fonts, theme, comparisonDatasets, s3, getShaderMaterial,
 	defaultTimeRange
@@ -10,16 +10,18 @@ import {
 import { createViewer } from "../demo/viewer.js"
 import { AnimationEngine } from "../demo/animationEngine.js"
 import { createPlaybar } from "../common/playbar.js"
-import { loadRtkCallback } from "../demo/rtkLoaderFlatbuffer.js"
-import { loadVelo2Rtk, loadRtk2Vehicle, storeCalibration } from "../demo/calibrationManager.js"
-import { loadLanesCallback, addReloadLanesButton } from "../demo/laneLoader.js"
-import { loadTracksCallback } from "../demo/trackLoader.js"
-import { loadRemCallback } from "../demo/remLoader.js"
-import { addLoadGapsButton } from "../demo/gapsLoader.js"
-import { addLoadRadarButton } from "../demo/radarLoader.js"
-import { addCalibrationButton } from "../demo/calibrationManager.js"
-import { addDetectionButton } from "../demo/detectionLoader.js"
+import { loadRtkCallback, rtkFlatbufferDownloads } from "../demo/rtkLoaderFlatbuffer.js"
+import { rtkDownloads } from "../demo/rtkLoader.js"
+import { textureDownloads } from "../demo/textureLoader.js"
+import { loadVelo2Rtk, loadRtk2Vehicle, storeCalibration, calDownloads, addCalibrationButton } from "../demo/calibrationManager.js"
+import { loadLanesCallback, addReloadLanesButton, laneDownloads } from "../demo/laneLoader.js"
+import { loadTracksCallback, trackDownloads } from "../demo/trackLoader.js"
+import { loadRemCallback, remDownloads } from "../demo/remLoader.js"
+import { addLoadGapsButton, gapDownloads } from "../demo/gapsLoader.js"
+import { addLoadRadarButton, radarDownloads } from "../demo/radarLoader.js"
+import { addDetectionButton, detectionDownloads } from "../demo/detectionLoader.js"
 import { PointAttributeNames } from "../src/loader/PointAttributes.js";
+import { setNumTasks } from "../common/overlay.js"
 
 
 function canUseCalibrationPanels(attributes) {
@@ -61,7 +63,7 @@ $(document).ready(() => {
 
 
 // Call all functions to load potree
-export function loadPotree() {
+export async function loadPotree() {
   // Create AnimationEngine:
   const viewer = createViewer();
   window.viewer = viewer;
@@ -71,10 +73,16 @@ export function loadPotree() {
   });
   window.animationEngine = animationEngine;
 
-  // add html element with listeners to document
+  // now that animation engine has been created, can add event listeners
   createPlaybar();
 
-  addReloadLanesButton();
+  const datasetFiles = await getS3Files()
+  const numTasks = await determineNumTasks(datasetFiles)
+  setNumTasks(numTasks)
+
+  if (annotateLanesAvailable) {
+    addReloadLanesButton();
+  }
   addLoadGapsButton();
   addLoadRadarButton();
   addCalibrationButton();
@@ -84,7 +92,7 @@ export function loadPotree() {
   loadDataIntoDocument();
 
   // Load Pointclouds
-  if (runForLocalDevelopment) {
+  if (runLocalPointCloud) {
     Potree.loadPointCloud("../pointclouds/test/cloud.js", "full-cloud", finishLoading);
 
   } else {
@@ -177,4 +185,98 @@ function loadDataIntoDocument() {
 		// animationEngine.configure(tstart, tend, playbackRate);
 		// animationEngine.launch();
 	}); // END loadRtkCallback()
+}
+
+/**
+ * @brief Gets list of "all" files located in s3 for the dataset
+ * @note Have to do a request for each sub dir as there is a limit on # objects that can be requested
+ * (1_Viz has >1000 raw .bin that take up all the space so do multiple requests -- not all 1_Viz's .bin are included)
+ * @returns {Promise<Array<String> | null>} List of files located within s3 for the dataset (null if running local point cloud)
+ */
+async function getS3Files() {
+	if (bucket == null) return null // local point cloud
+	const removePrefix = (str) => str.split(name+'/')[1]
+
+	const topLevel = await s3.listObjectsV2({
+		Bucket: bucket,
+		Delimiter: "/",
+		Prefix: `${name}/`
+	}).promise()
+
+	const topLevelDirs = topLevel.CommonPrefixes
+		.map(listing => listing.Prefix)
+		.filter(str => {
+			const noPrefix = removePrefix(str)
+			const delimIdx = noPrefix.indexOf("/") 
+			// -1 if no other '/' found, meaning is a file & not a directory
+			return delimIdx != -1
+		})
+
+	// consolidate each subdirs' contents after doing multiple requests 
+	// prevent one folder's numerous binary files from blocking the retrieval of other dirs' files
+	const filePaths = []
+	for (const dir of topLevelDirs) {
+		const listData = await s3.listObjectsV2({
+			Bucket: bucket,
+			Prefix: dir,
+		}).promise()
+		listData.Contents.forEach(fileListing => filePaths.push(fileListing.Key))
+	}
+
+	return filePaths
+}
+
+/**
+ * @brief Function that determines the number of downloads & post-download loading needed to render potree
+ * @note Amount of downloads based on # relevant files present in s3
+ * @param { Array | null } datasetFiles (null if running local point cloud) List containing all files in the s3 dataset
+ */
+async function determineNumTasks(datasetFiles) {
+	// list of functions which determine which (if any) files from s3 need to be downloaded on page load
+	const downloadList = [
+		rtkFlatbufferDownloads, calDownloads, remDownloads,
+		textureDownloads, laneDownloads, trackDownloads
+	]
+
+	// onClick button loads which should not be added to count for page loading,
+	// but still need to find where their relevant files are
+	// rtkDownloads -- special case as it's function "loadRtk" is never actually called so should not be counted
+	const otherDownloads = [detectionDownloads, gapDownloads, radarDownloads, rtkDownloads]
+	otherDownloads.forEach(async (getRelevantFiles) => await getRelevantFiles(datasetFiles))
+
+	// downloads & loads that happen on page load and need to be tracked
+	let numDownloads = 0 // generally incremented by if objectName is present in the returned dictionary
+	let numLoads = 0 // normally incremented with numDownloads except when texture/mesh is present (increment solely) 
+	for (const getRelevantFiles of downloadList) {
+		const relevantFiles = await getRelevantFiles(datasetFiles)
+		if (relevantFiles.objectName != null) {
+			numDownloads++
+			numLoads++
+		}
+		// special case for textureLoader (loads 2 things, but only one is trackable, so combine)
+		else if (relevantFiles.texture && relevantFiles.mesh) {
+			numLoads++
+		}
+	}
+	return numLoads + numDownloads
+}
+
+/**
+ * @brief Helper function for loaders to determine if a local point cloud file exists
+ * @param {String} path
+ * @returns {String | null} Returns 'path' if exists, null if file does not exist
+ */
+export async function existsOrNull(path) {
+    return new Promise((resolve, reject) => {
+        const req = new XMLHttpRequest();
+        req.open('HEAD', path, true)
+        req.onreadystatechange = () => {
+            if (req.readyState === 4) { // completed (error or done)
+                const fileExists = req.status == 200
+                const toRtn = fileExists ? path : null
+                resolve(toRtn)
+            }
+        }
+        req.send()
+    })
 }

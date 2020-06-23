@@ -1,52 +1,72 @@
 'use strict';
 import { getShaderMaterial, s3, bucket, name } from "../demo/paramLoader.js"
-import { getLoadingBar, getLoadingBarTotal, setLoadingScreen, removeLoadingScreen } from "../common/overlay.js";
+import { updateLoadingBar, incrementLoadingBarTotal, resetProgressBars} from "../common/overlay.js";
 
 function isNan(n) {
   return n !== n;
 }
 
-export async function loadRadar(s3, bucket, name, callback) {
+// sets local variable and returns so # files can be counted
+const radarFiles = {objectName: null}
+export const radarDownloads = async (datasetFiles) => {
+  const isLocalLoad = datasetFiles == null
+  const localObj = "csv/radar_tracks_demo.csv"
+  const objNameMatch = "radardata.csv"
+  radarFiles.objectName = isLocalLoad ?
+    await existsOrNull(localObj) : datasetFiles.filter(path => path.endsWith(objNameMatch))[0]
+  return radarFiles
+}
+
+/**
+ * @returns {Promise<{geometry, t_init, boxBufferGeometries} | null>} Resolves to null if error
+ */
+export async function loadRadar(s3, bucket, name) {
   const tstart = performance.now();
-  let loadingBar = getLoadingBar();
-  let loadingBarTotal = getLoadingBarTotal(); 
-  let lastLoaded = 0;
+  let radarData = null // null == error
+  if (radarFiles.objectName == null) {
+    console.log("No radar files present")
+    return radarData
+  } else {
+    // prepare for progress tracking (currently only triggered on button click)
+    resetProgressBars(2) // have to download & process/load radar
+  }
+
   if (s3 && bucket && name) {
-    const objectName = `${name}/0_Preprocessed/radardata.csv`;
     const request = s3.getObject({Bucket: bucket,
-                  Key: objectName},
-                 (err, data) => {
-                   if (err) {
-                     console.log(err, err.stack);
-                   } else {
-                     const string = new TextDecoder().decode(data.Body);
-                     const {geometry, t_init} = parseRadar(string);
-                     callback(geometry, t_init);
-                   }});
-    request.on("httpDownloadProgress", (e) => {
-      let val = e.loaded/e.total * 100;  
-      val = Math.max(lastLoaded, val);
-      loadingBar.set(Math.max(val, loadingBar.value));
-      lastLoaded = val;
+                  Key: radarFiles.objectName},
+                  async (err, data) => {
+                    if (err) {
+                      console.log(err, err.stack);
+                    } else {
+                      const string = new TextDecoder().decode(data.Body);
+                      radarData = await parseRadar(string); // returns {geometry, t_init, boxBufferGeometries}
+                    }
+                    incrementLoadingBarTotal()
+                    return radarData
+                  });
+    request.on("httpDownloadProgress", async (e) => {
+      await updateLoadingBar(e.loaded/e.total * 100)
     });
     
     request.on("complete", () => {
-      loadingBar.set(100)
-      loadingBarTotal.set(100);
-      removeLoadingScreen();
+      incrementLoadingBarTotal()
     });
   } else {
-    const filename = "csv/radar_tracks_demo.csv";
     const xhr = new XMLHttpRequest();
-    xhr.open("GET", filename);
-    xhr.onload = function(data) {
-      const {geometry, t_init} = parseRadar(data.target.response);
-      callback(geometry, t_init);
+    xhr.open("GET", radarFiles.objectName);
+    xhr.onprogress = async (e) => {
+      await updateLoadingBar(e.loaded/e.total*100)
+    }
+    xhr.onload = async (data) => {
+      incrementLoadingBarTotal()
+      const radarResult = await parseRadar(data.target.response);
+      incrementLoadingBarTotal()
+      return radarResult
     };
     xhr.send();
   }
 }
-function parseRadar(radarString) {
+async function parseRadar(radarString) {
 	const t0_loop = performance.now();
     const rows = radarString.split('\n');
 
@@ -68,6 +88,7 @@ function parseRadar(radarString) {
     let t_init = 0;
     let firstTimestamp = true;
     for (let ii = 0, len = rows.length; ii < len-1; ++ii) {
+      await updateLoadingBar(ii/len*100)
       row = rows[ii];
       cols = row.split(',');
 
@@ -125,13 +146,11 @@ export function addLoadRadarButton() {
 	// Configure Playbar
 	$("#load_radar_button")[0].style.display = "block"
 	let loadRadarButton = $("#load_radar_button")[0];
-	loadRadarButton.addEventListener("mousedown", () => {
+	loadRadarButton.addEventListener("mousedown", async () => {
 		if (!window.radarLoaded) {
-			$("#loading-bar")[0].style.display = "none";
-			setLoadingScreen();
-
-			loadRadar(s3, bucket, name, (geometry, t_init, boxBufferGeometries) => {
-
+			const radarData = await loadRadar(s3, bucket, name)
+			if (radarData != null) {
+				const {geometry, t_init, boxBufferGeometries} = radarData
 				let boxMesh = new THREE.Mesh(boxBufferGeometries, new THREE.MeshBasicMaterial({ color: 0xffff00 }));
 				boxMesh.name = "radar_boxes";
 				// viewer.scene.scene.add(boxMesh);
@@ -169,11 +188,12 @@ export function addLoadRadarButton() {
 						radar.material.uniforms.maxGpsTime.value = maxRadarTime;
 					});
 				}
-				window.radarLoaded = true;
-				loadRadarButton.disabled = true;
-			});
-			removeLoadingScreen();
+			}
 		}
+
+		// either way update page & btns
+		window.radarLoaded = true;
+		loadRadarButton.disabled = true;
 	});
 } // end of add radar button
 

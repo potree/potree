@@ -34,14 +34,6 @@
   vertical-align: center;
 }
 
-#loading-bar::before {
-  content: "Download/Loading Progress";
-}
-
-#loading-bar-total::before {
-  content: "Total Progress";
-}
-
 #annotation-label {
  margin: auto;
  width: 50%;

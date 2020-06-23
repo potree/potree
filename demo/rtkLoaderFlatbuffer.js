@@ -1,81 +1,85 @@
 'use strict';
-import { getLoadingBar, getLoadingBarTotal, numberTasks, removeLoadingScreen, pause } from "../common/overlay.js";
+import { incrementLoadingBarTotal, updateLoadingBar } from "../common/overlay.js";
 import { RtkTrajectory } from "../demo/RtkTrajectory.js";
 import { animateRTK } from "../demo/rtkLoader.js";
 import { } from  "../demo/paramLoader.js"; 
 import { loadTexturedCar } from "../demo/textureLoader.js";
+import { existsOrNull } from "./loaderHelper.js"
+
+const rtkFiles = {objectName: null, schemaFile: null}
+
+// sets local variable and returns so # files can be counted
+export const rtkFlatbufferDownloads = async (datasetFiles) => {
+  const isLocalLoad = datasetFiles == null
+  const localObj = "../data/rtk.fb";
+  const localSchema = "../schemas/RTK_generated.js";
+  const objNameMatch = "rtk.fb" // 0_Preprocessed
+  const schemaMatch = "RTK_generated.js" // 5_Schemas
+  rtkFiles.objectName = isLocalLoad ?
+    await existsOrNull(localObj) : datasetFiles.filter(path => path.endsWith(objNameMatch))[0]
+  rtkFiles.schemaFile = isLocalLoad ?
+    await existsOrNull(localSchema) : datasetFiles.filter(path => path.endsWith(schemaMatch))[0]
+  return rtkFiles
+}
 
 export async function loadRtkFlatbuffer(s3, bucket, name, callback) {
-  let loadingBar = getLoadingBar();
-  let loadingBarTotal = getLoadingBarTotal(); 
-  let lastLoaded = 0;
-  if (s3 && bucket && name) {
-    const objectName = `${name}/0_Preprocessed/rtk.fb`;
-    const schemaFile = `${name}/5_Schemas/RTK_generated.js`;
+  if (rtkFiles.objectName == null || rtkFiles.schemaFile == null) {
+    console.log("No flatbuffer files present")
+    return
+  }
 
+  if (s3 && bucket && name) {
     const schemaUrl = s3.getSignedUrl('getObject', {
       Bucket: bucket,
-      Key: schemaFile
+      Key: rtkFiles.schemaFile
     });
 
     const request = await s3.getObject({Bucket: bucket,
-                  Key: objectName},
-                 async (err, data) => {
-                   if (err) {
-                     console.log(err, err.stack);
-                     // have to increment progress bar since function that would isnt going to be called
-                     loadingBarTotal.set(Math.min(Math.ceil(loadingBarTotal.value + (100/numberTasks))), 100);
-                   } else {
-                     // const string = new TextDecoder().decode(data.Body);
-                     // const {mpos, orientations, t_init, t_range} = parseRTK(string);
-                     const FlatbufferModule = await import(schemaUrl);
-                     const {mpos, orientations, timestamps, t_init, t_range} = await parseRTK(data.Body, FlatbufferModule);
-                     await callback(mpos, orientations, timestamps, t_init, t_range);
-                   }
-                   if (loadingBarTotal.value  >= 100) {
-                    removeLoadingScreen();
-                   }});
+                  Key: rtkFiles.objectName},
+                  async (err, data) => {
+                    if (err) {
+                      console.log(err, err.stack);
+                    } else {
+                      // const string = new TextDecoder().decode(data.Body);
+                      // const {mpos, orientations, t_init, t_range} = parseRTK(string);
+                      const FlatbufferModule = await import(schemaUrl);
+                      const {mpos, orientations, timestamps, t_init, t_range} = await parseRTK(data.Body, FlatbufferModule);
+                      await callback(mpos, orientations, timestamps, t_init, t_range);
+                    }
+                    incrementLoadingBarTotal("rtk flatbuffer loaded")
+                  });
     request.on("httpDownloadProgress", async (e) => {
-      let val = (e.loaded/e.total); 
-      val = Math.max(lastLoaded, val);
-      loadingBar.set(Math.max(val, loadingBar.value));
-      lastLoaded = val;
-      await pause();
+      await updateLoadingBar(e.loaded/e.total*100)
     });
 
-    request.on("complete", async () => {
-      loadingBarTotal.set(Math.min(Math.ceil(loadingBarTotal.value + (100/numberTasks))), 100);
-      loadingBar.set(0);
-      if (loadingBarTotal.value >= 100) {
-        removeLoadingScreen();
-      }
-      await pause();
+    request.on("complete", () => {
+      incrementLoadingBarTotal("rtk flatbuffer downloaded")
     });
 
   } else {
 
-    const filename = "../data/rtk.fb";
-    const schemaFile = "../schemas/RTK_generated.js";
     let t0, t1;
     const tstart = performance.now();
 
     const xhr = new XMLHttpRequest();
-    xhr.open("GET", filename);
+    xhr.open("GET", rtkFiles.objectName);
     xhr.responseType = "arraybuffer";
 
-    xhr.onprogress = function(event) {
+    xhr.onprogress = async (e) => {
+      await updateLoadingBar(e.loaded/e.total*100)
       t1 = performance.now();
       t0 = t1;
     }
 
-    xhr.onload = async function(data) {
-
-      const FlatbufferModule = await import(schemaFile);
+    xhr.onload = async (data) => {
+      incrementLoadingBarTotal("rtk flatbuffer downloaded")
+      const FlatbufferModule = await import(rtkFiles.schemaFile);
 
       let uint8Array = new Uint8Array(data.target.response);
 
       const {mpos, orientations, timestamps, t_init, t_range} = await parseRTK(uint8Array, FlatbufferModule);
       await callback(mpos, orientations, timestamps, t_init, t_range);
+      incrementLoadingBarTotal("rtk flatbuffer loaded")
     };
 
     t0 = performance.now();
@@ -84,8 +88,6 @@ export async function loadRtkFlatbuffer(s3, bucket, name, callback) {
 }
 
 async function parseRTK(bytesArray, FlatbufferModule) {
-  let loadingBar = getLoadingBar();
-  let loadingBarTotal = getLoadingBarTotal(); 
   const t0_loop = performance.now();
 
   let numBytes = bytesArray.length;
@@ -101,10 +103,7 @@ async function parseRTK(bytesArray, FlatbufferModule) {
   let segOffset = 0;
   let segSize, viewSize, viewData;
   while (segOffset < numBytes) {
-    loadingBar.set(Math.max(segOffset/numBytes * 100, loadingBar.value)); // update individual task progress
-    // put in pause so running javascript can hand over temp control to the UI
-    // gives it an opportunity to repaint the UI for the loading bar element
-    await pause();
+    await updateLoadingBar(segOffset/numBytes*100); // update individual task progress
 
     // Read SegmentSize:
     viewSize = new DataView(bytesArray.buffer, segOffset, 4);
@@ -158,14 +157,6 @@ async function parseRTK(bytesArray, FlatbufferModule) {
     // rtkPoses.push(pose);
     segOffset += segSize;
   }
-
-  // update total progress
-  loadingBarTotal.set(Math.min(Math.ceil(loadingBarTotal.value + (100/numberTasks))), 100);
-  loadingBar.set(0);
-  if (loadingBarTotal.value >= 100) {
-    removeLoadingScreen();
-  }
-  await pause()
   return {mpos, orientations, timestamps, t_init, t_range};
 }
 

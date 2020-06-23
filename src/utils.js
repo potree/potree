@@ -758,6 +758,8 @@ export class Utils {
 			return PointColorType.COMPOSITE;
 		} else if (materialName === 'GPS Time') {
 			return PointColorType.GPS_TIME;
+		} else if (materialName === 'Dual Plus Confidence') {
+			return PointColorType.DUAL_PLUS_CONFIDENCE;
 		}
 	};
 
@@ -793,6 +795,8 @@ export class Utils {
 			return 'Composite';
 		} else if (materialID === PointColorType.GPS_TIME) {
 			return 'GPS Time';
+		} else if (materialID === PointColorType.DUAL_PLUS_CONFIDENCE) {
+			return 'Dual Plus Confidence';
 		}
 	};
 

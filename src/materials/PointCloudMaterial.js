@@ -66,7 +66,8 @@ export class PointCloudMaterial extends THREE.RawShaderMaterial {
 			returnNumber: { type: 'f', value: [] },
 			numberOfReturns: { type: 'f', value: [] },
 			pointSourceID: { type: 'f', value: [] },
-			indices: { type: 'fv', value: [] }
+			indices: { type: 'fv', value: [] },
+			dualPlusConfidence: { type: 'f', value: [] }
 		};
 
 		this.uniforms = {
@@ -298,6 +299,8 @@ export class PointCloudMaterial extends THREE.RawShaderMaterial {
 			defines.push('#define color_type_gpstime');
 		} else if (this._pointColorType === PointColorType.COMPOSITE) {
 			defines.push('#define color_type_composite');
+		} else if (this._pointColorType === PointColorType.DUAL_PLUS_CONFIDENCE) {
+			defines.push('#define color_type_dual_plus_confidence');
 		}
 
 		if(this._treeType === TreeType.OCTREE){

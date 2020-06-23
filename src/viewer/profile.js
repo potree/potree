@@ -69,7 +69,8 @@ class ProfilePointCloudEntry{
 				classification: new Uint8Array(batchSize),
 				returnNumber: new Uint8Array(batchSize),
 				numberOfReturns: new Uint8Array(batchSize),
-				pointSourceID: new Uint16Array(batchSize)
+				pointSourceID: new Uint16Array(batchSize),
+				dualPlusConfidence: new Uint16Array(batchSize)
 			};
 
 			geometry.addAttribute('position', new THREE.BufferAttribute(buffers.position, 3));
@@ -79,6 +80,7 @@ class ProfilePointCloudEntry{
 			geometry.addAttribute('returnNumber', new THREE.BufferAttribute(buffers.returnNumber, 1, false));
 			geometry.addAttribute('numberOfReturns', new THREE.BufferAttribute(buffers.numberOfReturns, 1, false));
 			geometry.addAttribute('pointSourceID', new THREE.BufferAttribute(buffers.pointSourceID, 1, false));
+			geometry.addAttribute('dualPlusConfidence', new THREE.BufferAttribute(buffers.dualPlusConfidence, 1, false));
 
 			geometry.drawRange.start = 0;
 			geometry.drawRange.count = 0;
@@ -164,6 +166,10 @@ class ProfilePointCloudEntry{
 
 				if(data.data.pointSourceID){
 					attributes.pointSourceID.array[currentIndex] = data.data.pointSourceID[i];
+				}
+
+				if(data.data.dualPlusConfidence){
+					attributes.dualPlusConfidence.array[currentIndex] = data.data.dualPlusConfidence[i];
 				}
 
 				updateRange.count++;

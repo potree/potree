@@ -132,7 +132,7 @@ async function createControlMeshes(controlPoints, remShaderMaterial, FlatbufferM
     .value() - animationEngine.tstart;
     
     
-    const timestampArray = Array(64).fill(timestamp)
+    const timestampArray = new Float64Array(64).fill(timestamp)
 
     const sphereGeo = new THREE.SphereBufferGeometry(radius);
     remShaderMaterial.uniforms.color.value = new THREE.Color(0x00ffff);
@@ -161,7 +161,7 @@ export async function loadRemCallback(s3, bucket, name, animationEngine) {
 	await loadRem(s3, bucket, name, remShaderMaterial, animationEngine, (sphereMeshes) => {
 		const remLayer = new THREE.Group();
     remLayer.name = "REM Control Points";
-    sphereMeshes.map(mesh => remLayer.add(mesh))
+    sphereMeshes.forEach(mesh => remLayer.add(mesh))
 
 		viewer.scene.scene.add(remLayer);
 		const e = new CustomEvent("truth_layer_added", {detail: remLayer, writable: true});

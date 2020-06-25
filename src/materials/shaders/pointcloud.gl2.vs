@@ -17,7 +17,7 @@ in vec4 indices;
 in float spacing;
 in float gpsTime;
 in float dualDistance;
-in float dualIntensity;
+in float dualReflectivity;
 in float confidence;
 in float sunLevel;
 in float interference;
@@ -496,7 +496,7 @@ float getDualDistance(){
 	return w;
 }
 
-float getDualIntensity(){
+float getDualReflectivity(){
 	float w = 0.0;
 
 	return w;
@@ -589,8 +589,8 @@ vec3 getColor(){
 	#elif defined color_type_dual_distance
 		float w = getDualDistance();
 		color = vec3(w, w, w);
-	#elif defined color_type_dual_intensity
-		float w = getDualIntensity();
+	#elif defined color_type_dual_reflectivity
+		float w = getDualReflectivity();
 		color = vec3(w, w, w);
 	#elif defined color_type_confidence
 		float w = getConfidence();

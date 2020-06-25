@@ -18,7 +18,7 @@ attribute float gpsTime;
 attribute vec3 originalRtkPosition;
 attribute vec3 originalRtkOrientation;
 attribute float dualDistance;
-attribute float dualIntensity;
+attribute float dualReflectivity;
 attribute float confidence;
 attribute float sunLevel;
 attribute float interference;
@@ -625,7 +625,7 @@ float getDualDistance(){
 	return w;
 }
 
-float getDualIntensity(){
+float getDualReflectivity(){
 	float w = 0.0;
 
 	return w;
@@ -718,8 +718,8 @@ vec3 getColor(vec4 correctedPosition){
 	#elif defined color_type_dual_distance
 		float w = getDualDistance();
 		color = vec3(w, w, w);
-	#elif defined color_type_dual_intensity
-		float w = getDualIntensity();
+	#elif defined color_type_dual_reflectivity
+		float w = getDualReflectivity();
 		color = vec3(w, w, w);
 	#elif defined color_type_confidence
 		float w = getConfidence();

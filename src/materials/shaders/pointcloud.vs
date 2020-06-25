@@ -17,7 +17,7 @@ attribute float spacing;
 attribute float gpsTime;
 attribute vec3 originalRtkPosition;
 attribute vec3 originalRtkOrientation;
-attribute float dualPlusConfidence;
+attribute float sunLevel;
 
 uniform vec3 currentRtkPosition;
 uniform vec3 currentRtkOrientation;
@@ -615,15 +615,17 @@ vec3 getCompositeColor(vec4 correctedPosition){
 	return c;
 }
 
-float getDualPlusConfidence(){
-	//float w = dualPlusConfidence / 65535.0;
-	//w = clamp(w, 0.0, 1.0);
-
+float getSunLevel(){
 	float w = 0.0;
-	if (dualPlusConfidence > 30000.0) {
-		w = 0.8;
-	} else {
+
+	if (sunLevel == 0.0) {
+		w = 0.2;
+	} else if (sunLevel == 1.0) {
 		w = 0.4;
+	} else if (sunLevel == 2.0) {
+		w = 0.6;
+	} else if (sunLevel == 3.0) {
+		w = 0.8;
 	}
 
 	return w;
@@ -685,8 +687,8 @@ vec3 getColor(vec4 correctedPosition){
 		color = color;
 	#elif defined color_type_composite
 		color = getCompositeColor(correctedPosition);
-	#elif defined color_type_dual_plus_confidence
-		float w = getDualPlusConfidence();
+	#elif defined color_type_sun_level
+		float w = getSunLevel();
 		color = vec3(w, w, w);
 	#endif
 

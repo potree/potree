@@ -100,7 +100,9 @@ export class BinaryLoader{
 				} else if (parseInt(property) === PointAttributeNames.RTK_ORIENT) {
 					geometry.addAttribute('originalRtkOrientation', new THREE.BufferAttribute(new Float32Array(buffer), 3, false));
 				}  else if (parseInt(property) === PointAttributeNames.DUAL_PLUS_CONFIDENCE) {
-					geometry.addAttribute('dualPlusConfidence', new THREE.BufferAttribute(new Uint16Array(buffer), 1));
+					let DPCs = new Uint16Array(buffer);
+					let sunLevels = new Uint8Array(DPCs.map(function(DPC) { return (DPC >> 7) & 0b11 }));
+					geometry.addAttribute('sunLevel', new THREE.BufferAttribute(sunLevels, 1));
 				}
 			}
 

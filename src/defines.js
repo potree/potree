@@ -55,7 +55,7 @@ export const PointColorType = {
 	PHONG: 12,
 	RGB_HEIGHT: 13,
 	GPS_TIME: 14,
-	DUAL_PLUS_CONFIDENCE: 15,
+	SUN_LEVEL: 15,
 	COMPOSITE: 50
 };
 

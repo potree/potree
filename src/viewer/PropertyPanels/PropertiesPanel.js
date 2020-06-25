@@ -207,9 +207,9 @@ export class PropertiesPanel{
 					</div>
 				</div>
 
-				<div id="materials.dual_plus_confidence_container">
+				<div id="materials.sun_level_container">
 					<div class="divider">
-						<span>Dual Plus Confidence</span>
+						<span>Sun Level</span>
 					</div>
 
 				</div>
@@ -315,7 +315,7 @@ export class PropertiesPanel{
 				'Index',
 				'Level of Detail',
 				'Composite',
-				'Dual Plus Confidence'
+				'Sun Level'
 			];
 
 			let attributeSelection = panel.find('#optMaterial');
@@ -335,7 +335,7 @@ export class PropertiesPanel{
 				let blockIntensity = $('#materials\\.intensity_container');
 				let blockIndex = $('#materials\\.index_container');
 				let blockTransition = $('#materials\\.transition_container');
-				let blockDualPlusConfidence = $('#materials\\.dual_plus_confidence_container');
+				let blockSunLevel = $('#materials\\.sun_level_container');
 
 				blockIndex.css('display', 'none');
 				blockIntensity.css('display', 'none');
@@ -344,7 +344,7 @@ export class PropertiesPanel{
 				blockColor.css('display', 'none');
 				blockWeights.css('display', 'none');
 				blockTransition.css('display', 'none');
-				blockDualPlusConfidence.css('display', 'none');
+				blockSunLevel.css('display', 'none');
 
 				if (selectedValue === 'Composite') {
 					blockWeights.css('display', 'block');
@@ -366,8 +366,8 @@ export class PropertiesPanel{
 					blockIntensity.css('display', 'block');
 				} else if (selectedValue === "Index" ){
 					blockIndex.css('display', 'block');
-				} else if (selectedValue === 'Dual Plus Confidence') {
-					blockDualPlusConfidence.css('display', 'block');
+				} else if (selectedValue === 'Sun Level') {
+					blockSunLevel.css('display', 'block');
 				}
                                 window.animationEngine.updateTimeForAll();
 			};

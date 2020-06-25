@@ -758,8 +758,8 @@ export class Utils {
 			return PointColorType.COMPOSITE;
 		} else if (materialName === 'GPS Time') {
 			return PointColorType.GPS_TIME;
-		} else if (materialName === 'Dual Plus Confidence') {
-			return PointColorType.DUAL_PLUS_CONFIDENCE;
+		} else if (materialName === 'Sun Level') {
+			return PointColorType.SUN_LEVEL;
 		}
 	};
 
@@ -795,8 +795,8 @@ export class Utils {
 			return 'Composite';
 		} else if (materialID === PointColorType.GPS_TIME) {
 			return 'GPS Time';
-		} else if (materialID === PointColorType.DUAL_PLUS_CONFIDENCE) {
-			return 'Dual Plus Confidence';
+		} else if (materialID === PointColorType.SUN_LEVEL) {
+			return 'Sun Level';
 		}
 	};
 

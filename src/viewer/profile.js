@@ -80,7 +80,9 @@ class ProfilePointCloudEntry{
 			geometry.addAttribute('returnNumber', new THREE.BufferAttribute(buffers.returnNumber, 1, false));
 			geometry.addAttribute('numberOfReturns', new THREE.BufferAttribute(buffers.numberOfReturns, 1, false));
 			geometry.addAttribute('pointSourceID', new THREE.BufferAttribute(buffers.pointSourceID, 1, false));
-			geometry.addAttribute('dualPlusConfidence', new THREE.BufferAttribute(buffers.dualPlusConfidence, 1, false));
+
+			let sunLevels = new Uint8Array(dualPlusConfidence.map(function(DPC) { return (DPC >> 7) & 0b11 }));
+			geometry.addAttribute('sunLevel', new THREE.BufferAttribute(sunLevels, 1));
 
 			geometry.drawRange.start = 0;
 			geometry.drawRange.count = 0;

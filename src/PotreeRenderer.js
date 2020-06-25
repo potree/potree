@@ -149,7 +149,11 @@ let attributeLocations = {
 	// "rtk2vehicleRPY": 14,
 	// "velo2rtkXYZ": 15,
 	// "velo2rtkRPY": 16
-	"sunLevel": 13
+	"dualDistance": 13,
+	"dualReflectivity": 14,
+	"confidence": 15,
+	"sunLevel": 16,
+	"interference": 17
 };
 
 class Shader {

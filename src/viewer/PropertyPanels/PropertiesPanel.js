@@ -207,11 +207,34 @@ export class PropertiesPanel{
 					</div>
 				</div>
 
+				<div id="materials.dual_distance_container">
+					<div class="divider">
+						<span>Dual Distance</span>
+					</div>
+				</div>
+
+				<div id="materials.dual_reflectivity_container">
+					<div class="divider">
+						<span>Dual Reflectivity</span>
+					</div>
+				</div>
+
+				<div id="materials.confidence_container">
+					<div class="divider">
+						<span>Confidence</span>
+					</div>
+				</div>
+
 				<div id="materials.sun_level_container">
 					<div class="divider">
 						<span>Sun Level</span>
 					</div>
+				</div>
 
+				<div id="materials.interference_container">
+					<div class="divider">
+						<span>Interference</span>
+					</div>
 				</div>
 
 				</ul>
@@ -315,7 +338,11 @@ export class PropertiesPanel{
 				'Index',
 				'Level of Detail',
 				'Composite',
-				'Sun Level'
+				'Dual Distance',
+				'Dual Reflectivity',
+				'Confidence',
+				'Sun Level',
+				'Interference'
 			];
 
 			let attributeSelection = panel.find('#optMaterial');
@@ -335,7 +362,11 @@ export class PropertiesPanel{
 				let blockIntensity = $('#materials\\.intensity_container');
 				let blockIndex = $('#materials\\.index_container');
 				let blockTransition = $('#materials\\.transition_container');
+				let blockDualDistance = $('#materials\\.dual_distance_container');
+				let blockDualReflectivity = $('#materials\\.dual_reflectivity_container');
+				let blockConfidence = $('#materials\\.confidence_container');
 				let blockSunLevel = $('#materials\\.sun_level_container');
+				let blockInterference = $('#materials\\.interference_container');
 
 				blockIndex.css('display', 'none');
 				blockIntensity.css('display', 'none');
@@ -344,7 +375,11 @@ export class PropertiesPanel{
 				blockColor.css('display', 'none');
 				blockWeights.css('display', 'none');
 				blockTransition.css('display', 'none');
+				blockDualDistance.css('display', 'none');
+				blockDualReflectivity.css('display', 'none');
+				blockConfidence.css('display', 'none');
 				blockSunLevel.css('display', 'none');
+				blockInterference.css('display', 'none');
 
 				if (selectedValue === 'Composite') {
 					blockWeights.css('display', 'block');
@@ -366,8 +401,16 @@ export class PropertiesPanel{
 					blockIntensity.css('display', 'block');
 				} else if (selectedValue === "Index" ){
 					blockIndex.css('display', 'block');
+				} else if (selectedValue === 'Dual Distance') {
+					blockDualDistance.css('display', 'block');
+				} else if (selectedValue === 'Dual Reflectivity') {
+					blockDualReflectivity.css('display', 'block');
+				} else if (selectedValue === 'Confidence') {
+					blockConfidence.css('display', 'block');
 				} else if (selectedValue === 'Sun Level') {
 					blockSunLevel.css('display', 'block');
+				} else if (selectedValue === 'Interference') {
+					blockInterference.css('display', 'block');
 				}
                                 window.animationEngine.updateTimeForAll();
 			};

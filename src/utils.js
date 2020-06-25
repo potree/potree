@@ -758,8 +758,16 @@ export class Utils {
 			return PointColorType.COMPOSITE;
 		} else if (materialName === 'GPS Time') {
 			return PointColorType.GPS_TIME;
+		} else if (materialName === 'Dual Distance') {
+			return PointColorType.DUAL_DISTANCE;
+		} else if (materialName === 'Dual Reflectivity') {
+			return PointColorType.DUAL_REFLECTIVITY;
+		} else if (materialName === 'Confidence') {
+			return PointColorType.CONFIDENCE;
 		} else if (materialName === 'Sun Level') {
 			return PointColorType.SUN_LEVEL;
+		} else if (materialName === 'Interference') {
+			return PointColorType.INTERFERENCE;
 		}
 	};
 
@@ -795,8 +803,16 @@ export class Utils {
 			return 'Composite';
 		} else if (materialID === PointColorType.GPS_TIME) {
 			return 'GPS Time';
+		} else if (materialID === PointColorType.DUAL_DISTANCE) {
+			return 'Dual Distance';
+		} else if (materialID === PointColorType.DUAL_REFLECTIVITY) {
+			return 'Dual Reflectivity';
+		} else if (materialID === PointColorType.CONFIDENCE) {
+			return 'Confidence';
 		} else if (materialID === PointColorType.SUN_LEVEL) {
 			return 'Sun Level';
+		} else if (materialID === PointColorType.INTERFERENCE) {
+			return 'Interference';
 		}
 	};
 

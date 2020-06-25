@@ -16,7 +16,11 @@ in float pointSourceID;
 in vec4 indices;
 in float spacing;
 in float gpsTime;
+in float dualDistance;
+in float dualIntensity;
+in float confidence;
 in float sunLevel;
+in float interference;
 
 uniform mat4 modelMatrix;
 uniform mat4 modelViewMatrix;
@@ -486,22 +490,45 @@ vec3 getCompositeColor(){
 	return c;
 }
 
+float getDualDistance(){
+	float w = 0.0;
+
+	return w;
+}
+
+float getDualIntensity(){
+	float w = 0.0;
+
+	return w;
+}
+
+float getConfidence(){
+	float w = 0.0;
+
+	return w;
+}
+
 float getSunLevel(){
 	float w = 0.0;
 
 	if (sunLevel == 0.0) {
-		w = 0.2;
+		w = 0.0;
 	} else if (sunLevel == 1.0) {
-		w = 0.4;
+		w = 0.33;
 	} else if (sunLevel == 2.0) {
-		w = 0.6;
+		w = 0.67;
 	} else if (sunLevel == 3.0) {
-		w = 0.8;
+		w = 1.0;
 	}
 
 	return w;
 }
 
+float getInterference(){
+	float w = 0.0;
+
+	return w;
+}
 
 // 
 //  ######  ##       #### ########  ########  #### ##    ##  ######   
@@ -559,8 +586,20 @@ vec3 getColor(){
 		color = color;
 	#elif defined color_type_composite
 		color = getCompositeColor();
+	#elif defined color_type_dual_distance
+		float w = getDualDistance();
+		color = vec3(w, w, w);
+	#elif defined color_type_dual_intensity
+		float w = getDualIntensity();
+		color = vec3(w, w, w);
+	#elif defined color_type_confidence
+		float w = getConfidence();
+		color = vec3(w, w, w);
 	#elif defined color_type_sun_level
 		float w = getSunLevel();
+		color = vec3(w, w, w);
+	#elif defined color_type_interference
+		float w = getInterference();
 		color = vec3(w, w, w);
 	#endif
 	

@@ -101,8 +101,16 @@ export class BinaryLoader{
 					geometry.addAttribute('originalRtkOrientation', new THREE.BufferAttribute(new Float32Array(buffer), 3, false));
 				}  else if (parseInt(property) === PointAttributeNames.DUAL_PLUS_CONFIDENCE) {
 					let DPCs = new Uint16Array(buffer);
-					let sunLevels = new Uint8Array(DPCs.map(function(DPC) { return (DPC >> 7) & 0b11 }));
-					geometry.addAttribute('sunLevel', new THREE.BufferAttribute(sunLevels, 1));
+					let dualDistance = new Uint8Array(DPCs.map(function(DPC) { return [NaN, 0, 2, 1][DPC & 0b11] }));
+					let dualReflectivity = new Uint8Array(DPCs.map(function(DPC) { return [NaN, 0, 2, 1][(DPC >> 2) & 0b11] }));
+					let confidence = new Uint8Array(DPCs.map(function(DPC) { return (DPC >> 4) & 0b111 }));
+					let sunLevel = new Uint8Array(DPCs.map(function(DPC) { return (DPC >> 7) & 0b11 }));
+					let interference = new Uint8Array(DPCs.map(function(DPC) { return (DPC >> 9) & 0b11 }));
+					geometry.addAttribute('dualDistance', new THREE.BufferAttribute(dualDistance, 1));
+					geometry.addAttribute('dualReflectivity', new THREE.BufferAttribute(dualReflectivity, 1));
+					geometry.addAttribute('confidence', new THREE.BufferAttribute(confidence, 1));
+					geometry.addAttribute('sunLevel', new THREE.BufferAttribute(sunLevel, 1));
+					geometry.addAttribute('interference', new THREE.BufferAttribute(interference, 1));
 				}
 			}
 

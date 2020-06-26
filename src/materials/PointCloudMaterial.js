@@ -67,7 +67,11 @@ export class PointCloudMaterial extends THREE.RawShaderMaterial {
 			numberOfReturns: { type: 'f', value: [] },
 			pointSourceID: { type: 'f', value: [] },
 			indices: { type: 'fv', value: [] },
-			dualPlusConfidence: { type: 'f', value: [] }
+			dualDistance: { type: 'f', value: [] },
+			dualReflectivity: { type: 'f', value: [] },
+			confidence: { type: 'f', value: [] },
+			sunLevel: { type: 'f', value: [] },
+			interference: { type: 'f', value: [] }
 		};
 
 		this.uniforms = {

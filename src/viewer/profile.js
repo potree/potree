@@ -179,7 +179,11 @@ class ProfilePointCloudEntry{
 				}
 
 				if(data.data.dualPlusConfidence){
-					attributes.dualPlusConfidence.array[currentIndex] = data.data.dualPlusConfidence[i];
+					attributes.dualDistance.array[currentIndex] = [NaN, 0, 2, 1][data.data.dualPlusConfidence[i] & 0b11];
+					attributes.dualReflectivity.array[currentIndex] = [NaN, 0, 2, 1][(data.data.dualPlusConfidence[i] >> 2) & 0b11];
+					attributes.confidence.array[currentIndex] = (data.data.dualPlusConfidence[i] >> 4) & 0b111;
+					attributes.sunLevel.array[currentIndex] = (data.data.dualPlusConfidence[i] >> 7) & 0b11;
+					attributes.interference.array[currentIndex] = (data.data.dualPlusConfidence[i] >> 9) & 0b11;
 				}
 
 				updateRange.count++;

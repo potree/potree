@@ -125,29 +125,19 @@ export class NodeLoader{
 		}
 	}
 
-	async loadHierarchy(node){
+	parseHierarchy(node, buffer){
 
-		let {hierarchyByteOffset, hierarchyByteSize} = node;
-		let hierarchyPath = `${this.url}/../hierarchy.bin`;
-		
-		let first = hierarchyByteOffset;
-		let last = first + hierarchyByteSize - 1n;
-
-		let response = await fetch(hierarchyPath, {
-			headers: {
-				'content-type': 'multipart/byteranges',
-				'Range': `bytes=${first}-${last}`,
-			},
-		});
-
-		let buffer = await response.arrayBuffer();
 		let view = new DataView(buffer);
+		let tStart = performance.now();
 
 		let bytesPerNode = 22;
 		let numNodes = buffer.byteLength / bytesPerNode;
 
 		let octree = node.octreeGeometry;
-		let nodes = [node];
+		// let nodes = [node];
+		let nodes = new Array(numNodes);
+		nodes[0] = node;
+		let nodePos = 1;
 
 		for(let i = 0; i < numNodes; i++){
 			let current = nodes[i];
@@ -196,17 +186,50 @@ export class NodeLoader{
 				current.children[childIndex] = child;
 				child.parent = current;
 
-				nodes.push(child);
+				// nodes.push(child);
+				nodes[nodePos] = child;
+				nodePos++;
 			}
 		}
+
+		let duration = (performance.now() - tStart);
+
+		if(duration > 20){
+			let msg = `duration: ${duration}ms, numNodes: ${numNodes}`;
+			console.log(msg);
+		}
+	}
+
+	async loadHierarchy(node){
+
+		let {hierarchyByteOffset, hierarchyByteSize} = node;
+		let hierarchyPath = `${this.url}/../hierarchy.bin`;
+		
+		let first = hierarchyByteOffset;
+		let last = first + hierarchyByteSize - 1n;
+
+		let response = await fetch(hierarchyPath, {
+			headers: {
+				'content-type': 'multipart/byteranges',
+				'Range': `bytes=${first}-${last}`,
+			},
+		});
+
+
+
+		let buffer = await response.arrayBuffer();
+
+		this.parseHierarchy(node, buffer);
+
 	}
 
 }
 
+let tmpVec3 = new THREE.Vector3();
 function createChildAABB(aabb, index){
 	let min = aabb.min.clone();
 	let max = aabb.max.clone();
-	let size = new THREE.Vector3().subVectors(max, min);
+	let size = tmpVec3.subVectors(max, min);
 
 	if ((index & 0b0001) > 0) {
 		min.z += size.z / 2;

@@ -63,6 +63,20 @@ export class PointCloudEptGeometry {
 			else this.fallbackProjection = info.srs.wkt;
 		}
 
+		{ 
+			// TODO [mschuetz]: named projections that proj4 can't handle seem to cause problems.
+			// remove them for now
+
+			try{
+				proj4(this.projection);
+			}catch(e){
+				this.projection = null;
+			}
+
+		
+
+		}
+
 		
 		{
 			const attributes = new PointAttributes();

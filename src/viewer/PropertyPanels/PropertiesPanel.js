@@ -325,10 +325,10 @@ export class PropertiesPanel{
 				'GPS Time',
 				'Index',
 				'Level of Detail',
-				'Composite',
 				'Dual Distance',
 				'Dual Reflectivity',
-				'Confidence'
+				'Confidence',
+				'Composite'
 			];
 
 			let attributeSelection = panel.find('#optMaterial');

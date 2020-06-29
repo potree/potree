@@ -205,6 +205,9 @@ export class HQSplatRenderer{
 				attributeMaterial.weightClassification = material.weightClassification;
 				attributeMaterial.weightReturnNumber = material.weightReturnNumber;
 				attributeMaterial.weightSourceID = material.weightSourceID;
+				attributeMaterial.weightDualDistance = material.weightDualDistance;
+				attributeMaterial.weightDualReflectivity = material.weightDualReflectivity;
+				attributeMaterial.weightConfidence = material.weightConfidence;
 
 				attributeMaterial.color = material.color;
 

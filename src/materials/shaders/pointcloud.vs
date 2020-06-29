@@ -117,6 +117,9 @@ uniform float wElevation;
 uniform float wClassification;
 uniform float wReturnNumber;
 uniform float wSourceID;
+uniform float wDualDistance;
+uniform float wDualReflectivity;
+uniform float wConfidence;
 
 uniform vec3 uShadowColor;
 
@@ -584,39 +587,6 @@ vec3 getSourceID(){
 	return texture2D(gradient, vec2(w,1.0 - w)).rgb;
 }
 
-vec3 getCompositeColor(vec4 correctedPosition){
-	vec3 c;
-	float w;
-
-	c += wRGB * getRGB();
-	w += wRGB;
-
-	c += wIntensity * getIntensity() * vec3(1.0, 1.0, 1.0);
-	w += wIntensity;
-
-	c += wElevation * getElevation(correctedPosition);
-	w += wElevation;
-
-	c += wReturnNumber * getReturnNumber();
-	w += wReturnNumber;
-
-	c += wSourceID * getSourceID();
-	w += wSourceID;
-
-	vec4 cl = wClassification * getClassification();
-    c += cl.a * cl.rgb;
-	w += wClassification * cl.a;
-
-	c = c / w;
-
-	if(w == 0.0){
-		//c = color;
-		gl_Position = vec4(100.0, 100.0, 100.0, 0.0);
-	}
-
-	return c;
-}
-
 vec3 getDualDistance(){
 	if (dualDistance == 0.0) {
 		return vec3(0.19, 0.49, 0.65);
@@ -639,6 +609,48 @@ vec3 getDualReflectivity(){
 
 float getConfidence(){
 	return confidence * 0.1;
+}
+
+vec3 getCompositeColor(vec4 correctedPosition){
+	vec3 c;
+	float w;
+
+	c += wRGB * getRGB();
+	w += wRGB;
+
+	c += wIntensity * getIntensity() * vec3(1.0, 1.0, 1.0);
+	w += wIntensity;
+
+	c += wElevation * getElevation(correctedPosition);
+	w += wElevation;
+
+	c += wReturnNumber * getReturnNumber();
+	w += wReturnNumber;
+
+	c += wSourceID * getSourceID();
+	w += wSourceID;
+
+	c += wDualDistance * getDualDistance();
+	w += wDualDistance;
+
+	c += wDualReflectivity * getDualReflectivity();
+	w += wDualReflectivity;
+
+	c += wConfidence * getConfidence() * vec3(1.0, 1.0, 1.0);
+	w += wConfidence;
+
+	vec4 cl = wClassification * getClassification();
+    c += cl.a * cl.rgb;
+	w += wClassification * cl.a;
+
+	c = c / w;
+
+	if(w == 0.0){
+		//c = color;
+		gl_Position = vec4(100.0, 100.0, 100.0, 0.0);
+	}
+
+	return c;
 }
 
 //

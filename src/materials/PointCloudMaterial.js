@@ -127,6 +127,9 @@ export class PointCloudMaterial extends THREE.RawShaderMaterial {
 			wClassification:	{ type: "f", value: 0 },
 			wReturnNumber:		{ type: "f", value: 0 },
 			wSourceID:			{ type: "f", value: 0 },
+			wDualDistance:		{ type: "f", value: 0 },
+			wDualReflectivity:	{ type: "f", value: 0 },
+			wConfidence:		{ type: "f", value: 0 },
 			useOrthographicCamera: { type: "b", value: false },
 			clipTask:			{ type: "i", value: 1 },
 			clipMethod:			{ type: "i", value: 1 },
@@ -953,6 +956,48 @@ export class PointCloudMaterial extends THREE.RawShaderMaterial {
 	set weightSourceID (value) {
 		if(this.uniforms.wSourceID.value !== value){
 			this.uniforms.wSourceID.value = value;
+			this.dispatchEvent({
+				type: 'material_property_changed',
+				target: this
+			});
+		}
+	}
+
+	get weightDualDistance () {
+		return this.uniforms.wDualDistance.value;
+	}
+
+	set weightDualDistance (value) {
+		if(this.uniforms.wDualDistance.value !== value){
+			this.uniforms.wDualDistance.value = value;
+			this.dispatchEvent({
+				type: 'material_property_changed',
+				target: this
+			});
+		}
+	}
+
+	get weightDualReflectivity () {
+		return this.uniforms.wDualReflectivity.value;
+	}
+
+	set weightDualReflectivity (value) {
+		if(this.uniforms.wDualReflectivity.value !== value){
+			this.uniforms.wDualReflectivity.value = value;
+			this.dispatchEvent({
+				type: 'material_property_changed',
+				target: this
+			});
+		}
+	}
+
+	get weightConfidence () {
+		return this.uniforms.wConfidence.value;
+	}
+
+	set weightConfidence (value) {
+		if(this.uniforms.wConfidence.value !== value){
+			this.uniforms.wConfidence.value = value;
 			this.dispatchEvent({
 				type: 'material_property_changed',
 				target: this

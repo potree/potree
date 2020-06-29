@@ -124,6 +124,9 @@ export class PropertiesPanel{
 					<li>Classification: <span id="lblWeightClassification"></span> <div id="sldWeightClassification"></div>	</li>
 					<li>Return Number: <span id="lblWeightReturnNumber"></span> <div id="sldWeightReturnNumber"></div>	</li>
 					<li>Source ID: <span id="lblWeightSourceID"></span> <div id="sldWeightSourceID"></div>	</li>
+					<li>Dual Distance: <span id="lblWeightDualDistance"></span> <div id="sldWeightDualDistance"></div>	</li>
+					<li>Dual Reflectivity: <span id="lblWeightDualReflectivity"></span> <div id="sldWeightDualReflectivity"></div>	</li>
+					<li>Confidence: <span id="lblWeightConfidence"></span> <div id="sldWeightConfidence"></div>	</li>
 				</div>
 
 				<div id="materials.rgb_container">
@@ -530,6 +533,24 @@ export class PropertiesPanel{
 				value: material.weightSourceID,
 				min: 0, max: 1, step: 0.01,
 				slide: (event, ui) => {material.weightSourceID = ui.value}
+			});
+
+			panel.find('#sldWeightDualDistance').slider({
+				value: material.weightDualDistance,
+				min: 0, max: 1, step: 0.01,
+				slide: (event, ui) => {material.weightDualDistance = ui.value}
+			});
+
+			panel.find('#sldWeightDualReflectivity').slider({
+				value: material.weightDualReflectivity,
+				min: 0, max: 1, step: 0.01,
+				slide: (event, ui) => {material.weightDualReflectivity = ui.value}
+			});
+
+			panel.find('#sldWeightConfidence').slider({
+				value: material.weightConfidence,
+				min: 0, max: 1, step: 0.01,
+				slide: (event, ui) => {material.weightConfidence = ui.value}
 			});
 
 			panel.find(`#materials\\.color\\.picker`).spectrum({

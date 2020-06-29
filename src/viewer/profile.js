@@ -819,7 +819,9 @@ export class ProfileWindow extends EventDispatcher {
 				material.uniforms.wClassification.value = pointcloud.material.uniforms.wClassification.value;
 				material.uniforms.wReturnNumber.value = pointcloud.material.uniforms.wReturnNumber.value;
 				material.uniforms.wSourceID.value = pointcloud.material.uniforms.wSourceID.value;
-
+				material.uniforms.wDualDistance.value = pointcloud.material.uniforms.wDualDistance.value;
+				material.uniforms.wDualReflectivity.value = pointcloud.material.uniforms.wDualReflectivity.value;
+				material.uniforms.wConfidence.value = pointcloud.material.uniforms.wConfidence.value;
 			}
 
 			this.pickSphere.visible = true;

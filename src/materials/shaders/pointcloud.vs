@@ -20,8 +20,6 @@ attribute vec3 originalRtkOrientation;
 attribute float dualDistance;
 attribute float dualReflectivity;
 attribute float confidence;
-attribute float sunLevel;
-attribute float interference;
 
 uniform vec3 currentRtkPosition;
 uniform vec3 currentRtkOrientation;
@@ -619,44 +617,28 @@ vec3 getCompositeColor(vec4 correctedPosition){
 	return c;
 }
 
-float getDualDistance(){
-	float w = 0.0;
-
-	return w;
+vec3 getDualDistance(){
+	if (dualDistance == 0.0) {
+		return vec3(0.19, 0.49, 0.65);
+	} else if (dualDistance == 1.0) {
+		return vec3(0.5, 0.5, 0.5);
+	} else if (dualDistance == 2.0) {
+		return vec3(0.44, 0.15, 0.15);
+	}
 }
 
-float getDualReflectivity(){
-	float w = 0.0;
-
-	return w;
+vec3 getDualReflectivity(){
+	if (dualReflectivity == 0.0) {
+		return vec3(0.5, 0.1, 0.7);
+	} else if (dualDistance == 1.0) {
+		return vec3(0.5, 0.5, 0.5);
+	} else if (dualDistance == 2.0) {
+		return vec3(1.0, 0.9, 0.0);
+	}
 }
 
 float getConfidence(){
-	float w = 0.0;
-
-	return w;
-}
-
-float getSunLevel(){
-	float w = 0.0;
-
-	if (sunLevel == 0.0) {
-		w = 0.0;
-	} else if (sunLevel == 1.0) {
-		w = 0.33;
-	} else if (sunLevel == 2.0) {
-		w = 0.67;
-	} else if (sunLevel == 3.0) {
-		w = 1.0;
-	}
-
-	return w;
-}
-
-float getInterference(){
-	float w = 0.0;
-
-	return w;
+	return confidence * 0.1;
 }
 
 //
@@ -716,19 +698,11 @@ vec3 getColor(vec4 correctedPosition){
 	#elif defined color_type_composite
 		color = getCompositeColor(correctedPosition);
 	#elif defined color_type_dual_distance
-		float w = getDualDistance();
-		color = vec3(w, w, w);
+		color = getDualDistance();
 	#elif defined color_type_dual_reflectivity
-		float w = getDualReflectivity();
-		color = vec3(w, w, w);
+		color = getDualReflectivity();
 	#elif defined color_type_confidence
 		float w = getConfidence();
-		color = vec3(w, w, w);
-	#elif defined color_type_sun_level
-		float w = getSunLevel();
-		color = vec3(w, w, w);
-	#elif defined color_type_interference
-		float w = getInterference();
 		color = vec3(w, w, w);
 	#endif
 

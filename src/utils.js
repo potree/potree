@@ -764,10 +764,6 @@ export class Utils {
 			return PointColorType.DUAL_REFLECTIVITY;
 		} else if (materialName === 'Confidence') {
 			return PointColorType.CONFIDENCE;
-		} else if (materialName === 'Sun Level') {
-			return PointColorType.SUN_LEVEL;
-		} else if (materialName === 'Interference') {
-			return PointColorType.INTERFERENCE;
 		}
 	};
 
@@ -809,10 +805,6 @@ export class Utils {
 			return 'Dual Reflectivity';
 		} else if (materialID === PointColorType.CONFIDENCE) {
 			return 'Confidence';
-		} else if (materialID === PointColorType.SUN_LEVEL) {
-			return 'Sun Level';
-		} else if (materialID === PointColorType.INTERFERENCE) {
-			return 'Interference';
 		}
 	};
 

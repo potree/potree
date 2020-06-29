@@ -69,9 +69,7 @@ export class PointCloudMaterial extends THREE.RawShaderMaterial {
 			indices: { type: 'fv', value: [] },
 			dualDistance: { type: 'f', value: [] },
 			dualReflectivity: { type: 'f', value: [] },
-			confidence: { type: 'f', value: [] },
-			sunLevel: { type: 'f', value: [] },
-			interference: { type: 'f', value: [] }
+			confidence: { type: 'f', value: [] }
 		};
 
 		this.uniforms = {
@@ -309,10 +307,6 @@ export class PointCloudMaterial extends THREE.RawShaderMaterial {
 			defines.push('#define color_type_dual_reflectivity');
 		} else if (this._pointColorType === PointColorType.CONFIDENCE) {
 			defines.push('#define color_type_confidence');
-		} else if (this._pointColorType === PointColorType.SUN_LEVEL) {
-			defines.push('#define color_type_sun_level');
-		} else if (this._pointColorType === PointColorType.INTERFERENCE) {
-			defines.push('#define color_type_interference');
 		}
 
 		if(this._treeType === TreeType.OCTREE){

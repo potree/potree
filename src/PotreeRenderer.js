@@ -151,9 +151,7 @@ let attributeLocations = {
 	// "velo2rtkRPY": 16
 	"dualDistance": 13,
 	"dualReflectivity": 14,
-	"confidence": 15,
-	"sunLevel": 16,
-	"interference": 17
+	"confidence": 15
 };
 
 class Shader {

@@ -225,18 +225,6 @@ export class PropertiesPanel{
 					</div>
 				</div>
 
-				<div id="materials.sun_level_container">
-					<div class="divider">
-						<span>Sun Level</span>
-					</div>
-				</div>
-
-				<div id="materials.interference_container">
-					<div class="divider">
-						<span>Interference</span>
-					</div>
-				</div>
-
 				</ul>
 			</div>
 		`);
@@ -340,9 +328,7 @@ export class PropertiesPanel{
 				'Composite',
 				'Dual Distance',
 				'Dual Reflectivity',
-				'Confidence',
-				'Sun Level',
-				'Interference'
+				'Confidence'
 			];
 
 			let attributeSelection = panel.find('#optMaterial');
@@ -365,8 +351,6 @@ export class PropertiesPanel{
 				let blockDualDistance = $('#materials\\.dual_distance_container');
 				let blockDualReflectivity = $('#materials\\.dual_reflectivity_container');
 				let blockConfidence = $('#materials\\.confidence_container');
-				let blockSunLevel = $('#materials\\.sun_level_container');
-				let blockInterference = $('#materials\\.interference_container');
 
 				blockIndex.css('display', 'none');
 				blockIntensity.css('display', 'none');
@@ -378,8 +362,6 @@ export class PropertiesPanel{
 				blockDualDistance.css('display', 'none');
 				blockDualReflectivity.css('display', 'none');
 				blockConfidence.css('display', 'none');
-				blockSunLevel.css('display', 'none');
-				blockInterference.css('display', 'none');
 
 				if (selectedValue === 'Composite') {
 					blockWeights.css('display', 'block');
@@ -407,10 +389,6 @@ export class PropertiesPanel{
 					blockDualReflectivity.css('display', 'block');
 				} else if (selectedValue === 'Confidence') {
 					blockConfidence.css('display', 'block');
-				} else if (selectedValue === 'Sun Level') {
-					blockSunLevel.css('display', 'block');
-				} else if (selectedValue === 'Interference') {
-					blockInterference.css('display', 'block');
 				}
                                 window.animationEngine.updateTimeForAll();
 			};

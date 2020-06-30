@@ -8,7 +8,7 @@ import { getLoadingBar, getLoadingBarTotal, numberTasks, setLoadingScreen, remov
 export async function loadLanes(s3, bucket, name, fname, supplierNum, annotationMode, volumes, callback) {
   const tstart = performance.now();
   let loadingBar = getLoadingBar();
-  let loadingBarTotal = getLoadingBarTotal(); 
+  let loadingBarTotal = getLoadingBarTotal();
   let lastLoaded = 0;
 
   // Logic for dealing with Map Supplier Data:
@@ -67,7 +67,7 @@ export async function loadLanes(s3, bucket, name, fname, supplierNum, annotation
                       removeLoadingScreen();
                      }});
       request.on("httpDownloadProgress", async (e) => {
-        let val = e.loaded/e.total * 100;  
+        let val = e.loaded/e.total * 100;
         val = Math.max(lastLoaded, val);
         loadingBar.set(Math.max(val, loadingBar.value));
         lastLoaded = val;
@@ -302,6 +302,12 @@ async function createLaneGeometriesOld(lanes, supplierNum, annotationMode, volum
   // laneSpine = new Measure(); laneSpine.name = "Lane Spine"; //laneRight.closed = false;
   laneRight = new Measure(); laneRight.name = "Lane Right"; laneRight.closed = false; laneRight.showCoordinates = true; laneRight.showAngles = true;
 
+
+  let laneLeftAnomalies, laneRightAnomalies;
+  laneLeftAnomalies = new Measure(); laneLeftAnomalies.name="Left Anomalies"; laneLeftAnomalies.closed=false; laneLeftAnomalies.showCoordinates=true; laneLeftAnomalies.showAngles=true;
+  laneRightAnomalies = new Measure(); laneRightAnomalies.name="Right Anomalies"; laneRightAnomalies.closed=false; laneRightAnomalies.showCoordinates=true; laneRightAnomalies.showAngles=true;
+
+
   let leftLaneSegments = new LaneSegments(); leftLaneSegments.name = "Left Lane Segments";
   let rightLaneSegments = new LaneSegments(); rightLaneSegments.name = "Right Lane Segments";
 
@@ -320,13 +326,13 @@ async function createLaneGeometriesOld(lanes, supplierNum, annotationMode, volum
   let spines = [];
   let all = [];
   let allBoxes = new THREE.Geometry();
-  
+
   let loadingBar = getLoadingBar();
   let loadingBarTotal = getLoadingBarTotal();
   for(let ii=0, len=lanes.length; ii<len; ii++) {
     if (annotationMode) {
       // hack: bar will decrease itself over time for no reason unless continously set during annotate lanes
-      loadingBarTotal.set(50); 
+      loadingBarTotal.set(50);
     }
     loadingBar.set(Math.max(ii/len * 100, loadingBar.value)); // update progress
     // put in pause so running javascript can hand over temp control to the UI
@@ -338,11 +344,12 @@ async function createLaneGeometriesOld(lanes, supplierNum, annotationMode, volum
     var geometryLeft = new THREE.Geometry();
     var geometrySpine = new THREE.Geometry();
     var geometryRight = new THREE.Geometry();
-
-    let left, right, spine;
+    let left, right, spine, leftValidity, rightValidity;
     let isContains = false;
+
     for(let jj=0, numVertices=lane.leftLength(); jj<numVertices; jj++) {
       left = lane.left(jj);
+      leftValidity = lane.leftPointValidity(jj);
 
       if (annotationMode) {
 
@@ -353,12 +360,17 @@ async function createLaneGeometriesOld(lanes, supplierNum, annotationMode, volum
         }
       } else {
         geometryLeft.vertices.push( new THREE.Vector3(left.x(), left.y(), left.z()));
+
+        if (leftValidity == 1) {
+          laneLeftAnomalies.addMarker(new THREE.Vector3(left.x(), left.y(), left.z()));
+        }
       }
     }
 
     isContains = false;
     for(let jj=0, numVertices=lane.rightLength(); jj<numVertices; jj++) {
       right = lane.right(jj);
+      rightValidity = lane.rightPointValidity(jj);
 
       if (annotationMode) {
 
@@ -370,6 +382,10 @@ async function createLaneGeometriesOld(lanes, supplierNum, annotationMode, volum
         }
       } else {
         geometryRight.vertices.push( new THREE.Vector3(right.x(), right.y(), right.z()));
+
+        if (rightValidity == 1) {
+          laneRightAnomalies.addMarker(new THREE.Vector3(right.x(), right.y(), right.z()));
+        }
       }
     }
 
@@ -429,7 +445,7 @@ async function createLaneGeometriesOld(lanes, supplierNum, annotationMode, volum
 
 
 
-        let length = Math.max(p1.distanceTo(p2), 0.001); // Clamp distance to min value of 1mm 
+        let length = Math.max(p1.distanceTo(p2), 0.001); // Clamp distance to min value of 1mm
         let height = 0.01;
         let width = 0.1;
 
@@ -491,6 +507,10 @@ async function createLaneGeometriesOld(lanes, supplierNum, annotationMode, volum
       all.push(laneRight);
     }
   }
+
+  // TODO anomalies
+  all.push(laneLeftAnomalies);
+  all.push(laneRightAnomalies);
 
   let output = {
     all: all

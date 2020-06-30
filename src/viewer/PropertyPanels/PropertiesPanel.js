@@ -226,6 +226,11 @@ export class PropertiesPanel{
 					<div class="divider">
 						<span>Confidence</span>
 					</div>
+
+					<li>
+						<span>Gradient Scheme:</span>
+						<div id="confidence_gradient_scheme_selection" style="display: flex"/>
+					</li>
 				</div>
 
 				</ul>
@@ -417,6 +422,7 @@ export class PropertiesPanel{
 			];
 
 			let elSchemeContainer = panel.find("#elevation_gradient_scheme_selection");
+			let confSchemeContainer = panel.find("#confidence_gradient_scheme_selection");
 
 			for(let scheme of schemes){
 				let elScheme = $(`
@@ -429,7 +435,18 @@ export class PropertiesPanel{
 					material.gradient = Gradients[scheme.name];
 				});
 
+				let confScheme = $(`
+				<span style="flex-grow: 1;">
+					<img src="${scheme.icon}" class="button-icon" style="max-width: 100%" />
+				</span>
+			`	);
+
+				confScheme.click( () => {
+					material.gradient = Gradients[scheme.name];
+				});
+
 				elSchemeContainer.append(elScheme);
+				confSchemeContainer.append(confScheme);
 			}
 
 			//panel.find("#gradient_spectral").click( () => {

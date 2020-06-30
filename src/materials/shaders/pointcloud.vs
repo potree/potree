@@ -715,8 +715,6 @@ vec3 getColor(vec4 correctedPosition){
 	#elif defined color_type_dual_reflectivity
 		color = getDualReflectivity();
 	#elif defined color_type_confidence
-		//float w = getConfidence();
-		//color = vec3(w, w, w);
 		color = getConfidence();
 	#endif
 

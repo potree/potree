@@ -7,6 +7,8 @@ import {Points} from "../Points.js";
 import {CSVExporter} from "../exporter/CSVExporter.js";
 import {LASExporter} from "../exporter/LASExporter.js";
 import { EventDispatcher } from "../EventDispatcher.js";
+import {unpackDual} from "../../schemas/Lidar_functions.js";
+import {unpackConfidence} from "../../schemas/Lidar_functions.js";
 
 class ProfilePointCloudEntry{
 
@@ -81,9 +83,9 @@ class ProfilePointCloudEntry{
 			geometry.addAttribute('numberOfReturns', new THREE.BufferAttribute(buffers.numberOfReturns, 1, false));
 			geometry.addAttribute('pointSourceID', new THREE.BufferAttribute(buffers.pointSourceID, 1, false));
 
-			let dualDistance = new Uint8Array(dualPlusConfidence.map(function(DPC) { return [NaN, 0, 2, 1][DPC & 0b11] }));
-			let dualReflectivity = new Uint8Array(dualPlusConfidence.map(function(DPC) { return [NaN, 0, 2, 1][(DPC >> 2) & 0b11] }));
-			let confidence = new Uint8Array(dualPlusConfidence.map(function(DPC) { return (DPC >> 4) & 0b111 }));
+			let dualDistance = new Uint8Array(dualPlusConfidence.map(function(DPC) { return unpackDual(DPC).distFlag }));
+			let dualReflectivity = new Uint8Array(dualPlusConfidence.map(function(DPC) { return unpackDual(DPC).intenFlag }));
+			let confidence = new Uint8Array(dualPlusConfidence.map(function(DPC) { return unpackConfidence(DPC).confidence }));
 			geometry.addAttribute('dualDistance', new THREE.BufferAttribute(dualDistance, 1));
 			geometry.addAttribute('dualReflectivity', new THREE.BufferAttribute(dualReflectivity, 1));
 			geometry.addAttribute('confidence', new THREE.BufferAttribute(confidence, 1));
@@ -175,9 +177,9 @@ class ProfilePointCloudEntry{
 				}
 
 				if(data.data.dualPlusConfidence){
-					attributes.dualDistance.array[currentIndex] = [NaN, 0, 2, 1][data.data.dualPlusConfidence[i] & 0b11];
-					attributes.dualReflectivity.array[currentIndex] = [NaN, 0, 2, 1][(data.data.dualPlusConfidence[i] >> 2) & 0b11];
-					attributes.confidence.array[currentIndex] = (data.data.dualPlusConfidence[i] >> 4) & 0b111;
+					attributes.dualDistance.array[currentIndex] = unpackDual(data.data.dualPlusConfidence[i]).distFlag;
+					attributes.dualReflectivity.array[currentIndex] = unpackDual(data.data.dualPlusConfidence[i]).intenFlag;
+					attributes.confidence.array[currentIndex] = unpackDual(data.data.dualPlusConfidence[i]).confidence;
 				}
 
 				updateRange.count++;

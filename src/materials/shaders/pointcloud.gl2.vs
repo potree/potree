@@ -478,8 +478,9 @@ vec3 getDualReflectivity(){
 	}
 }
 
-float getConfidence(){
-	return confidence * 0.1;
+vec3 getConfidence(){
+	float w = confidence / 7.0;
+	return texture(gradient, vec2(w,1.0-w)).rgb;
 }
 
 vec3 getCompositeColor(){
@@ -507,7 +508,7 @@ vec3 getCompositeColor(){
 	c += wDualReflectivity * getDualReflectivity();
 	w += wDualReflectivity;
 
-	c += wConfidence * getConfidence() * vec3(1.0, 1.0, 1.0);
+	c += wConfidence * getConfidence();
 	w += wConfidence;
 	
 	vec4 cl = wClassification * getClassification();
@@ -585,8 +586,9 @@ vec3 getColor(){
 	#elif defined color_type_dual_reflectivity 
 		color = getDualReflectivity();
 	#elif defined color_type_confidence
-		float w = getConfidence();
-		color = vec3(w, w, w);
+		//float w = getConfidence();
+		//color = vec3(w, w, w);
+		color = getConfidence();
 	#endif
 	
 	return color;

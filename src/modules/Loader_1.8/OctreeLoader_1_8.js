@@ -190,6 +190,10 @@ export class NodeLoader{
 				nodes[nodePos] = child;
 				nodePos++;
 			}
+
+			// if((i % 500) === 0){
+			// 	yield;
+			// }
 		}
 
 		let duration = (performance.now() - tStart);
@@ -220,6 +224,28 @@ export class NodeLoader{
 		let buffer = await response.arrayBuffer();
 
 		this.parseHierarchy(node, buffer);
+
+		// let promise = new Promise((resolve) => {
+		// 	let generator = this.parseHierarchy(node, buffer);
+
+		// 	let repeatUntilDone = () => {
+		// 		let result = generator.next();
+
+		// 		if(result.done){
+		// 			resolve();
+		// 		}else{
+		// 			requestAnimationFrame(repeatUntilDone);
+		// 		}
+		// 	};
+			
+		// 	repeatUntilDone();
+		// });
+
+		// await promise;
+
+		
+
+
 
 	}
 

@@ -551,68 +551,77 @@ function updateSegments(laneSegments, clonedBoxes, prevIsContains, point, index,
   return newIsContains
 }
 
+
+// Adds anomaly annotations
+function addAnnotations(laneGeometries) {
+  let point;
+
+  let aRoot = viewer.scene.annotations;
+  let aAnomalies = new Potree.Annotation({
+    title: "Lane Anomalies",
+    position: laneGeometries.leftAnomalies[0]
+  });
+  aAnomalies.visible = false;
+  aRoot.add(aAnomalies);
+  let aLeft = new Potree.Annotation({
+    title: "Left",
+    position: laneGeometries.leftAnomalies[0]
+  });
+  let aRight = new Potree.Annotation({
+    title: "Right",
+    position: laneGeometries.rightAnomalies[0]
+
+  });
+  aAnomalies.add(aLeft);
+  aAnomalies.add(aRight);
+
+  // Add anomalies layer
+  for (let ii=0, len=laneGeometries.leftAnomalies.length; ii<len; ii++) {
+    point = laneGeometries.leftAnomalies[ii];
+    let aAnomaly = new Potree.Annotation({
+      title: "L " +[ii+1],
+      position: point,
+      cameraPosition: new THREE.Vector3(point.x, point.y, point.z + 20),
+      cameraTarget: point
+    });
+    aLeft.add(aAnomaly);
+  }
+  for (let ii=0, len=laneGeometries.rightAnomalies.length; ii<len; ii++) {
+    point = laneGeometries.rightAnomalies[ii];
+    let aAnomaly = new Potree.Annotation({
+      title: "R " +[ii+1],
+      position: point,
+      cameraPosition: new THREE.Vector3(point.x, point.y, point.z + 20),
+      cameraTarget: point
+    });
+    aRight.add(aAnomaly);
+  }
+}
+
+
+// Adds lane geometries to viewer
+function addLaneGeometries(laneGeometries, lanesLayer) {
+
+  for (let ii = 0, len = laneGeometries.all.length; ii < len; ii++) {
+    lanesLayer.add(laneGeometries.all[ii]);
+  }
+  viewer.scene.scene.add(lanesLayer);
+  
+  // add lane anomaly geometries
+  if (laneGeometries.leftAnomalies.length != 0 || laneGeometries.rightAnomalies.length != 0) {addAnnotations(laneGeometries);}
+}
+
+
 // Load Lanes Truth Data:
 export async function loadLanesCallback(s3, bucket, name, callback) {
 
-	let filename, tmpSupplierNum, point;
-  let anomaly_flag = false;
+	let filename, tmpSupplierNum;
 	tmpSupplierNum = -1;
 	await loadLanes(s3, bucket, name, filename, tmpSupplierNum, window.annotateLanesModeActive, viewer.scene.volumes, (laneGeometries) => {
-
 		// need to have Annoted Lanes layer, so that can have original and edited lanes layers
 		let lanesLayer = new THREE.Group();
 		lanesLayer.name = "Lanes";
-		for (let ii = 0, len = laneGeometries.all.length; ii < len; ii++) {
-			lanesLayer.add(laneGeometries.all[ii]);
-		}
-		viewer.scene.scene.add(lanesLayer);
-
-    // set flag for anomaly detection
-    if (laneGeometries.leftAnomalies.length != 0 || laneGeometries.rightAnomalies.length != 0) {anomaly_flag = true;}
-    // Anomaly detection
-    if (anomaly_flag) {
-      let aRoot = viewer.scene.annotations;
-      let aAnomalies = new Potree.Annotation({
-        title: "Lane Anomalies",
-        position: laneGeometries.leftAnomalies[0]
-      });
-      aAnomalies.visible = false;
-      aRoot.add(aAnomalies);
-      let aLeft = new Potree.Annotation({
-        title: "Left",
-        position: laneGeometries.leftAnomalies[0]
-      });
-      let aRight = new Potree.Annotation({
-        title: "Right",
-        position: laneGeometries.rightAnomalies[0]
-
-      });
-      aAnomalies.add(aLeft);
-      aAnomalies.add(aRight);
-
-      // Add anomalies layer
-      for (let ii=0, len=laneGeometries.leftAnomalies.length; ii<len; ii++) {
-        point = laneGeometries.leftAnomalies[ii];
-        let aAnomaly = new Potree.Annotation({
-          title: "L " +[ii+1],
-          position: point,
-          cameraPosition: new THREE.Vector3(point.x, point.y, point.z + 20),
-          cameraTarget: point
-        });
-        aLeft.add(aAnomaly);
-      }
-      for (let ii=0, len=laneGeometries.rightAnomalies.length; ii<len; ii++) {
-        point = laneGeometries.rightAnomalies[ii];
-        let aAnomaly = new Potree.Annotation({
-          title: "R " +[ii+1],
-          position: point,
-          cameraPosition: new THREE.Vector3(point.x, point.y, point.z + 20),
-          cameraTarget: point
-        });
-        aRight.add(aAnomaly);
-      }
-    }
-
+    addLaneGeometries(laneGeometries, lanesLayer);
     viewer.scene.dispatchEvent({
 			"type": "truth_layer_added",
 			"truthLayer": lanesLayer
@@ -629,56 +638,7 @@ export async function loadLanesCallback(s3, bucket, name, callback) {
 				await loadLanes(s3, bucket, name, filename, s, window.annotateLanesModeActive, viewer.scene.volumes, (laneGeometries) => {
 					let lanesLayer = new THREE.Group();
 					lanesLayer.name = layerName;
-					for (let ii = 0, len = laneGeometries.all.length; ii < len; ii++) {
-						lanesLayer.add(laneGeometries.all[ii]);
-					}
-					viewer.scene.scene.add(lanesLayer);
-
-          if (laneGeometries.leftAnomalies.length != 0 || laneGeometries.rightAnomalies.length != 0) {anomaly_flag = true;}
-          // Anomaly detection
-          if (anomaly_flag) {
-            let aRoot = viewer.scene.annotations;
-            let aAnomalies = new Potree.Annotation({
-              title: "Lane Anomalies",
-              position: laneGeometries.leftAnomalies[0]
-            });
-            aAnomalies.visible = false;
-            aRoot.add(aAnomalies);
-            let aLeft = new Potree.Annotation({
-              title: "Left",
-              position: laneGeometries.leftAnomalies[0]
-            });
-            let aRight = new Potree.Annotation({
-              title: "Right",
-              position: laneGeometries.rightAnomalies[0]
-
-            });
-            aAnomalies.add(aLeft);
-            aAnomalies.add(aRight);
-
-            // Add anomalies layer
-            for (let ii=0, len=laneGeometries.leftAnomalies.length; ii<len; ii++) {
-              point = laneGeometries.leftAnomalies[ii];
-              let aAnomaly = new Potree.Annotation({
-                title: "L " +[ii+1],
-                position: point,
-                cameraPosition: new THREE.Vector3(point.x, point.y, point.z + 20),
-                cameraTarget: point
-              });
-              aLeft.add(aAnomaly);
-            }
-            for (let ii=0, len=laneGeometries.rightAnomalies.length; ii<len; ii++) {
-              point = laneGeometries.rightAnomalies[ii];
-              let aAnomaly = new Potree.Annotation({
-                title: "R " +[ii+1],
-                position: point,
-                cameraPosition: new THREE.Vector3(point.x, point.y, point.z + 20),
-                cameraTarget: point
-              });
-              aRight.add(aAnomaly);
-            }
-          }
-
+          addLaneGeometries(laneGeometries, lanesLayer);
 					viewer.scene.dispatchEvent({
 						"type": "map_provider_layer_added",
 						"mapLayer": lanesLayer
@@ -718,57 +678,7 @@ export async function loadLanesCallback(s3, bucket, name, callback) {
 
 			let lanesLayer = new THREE.Group();
 			lanesLayer.name = `Lanes-${comparisonDatasets[0].split("Data/")[1]}`;
-			for (let ii = 0, len = laneGeometries.all.length; ii < len; ii++) {
-				lanesLayer.add(laneGeometries.all[ii]);
-			}
-	    viewer.scene.scene.add(lanesLayer);
-
-      if (laneGeometries.leftAnomalies.length != 0 || laneGeometries.rightAnomalies.length != 0) {anomaly_flag = true;}
-      // Anomaly detection
-      if (anomaly_flag) {
-        let aRoot = viewer.scene.annotations;
-        let aAnomalies = new Potree.Annotation({
-          title: "Lane Anomalies",
-          position: laneGeometries.leftAnomalies[0]
-        });
-        aAnomalies.visible = false;
-        aRoot.add(aAnomalies);
-        let aLeft = new Potree.Annotation({
-          title: "Left",
-          position: laneGeometries.leftAnomalies[0]
-        });
-        let aRight = new Potree.Annotation({
-          title: "Right",
-          position: laneGeometries.rightAnomalies[0]
-
-        });
-        aAnomalies.add(aLeft);
-        aAnomalies.add(aRight);
-
-        // Add anomalies layer
-        for (let ii=0, len=laneGeometries.leftAnomalies.length; ii<len; ii++) {
-          point = laneGeometries.leftAnomalies[ii];
-          let aAnomaly = new Potree.Annotation({
-            title: "L " +[ii+1],
-            position: point,
-            cameraPosition: new THREE.Vector3(point.x, point.y, point.z + 20),
-            cameraTarget: point
-          });
-          aLeft.add(aAnomaly);
-        }
-        for (let ii=0, len=laneGeometries.rightAnomalies.length; ii<len; ii++) {
-          point = laneGeometries.rightAnomalies[ii];
-          let aAnomaly = new Potree.Annotation({
-            title: "R " +[ii+1],
-            position: point,
-            cameraPosition: new THREE.Vector3(point.x, point.y, point.z + 20),
-            cameraTarget: point
-          });
-          aRight.add(aAnomaly);
-        }
-      }
-
-
+      addLaneGeometries(laneGeometries, lanesLayer);
 			viewer.scene.dispatchEvent({
 				"type": "truth_layer_added",
 				"truthLayer": lanesLayer

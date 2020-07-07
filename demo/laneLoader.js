@@ -152,6 +152,7 @@ async function parseLanes(bytesArray, FlatbufferModule, supplierNum, annotationM
 }
 
 
+// TODO we are not using this function and will need to rewrite is to accomodate annotations and amomalies. Recmommend removing
 function splitLaneVertices(lanes) {
 
   let leftVertices = [];
@@ -194,6 +195,8 @@ function splitLaneVertices(lanes) {
   return output;
 }
 
+
+// TODO we are not using this function and will need to rewrite is to accomodate annotations and amomalies. Recmommend removing
 function createLaneGeometries(vertexGroups, material) {
 
   let laneGeometries = [];
@@ -315,9 +318,9 @@ async function createLaneGeometriesOld(lanes, supplierNum, annotationMode, volum
   }
 
   let lane;
-  let lefts = [];
-  let rights = [];
-  let spines = [];
+  // let lefts = [];
+  // let rights = [];
+  // let spines = [];
   let all = [];
   let laneLeftAnomalies = [];
   let laneRightAnomalies = [];
@@ -341,19 +344,20 @@ async function createLaneGeometriesOld(lanes, supplierNum, annotationMode, volum
     var geometryLeft = new THREE.Geometry();
     var geometrySpine = new THREE.Geometry();
     var geometryRight = new THREE.Geometry();
-    let left, right, spine, leftValidity, rightValidity;
-    let anomaly_flag = false;
+    let left, right, spine, leftValidity, rightValidity, leftValidityArray;
+    let anomalyMode = false;
     let isContains = false;
+
+    try {
+      leftValidityArray = lane.leftPointValidity();
+      anomalyMode = true;
+    } catch(err) {
+      console.log("Normal Mode");
+    }
 
     for(let jj=0, numVertices=lane.leftLength(); jj<numVertices; jj++) {
       left = lane.left(jj);
-
-      try {
-        leftValidity = lane.leftPointValidity(jj);
-        anomaly_flag = true;
-      } catch(err) {
-        console.log("Normal Mode");
-      }
+      if (anomalyMode) { leftValidity = lane.leftPointValidity(jj);}
 
       if (annotationMode) {
 
@@ -365,7 +369,7 @@ async function createLaneGeometriesOld(lanes, supplierNum, annotationMode, volum
       } else {
         geometryLeft.vertices.push( new THREE.Vector3(left.x(), left.y(), left.z()));
 
-        if (anomaly_flag && leftValidity == 1) {
+        if (anomalyMode && leftValidity == 1) {
           laneLeftAnomalies.push(new THREE.Vector3(left.x(), left.y(), left.z()));
         }
       }
@@ -375,7 +379,7 @@ async function createLaneGeometriesOld(lanes, supplierNum, annotationMode, volum
     for(let jj=0, numVertices=lane.rightLength(); jj<numVertices; jj++) {
       right = lane.right(jj);
 
-      if (anomaly_flag) { rightValidity = lane.rightPointValidity(jj); }
+      if (anomalyMode) { rightValidity = lane.rightPointValidity(jj); }
 
       if (annotationMode) {
 
@@ -388,7 +392,7 @@ async function createLaneGeometriesOld(lanes, supplierNum, annotationMode, volum
       } else {
         geometryRight.vertices.push( new THREE.Vector3(right.x(), right.y(), right.z()));
 
-        if (anomaly_flag && rightValidity == 1) {
+        if (anomalyMode && rightValidity == 1) {
           laneRightAnomalies.push(new THREE.Vector3(right.x(), right.y(), right.z()));
         }
       }
@@ -446,9 +450,6 @@ async function createLaneGeometriesOld(lanes, supplierNum, annotationMode, volum
 
         p1 = new THREE.Vector3(tmp1.x, tmp1.y, tmp1.z);
         p2 = new THREE.Vector3(tmp2.x, tmp2.y, tmp2.z);
-
-
-
 
         let length = Math.max(p1.distanceTo(p2), 0.001); // Clamp distance to min value of 1mm
         let height = 0.01;
@@ -508,10 +509,6 @@ async function createLaneGeometriesOld(lanes, supplierNum, annotationMode, volum
       all.push(laneRight);
     }
   }
-
-  // TODO anomalies meshes
-  // all.push(laneLeftAnomalies);
-  // all.push(laneRightAnomalies);
 
   let output = {
     all: all,
@@ -606,7 +603,7 @@ function addLaneGeometries(laneGeometries, lanesLayer) {
     lanesLayer.add(laneGeometries.all[ii]);
   }
   viewer.scene.scene.add(lanesLayer);
-  
+
   // add lane anomaly geometries
   if (laneGeometries.leftAnomalies.length != 0 || laneGeometries.rightAnomalies.length != 0) {addAnnotations(laneGeometries);}
 }
@@ -621,8 +618,8 @@ export async function loadLanesCallback(s3, bucket, name, callback) {
 		// need to have Annoted Lanes layer, so that can have original and edited lanes layers
 		let lanesLayer = new THREE.Group();
 		lanesLayer.name = "Lanes";
-    addLaneGeometries(laneGeometries, lanesLayer);
-    viewer.scene.dispatchEvent({
+    		addLaneGeometries(laneGeometries, lanesLayer);
+    		viewer.scene.dispatchEvent({
 			"type": "truth_layer_added",
 			"truthLayer": lanesLayer
 		});
@@ -638,7 +635,7 @@ export async function loadLanesCallback(s3, bucket, name, callback) {
 				await loadLanes(s3, bucket, name, filename, s, window.annotateLanesModeActive, viewer.scene.volumes, (laneGeometries) => {
 					let lanesLayer = new THREE.Group();
 					lanesLayer.name = layerName;
-          addLaneGeometries(laneGeometries, lanesLayer);
+          				addLaneGeometries(laneGeometries, lanesLayer);
 					viewer.scene.dispatchEvent({
 						"type": "map_provider_layer_added",
 						"mapLayer": lanesLayer
@@ -678,7 +675,7 @@ export async function loadLanesCallback(s3, bucket, name, callback) {
 
 			let lanesLayer = new THREE.Group();
 			lanesLayer.name = `Lanes-${comparisonDatasets[0].split("Data/")[1]}`;
-      addLaneGeometries(laneGeometries, lanesLayer);
+      			addLaneGeometries(laneGeometries, lanesLayer);
 			viewer.scene.dispatchEvent({
 				"type": "truth_layer_added",
 				"truthLayer": lanesLayer

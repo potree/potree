@@ -265,7 +265,7 @@ function createLaneGeometries(vertexGroups, material) {
 
 // async function in order to enable a real time loading bar (caller functions must also use async/await)
 // without it the javascript code will run and block the UI that needs to update the loading bar (remove at your own risk)
-async function createLaneGeometriesOld(lanes, supplierNum, annotationMode, volumes) {
+async function createLaneGeometriesOld (lanes, supplierNum, annotationMode, volumes) {
 
   let materialLeft, materialSpine, materialRight;
   switch (supplierNum) {
@@ -300,111 +300,97 @@ async function createLaneGeometriesOld(lanes, supplierNum, annotationMode, volum
       materialRight = new THREE.MeshBasicMaterial({color: 0xffffff});
     }
 
-  let laneLeft, laneRight, laneSpine;
-  laneLeft = new Measure(); laneLeft.name = "Lane Left"; laneLeft.closed = false; laneLeft.showCoordinates = true; laneLeft.showAngles = true;
-  // laneSpine = new Measure(); laneSpine.name = "Lane Spine"; //laneRight.closed = false;
-  laneRight = new Measure(); laneRight.name = "Lane Right"; laneRight.closed = false; laneRight.showCoordinates = true; laneRight.showAngles = true;
+  const laneLeft = new Measure(); laneLeft.name = "Lane Left"; laneLeft.closed = false; laneLeft.showCoordinates = true; laneLeft.showAngles = true;
+  // const laneSpine = new Measure(); laneSpine.name = "Lane Spine"; //laneRight.closed = false;
+  const laneRight = new Measure(); laneRight.name = "Lane Right"; laneRight.closed = false; laneRight.showCoordinates = true; laneRight.showAngles = true;
 
-  let leftLaneSegments = new LaneSegments(); leftLaneSegments.name = "Left Lane Segments";
-  let rightLaneSegments = new LaneSegments(); rightLaneSegments.name = "Right Lane Segments";
+  const leftLaneSegments = new LaneSegments(); leftLaneSegments.name = "Left Lane Segments";
+  const rightLaneSegments = new LaneSegments(); rightLaneSegments.name = "Right Lane Segments";
 
-  let clonedBoxes = [];
+  const clonedBoxes = [];
   for (let vi=0, vlen=volumes.length; vi<vlen; vi++) {
     if (volumes[vi].clip) {
-      let clonedBbox = volumes[vi].boundingBox.clone();
+      const clonedBbox = volumes[vi].boundingBox.clone();
       clonedBbox.applyMatrix4(volumes[vi].matrixWorld);
       clonedBoxes.push(clonedBbox);
     }
   }
 
-  let lane;
   // let lefts = [];
   // let rights = [];
   // let spines = [];
-  let all = [];
-  let laneLeftAnomalies = [];
-  let laneRightAnomalies = [];
-  let leftAnomalies, rightAnomalies;
+  const all = [];
+  const leftAnomalies = [];
+  const rightAnomalies = [];
   let allBoxes = new THREE.Geometry();
 
-  let loadingBar = getLoadingBar();
-  let loadingBarTotal = getLoadingBarTotal();
-  for(let ii=0, len=lanes.length; ii<len; ii++) {
+  const loadingBar = getLoadingBar();
+  const loadingBarTotal = getLoadingBarTotal();
+  for (let ii = 0, len = lanes.length; ii < len; ii++) {
     if (annotationMode) {
       // hack: bar will decrease itself over time for no reason unless continously set during annotate lanes
       loadingBarTotal.set(50);
     }
-    loadingBar.set(Math.max(ii/len * 100, loadingBar.value)); // update progress
+    loadingBar.set(Math.max(ii / len * 100, loadingBar.value)); // update progress
     // put in pause so running javascript can hand over temp control to the UI
     // gives it an opportunity to repaint the UI for the loading bar element
     await pause();
 
-    lane = lanes[ii];
+    const lane = lanes[ii];
 
     var geometryLeft = new THREE.Geometry();
     var geometrySpine = new THREE.Geometry();
     var geometryRight = new THREE.Geometry();
-    let left, right, spine, leftValidity, rightValidity, leftValidityArray;
     let anomalyMode = false;
     let isContains = false;
 
     try {
-      leftValidityArray = lane.leftPointValidity();
+      lane.leftPointValidity();
       anomalyMode = true;
-    } catch(err) {
-      console.log("Normal Mode");
+    } catch (err) {
+      console.log('Normal Mode');
     }
 
-    for(let jj=0, numVertices=lane.leftLength(); jj<numVertices; jj++) {
-      left = lane.left(jj);
-      if (anomalyMode) { leftValidity = lane.leftPointValidity(jj);}
-
+    for (let jj = 0, numVertices = lane.leftLength(); jj < numVertices; jj++) {
+      const left = lane.left(jj);
       if (annotationMode) {
-
-        if (volumes.length == 0) {
+        if (volumes.length === 0) {
           laneLeft.addMarker(new THREE.Vector3(left.x(), left.y(), left.z()));
         } else {
           isContains = updateSegments(leftLaneSegments, clonedBoxes, isContains, left, jj, numVertices);
         }
       } else {
-        geometryLeft.vertices.push( new THREE.Vector3(left.x(), left.y(), left.z()));
-
-        if (anomalyMode && leftValidity == 1) {
-          laneLeftAnomalies.push(new THREE.Vector3(left.x(), left.y(), left.z()));
+        geometryLeft.vertices.push(new THREE.Vector3(left.x(), left.y(), left.z()));
+        if (anomalyMode && lane.leftPointValidity(jj) === 1) {
+          leftAnomalies.push(new THREE.Vector3(left.x(), left.y(), left.z()));
         }
       }
     }
 
     isContains = false;
-    for(let jj=0, numVertices=lane.rightLength(); jj<numVertices; jj++) {
-      right = lane.right(jj);
-
-      if (anomalyMode) { rightValidity = lane.rightPointValidity(jj); }
+    for (let jj = 0, numVertices = lane.rightLength(); jj < numVertices; jj++) {
+      const right = lane.right(jj);
 
       if (annotationMode) {
-
-        if (volumes.length == 0) {
+        if (volumes.length === 0) {
           laneRight.addMarker(new THREE.Vector3(right.x(), right.y(), right.z()));
-        }
-        else {
+        } else {
           isContains = updateSegments(rightLaneSegments, clonedBoxes, isContains, right, jj, numVertices);
         }
       } else {
-        geometryRight.vertices.push( new THREE.Vector3(right.x(), right.y(), right.z()));
-
-        if (anomalyMode && rightValidity == 1) {
-          laneRightAnomalies.push(new THREE.Vector3(right.x(), right.y(), right.z()));
+        geometryRight.vertices.push(new THREE.Vector3(right.x(), right.y(), right.z()));
+        if (anomalyMode && lane.rightPointValidity(jj) === 1) {
+          rightAnomalies.push(new THREE.Vector3(right.x(), right.y(), right.z()));
         }
       }
     }
 
-    for(let jj=0, numVertices=lane.spineLength(); jj<numVertices; jj++) {
-      spine = lane.spine(jj);
-
+    for (let jj = 0, numVertices = lane.spineLength(); jj < numVertices; jj++) {
+      const spine = lane.spine(jj);
       if (annotationMode) {
         // laneSpine.addMarker(new THREE.Vector3(spine.x(), spine.y(), spine.z()));
       } else {
-        geometrySpine.vertices.push( new THREE.Vector3(spine.x(), spine.y(), spine.z()));
+        geometrySpine.vertices.push(new THREE.Vector3(spine.x(), spine.y(), spine.z()));
       }
     }
 
@@ -433,11 +419,10 @@ async function createLaneGeometriesOld(lanes, supplierNum, annotationMode, volum
     // // spines.push(spineMesh);
     // // rights.push(rightMesh);
 
-
     // NOTE TRYING BOXES:
-    let tmp1, tmp2, p1, p2, v1, v2;
+    let tmp1, tmp2, p1, p2;
     let firstCenter, center, lastCenter;
-    let vertices = geometryLeft.vertices;
+    // const vertices = geometryLeft.vertices;
 
     createBoxes(geometryLeft.vertices, materialLeft);
     createBoxes(geometrySpine.vertices, materialSpine);
@@ -510,10 +495,10 @@ async function createLaneGeometriesOld(lanes, supplierNum, annotationMode, volum
     }
   }
 
-  let output = {
+  const output = {
     all: all,
-    leftAnomalies: laneLeftAnomalies,
-    rightAnomalies: laneRightAnomalies
+    leftAnomalies: leftAnomalies,
+    rightAnomalies: rightAnomalies
   }
   return output;
 }
@@ -550,22 +535,20 @@ function updateSegments(laneSegments, clonedBoxes, prevIsContains, point, index,
 
 
 // Adds anomaly annotations
-function addAnnotations(laneGeometries) {
-  let point;
-
-  let aRoot = viewer.scene.annotations;
-  let aAnomalies = new Potree.Annotation({
-    title: "Lane Anomalies",
+function addAnnotations (laneGeometries) {
+  const aRoot = viewer.scene.annotations;
+  const aAnomalies = new Potree.Annotation({
+    title: 'Lane Anomalies',
     position: laneGeometries.leftAnomalies[0]
   });
   aAnomalies.visible = false;
   aRoot.add(aAnomalies);
-  let aLeft = new Potree.Annotation({
-    title: "Left",
+  const aLeft = new Potree.Annotation({
+    title: 'Left',
     position: laneGeometries.leftAnomalies[0]
   });
-  let aRight = new Potree.Annotation({
-    title: "Right",
+  const aRight = new Potree.Annotation({
+    title: 'Right',
     position: laneGeometries.rightAnomalies[0]
 
   });
@@ -573,20 +556,20 @@ function addAnnotations(laneGeometries) {
   aAnomalies.add(aRight);
 
   // Add anomalies layer
-  for (let ii=0, len=laneGeometries.leftAnomalies.length; ii<len; ii++) {
-    point = laneGeometries.leftAnomalies[ii];
-    let aAnomaly = new Potree.Annotation({
-      title: "L " +[ii+1],
+  for (let ii = 0, len = laneGeometries.leftAnomalies.length; ii < len; ii++) {
+    const point = laneGeometries.leftAnomalies[ii];
+    const aAnomaly = new Potree.Annotation({
+      title: 'L ' + [ii + 1],
       position: point,
       cameraPosition: new THREE.Vector3(point.x, point.y, point.z + 20),
       cameraTarget: point
     });
     aLeft.add(aAnomaly);
   }
-  for (let ii=0, len=laneGeometries.rightAnomalies.length; ii<len; ii++) {
-    point = laneGeometries.rightAnomalies[ii];
-    let aAnomaly = new Potree.Annotation({
-      title: "R " +[ii+1],
+  for (let ii = 0, len = laneGeometries.rightAnomalies.length; ii < len; ii++) {
+    const point = laneGeometries.rightAnomalies[ii];
+    const aAnomaly = new Potree.Annotation({
+      title: 'R ' + [ii + 1],
       position: point,
       cameraPosition: new THREE.Vector3(point.x, point.y, point.z + 20),
       cameraTarget: point
@@ -597,144 +580,130 @@ function addAnnotations(laneGeometries) {
 
 
 // Adds lane geometries to viewer
-function addLaneGeometries(laneGeometries, lanesLayer) {
-
+function addLaneGeometries (laneGeometries, lanesLayer) {
   for (let ii = 0, len = laneGeometries.all.length; ii < len; ii++) {
     lanesLayer.add(laneGeometries.all[ii]);
   }
   viewer.scene.scene.add(lanesLayer);
 
   // add lane anomaly geometries
-  if (laneGeometries.leftAnomalies.length != 0 || laneGeometries.rightAnomalies.length != 0) {addAnnotations(laneGeometries);}
+  if (laneGeometries.leftAnomalies.length !== 0 ||
+    laneGeometries.rightAnomalies.length !== 0) {
+    addAnnotations(laneGeometries);
+  }
 }
 
 
 // Load Lanes Truth Data:
 export async function loadLanesCallback(s3, bucket, name, callback) {
+  let filename, tmpSupplierNum;
+  tmpSupplierNum = -1;
+  await loadLanes(s3, bucket, name, filename, tmpSupplierNum, window.annotateLanesModeActive, viewer.scene.volumes, (laneGeometries) => {
+    // need to have Annoted Lanes layer, so that can have original and edited lanes layers
+    let lanesLayer = new THREE.Group();
+    lanesLayer.name = "Lanes";
+    addLaneGeometries(laneGeometries, lanesLayer);
+    viewer.scene.dispatchEvent({
+      "type": "truth_layer_added",
+      "truthLayer": lanesLayer
+    });
+    if (callback) {
+      callback();
+    }
+  });
 
-	let filename, tmpSupplierNum;
-	tmpSupplierNum = -1;
-	await loadLanes(s3, bucket, name, filename, tmpSupplierNum, window.annotateLanesModeActive, viewer.scene.volumes, (laneGeometries) => {
-		// need to have Annoted Lanes layer, so that can have original and edited lanes layers
-		let lanesLayer = new THREE.Group();
-		lanesLayer.name = "Lanes";
-    		addLaneGeometries(laneGeometries, lanesLayer);
-    		viewer.scene.dispatchEvent({
-			"type": "truth_layer_added",
-			"truthLayer": lanesLayer
-		});
-		if (callback) {
-			callback();
-		}
-	});
+  if (visualizationMode == "aptivLanes") {
+    async function loadLanesHelper(layerName, filename, s) {
+      try {
+        await loadLanes(s3, bucket, name, filename, s, window.annotateLanesModeActive, viewer.scene.volumes, (laneGeometries) => {
+          let lanesLayer = new THREE.Group();
+          lanesLayer.name = layerName;
+          addLaneGeometries(laneGeometries, lanesLayer);
+          viewer.scene.dispatchEvent({
+            "type": "map_provider_layer_added",
+            "mapLayer": lanesLayer
+          });
+        });
+      } catch (e) {
+        console.log(`Couldn't load ${filename}: ${e}`);
+      }
+    };
+    const laneNum = [1, 2, 3];
+    const laneDirection = ["EB", "WB"];
+    const supplierNum = [1, 2, 3];
+    let filename, layerName, datasetName;
 
-	if (visualizationMode == "aptivLanes") {
-
-		async function loadLanesHelper(layerName, filename, s) {
-			try {
-				await loadLanes(s3, bucket, name, filename, s, window.annotateLanesModeActive, viewer.scene.volumes, (laneGeometries) => {
-					let lanesLayer = new THREE.Group();
-					lanesLayer.name = layerName;
-          				addLaneGeometries(laneGeometries, lanesLayer);
-					viewer.scene.dispatchEvent({
-						"type": "map_provider_layer_added",
-						"mapLayer": lanesLayer
-					});
-				});
-			} catch (e) {
-				console.log(`Couldn't load ${filename}: ${e}`);
-			}
-		};
-
-		const laneNum = [1, 2, 3];
-		const laneDirection = ["EB", "WB"];
-		const supplierNum = [1, 2, 3];
-		let filename, layerName, datasetName;
-
-		for (let s of supplierNum) {
-			for (let d of laneDirection) {
-				for (let n of laneNum) {
-					layerName = `Supplier${s}_${d}_Lane${n}`;
-					filename = `Supplier${s}_${d}_Lane${n}.fb`;
-
-					loadLanesHelper(layerName, filename, s);
-				}
-			}
-		}
-
-		layerName = `TomTom`;
-		filename = `I-75-North_potree.fb`;
-		loadLanesHelper(layerName, filename, 1);
-	}
-
-	// Load Comparison Dataset (hardcoded to one for now)
-	if (comparisonDatasets.length > 0) {
-		filename = 'lanes.fb';
-		tmpSupplierNum = -2;
-		await loadLanes(s3, bucket, comparisonDatasets[0], filename, tmpSupplierNum, window.annotateLanesModeActive, viewer.scene.volumes, (laneGeometries) => {
-
-			let lanesLayer = new THREE.Group();
-			lanesLayer.name = `Lanes-${comparisonDatasets[0].split("Data/")[1]}`;
-      			addLaneGeometries(laneGeometries, lanesLayer);
-			viewer.scene.dispatchEvent({
-				"type": "truth_layer_added",
-				"truthLayer": lanesLayer
-			});
-		});
-	}
-
-
+    for (let s of supplierNum) {
+      for (let d of laneDirection) {
+        for (let n of laneNum) {
+          layerName = `Supplier${s}_${d}_Lane${n}`;
+          filename = `Supplier${s}_${d}_Lane${n}.fb`;
+          loadLanesHelper(layerName, filename, s);
+        }
+      }
+    }
+    layerName = `TomTom`;
+    filename = `I-75-North_potree.fb`;
+    loadLanesHelper(layerName, filename, 1);
+  }
+  // Load Comparison Dataset (hardcoded to one for now)
+  if (comparisonDatasets.length > 0) {
+    filename = 'lanes.fb';
+    tmpSupplierNum = -2;
+    await loadLanes(s3, bucket, comparisonDatasets[0], filename, tmpSupplierNum, window.annotateLanesModeActive, viewer.scene.volumes, (laneGeometries) => {
+      let lanesLayer = new THREE.Group();
+      lanesLayer.name = `Lanes-${comparisonDatasets[0].split("Data/")[1]}`;
+      addLaneGeometries(laneGeometries, lanesLayer);
+      viewer.scene.dispatchEvent({
+        "type": "truth_layer_added",
+        "truthLayer": lanesLayer
+      });
+    });
+  }
 } // end of loadLanesCallback
 
 // add an event listener for the reload lanes button
-export function addReloadLanesButton() {
-	window.annotateLanesModeActive = false; // starts off false
+export function addReloadLanesButton () {
+  window.annotateLanesModeActive = false; // starts off false
+  $("#reload_lanes_button")[0].style.display = "block"
+  let reloadLanesButton = $("#reload_lanes_button")[0];
+  reloadLanesButton.addEventListener("mousedown", () => {
+    let proceed = true;
+    if (window.annotateLanesModeActive) {
+      proceed = confirm("Proceed? Lanes will be reloaded, so ensure that annotations have been saved if you want to keep them.");
+    }
 
-	$("#reload_lanes_button")[0].style.display = "block"
-	let reloadLanesButton = $("#reload_lanes_button")[0];
-	reloadLanesButton.addEventListener("mousedown", () => {
+    if (proceed) {
+      // REMOVE LANES
+      let removeLanes = viewer.scene.scene.getChildByName("Lanes");
+      while (removeLanes) {
+        viewer.scene.scene.remove(removeLanes);
+        removeLanes = viewer.scene.scene.getChildByName("Lanes");
+      }
 
-		let proceed = true;
-		if (window.annotateLanesModeActive) {
-			proceed = confirm("Proceed? Lanes will be reloaded, so ensure that annotations have been saved if you want to keep them.");
-		}
+      // Pause animation:
+      animationEngine.stop();
 
-		if (proceed) {
-			// REMOVE LANES
-			let removeLanes = viewer.scene.scene.getChildByName("Lanes");
-			while (removeLanes) {
-				viewer.scene.scene.remove(removeLanes);
-				removeLanes = viewer.scene.scene.getChildByName("Lanes");
-			}
+      // TOGGLE window.annotateLanesModeActive
+      window.annotateLanesModeActive = !window.annotateLanesModeActive;
 
-			// Pause animation:
-			animationEngine.stop();
+      // Disable Button:
+      reloadLanesButton.disabled = true;
 
-			// TOGGLE window.annotateLanesModeActive
-			window.annotateLanesModeActive = !window.annotateLanesModeActive;
-
-			// Disable Button:
-			reloadLanesButton.disabled = true;
-
-			{
-				$("#loading-bar")[0].style.display = "none";
-				setLoadingScreen();
-				loadLanesCallback(s3, bucket, name, () => {
-					removeLoadingScreen();
-
-					// TOGGLE BUTTON TEXT
-					if (window.annotateLanesModeActive) {
-						reload_lanes_button.innerText = "View Truth Lanes";
-						document.getElementById("download_lanes_button").style.display = "block";
-					} else {
-						reload_lanes_button.innerText = "Annotate Truth Lanes";
-						document.getElementById("download_lanes_button").style.display = "none";
-					}
-
-					reloadLanesButton.disabled = false
-
-				});
-			}
-		}
-	});
+      $("#loading-bar")[0].style.display = "none";
+      setLoadingScreen();
+      loadLanesCallback(s3, bucket, name, () => {
+        removeLoadingScreen();
+        // TOGGLE BUTTON TEXT
+        if (window.annotateLanesModeActive) {
+          reload_lanes_button.innerText = "View Truth Lanes";
+          document.getElementById("download_lanes_button").style.display = "block";
+        } else {
+          reload_lanes_button.innerText = "Annotate Truth Lanes";
+          document.getElementById("download_lanes_button").style.display = "none";
+        }
+        reloadLanesButton.disabled = false
+      });
+    }
+  });
 } // end of Reload Lanes Button Code

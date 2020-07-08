@@ -73,6 +73,38 @@ Flatbuffer.GroundTruth.LaneTypeName = {
 /**
  * @enum {number}
  */
+Flatbuffer.GroundTruth.PointValidity = {
+  VALID: 0,
+  INVALID: 1
+};
+
+/**
+ * @enum {string}
+ */
+Flatbuffer.GroundTruth.PointValidityName = {
+  0: 'VALID',
+  1: 'INVALID'
+};
+
+/**
+ * @enum {number}
+ */
+Flatbuffer.GroundTruth.PointAnnotationStatus = {
+  NOT_ANNOTATED: 0,
+  ANNOTATED: 1
+};
+
+/**
+ * @enum {string}
+ */
+Flatbuffer.GroundTruth.PointAnnotationStatusName = {
+  0: 'NOT_ANNOTATED',
+  1: 'ANNOTATED'
+};
+
+/**
+ * @enum {number}
+ */
 Flatbuffer.GroundTruth.PointType = {
   UNKNOWN: 0,
   ROAD: 1,
@@ -2218,10 +2250,110 @@ Flatbuffer.GroundTruth.Lane.prototype.laneTypeRightArray = function() {
 };
 
 /**
+ * @param {number} index
+ * @returns {Flatbuffer.GroundTruth.PointValidity}
+ */
+Flatbuffer.GroundTruth.Lane.prototype.leftPointValidity = function(index) {
+  var offset = this.bb.__offset(this.bb_pos, 18);
+  return offset ? /** @type {Flatbuffer.GroundTruth.PointValidity} */ (this.bb.readInt8(this.bb.__vector(this.bb_pos + offset) + index)) : /** @type {Flatbuffer.GroundTruth.PointValidity} */ (0);
+};
+
+/**
+ * @returns {number}
+ */
+Flatbuffer.GroundTruth.Lane.prototype.leftPointValidityLength = function() {
+  var offset = this.bb.__offset(this.bb_pos, 18);
+  return offset ? this.bb.__vector_len(this.bb_pos + offset) : 0;
+};
+
+/**
+ * @returns {Int8Array}
+ */
+Flatbuffer.GroundTruth.Lane.prototype.leftPointValidityArray = function() {
+  var offset = this.bb.__offset(this.bb_pos, 18);
+  return offset ? new Int8Array(this.bb.bytes().buffer, this.bb.bytes().byteOffset + this.bb.__vector(this.bb_pos + offset), this.bb.__vector_len(this.bb_pos + offset)) : null;
+};
+
+/**
+ * @param {number} index
+ * @returns {Flatbuffer.GroundTruth.PointValidity}
+ */
+Flatbuffer.GroundTruth.Lane.prototype.rightPointValidity = function(index) {
+  var offset = this.bb.__offset(this.bb_pos, 20);
+  return offset ? /** @type {Flatbuffer.GroundTruth.PointValidity} */ (this.bb.readInt8(this.bb.__vector(this.bb_pos + offset) + index)) : /** @type {Flatbuffer.GroundTruth.PointValidity} */ (0);
+};
+
+/**
+ * @returns {number}
+ */
+Flatbuffer.GroundTruth.Lane.prototype.rightPointValidityLength = function() {
+  var offset = this.bb.__offset(this.bb_pos, 20);
+  return offset ? this.bb.__vector_len(this.bb_pos + offset) : 0;
+};
+
+/**
+ * @returns {Int8Array}
+ */
+Flatbuffer.GroundTruth.Lane.prototype.rightPointValidityArray = function() {
+  var offset = this.bb.__offset(this.bb_pos, 20);
+  return offset ? new Int8Array(this.bb.bytes().buffer, this.bb.bytes().byteOffset + this.bb.__vector(this.bb_pos + offset), this.bb.__vector_len(this.bb_pos + offset)) : null;
+};
+
+/**
+ * @param {number} index
+ * @returns {Flatbuffer.GroundTruth.PointAnnotationStatus}
+ */
+Flatbuffer.GroundTruth.Lane.prototype.leftPointAnnotationStatus = function(index) {
+  var offset = this.bb.__offset(this.bb_pos, 22);
+  return offset ? /** @type {Flatbuffer.GroundTruth.PointAnnotationStatus} */ (this.bb.readInt8(this.bb.__vector(this.bb_pos + offset) + index)) : /** @type {Flatbuffer.GroundTruth.PointAnnotationStatus} */ (0);
+};
+
+/**
+ * @returns {number}
+ */
+Flatbuffer.GroundTruth.Lane.prototype.leftPointAnnotationStatusLength = function() {
+  var offset = this.bb.__offset(this.bb_pos, 22);
+  return offset ? this.bb.__vector_len(this.bb_pos + offset) : 0;
+};
+
+/**
+ * @returns {Int8Array}
+ */
+Flatbuffer.GroundTruth.Lane.prototype.leftPointAnnotationStatusArray = function() {
+  var offset = this.bb.__offset(this.bb_pos, 22);
+  return offset ? new Int8Array(this.bb.bytes().buffer, this.bb.bytes().byteOffset + this.bb.__vector(this.bb_pos + offset), this.bb.__vector_len(this.bb_pos + offset)) : null;
+};
+
+/**
+ * @param {number} index
+ * @returns {Flatbuffer.GroundTruth.PointAnnotationStatus}
+ */
+Flatbuffer.GroundTruth.Lane.prototype.rightPointAnnotationStatus = function(index) {
+  var offset = this.bb.__offset(this.bb_pos, 24);
+  return offset ? /** @type {Flatbuffer.GroundTruth.PointAnnotationStatus} */ (this.bb.readInt8(this.bb.__vector(this.bb_pos + offset) + index)) : /** @type {Flatbuffer.GroundTruth.PointAnnotationStatus} */ (0);
+};
+
+/**
+ * @returns {number}
+ */
+Flatbuffer.GroundTruth.Lane.prototype.rightPointAnnotationStatusLength = function() {
+  var offset = this.bb.__offset(this.bb_pos, 24);
+  return offset ? this.bb.__vector_len(this.bb_pos + offset) : 0;
+};
+
+/**
+ * @returns {Int8Array}
+ */
+Flatbuffer.GroundTruth.Lane.prototype.rightPointAnnotationStatusArray = function() {
+  var offset = this.bb.__offset(this.bb_pos, 24);
+  return offset ? new Int8Array(this.bb.bytes().buffer, this.bb.bytes().byteOffset + this.bb.__vector(this.bb_pos + offset), this.bb.__vector_len(this.bb_pos + offset)) : null;
+};
+
+/**
  * @param {flatbuffers.Builder} builder
  */
 Flatbuffer.GroundTruth.Lane.startLane = function(builder) {
-  builder.startObject(7);
+  builder.startObject(11);
 };
 
 /**
@@ -2369,6 +2501,122 @@ Flatbuffer.GroundTruth.Lane.startLaneTypeRightVector = function(builder, numElem
 
 /**
  * @param {flatbuffers.Builder} builder
+ * @param {flatbuffers.Offset} leftPointValidityOffset
+ */
+Flatbuffer.GroundTruth.Lane.addLeftPointValidity = function(builder, leftPointValidityOffset) {
+  builder.addFieldOffset(7, leftPointValidityOffset, 0);
+};
+
+/**
+ * @param {flatbuffers.Builder} builder
+ * @param {Array.<Flatbuffer.GroundTruth.PointValidity>} data
+ * @returns {flatbuffers.Offset}
+ */
+Flatbuffer.GroundTruth.Lane.createLeftPointValidityVector = function(builder, data) {
+  builder.startVector(1, data.length, 1);
+  for (var i = data.length - 1; i >= 0; i--) {
+    builder.addInt8(data[i]);
+  }
+  return builder.endVector();
+};
+
+/**
+ * @param {flatbuffers.Builder} builder
+ * @param {number} numElems
+ */
+Flatbuffer.GroundTruth.Lane.startLeftPointValidityVector = function(builder, numElems) {
+  builder.startVector(1, numElems, 1);
+};
+
+/**
+ * @param {flatbuffers.Builder} builder
+ * @param {flatbuffers.Offset} rightPointValidityOffset
+ */
+Flatbuffer.GroundTruth.Lane.addRightPointValidity = function(builder, rightPointValidityOffset) {
+  builder.addFieldOffset(8, rightPointValidityOffset, 0);
+};
+
+/**
+ * @param {flatbuffers.Builder} builder
+ * @param {Array.<Flatbuffer.GroundTruth.PointValidity>} data
+ * @returns {flatbuffers.Offset}
+ */
+Flatbuffer.GroundTruth.Lane.createRightPointValidityVector = function(builder, data) {
+  builder.startVector(1, data.length, 1);
+  for (var i = data.length - 1; i >= 0; i--) {
+    builder.addInt8(data[i]);
+  }
+  return builder.endVector();
+};
+
+/**
+ * @param {flatbuffers.Builder} builder
+ * @param {number} numElems
+ */
+Flatbuffer.GroundTruth.Lane.startRightPointValidityVector = function(builder, numElems) {
+  builder.startVector(1, numElems, 1);
+};
+
+/**
+ * @param {flatbuffers.Builder} builder
+ * @param {flatbuffers.Offset} leftPointAnnotationStatusOffset
+ */
+Flatbuffer.GroundTruth.Lane.addLeftPointAnnotationStatus = function(builder, leftPointAnnotationStatusOffset) {
+  builder.addFieldOffset(9, leftPointAnnotationStatusOffset, 0);
+};
+
+/**
+ * @param {flatbuffers.Builder} builder
+ * @param {Array.<Flatbuffer.GroundTruth.PointAnnotationStatus>} data
+ * @returns {flatbuffers.Offset}
+ */
+Flatbuffer.GroundTruth.Lane.createLeftPointAnnotationStatusVector = function(builder, data) {
+  builder.startVector(1, data.length, 1);
+  for (var i = data.length - 1; i >= 0; i--) {
+    builder.addInt8(data[i]);
+  }
+  return builder.endVector();
+};
+
+/**
+ * @param {flatbuffers.Builder} builder
+ * @param {number} numElems
+ */
+Flatbuffer.GroundTruth.Lane.startLeftPointAnnotationStatusVector = function(builder, numElems) {
+  builder.startVector(1, numElems, 1);
+};
+
+/**
+ * @param {flatbuffers.Builder} builder
+ * @param {flatbuffers.Offset} rightPointAnnotationStatusOffset
+ */
+Flatbuffer.GroundTruth.Lane.addRightPointAnnotationStatus = function(builder, rightPointAnnotationStatusOffset) {
+  builder.addFieldOffset(10, rightPointAnnotationStatusOffset, 0);
+};
+
+/**
+ * @param {flatbuffers.Builder} builder
+ * @param {Array.<Flatbuffer.GroundTruth.PointAnnotationStatus>} data
+ * @returns {flatbuffers.Offset}
+ */
+Flatbuffer.GroundTruth.Lane.createRightPointAnnotationStatusVector = function(builder, data) {
+  builder.startVector(1, data.length, 1);
+  for (var i = data.length - 1; i >= 0; i--) {
+    builder.addInt8(data[i]);
+  }
+  return builder.endVector();
+};
+
+/**
+ * @param {flatbuffers.Builder} builder
+ * @param {number} numElems
+ */
+Flatbuffer.GroundTruth.Lane.startRightPointAnnotationStatusVector = function(builder, numElems) {
+  builder.startVector(1, numElems, 1);
+};
+
+/**
+ * @param {flatbuffers.Builder} builder
  * @returns {flatbuffers.Offset}
  */
 Flatbuffer.GroundTruth.Lane.endLane = function(builder) {
@@ -2393,9 +2641,13 @@ Flatbuffer.GroundTruth.Lane.finishLaneBuffer = function(builder, offset) {
  * @param {flatbuffers.Offset} spineOffset
  * @param {flatbuffers.Offset} laneTypeLeftOffset
  * @param {flatbuffers.Offset} laneTypeRightOffset
+ * @param {flatbuffers.Offset} leftPointValidityOffset
+ * @param {flatbuffers.Offset} rightPointValidityOffset
+ * @param {flatbuffers.Offset} leftPointAnnotationStatusOffset
+ * @param {flatbuffers.Offset} rightPointAnnotationStatusOffset
  * @returns {flatbuffers.Offset}
  */
-Flatbuffer.GroundTruth.Lane.createLane = function(builder, id, timestampOffset, leftOffset, rightOffset, spineOffset, laneTypeLeftOffset, laneTypeRightOffset) {
+Flatbuffer.GroundTruth.Lane.createLane = function(builder, id, timestampOffset, leftOffset, rightOffset, spineOffset, laneTypeLeftOffset, laneTypeRightOffset, leftPointValidityOffset, rightPointValidityOffset, leftPointAnnotationStatusOffset, rightPointAnnotationStatusOffset) {
   Flatbuffer.GroundTruth.Lane.startLane(builder);
   Flatbuffer.GroundTruth.Lane.addId(builder, id);
   Flatbuffer.GroundTruth.Lane.addTimestamp(builder, timestampOffset);
@@ -2404,6 +2656,10 @@ Flatbuffer.GroundTruth.Lane.createLane = function(builder, id, timestampOffset, 
   Flatbuffer.GroundTruth.Lane.addSpine(builder, spineOffset);
   Flatbuffer.GroundTruth.Lane.addLaneTypeLeft(builder, laneTypeLeftOffset);
   Flatbuffer.GroundTruth.Lane.addLaneTypeRight(builder, laneTypeRightOffset);
+  Flatbuffer.GroundTruth.Lane.addLeftPointValidity(builder, leftPointValidityOffset);
+  Flatbuffer.GroundTruth.Lane.addRightPointValidity(builder, rightPointValidityOffset);
+  Flatbuffer.GroundTruth.Lane.addLeftPointAnnotationStatus(builder, leftPointAnnotationStatusOffset);
+  Flatbuffer.GroundTruth.Lane.addRightPointAnnotationStatus(builder, rightPointAnnotationStatusOffset);
   return Flatbuffer.GroundTruth.Lane.endLane(builder);
 }
 
@@ -2777,6 +3033,185 @@ Flatbuffer.GroundTruth.LaneOrders.createLaneOrders = function(builder, orderingO
 /**
  * @constructor
  */
+Flatbuffer.GroundTruth.RtkPose = function() {
+  /**
+   * @type {flatbuffers.ByteBuffer}
+   */
+  this.bb = null;
+
+  /**
+   * @type {number}
+   */
+  this.bb_pos = 0;
+};
+
+/**
+ * @param {number} i
+ * @param {flatbuffers.ByteBuffer} bb
+ * @returns {Flatbuffer.GroundTruth.RtkPose}
+ */
+Flatbuffer.GroundTruth.RtkPose.prototype.__init = function(i, bb) {
+  this.bb_pos = i;
+  this.bb = bb;
+  return this;
+};
+
+/**
+ * @returns {number}
+ */
+Flatbuffer.GroundTruth.RtkPose.prototype.x = function() {
+  return this.bb.readFloat64(this.bb_pos);
+};
+
+/**
+ * @param {number} value
+ * @returns {boolean}
+ */
+Flatbuffer.GroundTruth.RtkPose.prototype.mutate_x = function(value) {
+  var offset = this.bb.__offset(this.bb_pos, 0);
+
+  if (offset === 0) {
+    return false;
+  }
+
+  this.bb.writeFloat64(this.bb_pos + offset, value);
+  return true;
+};
+
+/**
+ * @returns {number}
+ */
+Flatbuffer.GroundTruth.RtkPose.prototype.y = function() {
+  return this.bb.readFloat64(this.bb_pos + 8);
+};
+
+/**
+ * @param {number} value
+ * @returns {boolean}
+ */
+Flatbuffer.GroundTruth.RtkPose.prototype.mutate_y = function(value) {
+  var offset = this.bb.__offset(this.bb_pos, 8);
+
+  if (offset === 0) {
+    return false;
+  }
+
+  this.bb.writeFloat64(this.bb_pos + offset, value);
+  return true;
+};
+
+/**
+ * @returns {number}
+ */
+Flatbuffer.GroundTruth.RtkPose.prototype.z = function() {
+  return this.bb.readFloat64(this.bb_pos + 16);
+};
+
+/**
+ * @param {number} value
+ * @returns {boolean}
+ */
+Flatbuffer.GroundTruth.RtkPose.prototype.mutate_z = function(value) {
+  var offset = this.bb.__offset(this.bb_pos, 16);
+
+  if (offset === 0) {
+    return false;
+  }
+
+  this.bb.writeFloat64(this.bb_pos + offset, value);
+  return true;
+};
+
+/**
+ * @returns {number}
+ */
+Flatbuffer.GroundTruth.RtkPose.prototype.roll = function() {
+  return this.bb.readFloat64(this.bb_pos + 24);
+};
+
+/**
+ * @param {number} value
+ * @returns {boolean}
+ */
+Flatbuffer.GroundTruth.RtkPose.prototype.mutate_roll = function(value) {
+  var offset = this.bb.__offset(this.bb_pos, 24);
+
+  if (offset === 0) {
+    return false;
+  }
+
+  this.bb.writeFloat64(this.bb_pos + offset, value);
+  return true;
+};
+
+/**
+ * @returns {number}
+ */
+Flatbuffer.GroundTruth.RtkPose.prototype.pitch = function() {
+  return this.bb.readFloat64(this.bb_pos + 32);
+};
+
+/**
+ * @param {number} value
+ * @returns {boolean}
+ */
+Flatbuffer.GroundTruth.RtkPose.prototype.mutate_pitch = function(value) {
+  var offset = this.bb.__offset(this.bb_pos, 32);
+
+  if (offset === 0) {
+    return false;
+  }
+
+  this.bb.writeFloat64(this.bb_pos + offset, value);
+  return true;
+};
+
+/**
+ * @returns {number}
+ */
+Flatbuffer.GroundTruth.RtkPose.prototype.yaw = function() {
+  return this.bb.readFloat64(this.bb_pos + 40);
+};
+
+/**
+ * @param {number} value
+ * @returns {boolean}
+ */
+Flatbuffer.GroundTruth.RtkPose.prototype.mutate_yaw = function(value) {
+  var offset = this.bb.__offset(this.bb_pos, 40);
+
+  if (offset === 0) {
+    return false;
+  }
+
+  this.bb.writeFloat64(this.bb_pos + offset, value);
+  return true;
+};
+
+/**
+ * @param {flatbuffers.Builder} builder
+ * @param {number} x
+ * @param {number} y
+ * @param {number} z
+ * @param {number} roll
+ * @param {number} pitch
+ * @param {number} yaw
+ * @returns {flatbuffers.Offset}
+ */
+Flatbuffer.GroundTruth.RtkPose.createRtkPose = function(builder, x, y, z, roll, pitch, yaw) {
+  builder.prep(8, 48);
+  builder.writeFloat64(yaw);
+  builder.writeFloat64(pitch);
+  builder.writeFloat64(roll);
+  builder.writeFloat64(z);
+  builder.writeFloat64(y);
+  builder.writeFloat64(x);
+  return builder.offset();
+};
+
+/**
+ * @constructor
+ */
 Flatbuffer.GroundTruth.Points = function() {
   /**
    * @type {flatbuffers.ByteBuffer}
@@ -2960,10 +3395,28 @@ Flatbuffer.GroundTruth.Points.prototype.ptTypeArray = function() {
 };
 
 /**
+ * @param {number} index
+ * @param {Flatbuffer.GroundTruth.RtkPose=} obj
+ * @returns {Flatbuffer.GroundTruth.RtkPose}
+ */
+Flatbuffer.GroundTruth.Points.prototype.rtkPoses = function(index, obj) {
+  var offset = this.bb.__offset(this.bb_pos, 16);
+  return offset ? (obj || new Flatbuffer.GroundTruth.RtkPose).__init(this.bb.__vector(this.bb_pos + offset) + index * 48, this.bb) : null;
+};
+
+/**
+ * @returns {number}
+ */
+Flatbuffer.GroundTruth.Points.prototype.rtkPosesLength = function() {
+  var offset = this.bb.__offset(this.bb_pos, 16);
+  return offset ? this.bb.__vector_len(this.bb_pos + offset) : 0;
+};
+
+/**
  * @param {flatbuffers.Builder} builder
  */
 Flatbuffer.GroundTruth.Points.startPoints = function(builder) {
-  builder.startObject(6);
+  builder.startObject(7);
 };
 
 /**
@@ -3142,6 +3595,22 @@ Flatbuffer.GroundTruth.Points.startPtTypeVector = function(builder, numElems) {
 
 /**
  * @param {flatbuffers.Builder} builder
+ * @param {flatbuffers.Offset} rtkPosesOffset
+ */
+Flatbuffer.GroundTruth.Points.addRtkPoses = function(builder, rtkPosesOffset) {
+  builder.addFieldOffset(6, rtkPosesOffset, 0);
+};
+
+/**
+ * @param {flatbuffers.Builder} builder
+ * @param {number} numElems
+ */
+Flatbuffer.GroundTruth.Points.startRtkPosesVector = function(builder, numElems) {
+  builder.startVector(48, numElems, 8);
+};
+
+/**
+ * @param {flatbuffers.Builder} builder
  * @returns {flatbuffers.Offset}
  */
 Flatbuffer.GroundTruth.Points.endPoints = function(builder) {
@@ -3157,9 +3626,10 @@ Flatbuffer.GroundTruth.Points.endPoints = function(builder) {
  * @param {flatbuffers.Offset} intensityOffset
  * @param {flatbuffers.Offset} timestampOffset
  * @param {flatbuffers.Offset} ptTypeOffset
+ * @param {flatbuffers.Offset} rtkPosesOffset
  * @returns {flatbuffers.Offset}
  */
-Flatbuffer.GroundTruth.Points.createPoints = function(builder, xOffset, yOffset, zOffset, intensityOffset, timestampOffset, ptTypeOffset) {
+Flatbuffer.GroundTruth.Points.createPoints = function(builder, xOffset, yOffset, zOffset, intensityOffset, timestampOffset, ptTypeOffset, rtkPosesOffset) {
   Flatbuffer.GroundTruth.Points.startPoints(builder);
   Flatbuffer.GroundTruth.Points.addX(builder, xOffset);
   Flatbuffer.GroundTruth.Points.addY(builder, yOffset);
@@ -3167,6 +3637,7 @@ Flatbuffer.GroundTruth.Points.createPoints = function(builder, xOffset, yOffset,
   Flatbuffer.GroundTruth.Points.addIntensity(builder, intensityOffset);
   Flatbuffer.GroundTruth.Points.addTimestamp(builder, timestampOffset);
   Flatbuffer.GroundTruth.Points.addPtType(builder, ptTypeOffset);
+  Flatbuffer.GroundTruth.Points.addRtkPoses(builder, rtkPosesOffset);
   return Flatbuffer.GroundTruth.Points.endPoints(builder);
 }
 

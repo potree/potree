@@ -49,7 +49,7 @@ export async function loadRem(s3, bucket, name, remShaderMaterial, animationEngi
       request.on("httpDownloadProgress", async (e) => {
         await updateLoadingBar(e.loaded/e.total * 100)
       });
-      
+
       request.on("complete", () => {
         incrementLoadingBarTotal("downloaded rem")
       });
@@ -130,8 +130,8 @@ async function createControlMeshes(controlPoints, remShaderMaterial, FlatbufferM
     const timestamp = point.viz(new FlatbufferModule.Flatbuffer.Primitives.HideAndShowAnimation())
     .timestamp(new FlatbufferModule.Flatbuffer.Primitives.ObjectTimestamp())
     .value() - animationEngine.tstart;
-    
-    
+
+
     const timestampArray = new Float64Array(64).fill(timestamp)
 
     const sphereGeo = new THREE.SphereBufferGeometry(radius);

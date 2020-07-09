@@ -331,11 +331,6 @@ export class Sidebar{
 		tree.on('create_node.jstree', (e, data) => {
 			tree.jstree("open_all");
 			tree.jstree().close_node(annotationsID);
-
-			// tree.jstree().open_node(pcID)
-			// tree.jstree().open_node(measurementID)
-			// tree.jstree().open_node(otherID)
-
 		});
 
 		tree.on("select_node.jstree", (e, data) => {

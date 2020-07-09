@@ -330,6 +330,7 @@ export class Sidebar{
 
 		tree.on('create_node.jstree', (e, data) => {
 			tree.jstree("open_all");
+			tree.jstree().close_node(annotationsID);
 		});
 
 		tree.on("select_node.jstree", (e, data) => {

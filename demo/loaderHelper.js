@@ -161,16 +161,25 @@ function loadDataIntoDocument() {
 		}
 
 		try {
-			loadControlPointsCallback(s3, bucket, name, animationEngine, 'REM');
+			loadControlPointsCallback(s3, bucket, name, animationEngine, 'control_point_3_rtk_relative.fb');
 		} catch (e) {
 			console.error("No rem points: ", e);
 		}
 
 		try {
-			loadControlPointsCallback(s3, bucket, name, animationEngine, 'APTIV_SAMPLES');
+			loadControlPointsCallback(s3, bucket, name, animationEngine, 'viz_Spheres3D_LaneSense_cp1_0.7s_left.fb');
+			loadControlPointsCallback(s3, bucket, name, animationEngine, 'viz_Spheres3D_LaneSense_cp1_0.7s_right.fb');
+			loadControlPointsCallback(s3, bucket, name, animationEngine, 'viz_Spheres3D_LaneSense_cp2_1.0s_left.fb');
+			loadControlPointsCallback(s3, bucket, name, animationEngine, 'viz_Spheres3D_LaneSense_cp2_1.0s_right.fb');
+			loadControlPointsCallback(s3, bucket, name, animationEngine, 'viz_Spheres3D_LaneSense_cp3_1.3s_left.fb');
+			loadControlPointsCallback(s3, bucket, name, animationEngine, 'viz_Spheres3D_LaneSense_cp3_1.3s_right.fb');
+			loadControlPointsCallback(s3, bucket, name, animationEngine, 'viz_Spheres3D_LaneSense_cp4_2.0s_left.fb');
+			loadControlPointsCallback(s3, bucket, name, animationEngine, 'viz_Spheres3D_LaneSense_cp4_2.0s_right.fb');
 		} catch (e) {
 			console.error("No sample points: ", e);
 		}
+
+
 
 		// Load Radar:
 		try {

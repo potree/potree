@@ -1,25 +1,17 @@
 'use strict';
 import { getShaderMaterial } from '../demo/paramLoader.js';
 import { getLoadingBar, getLoadingBarTotal, numberTasks, removeLoadingScreen, pause } from '../common/overlay.js';
-
 export async function loadControlPoints (s3, bucket, name, controlPointShaderMaterial, animationEngine, callback, controlPointType) {
   const tstart = performance.now();
   const loadingBar = getLoadingBar();
   const loadingBarTotal = getLoadingBarTotal();
   let lastLoaded = 0;
+  var objectName;
+
   if (s3 && bucket && name) {
     (async () => {
-      // TODO update these to CP
-      var objectName;
-      if (controlPointType === 'REM') {
-        objectName = `${name}/3_Assessments/control_point_3_rtk_relative.fb`; // `${name}/3_Assessments/gaps.fb`;//fb schema from s3
-        // s3://veritas-aptiv-2019-02-11/Data/REM-Lane1-Run1_2019-08-01¶002/3_Assessments/control_point_3_rem_relative.fb
-      } else if (controlPointType === 'APTIV_SAMPLES') {
-        objectName = `${name}/3_Assessments/AptivAssessmentData.fb`;
-      }
-
-      const schemaFile = `${name}/5_Schemas/VisualizationPrimitives_generated.js`;// remschemafile from s3
-
+      objectName = `${name}/3_Assessments/${controlPointType}`;
+      const schemaFile = `${name}/5_Schemas/VisualizationPrimitives_generated.js`;
       const schemaUrl = s3.getSignedUrl('getObject', {
         Bucket: bucket,
         Key: schemaFile
@@ -41,6 +33,7 @@ export async function loadControlPoints (s3, bucket, name, controlPointShaderMat
           removeLoadingScreen();
         }
       });
+
       request.on('httpDownloadProgress', async (e) => {
         let val = e.loaded / e.total * 100;
         val = Math.max(lastLoaded, val);
@@ -59,7 +52,7 @@ export async function loadControlPoints (s3, bucket, name, controlPointShaderMat
     })();
   } else {
     // TODO change for CP
-    const filename = '../data/control_point_3_rtk_relative.fb';
+    const filename = `../data/${controlPointType}`;
     const schemaFile = '../schemas/VisualizationPrimitives_generated.js';
     let t0, t1;
 
@@ -82,7 +75,7 @@ export async function loadControlPoints (s3, bucket, name, controlPointShaderMat
       }
 
       const bytesArray = new Uint8Array(response);
-      const controlPointSphereMeshes = await parseControlPoints(bytesArray, controlPointShaderMaterial, FlatbufferModule, animationEngine);
+      const controlPointSphereMeshes = await parseControlPoints(bytesArray, controlPointShaderMaterial, FlatbufferModule, animationEngine, controlPointType);
       await callback(controlPointSphereMeshes);
     };
 
@@ -92,29 +85,43 @@ export async function loadControlPoints (s3, bucket, name, controlPointShaderMat
 }
 
 // parse control points from flatbuffers
-async function parseControlPoints (bytesArray, controlPointShaderMaterial, FlatbufferModule, animationEngine) {
-  const numBytes = bytesArray.length;
-  const controlPoint = [];
+async function parseControlPoints (bytesArray, controlPointShaderMaterial, FlatbufferModule, animationEngine, controlPointType) {
+  if (controlPointType === 'control_point_3_rtk_relative.fb') {
+    const numBytes = bytesArray.length;
+    const controlPoint = [];
 
-  let segOffset = 0;
-  while (segOffset < numBytes) {
-    // Read SegmentSize:
-    const viewSize = new DataView(bytesArray.buffer, segOffset, 4);
-    const segSize = viewSize.getUint32(0, true); // True: little-endian | False: big-endian
+    let segOffset = 0;
+    while (segOffset < numBytes) {
+      // Read SegmentSize:
+      const viewSize = new DataView(bytesArray.buffer, segOffset, 4);
+      const segSize = viewSize.getUint32(0, true); // True: little-endian | False: big-endian
 
-    // Get Flatbuffer Gap Object:
-    segOffset += 4;
-    const buf = new Uint8Array(bytesArray.buffer.slice(segOffset, segOffset + segSize));
-    const fbuffer = new flatbuffers.ByteBuffer(buf);
-    const point = FlatbufferModule.Flatbuffer.Primitives.Sphere3D.getRootAsSphere3D(fbuffer);
+      // Get Flatbuffer Gap Object:
+      segOffset += 4;
+      const buf = new Uint8Array(bytesArray.buffer.slice(segOffset, segOffset + segSize));
+      const fbuffer = new flatbuffers.ByteBuffer(buf);
+      const point = FlatbufferModule.Flatbuffer.Primitives.Sphere3D.getRootAsSphere3D(fbuffer);
 
-    controlPoint.push(point);
-    segOffset += segSize;
+      controlPoint.push(point);
+      segOffset += segSize;
+    }
+    return await createControlMeshes(controlPoint, controlPointShaderMaterial, FlatbufferModule, animationEngine, controlPointType);
+  } else {
+    const dataBuffer = bytesArray.buffer;
+    const dataView = new DataView(dataBuffer);
+
+    const segmentSize = dataView.getUint32(0, true);
+
+    const buffer = new Uint8Array(dataBuffer.slice(4, segmentSize));
+    const byteBuffer = new flatbuffers.flatbuffers.ByteBuffer(buffer);
+    const spheres = FlatbufferModule.Flatbuffer.VisualizationPrimitives.Spheres3D.getRootAsSpheres3D(byteBuffer);
+    console.log(spheres.points(10).pos().x());
+    return await createControlMeshes(spheres.points, controlPointShaderMaterial, FlatbufferModule, animationEngine, controlPointType);
   }
-  return await createControlMeshes(controlPoint, controlPointShaderMaterial, FlatbufferModule, animationEngine);
 }
 
-async function createControlMeshes (controlPoint, controlPointShaderMaterial, FlatbufferModule, animationEngine) {
+
+async function createControlMeshes (controlPoint, controlPointShaderMaterial, FlatbufferModule, animationEngine, controlPointType) {
   const loadingBar = getLoadingBar();
   const loadingBarTotal = getLoadingBarTotal();
 
@@ -134,7 +141,9 @@ async function createControlMeshes (controlPoint, controlPointShaderMaterial, Fl
     const timestampArray = new Float64Array(64).fill(timestamp);
 
     const sphereGeo = new THREE.SphereBufferGeometry(radius);
-    controlPointShaderMaterial.uniforms.color.value = new THREE.Color(0x00ffff);
+
+    controlPointShaderMaterial.uniforms.color.value = colorPicker(controlPointType);
+
     const sphereMesh = new THREE.Mesh(sphereGeo, controlPointShaderMaterial);
     sphereMesh.position.set(vertex.x, vertex.y, vertex.z);
     sphereMesh.geometry.addAttribute('gpsTime', new THREE.Float32BufferAttribute(timestampArray, 1));
@@ -151,7 +160,24 @@ async function createControlMeshes (controlPoint, controlPointShaderMaterial, Fl
   return allSpheres;
 }
 
-
+function colorPicker (controlPointType) {
+  if (controlPointType === 'control_point_3_rtk_relative.fb') {
+    return new THREE.Color(0x00ffff);
+  } else if (controlPointType === 'viz_Spheres3D_LaneSense_cp1_0.7s_left.fb' ||
+            controlPointType === 'viz_Spheres3D_LaneSense_cp2_1.0s_left.fb' ||
+            controlPointType === 'viz_Spheres3D_LaneSense_cp3_1.3s_left.fb' ||
+            controlPointType === 'viz_Spheres3D_LaneSense_cp4_2.0s_left.fb') {
+    return new THREE.Color(0xffff00);
+  } else if (controlPointType === 'viz_Spheres3D_LaneSense_cp1_0.7s_right.fb' ||
+            controlPointType === 'viz_Spheres3D_LaneSense_cp2_1.0s_right.fb' ||
+            controlPointType === 'viz_Spheres3D_LaneSense_cp3_1.3s_right.fb' ||
+            controlPointType === 'viz_Spheres3D_LaneSense_cp4_2.0s_right.fb') {
+    return new THREE.Color(0x0000ff);
+  } else {
+    console.log(`ERROR: unknown controlPointType ${controlPointType}`);
+    return new THREE.Color(0xff0000);
+  }
+}
 
 // load control points
 export async function loadControlPointsCallback (s3, bucket, name, animationEngine, controlPointType) {
@@ -159,8 +185,7 @@ export async function loadControlPointsCallback (s3, bucket, name, animationEngi
   const controlPointShaderMaterial = shaderMaterial.clone();
   await loadControlPoints(s3, bucket, name, controlPointShaderMaterial, animationEngine, (sphereMeshes) => {
     const controlPointLayer = new THREE.Group();
-    // TODO CP work
-    controlPointLayer.name = 'REM Control Points';
+    controlPointLayer.name = controlPointType;
     sphereMeshes.forEach(mesh => controlPointLayer.add(mesh));
 
     viewer.scene.scene.add(controlPointLayer);

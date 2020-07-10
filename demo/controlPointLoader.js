@@ -26,7 +26,7 @@ export async function loadControlPoints (s3, bucket, name, controlPointShaderMat
           loadingBarTotal.set(Math.min(Math.ceil(loadingBarTotal.value + (100 / numberTasks))), 100);
         } else {
           const FlatbufferModule = await import(schemaUrl);
-          const controlPointSphereMeshes = await parseControlPoints(data.Body, controlPointShaderMaterial, FlatbufferModule, animationEngine);
+          const controlPointSphereMeshes = await parseControlPoints(data.Body, controlPointShaderMaterial, FlatbufferModule, animationEngine, controlPointType);
           await callback(controlPointSphereMeshes);
         }
         if (loadingBarTotal.value === 100) {
@@ -67,13 +67,11 @@ export async function loadControlPoints (s3, bucket, name, controlPointShaderMat
 
     xhr.onload = async function (data) {
       const FlatbufferModule = await import(schemaFile);
-
       const response = data.target.response;
       if (!response) {
         console.error('Could not create buffer from lane data');
         return;
       }
-
       const bytesArray = new Uint8Array(response);
       const controlPointSphereMeshes = await parseControlPoints(bytesArray, controlPointShaderMaterial, FlatbufferModule, animationEngine, controlPointType);
       await callback(controlPointSphereMeshes);
@@ -109,14 +107,15 @@ async function parseControlPoints (bytesArray, controlPointShaderMaterial, Flatb
   } else {
     const dataBuffer = bytesArray.buffer;
     const dataView = new DataView(dataBuffer);
-
     const segmentSize = dataView.getUint32(0, true);
-
     const buffer = new Uint8Array(dataBuffer.slice(4, segmentSize));
-    const byteBuffer = new flatbuffers.flatbuffers.ByteBuffer(buffer);
-    const spheres = FlatbufferModule.Flatbuffer.VisualizationPrimitives.Spheres3D.getRootAsSpheres3D(byteBuffer);
-    console.log(spheres.points(10).pos().x());
-    return await createControlMeshes(spheres.points, controlPointShaderMaterial, FlatbufferModule, animationEngine, controlPointType);
+    const byteBuffer = new flatbuffers.ByteBuffer(buffer);
+    const spheresBuffer = FlatbufferModule.Flatbuffer.Primitives.Spheres3D.getRootAsSpheres3D(byteBuffer);
+    const spheresArray = [];
+    for (let ii = 0; ii < spheresBuffer.pointsLength(); ii++) {
+      spheresArray.push(spheresBuffer.points(ii));
+    }
+    return await createControlMeshes(spheresArray, controlPointShaderMaterial, FlatbufferModule, animationEngine, controlPointType);
   }
 }
 
@@ -132,7 +131,6 @@ async function createControlMeshes (controlPoint, controlPointShaderMaterial, Fl
       await pause();
     }
     const point = controlPoint[ii];
-
     const vertex = { x: point.pos().x(), y: point.pos().y(), z: point.pos().z() };
     const radius = 0.25; // point.radius();
     const timestamp = point.viz(new FlatbufferModule.Flatbuffer.Primitives.HideAndShowAnimation())
@@ -141,15 +139,12 @@ async function createControlMeshes (controlPoint, controlPointShaderMaterial, Fl
     const timestampArray = new Float64Array(64).fill(timestamp);
 
     const sphereGeo = new THREE.SphereBufferGeometry(radius);
-
     controlPointShaderMaterial.uniforms.color.value = colorPicker(controlPointType);
-
     const sphereMesh = new THREE.Mesh(sphereGeo, controlPointShaderMaterial);
     sphereMesh.position.set(vertex.x, vertex.y, vertex.z);
     sphereMesh.geometry.addAttribute('gpsTime', new THREE.Float32BufferAttribute(timestampArray, 1));
     allSpheres.push(sphereMesh);
   }
-
   // update total progress
   loadingBarTotal.set(Math.min(Math.ceil(loadingBarTotal.value + (100 / numberTasks))), 100);
   loadingBar.set(0);
@@ -161,6 +156,7 @@ async function createControlMeshes (controlPoint, controlPointShaderMaterial, Fl
 }
 
 function colorPicker (controlPointType) {
+  console.log(controlPointType);
   if (controlPointType === 'control_point_3_rtk_relative.fb') {
     return new THREE.Color(0x00ffff);
   } else if (controlPointType === 'viz_Spheres3D_LaneSense_cp1_0.7s_left.fb' ||
@@ -174,7 +170,7 @@ function colorPicker (controlPointType) {
             controlPointType === 'viz_Spheres3D_LaneSense_cp4_2.0s_right.fb') {
     return new THREE.Color(0x0000ff);
   } else {
-    console.log(`ERROR: unknown controlPointType ${controlPointType}`);
+    console.error("ERROR: unknown controlPointType", controlPointType);
     return new THREE.Color(0xff0000);
   }
 }

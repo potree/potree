@@ -399,6 +399,7 @@ export class PropertiesPanel{
 
 			const blacklist = [
 				"POSITION_CARTESIAN",
+				"position",
 			];
 
 			options = options.filter(o => !blacklist.includes(o));
@@ -515,7 +516,7 @@ export class PropertiesPanel{
 					
 				} else if(selectedValue === "return number"){
 					
-				} else if(selectedValue === "source id"){
+				} else if(["source id", "point source id"].includes(selectedValue)){
 					
 				} else{
 					blockExtra.css('display', 'block');

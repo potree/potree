@@ -443,6 +443,46 @@ vec4 getClassification(){
 	return classColor;
 }
 
+vec3 getReturns(){
+
+	// 0b 00_000_111
+	float rn = mod(returnNumber, 8.0);
+	// 0b 00_111_000
+	float nr = mod(returnNumber / 8.0, 8.0);
+
+	if(nr <= 1.0){
+		return vec3(1.0, 0.0, 0.0);
+	}else{
+		return vec3(0.0, 1.0, 0.0);
+	}
+
+	// return vec3(nr / 4.0, 0.0, 0.0);
+
+	// if(nr == 1.0){
+	// 	return vec3(1.0, 1.0, 0.0);
+	// }else{
+	// 	if(rn == 1.0){
+	// 		return vec3(1.0, 0.0, 0.0);
+	// 	}else if(rn == nr){
+	// 		return vec3(0.0, 0.0, 1.0);
+	// 	}else{
+	// 		return vec3(0.0, 1.0, 0.0);
+	// 	}
+	// }
+
+	// if(numberOfReturns == 1.0){
+	// 	return vec3(1.0, 1.0, 0.0);
+	// }else{
+	// 	if(returnNumber == 1.0){
+	// 		return vec3(1.0, 0.0, 0.0);
+	// 	}else if(returnNumber == numberOfReturns){
+	// 		return vec3(0.0, 0.0, 1.0);
+	// 	}else{
+	// 		return vec3(0.0, 1.0, 0.0);
+	// 	}
+	// }
+}
+
 vec3 getReturnNumber(){
 	if(numberOfReturns == 1.0){
 		return vec3(1.0, 1.0, 0.0);
@@ -593,9 +633,13 @@ vec3 getColor(){
 		color = cl.rgb;
 	#elif defined color_type_return_number
 		color = getReturnNumber();
+	#elif defined color_type_returns
+		color = getReturns();
 	#elif defined color_type_number_of_returns
 		color = getNumberOfReturns();
 	#elif defined color_type_source_id
+		color = getSourceID();
+	#elif defined color_type_point_source_id
 		color = getSourceID();
 	#elif defined color_type_normal
 		color = (modelMatrix * vec4(normal, 0.0)).xyz;
@@ -643,6 +687,10 @@ float getPointSize(){
 				pointSize = size * spacing * projFactor;
 			}else{
 				float worldSpaceSize = 1.0 * size * r / getPointSizeAttenuation();
+
+				// minimum world space size
+				// worldSpaceSize = max(worldSpaceSize, 0.02);
+
 				pointSize = worldSpaceSize * projFactor;
 			}
 		}
@@ -830,6 +878,11 @@ void main() {
 
 	//gl_PointSize = 5.0;
 	//vColor = vec3(1.0, 1.0, 1.0);
+
+	// only for "replacing" approaches
+	// if(getLOD() != uLevel){
+	// 	gl_Position = vec4(10.0, 10.0, 10.0, 1.0);
+	// }
 
 
 	#if defined hq_depth_pass

@@ -179,8 +179,6 @@ function loadDataIntoDocument() {
 			console.error("No sample points: ", e);
 		}
 
-
-
 		// Load Radar:
 		try {
 			// await loadRadarCallback(s3, bucket, name);

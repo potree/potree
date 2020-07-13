@@ -140,7 +140,7 @@ async function createControlMeshes (controlPoint, controlPointShaderMaterial, Fl
     const timestampArray = new Float64Array(64).fill(timestamp);
 
     const sphereGeo = new THREE.SphereBufferGeometry(radius);
-    controlPointShaderMaterial.uniforms.color.value = colorPicker(controlPointType);
+    controlPointShaderMaterial.uniforms.color.value = getControlPointColor(controlPointType);
     const sphereMesh = new THREE.Mesh(sphereGeo, controlPointShaderMaterial);
     sphereMesh.position.set(vertex.x, vertex.y, vertex.z);
     sphereMesh.geometry.addAttribute('gpsTime', new THREE.Float32BufferAttribute(timestampArray, 1));
@@ -156,8 +156,7 @@ async function createControlMeshes (controlPoint, controlPointShaderMaterial, Fl
   return allSpheres;
 }
 
-function colorPicker (controlPointType) {
-  console.log(controlPointType);
+function getControlPointColor (controlPointType) {
   if (controlPointType === 'control_point_3_rtk_relative.fb') {
     return new THREE.Color(0x00ffff);
   } else if (controlPointType === 'viz_Spheres3D_LaneSense_cp1_0.7s_left.fb' ||
@@ -171,8 +170,33 @@ function colorPicker (controlPointType) {
             controlPointType === 'viz_Spheres3D_LaneSense_cp4_2.0s_right.fb') {
     return new THREE.Color(0x0000ff);
   } else {
-    console.error("ERROR: unknown controlPointType", controlPointType);
+    console.error('ERROR: unknown controlPointType', controlPointType);
     return new THREE.Color(0xff0000);
+  }
+}
+
+function getControlPointName (controlPointType) {
+  if (controlPointType === 'control_point_3_rtk_relative.fb') {
+    return 'REM Control Points';
+  } else if (controlPointType === 'viz_Spheres3D_LaneSense_cp1_0.7s_left.fb') {
+    return '0.7s Left Control Points';
+  } else if (controlPointType === 'viz_Spheres3D_LaneSense_cp2_1.0s_left.fb') {
+    return '1.0s Left Control Points';
+  } else if (controlPointType === 'viz_Spheres3D_LaneSense_cp3_1.3s_left.fb') {
+    return '1.3s Left Control Points';
+  } else if (controlPointType === 'viz_Spheres3D_LaneSense_cp4_2.0s_left.fb') {
+    return '2.0s Left Control Points';
+  } else if (controlPointType === 'viz_Spheres3D_LaneSense_cp1_0.7s_right.fb') {
+    return '0.7s Right Control Points';
+  } else if (controlPointType === 'viz_Spheres3D_LaneSense_cp2_1.0s_right.fb') {
+    return '1.0s Right Control Points';
+  } else if (controlPointType === 'viz_Spheres3D_LaneSense_cp3_1.3s_right.fb') {
+    return '1.3s Right Control Points';
+  } else if (controlPointType === 'viz_Spheres3D_LaneSense_cp4_2.0s_right.fb') {
+    return '2.0s Right Control Points';
+  } else {
+    console.error('ERROR: unknown controlPointType', controlPointType);
+    return 'UNKNOWN CONTROL POINT TYPE';
   }
 }
 
@@ -182,7 +206,7 @@ export async function loadControlPointsCallback (s3, bucket, name, animationEngi
   const controlPointShaderMaterial = shaderMaterial.clone();
   await loadControlPoints(s3, bucket, name, controlPointShaderMaterial, animationEngine, (sphereMeshes) => {
     const controlPointLayer = new THREE.Group();
-    controlPointLayer.name = controlPointType;
+    controlPointLayer.name = getControlPointName(controlPointType);
     sphereMeshes.forEach(mesh => controlPointLayer.add(mesh));
 
     viewer.scene.scene.add(controlPointLayer);

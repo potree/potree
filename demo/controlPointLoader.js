@@ -132,6 +132,7 @@ async function createControlMeshes (controlPoint, controlPointShaderMaterial, Fl
     }
     const point = controlPoint[ii];
     const vertex = { x: point.pos().x(), y: point.pos().y(), z: point.pos().z() };
+    console.log("z : ", point.pos().z());
     const radius = 0.25; // point.radius();
     const timestamp = point.viz(new FlatbufferModule.Flatbuffer.Primitives.HideAndShowAnimation())
       .timestamp(new FlatbufferModule.Flatbuffer.Primitives.ObjectTimestamp())

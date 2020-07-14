@@ -22,6 +22,7 @@ import { addLoadRadarButton, radarDownloads } from "../demo/radarLoader.js"
 import { addDetectionButton, detectionDownloads } from "../demo/detectionLoader.js"
 import { PointAttributeNames } from "../src/loader/PointAttributes.js";
 import { setNumTasks } from "../common/overlay.js"
+import { loadControlPointsCallback } from "../demo/controlPointLoader.js"
 
 
 function canUseCalibrationPanels(attributes) {
@@ -159,10 +160,29 @@ function loadDataIntoDocument() {
 			console.error("Could not load Tracks: ", e);
 		}
 
+		// try {
+		// 	loadRemCallback(s3, bucket, name, animationEngine);
+		// } catch (e) {
+		// 	console.error("No rem points: ", e);
+		// }
+
 		try {
-			loadRemCallback(s3, bucket, name, animationEngine);
+			loadControlPointsCallback(s3, bucket, name, animationEngine, 'control_point_3_rtk_relative.fb');
 		} catch (e) {
 			console.error("No rem points: ", e);
+		}
+
+		try {
+			loadControlPointsCallback(s3, bucket, name, animationEngine, 'viz_Spheres3D_LaneSense_cp1_0.7s_left.fb');
+			loadControlPointsCallback(s3, bucket, name, animationEngine, 'viz_Spheres3D_LaneSense_cp1_0.7s_right.fb');
+			loadControlPointsCallback(s3, bucket, name, animationEngine, 'viz_Spheres3D_LaneSense_cp2_1.0s_left.fb');
+			loadControlPointsCallback(s3, bucket, name, animationEngine, 'viz_Spheres3D_LaneSense_cp2_1.0s_right.fb');
+			loadControlPointsCallback(s3, bucket, name, animationEngine, 'viz_Spheres3D_LaneSense_cp3_1.3s_left.fb');
+			loadControlPointsCallback(s3, bucket, name, animationEngine, 'viz_Spheres3D_LaneSense_cp3_1.3s_right.fb');
+			loadControlPointsCallback(s3, bucket, name, animationEngine, 'viz_Spheres3D_LaneSense_cp4_2.0s_left.fb');
+			loadControlPointsCallback(s3, bucket, name, animationEngine, 'viz_Spheres3D_LaneSense_cp4_2.0s_right.fb');
+		} catch (e) {
+			console.error("No sample points: ", e);
 		}
 
 		// Load Radar:
@@ -207,12 +227,12 @@ async function getS3Files() {
 		.map(listing => listing.Prefix)
 		.filter(str => {
 			const noPrefix = removePrefix(str)
-			const delimIdx = noPrefix.indexOf("/") 
+			const delimIdx = noPrefix.indexOf("/")
 			// -1 if no other '/' found, meaning is a file & not a directory
 			return delimIdx != -1
 		})
 
-	// consolidate each subdirs' contents after doing multiple requests 
+	// consolidate each subdirs' contents after doing multiple requests
 	// prevent one folder's numerous binary files from blocking the retrieval of other dirs' files
 	const filePaths = []
 	for (const dir of topLevelDirs) {
@@ -246,7 +266,7 @@ async function determineNumTasks(datasetFiles) {
 
 	// downloads & loads that happen on page load and need to be tracked
 	let numDownloads = 0 // generally incremented by if objectName is present in the returned dictionary
-	let numLoads = 0 // normally incremented with numDownloads except when texture/mesh is present (increment solely) 
+	let numLoads = 0 // normally incremented with numDownloads except when texture/mesh is present (increment solely)
 	for (const getRelevantFiles of downloadList) {
 		const relevantFiles = await getRelevantFiles(datasetFiles)
 		if (relevantFiles.objectName != null) {

@@ -16,7 +16,7 @@ import { textureDownloads } from "../demo/textureLoader.js"
 import { loadVelo2Rtk, loadRtk2Vehicle, storeCalibration, calDownloads, addCalibrationButton } from "../demo/calibrationManager.js"
 import { loadLanesCallback, addReloadLanesButton, laneDownloads } from "../demo/laneLoader.js"
 import { loadTracksCallback, trackDownloads } from "../demo/trackLoader.js"
-import { loadRemCallback, remDownloads } from "../demo/remLoader.js"
+// import { loadRemCallback, remDownloads } from "../demo/remLoader.js"
 import { addLoadGapsButton, gapDownloads } from "../demo/gapsLoader.js"
 import { addLoadRadarButton, radarDownloads } from "../demo/radarLoader.js"
 import { addDetectionButton, detectionDownloads } from "../demo/detectionLoader.js"
@@ -159,6 +159,12 @@ function loadDataIntoDocument() {
 		} catch (e) {
 			console.error("Could not load Tracks: ", e);
 		}
+
+		// try {
+		// 	loadRemCallback(s3, bucket, name, animationEngine);
+		// } catch (e) {
+		// 	console.error("No rem points: ", e);
+		// }
 
 		try {
 			loadControlPointsCallback(s3, bucket, name, animationEngine, 'control_point_3_rtk_relative.fb');

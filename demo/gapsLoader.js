@@ -1,28 +1,23 @@
 'use strict';
 import { getShaderMaterial, s3, bucket, name } from "../demo/paramLoader.js"
 import { updateLoadingBar, incrementLoadingBarTotal, resetProgressBars } from "../common/overlay.js";
+import { getFbFileInfo } from "./loaderUtilities.js";
 
-
-const gapFiles = {objectName: null, schemaFile: null}
+let gapFiles = null;
 export const gapDownloads = async (datasetFiles) => {
-  const isLocalLoad = datasetFiles == null
-  const objNameMatch = "gaps.fb" // 3_Assessments
-  const schemaMatch = "VisualizationPrimitives_generated.js" // 5_Schemas
-  const localObj = "../data/gaps.fb";
-  const localSchema = "../schemas/VisualizationPrimitives_generated.js";
-  gapFiles.objectName = isLocalLoad ?
-    await existsOrNull(localObj) : datasetFiles.filter(path => path.endsWith(objNameMatch))[0]
-  gapFiles.schemaFile = isLocalLoad ?
-    await existsOrNull(localSchema) : datasetFiles.filter(path => path.endsWith(schemaMatch))[0]
-  return gapFiles
+  gapFiles = await getFbFileInfo(datasetFiles,
+                                 "gaps.fb", // 3_Assessments
+                                 "VisualizationPrimitives_generated.js", // 5_Schemas
+                                 "../data/gaps.fb",
+                                 "../schemas/VisualizationPrimitives_generated.js");
+  return gapFiles;
 }
 
 export async function loadGaps(s3, bucket, name, shaderMaterial, animationEngine) {
   const tstart = performance.now();
-  let gapGeometries = null // default to error state 
-  if (gapFiles.objectName == null || gapFiles.schemaFile == null) {
+  if (!gapFiles) {
     console.log("No gaps files present")
-    return gapGeometries
+    return null;
   } else {
     // prepare for progress tracking (currently only triggered on button click)
     resetProgressBars(2) // have to download & process/load detections
@@ -38,6 +33,7 @@ export async function loadGaps(s3, bucket, name, shaderMaterial, animationEngine
       const request = s3.getObject({Bucket: bucket,
                     Key: gapFiles.objectName},
                     async (err, data) => {
+                      let gapGeometries = null // default to error state
                       if (err) {
                         console.log(err, err.stack);
                       } else {
@@ -50,7 +46,7 @@ export async function loadGaps(s3, bucket, name, shaderMaterial, animationEngine
       request.on("httpDownloadProgress", async (e) => {
         await updateLoadingBar(e.loaded/e.total * 100)
       });
-      
+
       request.on("complete", () => {
         incrementLoadingBarTotal()
       });

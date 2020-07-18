@@ -1,27 +1,22 @@
 'use strict';
 import { incrementLoadingBarTotal, resetProgressBars, updateLoadingBar } from "../common/overlay.js";
 import { s3, bucket, name, getShaderMaterial } from "../demo/paramLoader.js"
-import { existsOrNull } from "./loaderHelper.js"
+import { getFbFileInfo } from "./loaderUtilities.js";
 
 
-const detectionFiles = {objectName: null, schemaFile: null}
+let detectionFiles = null;
 export const detectionDownloads = async (datasetFiles) => {
-  const isLocalLoad = datasetFiles == null
-  const localObj = "../data/detections.fb";
-  const localSchema = "../schemas/GroundTruth_generated.js";
-  const objNameMatch = "detections.fb" // 2_Truth
-  const schemaMatch = "GroundTruth_generated.js" // 5_Schemas
-
-  detectionFiles.objectName = isLocalLoad ?
-    await existsOrNull(localObj) : datasetFiles.filter(path => path.endsWith(objNameMatch))[0]
-  detectionFiles.schemaFile = isLocalLoad ?
-    await existsOrNull(localSchema) : datasetFiles.filter(path => path.endsWith(schemaMatch))[0]
-  return detectionFiles
+  detectionFiles = await getFbFileInfo(datasetFiles,
+                                       "detections.fb", // 2_Truth
+                                       "GroundTruth_generated.js", // 5_Schemas
+                                       "../data/detections.fb",
+                                       "../schemas/GroundTruth_generated.js");
+  return detectionFiles;
 }
 
 export async function loadDetections(s3, bucket, name, shaderMaterial, animationEngine) {
   const tstart = performance.now();
-  if (detectionFiles.objectName == null || detectionFiles.schemaFile == null) {
+  if (!detectionFiles) {
     console.log("No detection files present")
     return null
   } else {
@@ -52,7 +47,7 @@ export async function loadDetections(s3, bucket, name, shaderMaterial, animation
       request.on("httpDownloadProgress", async (e) => {
         await updateLoadingBar(e.loaded/e.total * 100)
       });
-      
+
       request.on("complete", () => {
         incrementLoadingBarTotal()
       });

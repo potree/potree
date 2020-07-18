@@ -1,20 +1,19 @@
 'use strict';
 import { getShaderMaterial, s3, bucket, name } from "../demo/paramLoader.js"
 import { updateLoadingBar, incrementLoadingBarTotal, resetProgressBars} from "../common/overlay.js";
+import { getFileInfo } from "./loaderUtilities.js";
 
 function isNan(n) {
   return n !== n;
 }
 
 // sets local variable and returns so # files can be counted
-const radarFiles = {objectName: null}
+let radarFiles = null;
 export const radarDownloads = async (datasetFiles) => {
-  const isLocalLoad = datasetFiles == null
-  const localObj = "csv/radar_tracks_demo.csv"
-  const objNameMatch = "radardata.csv"
-  radarFiles.objectName = isLocalLoad ?
-    await existsOrNull(localObj) : datasetFiles.filter(path => path.endsWith(objNameMatch))[0]
-  return radarFiles
+  radarFiles = await getFileInfo(datasetFiles,
+                                 "radardata.csv",
+                                 "csv/radar_tracks_demo.csv");
+  return radarFiles;
 }
 
 /**
@@ -23,7 +22,7 @@ export const radarDownloads = async (datasetFiles) => {
 export async function loadRadar(s3, bucket, name) {
   const tstart = performance.now();
   let radarData = null // null == error
-  if (radarFiles.objectName == null) {
+  if (!radarFiles) {
     console.log("No radar files present")
     return radarData
   } else {
@@ -47,7 +46,7 @@ export async function loadRadar(s3, bucket, name) {
     request.on("httpDownloadProgress", async (e) => {
       await updateLoadingBar(e.loaded/e.total * 100)
     });
-    
+
     request.on("complete", () => {
       incrementLoadingBarTotal()
     });

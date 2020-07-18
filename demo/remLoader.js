@@ -1,28 +1,23 @@
 'use strict';
 import { getShaderMaterial } from "../demo/paramLoader.js"
 import { updateLoadingBar, incrementLoadingBarTotal } from "../common/overlay.js";
-import { existsOrNull } from "./loaderHelper.js"
+import { getFbFileInfo } from "./loaderUtilities.js";
 
 
-
+let remFiles = null;
 // sets local variable and returns so # files can be counted
-const remFiles = {objectName: null, schemaFile: null}
 export const remDownloads = async (datasetFiles) => {
-  const isLocalLoad = datasetFiles == null
-  const localObj = `../data/control_point_3_rtk_relative.fb`;
-  const localSchema = "../schemas/VisualizationPrimitives_generated.js";
-  const objNameMatch = "control_point_3_rtk_relative.fb" // 3_Assessments
-  const schemaMatch = "VisualizationPrimitives_generated.js" // 5_Schemas
-  remFiles.objectName = isLocalLoad ?
-    await existsOrNull(localObj) : datasetFiles.filter(path => path.endsWith(objNameMatch))[0]
-  remFiles.schemaFile = isLocalLoad ?
-    await existsOrNull(localSchema) : datasetFiles.filter(path => path.endsWith(schemaMatch))[0]
-  return remFiles
+  remFiles = await getFbFileInfo(datasetFiles,
+                                 "control_point_3_rtk_relative.fb", // 3_Assessments
+                                 "VisualizationPrimitives_generated.js", // 5_Schemas
+                                 "../data/control_point_3_rtk_relative.fb",
+                                 "../schemas/VisualizationPrimitives_generated.js");
+  return remFiles;
 }
 
 export async function loadRem(s3, bucket, name, remShaderMaterial, animationEngine, callback) {
   const tstart = performance.now();
-  if (remFiles.objectName == null || remFiles.schemaFile == null) {
+  if (!remFiles) {
     console.log("No REM files present")
     return
   }

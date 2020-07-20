@@ -3,19 +3,16 @@ import { Measure } from "../src/utils/Measure.js";
 import { LaneSegments } from "./LaneSegments.js"
 import { visualizationMode, comparisonDatasets, s3, bucket, name } from "../demo/paramLoader.js"
 import { updateLoadingBar, incrementLoadingBarTotal, resetProgressBars } from "../common/overlay.js";
+import { getFbFileInfo } from "./loaderUtilities.js";
 
 
-const laneFiles = {objectName: null, schemaFile: null}
+let laneFiles = null;
 export const laneDownloads = async (datasetFiles) => {
-  const isLocalLoad = datasetFiles == null
-  const localObj = `../data/lanes.fb`;
-  const localSchema = "../schemas/GroundTruth_generated.js";
-  const objNameMatch = "lanes.fb" // 2_Truth
-  const schemaMatch = "GroundTruth_generated.js" // 5_Schemas
-  laneFiles.objectName = isLocalLoad ?
-    await existsOrNull(localObj) : datasetFiles.filter(path => path.endsWith(objNameMatch))[0]
-  laneFiles.schemaFile = isLocalLoad ?
-    await existsOrNull(localSchema) : datasetFiles.filter(path => path.endsWith(schemaMatch))[0]
+  laneFiles = await getFbFileInfo(datasetFiles,
+                                  "lanes.fb", // 2_Truth
+                                  "GroundTruth_generated.js", // 5_Schemas
+                                  "../data/lanes.fb",
+                                  "../schemas/GroundTruth_generated.js");
   return laneFiles
 }
 
@@ -25,7 +22,7 @@ export async function loadLanes(s3, bucket, name, fname, supplierNum, annotation
   // Logic for dealing with Map Supplier Data:
   const resolvedSupplierNum = supplierNum || -1;
 
-  if (laneFiles.objectName == null || laneFiles.schemaFile == null) {
+  if (!laneFiles) {
     console.log("No lane files present")
     return
   }
@@ -41,7 +38,7 @@ export async function loadLanes(s3, bucket, name, fname, supplierNum, annotation
                     Key: laneFiles.objectName},
                     async (err, data) => {
                       if (err) {
-                        console.log(err, err.stack);
+                        console.error(err, err.stack);
                       } else {
                         const FlatbufferModule = await import(schemaUrl);
                         const laneGeometries = await parseLanes(data.Body, FlatbufferModule, resolvedSupplierNum, annotationMode, volumes);
@@ -308,16 +305,6 @@ async function createLaneGeometriesOld (lanes, supplierNum, annotationMode, volu
       // always update # stages compelete
       if (prog == total-1) {
         stagesComplete++
-      }
-
-      // only update every so often to not inundate with pauses
-      if (prog % Math.round(total*.02) != 0) {
-        return
-      } else {
-        const thisStageLoaded = (prog/total)*toLoad
-        const baseLoaded = stagesComplete*toLoad
-        const percent = thisStageLoaded + baseLoaded
-        await updateLoadingBar(percent)
       }
     }
 
@@ -627,7 +614,7 @@ async function loadLanesHelper (layerName, filename, s) {
       });
     });
   } catch (e) {
-    console.log(`Couldn't load ${filename}: ${e}`);
+    console.error(`Couldn't load ${filename}`, e);
   }
 }
 

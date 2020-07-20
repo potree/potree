@@ -1,7 +1,7 @@
 'use strict';
 
 import { updateLoadingBar, incrementLoadingBarTotal } from "../common/overlay.js";
-import { existsOrNull } from "./loaderHelper.js"
+import { getFileInfo } from "./loaderUtilities.js";
 
 export async function storeCalibration(s3, bucket, name, callback) {
   // TODO
@@ -18,19 +18,18 @@ export async function loadRtk2Vehicle(s3, bucket, name, callback) {
   callback(rtk2Vehicle);
 }
 
-const calFiles = {objectName: null}
+let calFiles = null;
 export const calDownloads = async (datasetFiles) => {
   // ${name}/7_cals/extrinsics.txt
-  const localCal = `../cals/extrinsics.txt`
-  const isLocalLoad = datasetFiles == null
-  calFiles.objectName = isLocalLoad ?
-    await existsOrNull(localCal) : datasetFiles.filter(path => path.endsWith("extrinsics.txt"))[0]
-  return calFiles
+  calFiles = await getFileInfo(datasetFiles,
+                               "extrinsics.txt",
+                               "../cals/extrinsics.txt");
+  return calFiles;
 }
 
 export async function loadVelo2Rtk(s3, bucket, name, callback) {
   const tstart = performance.now();
-  if (calFiles.objectName == null) {
+  if (!calFiles) {
     console.log("No calibration files present")
     return
   }

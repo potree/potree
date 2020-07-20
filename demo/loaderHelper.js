@@ -268,35 +268,16 @@ async function determineNumTasks(datasetFiles) {
 	let numDownloads = 0 // generally incremented by if objectName is present in the returned dictionary
 	let numLoads = 0 // normally incremented with numDownloads except when texture/mesh is present (increment solely)
 	for (const getRelevantFiles of downloadList) {
-		const relevantFiles = await getRelevantFiles(datasetFiles)
-		if (relevantFiles.objectName != null) {
-			numDownloads++
-			numLoads++
-		}
-		// special case for textureLoader (loads 2 things, but only one is trackable, so combine)
-		else if (relevantFiles.texture && relevantFiles.mesh) {
-			numLoads++
-		}
+	  const relevantFiles = await getRelevantFiles(datasetFiles)
+	  if (relevantFiles) {
+            if (relevantFiles.texture && relevantFiles.mesh) {
+	      // special case for textureLoader (loads 2 things, but only one is trackable, so combine)
+              numLoads++;
+            } else {
+	      numDownloads++;
+	      numLoads++;
+	    }
+          }
 	}
-	return numLoads + numDownloads
-}
-
-/**
- * @brief Helper function for loaders to determine if a local point cloud file exists
- * @param {String} path
- * @returns {String | null} Returns 'path' if exists, null if file does not exist
- */
-export async function existsOrNull(path) {
-    return new Promise((resolve, reject) => {
-        const req = new XMLHttpRequest();
-        req.open('HEAD', path, true)
-        req.onreadystatechange = () => {
-            if (req.readyState === 4) { // completed (error or done)
-                const fileExists = req.status == 200
-                const toRtn = fileExists ? path : null
-                resolve(toRtn)
-            }
-        }
-        req.send()
-    })
+  return numLoads + numDownloads;
 }

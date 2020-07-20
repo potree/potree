@@ -2,28 +2,24 @@
 import { incrementLoadingBarTotal, updateLoadingBar } from "../common/overlay.js";
 import { RtkTrajectory } from "../demo/RtkTrajectory.js";
 import { animateRTK } from "../demo/rtkLoader.js";
-import { } from  "../demo/paramLoader.js"; 
+import { } from  "../demo/paramLoader.js";
 import { loadTexturedCar } from "../demo/textureLoader.js";
-import { existsOrNull } from "./loaderHelper.js"
+import { getFbFileInfo } from "./loaderUtilities.js";
 
-const rtkFiles = {objectName: null, schemaFile: null}
 
+let rtkFiles = null;
 // sets local variable and returns so # files can be counted
 export const rtkFlatbufferDownloads = async (datasetFiles) => {
-  const isLocalLoad = datasetFiles == null
-  const localObj = "../data/rtk.fb";
-  const localSchema = "../schemas/RTK_generated.js";
-  const objNameMatch = "rtk.fb" // 0_Preprocessed
-  const schemaMatch = "RTK_generated.js" // 5_Schemas
-  rtkFiles.objectName = isLocalLoad ?
-    await existsOrNull(localObj) : datasetFiles.filter(path => path.endsWith(objNameMatch))[0]
-  rtkFiles.schemaFile = isLocalLoad ?
-    await existsOrNull(localSchema) : datasetFiles.filter(path => path.endsWith(schemaMatch))[0]
+  rtkFiles = await getFbFileInfo(datasetFiles,
+                                 "rtk.fb", // 0_Preprocessed
+                                 "RTK_generated.js", // 5_Schemas
+                                 "../data/rtk.fb",
+                                 "../schemas/RTK_generated.js");
   return rtkFiles
 }
 
 export async function loadRtkFlatbuffer(s3, bucket, name, callback) {
-  if (rtkFiles.objectName == null || rtkFiles.schemaFile == null) {
+  if (!rtkFiles) {
     console.log("No flatbuffer files present")
     return
   }

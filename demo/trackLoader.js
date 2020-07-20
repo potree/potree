@@ -2,27 +2,23 @@
 // import { Flatbuffer } from "../schemas/GroundTruth_generated.js";
 // import { Flatbuffer } from "http://localhost:1234/schemas/GroundTruth_generated.js";
 import { updateLoadingBar, incrementLoadingBarTotal } from "../common/overlay.js";
-import { existsOrNull } from "./loaderHelper.js"
+import { getFbFileInfo } from "./loaderUtilities.js";
 
 
 // sets local variable and returns so # files can be counted
-const trackFiles = {objectName: null, schemaFile: null}
+let trackFiles = null;
 export const trackDownloads = async (datasetFiles) => {
-  const isLocalLoad = datasetFiles == null
-  const localObj = "../data/tracks.fb";
-  const localSchema = "../schemas/GroundTruth_generated.js";
-  const objNameMatch = "tracks.fb" // 2_Truth
-  const schemaMatch = "GroundTruth_generated.js" // 5_Schemas
-  trackFiles.objectName = isLocalLoad ?
-    await existsOrNull(localObj) : datasetFiles.filter(path => path.endsWith(objNameMatch))[0]
-  trackFiles.schemaFile = isLocalLoad ?
-    await existsOrNull(localSchema) : datasetFiles.filter(path => path.endsWith(schemaMatch))[0]
-  return trackFiles
+  trackFiles = await getFbFileInfo(datasetFiles,
+                                   "tracks.fb", // 2_Truth
+                                   "GroundTruth_generated.js", // 5_Schemas
+                                   "../data/tracks.fb",
+                                   "../schemas/GroundTruth_generated.js");
+  return trackFiles;
 }
 
 export async function loadTracks(s3, bucket, name, shaderMaterial, animationEngine, callback) {
   const tstart = performance.now();
-  if (trackFiles.objectName == null || trackFiles.schemaFile == null) {
+  if (!trackFiles) {
     console.log("No track files present")
     return
   }
@@ -37,7 +33,7 @@ export async function loadTracks(s3, bucket, name, shaderMaterial, animationEngi
         Key: trackFiles.objectName},
         async (err, data) => {
           if (err) {
-            console.log(err, err.stack);
+            console.error("Error getting tracks file", err, err.stack);
           } else {
             const FlatbufferModule = await import(schemaUrl);
             const trackGeometries = await parseTracks(data.Body, shaderMaterial, FlatbufferModule, animationEngine);
@@ -164,9 +160,10 @@ async function createTrackGeometries(shaderMaterial, tracks, animationEngine) {
   let stateTimes = [];
   let all = [];
   for (let ss=0, numTracks=tracks.length; ss<numTracks; ss++) {
+    if (ss % 100 === 0) {
+      await updateLoadingBar(ss/numTracks * 100);
+    }
     let track = tracks[ss];
-    await updateLoadingBar(ss/numTracks * 100);
-
     for (let ii=0, len=track.statesLength(); ii<len; ii++) {
 
       // Assign Current Track State:
@@ -305,7 +302,7 @@ async function createTrackGeometries(shaderMaterial, tracks, animationEngine) {
       // }
     }
   }
-
+  await updateLoadingBar(100);
 
 
   const output = {

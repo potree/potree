@@ -80,12 +80,12 @@ export class NodeLoader{
 						geometry.addAttribute(property, bufferAttribute);
 
 						const attribute = pointAttributes.attributes.find(a => a.name === batchAttribute.name);
-						attribute.range[0] = Math.min(attribute.range[0], batchAttribute.range[0]);
-						attribute.range[1] = Math.max(attribute.range[1], batchAttribute.range[1]);
+						// attribute.range[0] = Math.min(attribute.range[0], batchAttribute.range[0]);
+						// attribute.range[1] = Math.max(attribute.range[1], batchAttribute.range[1]);
 
-						if(node.getLevel() === 0){
-							attribute.initialRange = batchAttribute.range;
-						}
+						// if(node.getLevel() === 0){
+						// 	attribute.initialRange = batchAttribute.range;
+						// }
 					}
 
 				}
@@ -302,13 +302,21 @@ export class OctreeLoader_1_8{
 		};
 
 		for(let jsonAttribute of jsonAttributes){
-			let {name, description, size, numElements, elementSize} = jsonAttribute;
+			let {name, description, size, numElements, elementSize, min, max} = jsonAttribute;
 
 			let type = typenameTypeattributeMap[jsonAttribute.type];
 
 			let potreeAttributeName = replacements[name] ? replacements[name] : name;
 
 			let attribute = new PointAttribute(potreeAttributeName, type, numElements);
+
+			// attribute.range = {
+			// 	min: min,
+			// 	max: max,
+			// };
+			// TODO should support vector ranges
+			attribute.range = [min[0], max[0]];
+			attribute.initialRange = attribute.range;
 
 			attributes.add(attribute);
 		}

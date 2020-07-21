@@ -98,25 +98,28 @@ onmessage = function (event) {
 
 			// compute offset and scale to pack larger types into 32 bit floats
 			if(pointAttribute.type.size > 4){
-				for(let j = 0; j < numPoints; j++){
-					let pointOffset = j * bytesPerPoint;
-					let value = getter(pointOffset + attributeOffset, true);
 
-					if(!Number.isNaN(value)){
-						min = Math.min(min, value);
-						max = Math.max(max, value);
-					}
-				}
+				let [amin, amax] = pointAttribute.range;
+				offset = amin;
+				scale = 1 / (amax - amin);
 
-				
+				// for(let j = 0; j < numPoints; j++){
+				// 	let pointOffset = j * bytesPerPoint;
+				// 	let value = getter(pointOffset + attributeOffset, true);
 
-				if(pointAttribute.initialRange != null){
-					offset = pointAttribute.initialRange[0];
-					scale = 1 / (pointAttribute.initialRange[1] - pointAttribute.initialRange[0]);
-				}else{
-					offset = min;
-					scale = 1 / (max - min);
-				}
+				// 	if(!Number.isNaN(value)){
+				// 		min = Math.min(min, value);
+				// 		max = Math.max(max, value);
+				// 	}
+				// }
+
+				// if(pointAttribute.initialRange != null){
+				// 	offset = pointAttribute.initialRange[0];
+				// 	scale = 1 / (pointAttribute.initialRange[1] - pointAttribute.initialRange[0]);
+				// }else{
+				// 	offset = min;
+				// 	scale = 1 / (max - min);
+				// }
 			}
 
 			for(let j = 0; j < numPoints; j++){
@@ -132,7 +135,7 @@ onmessage = function (event) {
 				preciseBuffer[j] = value;
 			}
 
-			pointAttribute.range = [min, max];
+			// pointAttribute.range = [min, max];
 
 			//console.log(pointAttribute.range);
 			//attributeBuffers[pointAttribute.name] = { buffer: buff, attribute: pointAttribute };

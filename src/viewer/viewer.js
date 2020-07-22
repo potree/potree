@@ -220,7 +220,7 @@ export class Viewer extends EventDispatcher{
 					e.scene.addEventListener("pointcloud_added", onPointcloudAdded);
 				}
 
-				if(!e.scene.hasEventListener("volume_removed", onPointcloudAdded)){
+				if(!e.scene.hasEventListener("volume_removed", onVolumeRemoved)){
 					e.scene.addEventListener("volume_removed", onVolumeRemoved);
 				}
 				

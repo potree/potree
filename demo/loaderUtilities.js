@@ -44,3 +44,68 @@ export const getFileInfo = async (datasetFiles, objNameMatch, localObj) =>
       return objectName && {objectName};
     }
   };
+
+export const getFbFileInfox = async (datasetFiles, objNameMatch, schemaMatch, localObjList, localSchema) =>
+  {
+    if (datasetFiles) {
+      const schemaFile = datasetFiles.filter(path => path.endsWith(schemaMatch))[0];
+      const keys = datasetFiles.filter(path => path.endsWith(objNameMatch));
+      return map(key => ({s3Key: key, s3Schema: schemaFile}), keys);
+    } else {
+      const schemaPath = await existsOrNull(localSchema);
+      for (const localObj of localObjList) {
+        const path = await existsOrNull(localObj);
+        if (path) {
+          paths.push({localPath: path, localSchema: schemaPath});
+        }
+      }
+      return paths;
+    }
+  };
+
+export const getFileInfox = async (datasetFiles, objNameEnding, localObjList) =>
+  {
+    if (datasetFiles) {
+      const keys = datasetFiles.filter(key => key.endsWith(objNameEnding));
+      return map(key => ({s3key: key}), keys);
+    } else {
+      let paths = [];
+      for (const localObj of localObjList) {
+        const path = await existsOrNull(localObj);
+        if (path) {
+          paths.push({localPath: path});
+        }
+      }
+      return paths;
+    }
+  };
+
+
+export function applyRotation(obj, roll, pitch, yaw) {
+  if ( typeof(obj.initialRotation) != "undefined") {
+    roll += obj.initialRotation.x;
+    pitch += obj.initialRotation.y;
+    yaw += obj.initialRotation.z;
+  }
+
+
+  const sr = Math.sin(roll);
+  const sp = Math.sin(pitch);
+  const sy = Math.sin(yaw);
+
+  const cr = Math.cos(roll);
+  const cp = Math.cos(pitch);
+  const cy = Math.cos(yaw);
+
+  const rotMat = new THREE.Matrix4().set(
+    cy*cp,  cy*sp*sr - sy*cr,   cy*sp*cr + sy*sr, 0,
+    sy*cp,  sy*sp*sr + cy*cr,   sy*sp*cr - cy*sr, 0,
+    -sp,    cp*sr,              cp*cr,            0,
+    0,      0,                  0,                1,
+  )
+
+  // obj.rotation.set(roll, pitch, yaw);
+  obj.rotation.setFromRotationMatrix(rotMat);
+
+
+}

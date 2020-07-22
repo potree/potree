@@ -11,7 +11,6 @@ import { createViewer } from "../demo/viewer.js"
 import { AnimationEngine } from "../demo/animationEngine.js"
 import { createPlaybar } from "../common/playbar.js"
 import { loadRtkCallback, rtkFlatbufferDownloads } from "../demo/rtkLoaderFlatbuffer.js"
-import { rtkDownloads } from "../demo/rtkLoader.js"
 import { textureDownloads } from "../demo/textureLoader.js"
 import { loadVelo2Rtk, loadRtk2Vehicle, storeCalibration, calDownloads, addCalibrationButton } from "../demo/calibrationManager.js"
 import { loadLanesCallback, addReloadLanesButton, laneDownloads } from "../demo/laneLoader.js"
@@ -80,6 +79,9 @@ export async function loadPotree() {
   const datasetFiles = await getS3Files()
   const numTasks = await determineNumTasks(datasetFiles)
   setNumTasks(numTasks)
+
+  const otherDownloads = [detectionDownloads, gapDownloads, radarDownloads]
+  otherDownloads.forEach(async (getRelevantFiles) => await getRelevantFiles(datasetFiles))
 
   if (annotateLanesAvailable) {
     addReloadLanesButton();
@@ -257,12 +259,6 @@ async function determineNumTasks(datasetFiles) {
 		rtkFlatbufferDownloads, calDownloads, remDownloads,
 		textureDownloads, laneDownloads, trackDownloads
 	]
-
-	// onClick button loads which should not be added to count for page loading,
-	// but still need to find where their relevant files are
-	// rtkDownloads -- special case as it's function "loadRtk" is never actually called so should not be counted
-	const otherDownloads = [detectionDownloads, gapDownloads, radarDownloads, rtkDownloads]
-	otherDownloads.forEach(async (getRelevantFiles) => await getRelevantFiles(datasetFiles))
 
 	// downloads & loads that happen on page load and need to be tracked
 	let numDownloads = 0 // generally incremented by if objectName is present in the returned dictionary

@@ -14,7 +14,7 @@ export const detectionDownloads = async (datasetFiles) => {
   return detectionFiles;
 }
 
-export async function loadDetections(s3, bucket, name, shaderMaterial, animationEngine) {
+async function loadDetections(s3, bucket, name, shaderMaterial, animationEngine) {
   const tstart = performance.now();
   if (!detectionFiles) {
     console.log("No detection files present")
@@ -232,7 +232,7 @@ window.detectionsLoaded = false;
 			let detectionShaderMaterial = shaderMaterial.clone();
 			detectionShaderMaterial.uniforms.color.value = new THREE.Color(0xFFA500);
       const detectionGeometries = await loadDetections(s3, bucket, name, detectionShaderMaterial, animationEngine)
-      
+
       if (detectionGeometries != null) {
         let detectionLayer = new THREE.Group();
         detectionLayer.name = "Object Detections";

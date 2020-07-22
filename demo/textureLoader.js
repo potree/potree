@@ -1,11 +1,10 @@
 'use strict';
-
-import { applyRotation } from "../demo/rtkLoader.js";
+import { applyRotation } from "../demo/loaderUtilities.js";
 import { updateLoadingBar, incrementLoadingBarTotal } from "../common/overlay.js";
 
 
 const textureFiles = {texture: null, mesh: null}
-/** 
+/**
  * @note Mustang: {texture: models/bodybkgd.JPG, mesh: models/1967-shelby-ford-mustang.obj}
  * @note Volt: {
  *  texture: models/Chevy_Volt_Segmented/Chevrolet_Volt_v1_exterior.png,

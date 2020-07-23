@@ -19,7 +19,7 @@ export const radarDownloads = async (datasetFiles) => {
 /**
  * @returns {Promise<{geometry, t_init, boxBufferGeometries} | null>} Resolves to null if error
  */
-export async function loadRadar(s3, bucket, name) {
+async function loadRadar(s3, bucket, name) {
   const tstart = performance.now();
   let radarData = null // null == error
   if (!radarFiles) {

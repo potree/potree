@@ -10,7 +10,7 @@ import {
 import { createViewer } from "../demo/viewer.js"
 import { AnimationEngine } from "../demo/animationEngine.js"
 import { createPlaybar } from "../common/playbar.js"
-import { loadRtkCallback, rtkFlatbufferDownloads } from "../demo/rtkLoaderFlatbuffer.js"
+import { loadRtkCallback, rtkDownloads } from "../demo/rtkLoader.js"
 import { textureDownloads } from "../demo/textureLoader.js"
 import { loadVelo2Rtk, loadRtk2Vehicle, storeCalibration, calDownloads, addCalibrationButton } from "../demo/calibrationManager.js"
 import { loadLanesCallback, addReloadLanesButton, laneDownloads } from "../demo/laneLoader.js"
@@ -90,9 +90,8 @@ export async function loadPotree() {
   addLoadRadarButton();
   addCalibrationButton();
   addDetectionButton();
-
   // load in actual data & configure playbar along the way
-  loadDataIntoDocument();
+  await loadDataIntoDocument();
 
   // Load Pointclouds
   if (runLocalPointCloud) {
@@ -107,49 +106,44 @@ export async function loadPotree() {
 }
 
 // loads all necessary data (car obj/texture, rtk, radar, tracks, etc...)
-function loadDataIntoDocument() {
+async function loadDataIntoDocument() {
 	        // Load Data Sources in loadRtkCallback:
-                loadRtkCallback(s3, bucket, name, () => {
-
+                await loadRtkCallback(s3, bucket, name, async () => {
 		// Load Extrinsics:
 		window.extrinsics = { rtk2Vehicle: null, velo2Rtk: {} };
 		try {
-			loadVelo2Rtk(s3, bucket, name, (velo2Rtk) => {
+		  const velo2Rtk = await loadVelo2Rtk(s3, bucket, name);
+		  if (velo2Rtk) {
+		    console.log("Velo2Rtk Extrinsics Loaded!");
+		    window.extrinsics.velo2Rtk = { old: velo2Rtk, new: velo2Rtk };
+		    storeVelo2Rtk(window.extrinsics.velo2Rtk.new);
+		    for (const cloud of viewer.scene.pointclouds) {
 
-				if (!velo2Rtk) {
-					disablePanels("Unable to load extrinsics file");
-					return;
-				}
+		      let velo2RtkOld = window.extrinsics.velo2Rtk.old;
+		      let velo2RtkNew = window.extrinsics.velo2Rtk.new;
 
-				console.log("Velo2Rtk Extrinsics Loaded!");
-				window.extrinsics.velo2Rtk = { old: velo2Rtk, new: velo2Rtk };
-				storeVelo2Rtk(window.extrinsics.velo2Rtk.new);
-				for (const cloud of viewer.scene.pointclouds) {
+		      cloud.material.uniforms.velo2RtkXYZOld.value.set(velo2RtkOld.x, velo2RtkOld.y, velo2RtkOld.z);
+		      cloud.material.uniforms.velo2RtkRPYOld.value.set(velo2RtkOld.roll, velo2RtkOld.pitch, velo2RtkOld.yaw);
+		      cloud.material.uniforms.velo2RtkXYZNew.value.set(velo2RtkNew.x, velo2RtkNew.y, velo2RtkNew.z);
+		      cloud.material.uniforms.velo2RtkRPYNew.value.set(velo2RtkNew.roll, velo2RtkNew.pitch, velo2RtkNew.yaw);
+		    }
+                  } else {
+		    disablePanels("Unable to load extrinsics file");
+                  }
 
-					let velo2RtkOld = window.extrinsics.velo2Rtk.old;
-					let velo2RtkNew = window.extrinsics.velo2Rtk.new;
-
-					cloud.material.uniforms.velo2RtkXYZOld.value.set(velo2RtkOld.x, velo2RtkOld.y, velo2RtkOld.z);
-					cloud.material.uniforms.velo2RtkRPYOld.value.set(velo2RtkOld.roll, velo2RtkOld.pitch, velo2RtkOld.yaw);
-					cloud.material.uniforms.velo2RtkXYZNew.value.set(velo2RtkNew.x, velo2RtkNew.y, velo2RtkNew.z);
-					cloud.material.uniforms.velo2RtkRPYNew.value.set(velo2RtkNew.roll, velo2RtkNew.pitch, velo2RtkNew.yaw);
-				}
-			});
-
-			loadRtk2Vehicle(s3, bucket, name, (rtk2Vehicle) => {
-				console.log("Rtk2Vehicle Extrinsics Loaded!");
-				window.extrinsics.rtk2Vehicle = { old: rtk2Vehicle, new: rtk2Vehicle };
-				storeRtk2Vehicle(window.extrinsics.rtk2Vehicle.new);
-			});
+		  const rtk2Vehicle = await loadRtk2Vehicle(s3, bucket, name);
+		  console.log("Rtk2Vehicle Extrinsics Loaded!");
+		  window.extrinsics.rtk2Vehicle = { old: rtk2Vehicle, new: rtk2Vehicle };
+		  storeRtk2Vehicle(window.extrinsics.rtk2Vehicle.new);
 		} catch (e) {
-			console.error("Could not load Calibrations: ", e);
+		  console.error("Could not load Calibrations: ", e);
 		}
 
 		// Load Lanes:
 		try {
-			loadLanesCallback(s3, bucket, name);
+		  await loadLanesCallback(s3, bucket, name);
 		} catch (e) {
-			console.error("Could not load Lanes: ", e);
+		  console.error("Could not load Lanes: ", e);
 		}
 
 		// Load Tracks:
@@ -256,7 +250,7 @@ async function getS3Files() {
 async function determineNumTasks(datasetFiles) {
 	// list of functions which determine which (if any) files from s3 need to be downloaded on page load
 	const downloadList = [
-		rtkFlatbufferDownloads, calDownloads, remDownloads,
+		rtkDownloads, calDownloads, remDownloads,
 		textureDownloads, laneDownloads, trackDownloads
 	]
 

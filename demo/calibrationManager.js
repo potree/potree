@@ -7,7 +7,7 @@ export async function storeCalibration(s3, bucket, name, callback) {
   // TODO
 }
 
-export async function loadRtk2Vehicle(s3, bucket, name, callback) {
+export async function loadRtk2Vehicle(s3, bucket, name) {
 
   // TODO Hardcoded defaults for now
   const rtk2Vehicle = {
@@ -15,7 +15,7 @@ export async function loadRtk2Vehicle(s3, bucket, name, callback) {
     roll:0, pitch:0, yaw:Math.PI/2
   }
 
-  callback(rtk2Vehicle);
+  return rtk2Vehicle;
 }
 
 let calFiles = null;
@@ -27,68 +27,45 @@ export const calDownloads = async (datasetFiles) => {
   return calFiles;
 }
 
-export async function loadVelo2Rtk(s3, bucket, name, callback) {
-  const tstart = performance.now();
+export async function loadVelo2Rtk(s3, bucket, name) {
   if (!calFiles) {
     console.log("No calibration files present")
-    return
+    return null;
   }
 
   //is name here the dataset name? We should be more careful about that....
   if (s3 && bucket && name) {
-    (async () => {
-      const request = await s3.getObject({Bucket: bucket, Key: calFiles.objectName}, async (err, data) => {
-        if (err) {
-          console.log(err, err.stack);
-          await callback(null);
-        } else {
-          const calibrationText = new TextDecoder("utf-8").decode(data.Body);
-          const extrinsics = parseCalibrationFile(calibrationText);
-          await callback( extrinsics );
-        }
-        incrementLoadingBarTotal("cals loaded")
-      })
+    try {
+      const request = s3.getObject({Bucket: bucket,
+                                    Key: calFiles.objectName});
       request.on("httpDownloadProgress", async (e) => {
         await updateLoadingBar(e.loaded/e.total*100)
       });
-      request.on("complete", async () => {
-        incrementLoadingBarTotal("cals downloaded")
-      });
-    })();
-
-  } else {
-    let t0, t1;
-
-    const xhr = new XMLHttpRequest();
-    xhr.open("GET", calFiles.objectName);
-    xhr.responseType = "text";
-
-    xhr.onprogress = async (e) => {
-      await updateLoadingBar(e.loaded/e.total*100)
-      t1 = performance.now();
-      t0 = t1;
-    }
-
-    xhr.onload = async (data) => {
+      const data = await request.promise();
       incrementLoadingBarTotal("cals downloaded")
-      const calibrationText = data.target.responseText;
-      if (!calibrationText) {
-        console.error("Could not create load calbiration file");
-        return;
-      }
-
-      const velo2Rtk = parseCalibrationFile(calibrationText);
-      await callback( velo2Rtk );
+      const schemaUrl = s3.getSignedUrl('getObject', {
+        Bucket: bucket,
+        Key: calFiles.schemaFile
+      });
+      const calibrationText = new TextDecoder("utf-8").decode(data.Body);
+      const extrinsics = parseCalibrationFile(calibrationText);
       incrementLoadingBarTotal("cals loaded")
-    };
-
-    xhr.onerror = function(err) {
-      console.log(err, err.stack);
-      callback(null);
+      return extrinsics;
+    } catch (err) {
+      console.error('Error loading extrinsics.txt', err, err.stack);
+      return null;
     }
-
-    t0 = performance.now();
-    xhr.send();
+  } else {
+    try {
+      const response = await fetch(calFiles.objectName);
+      incrementLoadingBarTotal("cals downloaded")
+      const extrinsics = parseCalibrationFile(response.text());
+      incrementLoadingBarTotal("cals loaded")
+      return extrinsics;
+    } catch (err) {
+      console.error('Error loading extrinsics.txt', err, err.stack);
+      return null;
+    }
   }
 }
 

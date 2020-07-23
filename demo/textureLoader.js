@@ -3,7 +3,7 @@ import { applyRotation } from "../demo/loaderUtilities.js";
 import { updateLoadingBar, incrementLoadingBarTotal } from "../common/overlay.js";
 
 
-const textureFiles = {texture: null, mesh: null}
+let textureFiles = null;
 /**
  * @note Mustang: {texture: models/bodybkgd.JPG, mesh: models/1967-shelby-ford-mustang.obj}
  * @note Volt: {
@@ -12,9 +12,11 @@ const textureFiles = {texture: null, mesh: null}
  *}
  */
 export function textureDownloads(datasetFiles) {
-  textureFiles.texture = `${Potree.resourcePath}/models/Chevy_Volt_Segmented/reflection_1.png`
-  textureFiles.mesh = `${Potree.resourcePath}/models/Chevy_Volt_Segmented/volt_reduce.obj`
-  return textureFiles
+  textureFiles = {
+    texture: `${Potree.resourcePath}/models/Chevy_Volt_Segmented/reflection_1.png`,
+    mesh: `${Potree.resourcePath}/models/Chevy_Volt_Segmented/volt_reduce.obj`
+  };
+  return textureFiles;
 }
 
 export function loadTexturedCar(rtkTrajectory, pos, rot) {

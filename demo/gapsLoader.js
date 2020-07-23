@@ -13,7 +13,7 @@ export const gapDownloads = async (datasetFiles) => {
   return gapFiles;
 }
 
-export async function loadGaps(s3, bucket, name, shaderMaterial, animationEngine) {
+async function loadGaps(s3, bucket, name, shaderMaterial, animationEngine) {
   const tstart = performance.now();
   if (!gapFiles) {
     console.log("No gaps files present")

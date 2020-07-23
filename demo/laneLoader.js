@@ -16,9 +16,7 @@ export const laneDownloads = async (datasetFiles) => {
   return laneFiles
 }
 
-export async function loadLanes(s3, bucket, name, fname, supplierNum, annotationMode, volumes, callback) {
-  const tstart = performance.now();
-
+async function loadLanes(s3, bucket, name, fname, supplierNum, annotationMode, volumes, callback) {
   // Logic for dealing with Map Supplier Data:
   const resolvedSupplierNum = supplierNum || -1;
 
@@ -28,70 +26,35 @@ export async function loadLanes(s3, bucket, name, fname, supplierNum, annotation
   }
 
   if (s3 && bucket && name) {
-    (async () => {
-      const schemaUrl = s3.getSignedUrl('getObject', {
-        Bucket: bucket,
-        Key: laneFiles.schemaFile
-      });
-
-      const request = await s3.getObject({Bucket: bucket,
-                    Key: laneFiles.objectName},
-                    async (err, data) => {
-                      if (err) {
-                        console.error(err, err.stack);
-                      } else {
-                        const FlatbufferModule = await import(schemaUrl);
-                        const laneGeometries = await parseLanes(data.Body, FlatbufferModule, resolvedSupplierNum, annotationMode, volumes);
-                        await callback( laneGeometries );
-                      }
-                      incrementLoadingBarTotal("loaded lanes")
-                    });
-      request.on("httpDownloadProgress", async (e) => {
-        await updateLoadingBar(e.loaded/e.total * 100)
-      });
-
-      request.on("complete", () => {
-        incrementLoadingBarTotal("downloaded lanes")
-      });
-    })();
-  } else {
-    let t0, t1;
-
-    const xhr = new XMLHttpRequest();
-    xhr.open("GET", laneFiles.objectName);
-    xhr.responseType = "arraybuffer";
-
-    xhr.onprogress = async (e) => {
+    const request = s3.getObject({Bucket: bucket,
+                                  Key: laneFiles.objectName});
+    request.on("httpDownloadProgress", async (e) => {
       await updateLoadingBar(e.loaded/e.total*100)
-      t1 = performance.now();
-      t0 = t1;
-    }
-
-    xhr.onload = async (data) => {
-      incrementLoadingBarTotal("downloaded lanes")
-      const FlatbufferModule = await import(laneFiles.schemaFile);
-
-      const response = data.target.response;
-      if (!response) {
-        console.error("Could not create buffer from lane data");
-        return;
-      }
-
-      let bytesArray = new Uint8Array(response);
-      const laneGeometries = await parseLanes(bytesArray, FlatbufferModule, resolvedSupplierNum, annotationMode, volumes);
-      await callback( laneGeometries );
-      incrementLoadingBarTotal("loaded lanes")
-    };
-
-    t0 = performance.now();
-    xhr.send();
+    });
+    const data = await request.promise();
+    incrementLoadingBarTotal("lanes downloaded")
+    const schemaUrl = s3.getSignedUrl('getObject', {
+      Bucket: bucket,
+      Key: laneFiles.schemaFile
+    });
+    const FlatbufferModule = await import(schemaUrl);
+    const laneGeometries = await parseLanes(data.Body.buffer, FlatbufferModule, resolvedSupplierNum, annotationMode, volumes);
+    incrementLoadingBarTotal("lanes loaded")
+    return laneGeometries;
+  } else {
+    const response = await fetch(laneFiles.objectName);
+    incrementLoadingBarTotal("lanes downloaded")
+    const FlatbufferModule = await import(laneFiles.schemaFile);
+    const laneGeometries = await parseLanes(response.arrayBuffer(), FlatbufferModule, resolvedSupplierNum, annotationMode, volumes);
+    incrementLoadingBarTotal("lanes loaded")
+    return laneGeometries;
   }
 }
 
 
-async function parseLanes(bytesArray, FlatbufferModule, supplierNum, annotationMode, volumes) {
+async function parseLanes(arrayBuffer, FlatbufferModule, supplierNum, annotationMode, volumes) {
 
-  const numBytes = bytesArray.length;
+  const numBytes = arrayBuffer.byteLength;
   const lanes = [];
 
   let segOffset = 0;
@@ -99,12 +62,12 @@ async function parseLanes(bytesArray, FlatbufferModule, supplierNum, annotationM
   while (segOffset < numBytes) {
 
     // Read SegmentSize:
-    viewSize = new DataView(bytesArray.buffer, segOffset, 4);
+    viewSize = new DataView(arrayBuffer, segOffset, 4);
     segSize = viewSize.getUint32(0, true); // True: little-endian | False: big-endian
 
     // Get Flatbuffer Lane Object:
     segOffset += 4;
-    const buf = new Uint8Array(bytesArray.buffer.slice(segOffset, segOffset + segSize));
+    const buf = new Uint8Array(arrayBuffer.slice(segOffset, segOffset + segSize));
     const fbuffer = new flatbuffers.ByteBuffer(buf);
     const lane = FlatbufferModule.Flatbuffer.GroundTruth.Lane.getRootAsLane(fbuffer);
 
@@ -557,22 +520,21 @@ function addLaneGeometries (laneGeometries, lanesLayer) {
 
 
 // Load Lanes Truth Data:
-export async function loadLanesCallback (s3, bucket, name, callback) {
+export async function loadLanesCallback(s3, bucket, name, callback) {
   let filename, tmpSupplierNum;
   tmpSupplierNum = -1;
-  await loadLanes(s3, bucket, name, filename, tmpSupplierNum, window.annotateLanesModeActive, viewer.scene.volumes, (laneGeometries) => {
-    // need to have Annoted Lanes layer, so that can have original and edited lanes layers
-    const lanesLayer = new THREE.Group();
-    lanesLayer.name = "Lanes";
-    addLaneGeometries(laneGeometries, lanesLayer);
-    viewer.scene.dispatchEvent({
-      "type": "truth_layer_added",
-      "truthLayer": lanesLayer
-    });
-    if (callback) {
-      callback();
-    }
+  const laneGeometries = await loadLanes(s3, bucket, name, filename, tmpSupplierNum, window.annotateLanesModeActive, viewer.scene.volumes);
+  // need to have Annoted Lanes layer, so that can have original and edited lanes layers
+  const lanesLayer = new THREE.Group();
+  lanesLayer.name = "Lanes";
+  addLaneGeometries(laneGeometries, lanesLayer);
+  viewer.scene.dispatchEvent({
+    "type": "truth_layer_added",
+    "truthLayer": lanesLayer
   });
+  if (callback) {
+    callback();
+  }
 
   if (visualizationMode === "aptivLanes") {
     for (const s of [1, 2, 3]) {

@@ -105,37 +105,37 @@ function parseCalibrationFile(calibrationText){
 export function addCalibrationButton() {
   // Listener to store pointcloud material as calibration extrinsics get updated
   window.addEventListener("update-calibration-panel", (e) => {
-  console.log("calibration panel updated: ", e.detail);
-  const id = e.detail.id;
-  const dim = e.detail.dim;
-  const val = e.detail.value;
+    console.log("calibration panel updated: ", e.detail);
+    const id = e.detail.id;
+    const dim = e.detail.dim;
+    const val = e.detail.value;
 
-  for (const cloud of viewer.scene.pointclouds) {
-  let material = cloud.material;
+    for (const cloud of viewer.scene.pointclouds) {
+      let material = cloud.material;
 
-  if (id == "rtk2vehicle") {
-  let rtk2Vehicle = getRtk2Vehicle();
-  let vehicleMesh = viewer.scene.scene.getObjectByName("Vehicle").getObjectByName("Vehicle Mesh");
+      if (id == "rtk2vehicle") {
+        let rtk2Vehicle = getRtk2Vehicle();
+        let vehicleMesh = viewer.scene.scene.getObjectByName("Vehicle").getObjectByName("Vehicle Mesh");
 
-  // Apply Transformations to Vehicle:
-  let translation = new THREE.Vector3(rtk2Vehicle.x, rtk2Vehicle.y, rtk2Vehicle.z);
-  vehicleMesh.position.copy(translation);
-  vehicleMesh.rotation.set(rtk2Vehicle.roll, rtk2Vehicle.pitch, rtk2Vehicle.yaw);
+        // Apply Transformations to Vehicle:
+        let translation = new THREE.Vector3(rtk2Vehicle.x, rtk2Vehicle.y, rtk2Vehicle.z);
+        vehicleMesh.position.copy(translation);
+        vehicleMesh.rotation.set(rtk2Vehicle.roll, rtk2Vehicle.pitch, rtk2Vehicle.yaw);
 
-  // Store updated values in mesh:
-  material.uniforms.rtk2VehicleXYZNew = { type: "v3", value: new THREE.Vector3(rtk2Vehicle.x, rtk2Vehicle.y, rtk2Vehicle.z) };
-  material.uniforms.rtk2VehicleRPYNew = { type: "v3", value: new THREE.Vector3(rtk2Vehicle.roll, rtk2Vehicle.pitch, rtk2Vehicle.yaw) };
+        // Store updated values in mesh:
+        material.uniforms.rtk2VehicleXYZNew = { type: "v3", value: new THREE.Vector3(rtk2Vehicle.x, rtk2Vehicle.y, rtk2Vehicle.z) };
+        material.uniforms.rtk2VehicleRPYNew = { type: "v3", value: new THREE.Vector3(rtk2Vehicle.roll, rtk2Vehicle.pitch, rtk2Vehicle.yaw) };
 
-  } else if (id == "velo2rtk") {
+      } else if (id == "velo2rtk") {
 
-  let velo2Rtk = getVelo2Rtk();
-  material.uniforms.velo2RtkXYZNew = { type: "v3", value: new THREE.Vector3(velo2Rtk.x, velo2Rtk.y, velo2Rtk.z) };
-  material.uniforms.velo2RtkRPYNew = { type: "v3", value: new THREE.Vector3(velo2Rtk.roll, velo2Rtk.pitch, velo2Rtk.yaw) };
+        let velo2Rtk = getVelo2Rtk();
+        material.uniforms.velo2RtkXYZNew = { type: "v3", value: new THREE.Vector3(velo2Rtk.x, velo2Rtk.y, velo2Rtk.z) };
+        material.uniforms.velo2RtkRPYNew = { type: "v3", value: new THREE.Vector3(velo2Rtk.roll, velo2Rtk.pitch, velo2Rtk.yaw) };
 
-  } else {
-  console.error("Unknown Calibration Extrinsics Id:", id);
-  }
-  }
+      } else {
+        console.error("Unknown Calibration Extrinsics Id:", id);
+      }
+    }
   });
 
   window.canEnableCalibrationPanels = true;

@@ -160,7 +160,12 @@ export function createPlaybar () {
         document.body.removeChild(element);
       }
 
-  updateLane();
+      const proceed = window.annotateLanesModeActive ?
+        confirm("Saving updated lanes will overwrite old lane data. Are you sure you want to proceed?") :
+        true;
+      if (proceed) {
+        updateLane();
+      }
       // // Download Left Lane Vertices:
       // try {
       //   const laneLeftSegments = window.viewer.scene.scene.getChildByName("Left Lane Segments");
@@ -430,7 +435,6 @@ async function updateLane () {
   if (laneLeftSegments === undefined) {
     const laneLeft = window.viewer.scene.scene.getChildByName("Lane Left");
     lane.left = laneLeft.points; // download(JSON.stringify(laneLeft.points, null, 2), "lane-left.json");
-    console.log("left", lane.left);
   } else {
     lane.left = laneLeftSegments.getFinalPoints(); // download(JSON.stringify(laneLeftSegments.getFinalPoints(), null, 2), "lane-left.json");
   }
@@ -445,19 +449,15 @@ async function updateLane () {
   }
 
   // Get New Spine Vertices
-  // lane.spine = updateSpine(lane.left, lane.right);
-  // Update Lane attributes to be valid
-
+  // lane.spine = await updateSpine(lane.left, lane.right);
+  lane.spine = lane.right;
   const schemaUrl = s3.getSignedUrl('getObject', {
     Bucket: bucket,
     Key: `${name}/5_Schemas/GroundTruth_generated.js`
   });
   const FlatbufferModule = await import(schemaUrl);
-
   await updateLaneHelper(lane, FlatbufferModule);
-
   const bytes = await createLanesFlatbufferBytes(lane, FlatbufferModule);
-  console.log("bytes", bytes);
   writeFileToS3(s3, bucket, name, "2_Truth", "upload-testing-lanes.fb", bytes);
 }
 
@@ -466,9 +466,9 @@ async function updateLaneHelper (lane, FlatbufferModule) {
   const leftLength = lane.left.length;
   const rightLength = lane.right.length;
 
-  lane.timestamp = Array.from({ length: spineLength }).map(x => 0.0)
+  // lane.timestamp = Array.from({ length: spineLength }).map(x => 0.0)
   lane.leftPointValidity = Array.from({ length: leftLength }).map(x => 0);
   lane.rightPointValidity = Array.from({ length: rightLength }).map(x => 0);
-  lane.leftPointAnnotationStatus = Array.from({ length: leftLength }).map(x => 0);
-  lane.rightPointAnnotationStatus = Array.from({ length: rightLength }).map(x => 0);
+  lane.leftPointAnnotationStatus = Array.from({ length: leftLength }).map(x => 1);
+  lane.rightPointAnnotationStatus = Array.from({ length: rightLength }).map(x => 1);
 }

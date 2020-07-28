@@ -130,26 +130,28 @@ export async function writeFileToS3 (s3, bucket, name, subdirectory, filename, b
 }
 
 export async function createLanesFlatbufferBytes (lane, FlatbufferModule) {
+
+  console.log("lane", lane);
   const builder = new flatbuffers.Builder(0);
 
   // Add left vec3s
   FlatbufferModule.Flatbuffer.GroundTruth.Lane.startLeftVector(builder, lane.left.length);
   for (const point of lane.left) {
-    FlatbufferModule.Flatbuffer.GroundTruth.Vec3.createVec3(builder, point.x, point.y, point.z);
+    FlatbufferModule.Flatbuffer.GroundTruth.Vec3.createVec3(builder, point.position.x, point.position.y, point.position.z);
   }
   const leftOffset = builder.endVector();
 
   // Add right vec3s
   FlatbufferModule.Flatbuffer.GroundTruth.Lane.startRightVector(builder, lane.right.length);
   for (const point of lane.right) {
-    FlatbufferModule.Flatbuffer.GroundTruth.Vec3.createVec3(builder, point.x, point.y, point.z);
+    FlatbufferModule.Flatbuffer.GroundTruth.Vec3.createVec3(builder, point.position.x, point.position.y, point.position.z);
   }
   const rightOffset = builder.endVector();
 
   // Add spine vec3s
   FlatbufferModule.Flatbuffer.GroundTruth.Lane.startSpineVector(builder, lane.spine.length);
   for (const point of lane.spine) {
-    FlatbufferModule.Flatbuffer.GroundTruth.Vec3.createVec3(builder, point.x, point.y, point.z);
+    FlatbufferModule.Flatbuffer.GroundTruth.Vec3.createVec3(builder, point.position.x, point.position.y, point.position.z);
   }
   const spineOffset = builder.endVector();
 

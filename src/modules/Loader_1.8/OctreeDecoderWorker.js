@@ -20,7 +20,7 @@ Potree = {};
 
 onmessage = function (event) {
 
-	let {buffer, pointAttributes, scale, min, offset} = event.data;
+	let {buffer, pointAttributes, scale, name, min, max, size, offset} = event.data;
 
 	let numPoints = buffer.byteLength / pointAttributes.byteSize;
 	let view = new DataView(buffer);
@@ -33,6 +33,28 @@ onmessage = function (event) {
 		bytesPerPoint += pointAttribute.byteSize;
 	}
 
+	let gridSize = 32;
+	let grid = new Uint32Array(gridSize ** 3);
+	let toIndex = (x, y, z) => {
+		// let dx = gridSize * (x - min.x) / size.x;
+		// let dy = gridSize * (y - min.y) / size.y;
+		// let dz = gridSize * (z - min.z) / size.z;
+
+		// min is already subtracted
+		let dx = gridSize * x / size.x;
+		let dy = gridSize * y / size.y;
+		let dz = gridSize * z / size.z;
+
+		let ix = Math.min(parseInt(dx), gridSize - 1);
+		let iy = Math.min(parseInt(dy), gridSize - 1);
+		let iz = Math.min(parseInt(dz), gridSize - 1);
+
+		let index = ix + iy * gridSize + iz * gridSize * gridSize;
+
+		return index;
+	};
+
+	let numOccupiedCells = 0;
 	for (let pointAttribute of pointAttributes.attributes) {
 		
 		if(["POSITION_CARTESIAN", "position"].includes(pointAttribute.name)){
@@ -46,6 +68,12 @@ onmessage = function (event) {
 				let x = (view.getUint32(pointOffset + attributeOffset + 0, true) * scale[0]) + offset[0] - min.x;
 				let y = (view.getUint32(pointOffset + attributeOffset + 4, true) * scale[1]) + offset[1] - min.y;
 				let z = (view.getUint32(pointOffset + attributeOffset + 8, true) * scale[2]) + offset[2] - min.z;
+
+				let index = toIndex(x, y, z);
+				let count = grid[index]++;
+				if(count === 0){
+					numOccupiedCells++;
+				}
 
 				positions[3 * j + 0] = x;
 				positions[3 * j + 1] = y;
@@ -74,23 +102,20 @@ onmessage = function (event) {
 			let buff = new ArrayBuffer(numPoints * 4);
 			let f32 = new Float32Array(buff);
 
-			// console.log(pointAttribute.name, pointAttribute.type.name);
-
 			let TypedArray = typedArrayMapping[pointAttribute.type.name];
 			preciseBuffer = new TypedArray(numPoints);
 
-			let [min, max] = [Infinity, -Infinity];
 			let [offset, scale] = [0, 1];
 
 			const getterMap = {
 				"int8":   view.getInt8,
 				"int16":  view.getInt16,
 				"int32":  view.getInt32,
-				"int64":  view.getInt64,
+				// "int64":  view.getInt64,
 				"uint8":  view.getUint8,
 				"uint16": view.getUint16,
 				"uint32": view.getUint32,
-				"uint64": view.getUint64,
+				// "uint64": view.getUint64,
 				"float":  view.getFloat32,
 				"double": view.getFloat64,
 			};
@@ -98,47 +123,19 @@ onmessage = function (event) {
 
 			// compute offset and scale to pack larger types into 32 bit floats
 			if(pointAttribute.type.size > 4){
-
 				let [amin, amax] = pointAttribute.range;
 				offset = amin;
 				scale = 1 / (amax - amin);
-
-				// for(let j = 0; j < numPoints; j++){
-				// 	let pointOffset = j * bytesPerPoint;
-				// 	let value = getter(pointOffset + attributeOffset, true);
-
-				// 	if(!Number.isNaN(value)){
-				// 		min = Math.min(min, value);
-				// 		max = Math.max(max, value);
-				// 	}
-				// }
-
-				// if(pointAttribute.initialRange != null){
-				// 	offset = pointAttribute.initialRange[0];
-				// 	scale = 1 / (pointAttribute.initialRange[1] - pointAttribute.initialRange[0]);
-				// }else{
-				// 	offset = min;
-				// 	scale = 1 / (max - min);
-				// }
 			}
 
 			for(let j = 0; j < numPoints; j++){
 				let pointOffset = j * bytesPerPoint;
 				let value = getter(pointOffset + attributeOffset, true);
 
-				if(!Number.isNaN(value)){
-					min = Math.min(min, value);
-					max = Math.max(max, value);
-				}
-
 				f32[j] = (value - offset) * scale;
 				preciseBuffer[j] = value;
 			}
 
-			// pointAttribute.range = [min, max];
-
-			//console.log(pointAttribute.range);
-			//attributeBuffers[pointAttribute.name] = { buffer: buff, attribute: pointAttribute };
 			attributeBuffers[pointAttribute.name] = { 
 				buffer: buff,
 				preciseBuffer: preciseBuffer,
@@ -152,6 +149,9 @@ onmessage = function (event) {
 
 
 	}
+
+	let occupancy = parseInt(numPoints / numOccupiedCells);
+	// console.log(`${name}: #points: ${numPoints}: #occupiedCells: ${numOccupiedCells}, occupancy: ${occupancy} points/cell`);
 
 	{ // add indices
 		let buff = new ArrayBuffer(numPoints * 4);
@@ -208,6 +208,7 @@ onmessage = function (event) {
 	let message = {
 		buffer: buffer,
 		attributeBuffers: attributeBuffers,
+		density: occupancy,
 	};
 
 	let transferables = [];

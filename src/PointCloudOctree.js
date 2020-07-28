@@ -372,7 +372,21 @@ export class PointCloudOctree extends PointCloudTree {
 				data[parentOffset * 4 + 2] = (offsetsToChild[parentOffset] % 256);
 			}
 
-			data[i * 4 + 3] = node.name.length - 1;
+			// data[i * 4 + 3] = node.geometryNode.nodeType === 1 ? 1 : 0;
+			// data[i * 4 + 3] = node.name.length - 1;
+
+			let density = node.geometryNode.density;
+			
+			if(typeof density === "number"){
+				let lodOffset = Math.log2(density) / 2 - 1.5;
+
+				let offsetUint8 = (lodOffset + 10) * 10;
+
+				data[i * 4 + 3] = offsetUint8;
+			}else{
+				data[i * 4 + 3] = 100;
+			}
+
 		}
 
 		var a = 10;

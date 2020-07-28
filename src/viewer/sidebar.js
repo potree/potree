@@ -1319,6 +1319,10 @@ export class Sidebar{
 			$('#sldFOV').slider({value: this.viewer.getFOV()});
 		});
 
+		this.viewer.addEventListener('use_edl_changed', (event) => {
+			$('#chkEDLEnabled')[0].checked = this.viewer.getEDLEnabled();
+		});
+
 		this.viewer.addEventListener('edl_radius_changed', (event) => {
 			$('#lblEDLRadius')[0].innerHTML = this.viewer.getEDLRadius().toFixed(1);
 			$('#sldEDLRadius').slider({value: this.viewer.getEDLRadius()});

@@ -129,9 +129,7 @@ export async function writeFileToS3 (s3, bucket, name, subdirectory, filename, b
   }
 }
 
-export async function createLanesFlatbufferBytes (lane, FlatbufferModule) {
-
-  console.log("lane", lane);
+export async function createLanesFlatbuffer (lane, FlatbufferModule) {
   const builder = new flatbuffers.Builder(0);
 
   // Add left vec3s

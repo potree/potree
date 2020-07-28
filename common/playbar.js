@@ -1,7 +1,7 @@
 'use strict';
 
 import { bucket, name, s3 } from "../demo/paramLoader.js";
-import { writeFileToS3, createLanesFlatbufferBytes } from "../demo/loaderUtilities.js";
+import { writeFileToS3, createLanesFlatbuffer } from "../demo/loaderUtilities.js";
 
 
 const numberOrZero = (string) => {
@@ -160,51 +160,53 @@ export function createPlaybar () {
         document.body.removeChild(element);
       }
 
+      // Download Left Lane Vertices:
+      try {
+        const laneLeftSegments = window.viewer.scene.scene.getChildByName("Left Lane Segments");
+        if (laneLeftSegments == undefined) {
+          const laneLeft = window.viewer.scene.scene.getChildByName("Lane Left");
+          download(JSON.stringify(laneLeft.points, null, 2), "lane-left.json");
+        } else {
+          download(JSON.stringify(laneLeftSegments.getFinalPoints(), null, 2), "lane-left.json");
+        }
+
+      } catch (e) {
+        console.error("Couldn't download left lane vertices: ", e);
+      }
+
+      // Download Lane Spine Vertices:
+      try {
+        const laneSpine = window.viewer.scene.scene.getChildByName("Lane Spine");
+        download(JSON.stringify(laneSpine.points, null, 2), "lane-spine.json", "text/plain");
+      } catch (e) {
+        console.error("Couldn't download lane spine vertices: ", e);
+      }
+
+      // Download Right Lane Vertices:
+      try {
+        const laneRightSegments = window.viewer.scene.scene.getChildByName("Right Lane Segments");
+        if (laneRightSegments == undefined) {
+          const laneRight = window.viewer.scene.scene.getChildByName("Lane Right");
+          download(JSON.stringify(laneRight.points, null, 2), "lane-right.json", "text/plain");
+        } else {
+          download(JSON.stringify(laneRightSegments.getFinalPoints(), null, 2), "lane-right.json", "text/plain");
+        }
+      } catch (e) {
+        console.error("Couldn't download right lane vertices: ", e);
+      }
+
+    });
+
+    playbarhtml.find("#save_lanes_button").click(function() {
       const proceed = window.annotateLanesModeActive ?
         confirm("Saving updated lanes will overwrite old lane data. Are you sure you want to proceed?") :
         true;
       if (proceed) {
-        updateLane();
+        saveLaneChanges();
       }
-      // // Download Left Lane Vertices:
-      // try {
-      //   const laneLeftSegments = window.viewer.scene.scene.getChildByName("Left Lane Segments");
-      //   if (laneLeftSegments == undefined) {
-      //     const laneLeft = window.viewer.scene.scene.getChildByName("Lane Left");
-      //     download(JSON.stringify(laneLeft.points, null, 2), "lane-left.json");
-      //   } else {
-      //     download(JSON.stringify(laneLeftSegments.getFinalPoints(), null, 2), "lane-left.json");
-      //   }
-  //
-      // } catch (e) {
-      //   console.error("Couldn't download left lane vertices: ", e);
-      // }
-  //
-      // // Download Lane Spine Vertices:
-      // try {
-      //   const laneSpine = window.viewer.scene.scene.getChildByName("Lane Spine");
-      //   download(JSON.stringify(laneSpine.points, null, 2), "lane-spine.json", "text/plain");
-      // } catch (e) {
-      //   console.error("Couldn't download lane spine vertices: ", e);
-      // }
-  //
-      // // Download Right Lane Vertices:
-      // try {
-      //   const laneRightSegments = window.viewer.scene.scene.getChildByName("Right Lane Segments");
-      //   if (laneRightSegments == undefined) {
-      //     const laneRight = window.viewer.scene.scene.getChildByName("Lane Right");
-      //     download(JSON.stringify(laneRight.points, null, 2), "lane-right.json", "text/plain");
-      //   } else {
-      //     download(JSON.stringify(laneRightSegments.getFinalPoints(), null, 2), "lane-right.json", "text/plain");
-      //   }
-      // } catch (e) {
-      //   console.error("Couldn't download right lane vertices: ", e);
-      // }
-
-
-
-
     });
+
+
 
     window.addEventListener("message", e => {
      if (e.data === 'pause') {
@@ -231,6 +233,8 @@ export function createPlaybar () {
     document.getElementById("load_detections_button").style.display = "none";
     document.getElementById("load_gaps_button").style.display = "none";
     document.getElementById("download_lanes_button").style.display = "none";
+    document.getElementById("save_lanes_button").style.display = "none";
+
 
   // originall from radar.html
   document.getElementById("playbar_tmax").disabled = false;
@@ -414,8 +418,7 @@ function addPlaybarListeners() {
 }
 
 
-async function updateLane () {
-  // create lanes flatbuffer
+async function saveLaneChanges () {
   const lane = {
     id: 0,
     timestamp: [],
@@ -428,7 +431,7 @@ async function updateLane () {
     rightPointValidity: [],
     leftPointAnnotationStatus: [],
     rightPointAnnotationStatus: []
-  }
+  };
 
   // Left Lane Vertices:
   const laneLeftSegments = window.viewer.scene.scene.getChildByName("Left Lane Segments");
@@ -450,19 +453,19 @@ async function updateLane () {
 
   // Get New Spine Vertices
   // lane.spine = await updateSpine(lane.left, lane.right);
-  lane.spine = lane.right;
+
   const schemaUrl = s3.getSignedUrl('getObject', {
     Bucket: bucket,
     Key: `${name}/5_Schemas/GroundTruth_generated.js`
   });
   const FlatbufferModule = await import(schemaUrl);
-  await updateLaneHelper(lane, FlatbufferModule);
-  const bytes = await createLanesFlatbufferBytes(lane, FlatbufferModule);
+  await saveLaneChangesHelper(lane, FlatbufferModule);
+  const bytes = await createLanesFlatbuffer(lane, FlatbufferModule);
   writeFileToS3(s3, bucket, name, "2_Truth", "upload-testing-lanes.fb", bytes);
 }
 
-async function updateLaneHelper (lane, FlatbufferModule) {
-  const spineLength = lane.spine.length;
+async function saveLaneChangesHelper (lane, FlatbufferModule) {
+  // const spineLength = lane.spine.length;
   const leftLength = lane.left.length;
   const rightLength = lane.right.length;
 

@@ -616,9 +616,13 @@ export function addReloadLanesButton() {
 	if (window.annotateLanesModeActive) {
 	  reload_lanes_button.innerText = "View Truth Lanes";
 	  document.getElementById("download_lanes_button").style.display = "block";
+    document.getElementById("save_lanes_button").style.display = "block";
+
 	} else {
 	  reload_lanes_button.innerText = "Annotate Truth Lanes";
 	  document.getElementById("download_lanes_button").style.display = "none";
+    document.getElementById("save_lanes_button").style.display = "none";
+
 	}
 
 	reloadLanesButton.disabled = false

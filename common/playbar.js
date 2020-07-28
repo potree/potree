@@ -1,5 +1,9 @@
 'use strict';
 
+import { bucket, name, s3 } from "../demo/paramLoader.js";
+import { writeFileToS3, createLanesFlatbuffer } from "../demo/loaderUtilities.js";
+
+
 const numberOrZero = (string) => {
   const value = Number(string);
   return isNaN(value) ? 0 : value;
@@ -191,10 +195,18 @@ export function createPlaybar () {
         console.error("Couldn't download right lane vertices: ", e);
       }
 
-
-
-
     });
+
+    playbarhtml.find("#save_lanes_button").click(function() {
+      const proceed = window.annotateLanesModeActive ?
+        confirm("Saving updated lanes will overwrite old lane data. Are you sure you want to proceed?") :
+        true;
+      if (proceed) {
+        saveLaneChanges();
+      }
+    });
+
+
 
     window.addEventListener("message", e => {
      if (e.data === 'pause') {
@@ -221,59 +233,61 @@ export function createPlaybar () {
     document.getElementById("load_detections_button").style.display = "none";
     document.getElementById("load_gaps_button").style.display = "none";
     document.getElementById("download_lanes_button").style.display = "none";
+    document.getElementById("save_lanes_button").style.display = "none";
 
-	// originall from radar.html
-	document.getElementById("playbar_tmax").disabled = false;
-	document.getElementById("playbar_tmin").disabled = false;
-	document.getElementById("elevation_max").display = false;
-	document.getElementById("elevation_min").disabled = false;
 
-	window.truthAnnotationMode = 0;	// 0: None, 1: Delete, 2: Add
-	let annotationScreen = $(`<div id="annotationScreen"><p id="annotation-label">ANNOTATION MODE: <b id="annotation-mode-text"></b></p></div>`);
-	$('body').prepend(annotationScreen);
-	let div = document.getElementById("annotationScreen");
-	div.style.opacity=0;
+  // originall from radar.html
+  document.getElementById("playbar_tmax").disabled = false;
+  document.getElementById("playbar_tmin").disabled = false;
+  document.getElementById("elevation_max").display = false;
+  document.getElementById("elevation_min").disabled = false;
 
-	// event listeners
-	window.addEventListener('keydown', (e) => {
-		if (window.annotateLanesModeActive) {
-			if (e.code == "KeyA") {
-				window.truthAnnotationMode = 2;
-			} else if (e.code == "KeyS") {
-				window.truthAnnotationMode = 1;
-			} else if (e.shiftKey) {
-				window.truthAnnotationMode = (window.truthAnnotationMode + 1) % 3;
-			}
+  window.truthAnnotationMode = 0;	// 0: None, 1: Delete, 2: Add
+  let annotationScreen = $(`<div id="annotationScreen"><p id="annotation-label">ANNOTATION MODE: <b id="annotation-mode-text"></b></p></div>`);
+  $('body').prepend(annotationScreen);
+  let div = document.getElementById("annotationScreen");
+  div.style.opacity=0;
 
-			let div = document.getElementById("annotationScreen");
-			let label = document.getElementById("annotation-mode-text");
-			if (window.truthAnnotationMode == 0) {
-				div.style.background = "black";
-				div.style.opacity=0;
-				label.innerHTML = "NONE";
-			}
-			else if (window.truthAnnotationMode == 1) {
-				div.style.background = "red";
-				div.style.opacity=0.25;
-				label.innerHTML = "DELETE POINTS";
-			} else if (window.truthAnnotationMode == 2) {
-				div.style.background = "green";
-				div.style.opacity=0.25;
-				label.innerHTML = "ADD POINTS";
-			}
-		}
-	});
+  // event listeners
+  window.addEventListener('keydown', (e) => {
+  if (window.annotateLanesModeActive) {
+  if (e.code == "KeyA") {
+  window.truthAnnotationMode = 2;
+  } else if (e.code == "KeyS") {
+  window.truthAnnotationMode = 1;
+  } else if (e.shiftKey) {
+  window.truthAnnotationMode = (window.truthAnnotationMode + 1) % 3;
+  }
 
-	window.addEventListener("keyup", (e) => {
-		if (window.annotateLanesModeActive) {
-			window.truthAnnotationMode = 0;
-			let div = document.getElementById("annotationScreen");
-			let label = document.getElementById("annotation-mode-text");
-			div.style.background = "black";
-			div.style.opacity=0;
-			label.innerHTML = "NONE";
-		}
-	});
+  let div = document.getElementById("annotationScreen");
+  let label = document.getElementById("annotation-mode-text");
+  if (window.truthAnnotationMode == 0) {
+  div.style.background = "black";
+  div.style.opacity=0;
+  label.innerHTML = "NONE";
+  }
+  else if (window.truthAnnotationMode == 1) {
+  div.style.background = "red";
+  div.style.opacity=0.25;
+  label.innerHTML = "DELETE POINTS";
+  } else if (window.truthAnnotationMode == 2) {
+  div.style.background = "green";
+  div.style.opacity=0.25;
+  label.innerHTML = "ADD POINTS";
+  }
+  }
+  });
+
+  window.addEventListener("keyup", (e) => {
+  if (window.annotateLanesModeActive) {
+  window.truthAnnotationMode = 0;
+  let div = document.getElementById("annotationScreen");
+  let label = document.getElementById("annotation-mode-text");
+  div.style.background = "black";
+  div.style.opacity=0;
+  label.innerHTML = "NONE";
+  }
+  });
   addPlaybarListeners();
 }
 
@@ -302,23 +316,23 @@ function addPlaybarListeners() {
         animationEngine.start();
     });
 
-	// Pre-Start/Stop Callbacks
-	animationEngine.preStartCallback = function () {
-		if (!animationEngine.isPlaying) {
-			$("#playbutton").trigger("mousedown");
-		}
-	}
+  // Pre-Start/Stop Callbacks
+  animationEngine.preStartCallback = function () {
+  if (!animationEngine.isPlaying) {
+  $("#playbutton").trigger("mousedown");
+  }
+  }
 
-	animationEngine.preStopCallback = function () {
-		if (animationEngine.isPlaying) {
-			$("#pausebutton").trigger("mousedown");
-		}
-	}
+  animationEngine.preStopCallback = function () {
+  if (animationEngine.isPlaying) {
+  $("#pausebutton").trigger("mousedown");
+  }
+  }
 
-	// Playbar:
+  // Playbar:
     animationEngine.tweenTargets.push((gpsTime, updateDisplayedTime) => {
-	  let t = (gpsTime - animationEngine.tstart) / (animationEngine.timeRange);
-	  slider.value = 100*t;
+    let t = (gpsTime - animationEngine.tstart) / (animationEngine.timeRange);
+    slider.value = 100*t;
 
           // If this change came from typing, don't rewrite it.
           if (updateDisplayedTime) {
@@ -326,24 +340,24 @@ function addPlaybarListeners() {
           }
     });
 
-	// Camera:
-	// let updateCamera = false;
-	// let lag = 1.01; // seconds
-	// let camPointZOffset = 10; // meters
-	// window.camControlInitialized = false;
-	// window.camPointNeedsToBeComputed = true;
-	// window.camControlInUse = false;
-	// window.camDeltaTransform = {camStart: new THREE.Matrix4(), vehicleStart: new THREE.Vector3(), camEnd: new THREE.Matrix4(), vehicleEnd: new THREE.Vector3()};
-	// window.camPointLocalFrame = {position: new THREE.Vector3(-10,0,10)};
-	// window.camTargetLocalFrame = {position: new THREE.Vector3(0, 0, 0)};
-	viewer.renderArea.addEventListener("keypress", (e) => {
-		if (e.key == "r") {
-			let box = new THREE.Box3().setFromObject(viewer.scene.scene.getObjectByName("Vehicle").getObjectByName("Vehicle Mesh"));
-			let node = new THREE.Object3D();
-			node.boundingBox = box;
-			viewer.zoomTo(node, 5, 500);
-		}
-	});
+  // Camera:
+  // let updateCamera = false;
+  // let lag = 1.01; // seconds
+  // let camPointZOffset = 10; // meters
+  // window.camControlInitialized = false;
+  // window.camPointNeedsToBeComputed = true;
+  // window.camControlInUse = false;
+  // window.camDeltaTransform = {camStart: new THREE.Matrix4(), vehicleStart: new THREE.Vector3(), camEnd: new THREE.Matrix4(), vehicleEnd: new THREE.Vector3()};
+  // window.camPointLocalFrame = {position: new THREE.Vector3(-10,0,10)};
+  // window.camTargetLocalFrame = {position: new THREE.Vector3(0, 0, 0)};
+  viewer.renderArea.addEventListener("keypress", (e) => {
+  if (e.key == "r") {
+  let box = new THREE.Box3().setFromObject(viewer.scene.scene.getObjectByName("Vehicle").getObjectByName("Vehicle Mesh"));
+  let node = new THREE.Object3D();
+  node.boundingBox = box;
+  viewer.zoomTo(node, 5, 500);
+  }
+  });
 
     time_display.addEventListener('input',
                                   e => {
@@ -392,13 +406,72 @@ function addPlaybarListeners() {
       animationEngine.updateTimeForAll();
     });
 
-	// PointCloud:
-	animationEngine.tweenTargets.push((gpsTime) => {
-		// debugger; // account for pointcloud offset
+  // PointCloud:
+  animationEngine.tweenTargets.push((gpsTime) => {
+  // debugger; // account for pointcloud offset
                 const {backward, forward} = animationEngine.activeWindow;
                 const timeMin = numberOrZero(backward);
                 const timeMax = numberOrZero(forward);
-		viewer.setFilterGPSTimeRange(gpsTime + timeMin, gpsTime + timeMax);
-		viewer.setFilterGPSTimeExtent(gpsTime + 2.5 * timeMin, gpsTime + 2.5 * timeMax);
-	});
+  viewer.setFilterGPSTimeRange(gpsTime + timeMin, gpsTime + timeMax);
+  viewer.setFilterGPSTimeExtent(gpsTime + 2.5 * timeMin, gpsTime + 2.5 * timeMax);
+  });
+}
+
+
+async function saveLaneChanges () {
+  const lane = {
+    id: 0,
+    timestamp: [],
+    left: [],
+    right: [],
+    spine: [],
+    laneTypeLeft: [],
+    laneTypeRight: [],
+    leftPointValidity: [],
+    rightPointValidity: [],
+    leftPointAnnotationStatus: [],
+    rightPointAnnotationStatus: []
+  };
+
+  // Left Lane Vertices:
+  const laneLeftSegments = window.viewer.scene.scene.getChildByName("Left Lane Segments");
+  if (laneLeftSegments === undefined) {
+    const laneLeft = window.viewer.scene.scene.getChildByName("Lane Left");
+    lane.left = laneLeft.points; // download(JSON.stringify(laneLeft.points, null, 2), "lane-left.json");
+  } else {
+    lane.left = laneLeftSegments.getFinalPoints(); // download(JSON.stringify(laneLeftSegments.getFinalPoints(), null, 2), "lane-left.json");
+  }
+
+  // Right Lane Vertices:
+  const laneRightSegments = window.viewer.scene.scene.getChildByName("Right Lane Segments");
+  if (laneRightSegments === undefined) {
+    const laneRight = window.viewer.scene.scene.getChildByName("Lane Right");
+    lane.right = laneRight.points; // download(JSON.stringify(laneRight.points, null, 2), "lane-right.json", "text/plain");
+  } else {
+    lane.right = laneRightSegments.getFinalPoints(); // download(JSON.stringify(laneRightSegments.getFinalPoints(), null, 2), "lane-right.json", "text/plain");
+  }
+
+  // Get New Spine Vertices
+  // lane.spine = await updateSpine(lane.left, lane.right);
+
+  const schemaUrl = s3.getSignedUrl('getObject', {
+    Bucket: bucket,
+    Key: `${name}/5_Schemas/GroundTruth_generated.js`
+  });
+  const FlatbufferModule = await import(schemaUrl);
+  await saveLaneChangesHelper(lane, FlatbufferModule);
+  const bytes = await createLanesFlatbuffer(lane, FlatbufferModule);
+  writeFileToS3(s3, bucket, name, "2_Truth", "upload-testing-lanes.fb", bytes);
+}
+
+async function saveLaneChangesHelper (lane, FlatbufferModule) {
+  // const spineLength = lane.spine.length;
+  const leftLength = lane.left.length;
+  const rightLength = lane.right.length;
+
+  // lane.timestamp = Array.from({ length: spineLength }).map(x => 0.0)
+  lane.leftPointValidity = Array.from({ length: leftLength }).map(x => 0);
+  lane.rightPointValidity = Array.from({ length: rightLength }).map(x => 0);
+  lane.leftPointAnnotationStatus = Array.from({ length: leftLength }).map(x => 1);
+  lane.rightPointAnnotationStatus = Array.from({ length: rightLength }).map(x => 1);
 }

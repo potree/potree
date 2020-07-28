@@ -1,5 +1,7 @@
 'use strict';
 
+import { updateLoadingBar, incrementLoadingBarTotal } from "../common/overlay.js";
+
 
 /**
  * @brief Helper function for loaders to determine if a local point cloud file exists
@@ -108,4 +110,80 @@ export function applyRotation(obj, roll, pitch, yaw) {
   obj.rotation.setFromRotationMatrix(rotMat);
 
 
+}
+
+export async function writeFileToS3 (s3, bucket, name, subdirectory, filename, buffer) {
+  try {
+    const request = s3.putObject({
+      Bucket: bucket,
+      Key: `${name}/${subdirectory}/${filename}`,
+      Body: buffer
+    });
+    request.on("httpUploadProgress", async (e) => {
+      // await updateLoadingBar(e.loaded / e.total * 100)
+    });
+    await request.promise();
+    // incrementLoadingBarTotal(`${filename} uploaded`)
+  } catch (e) {
+    console.error("Error: could not write file to S3: ", e);
+  }
+}
+
+export async function createLanesFlatbuffer (lane, FlatbufferModule) {
+  const builder = new flatbuffers.Builder(0);
+
+  // Add left vec3s
+  FlatbufferModule.Flatbuffer.GroundTruth.Lane.startLeftVector(builder, lane.left.length);
+  for (const point of lane.left) {
+    FlatbufferModule.Flatbuffer.GroundTruth.Vec3.createVec3(builder, point.position.x, point.position.y, point.position.z);
+  }
+  const leftOffset = builder.endVector();
+
+  // Add right vec3s
+  FlatbufferModule.Flatbuffer.GroundTruth.Lane.startRightVector(builder, lane.right.length);
+  for (const point of lane.right) {
+    FlatbufferModule.Flatbuffer.GroundTruth.Vec3.createVec3(builder, point.position.x, point.position.y, point.position.z);
+  }
+  const rightOffset = builder.endVector();
+
+  // Add spine vec3s
+  FlatbufferModule.Flatbuffer.GroundTruth.Lane.startSpineVector(builder, lane.spine.length);
+  for (const point of lane.spine) {
+    FlatbufferModule.Flatbuffer.GroundTruth.Vec3.createVec3(builder, point.position.x, point.position.y, point.position.z);
+  }
+  const spineOffset = builder.endVector();
+
+  const timestampOffset = FlatbufferModule.Flatbuffer.GroundTruth.Lane.createTimestampVector(builder, lane.timestamp);
+  const laneTypeLeftOffset = FlatbufferModule.Flatbuffer.GroundTruth.Lane.createLaneTypeLeftVector(builder, lane.laneTypeLeft);
+  const laneTypeRightOffset = FlatbufferModule.Flatbuffer.GroundTruth.Lane.createLaneTypeLeftVector(builder, lane.laneTypeRight);
+  const leftPointValidityOffset = FlatbufferModule.Flatbuffer.GroundTruth.Lane.createLeftPointValidityVector(builder, lane.leftPointValidity);
+  const rightPointValidityOffset = FlatbufferModule.Flatbuffer.GroundTruth.Lane.createRightPointValidityVector(builder, lane.rightPointValidity);
+  const leftPointAnnotationStatusOffset = FlatbufferModule.Flatbuffer.GroundTruth.Lane.createLeftPointAnnotationStatusVector(builder, lane.leftPointAnnotationStatus);
+  const rightPointAnnotationStatusOffset = FlatbufferModule.Flatbuffer.GroundTruth.Lane.createRightPointAnnotationStatusVector(builder, lane.rightPointAnnotationStatus);
+
+  // Create lane flatbuffer
+  FlatbufferModule.Flatbuffer.GroundTruth.Lane.startLane(builder);
+  FlatbufferModule.Flatbuffer.GroundTruth.Lane.addId(builder, lane.id);
+  FlatbufferModule.Flatbuffer.GroundTruth.Lane.addTimestamp(builder, timestampOffset);
+  FlatbufferModule.Flatbuffer.GroundTruth.Lane.addLeft(builder, leftOffset);
+  FlatbufferModule.Flatbuffer.GroundTruth.Lane.addRight(builder, rightOffset);
+  FlatbufferModule.Flatbuffer.GroundTruth.Lane.addSpine(builder, spineOffset);
+  FlatbufferModule.Flatbuffer.GroundTruth.Lane.addLaneTypeLeft(builder, laneTypeLeftOffset);
+  FlatbufferModule.Flatbuffer.GroundTruth.Lane.addLaneTypeRight(builder, laneTypeRightOffset);
+  FlatbufferModule.Flatbuffer.GroundTruth.Lane.addLeftPointValidity(builder, leftPointValidityOffset);
+  FlatbufferModule.Flatbuffer.GroundTruth.Lane.addRightPointValidity(builder, rightPointValidityOffset);
+  FlatbufferModule.Flatbuffer.GroundTruth.Lane.addLeftPointAnnotationStatus(builder, leftPointAnnotationStatusOffset);
+  FlatbufferModule.Flatbuffer.GroundTruth.Lane.addRightPointAnnotationStatus(builder, rightPointAnnotationStatusOffset);
+
+  const newLane = FlatbufferModule.Flatbuffer.GroundTruth.Lane.endLane(builder);
+  builder.finish(newLane);
+  const bytes = builder.asUint8Array();
+  const lenBytes = new Uint8Array(4);
+  const dv = new DataView(lenBytes.buffer);
+  dv.setUint32(0, bytes.length, true);
+
+  const outbytes = new Int8Array(lenBytes.length + bytes.length);
+  outbytes.set(lenBytes);
+  outbytes.set(bytes, lenBytes.length);
+  return outbytes;
 }

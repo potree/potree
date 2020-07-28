@@ -83,12 +83,7 @@ export function createPlaybar () {
 
     const scalefactor = e.originalEvent.shiftKey ? 100 : 1;
 
-    let lidarRange = 1;
-    try {
-      // lidarRange = window.viewer.scene.pointclouds[0].pcoGeometry.nodes.r.gpsTime.range;
-      lidarRange = window.animationEngine.timeRange;
-    } catch (e) {
-    }
+    const lidarRange = window?.animationEngine?.timeRange;
     const dt = Math.sign(e.originalEvent.deltaY) * (tmin - tmax) * scalefactor;
     const sliderange = Number(slider.attr("max")) - Number(slider.attr("min"));
     const stepY = sliderange * dt / lidarRange;

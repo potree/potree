@@ -7,66 +7,65 @@ import { writeFileToS3, createLanesFlatbuffer } from "../demo/loaderUtilities.js
 const numberOrZero = (string) => {
   const value = Number(string);
   return isNaN(value) ? 0 : value;
-}
+};
 
 // sets up playbar in window
 export function createPlaybar () {
 
-    // Get HTML for Playbar:
-    const playbarhtml = $("#playbarhtml");
+  // Get HTML for Playbar:
+  const playbarhtml = $("#playbarhtml");
 
-    function updateTimeWindow(disable=false) {
+  function updateTimeWindow(disable=false) {
 
-      const lidarOffset = window.animationEngine.tstart;
-      const lidarRange = window.animationEngine.timeRange;
+    const lidarOffset = window.animationEngine.tstart;
+    const lidarRange = window.animationEngine.timeRange;
 
-      if (disable) {
-        // NOTE: is there a better way of disabling the gps clip range filter?
-        window.viewer.setFilterGPSTimeRange(lidarOffset-1, lidarOffset+lidarRange+1);
-        $( "#playbar_tmin" ).prop( "disabled", true ); //Disable
-        $( "#playbar_tmax" ).prop( "disabled", true ); //Disable
+    if (disable) {
+      // NOTE: is there a better way of disabling the gps clip range filter?
+      window.viewer.setFilterGPSTimeRange(lidarOffset-1, lidarOffset+lidarRange+1);
+      $( "#playbar_tmin" ).prop( "disabled", true ); //Disable
+      $( "#playbar_tmax" ).prop( "disabled", true ); //Disable
+    } else {
+      $( "#playbar_tmin" ).prop( "disabled", false ); //Enable
+      $( "#playbar_tmax" ).prop( "disabled", false ); //Enable
 
-      } else {
-        $( "#playbar_tmin" ).prop( "disabled", false ); //Enable
-        $( "#playbar_tmax" ).prop( "disabled", false ); //Enable
+      const sliderVal = $("#myRange").val() / 100.;
+      const t = sliderVal * lidarRange + lidarOffset;
+      $("#demo").html((t-lidarOffset).toFixed(4));
 
-        const sliderVal = $("#myRange").val() / 100.;
-        const t = sliderVal * lidarRange + lidarOffset;
-        $("#demo").html((t-lidarOffset).toFixed(4));
-
-        const dtMin = numberOrZero(window.animationEngine.activeWindow.backward);
-        const dtMax = numberOrZero(window.animationEngine.activeWindow.forward);
-        window.viewer.setFilterGPSTimeRange(t + dtMin, t + dtMax);
-      }
+      const dtMin = numberOrZero(window.animationEngine.activeWindow.backward);
+      const dtMax = numberOrZero(window.animationEngine.activeWindow.forward);
+      window.viewer.setFilterGPSTimeRange(t + dtMin, t + dtMax);
     }
+  }
 
-    const tmin = document.getElementById('playbar_tmin');
-    const tmax = document.getElementById('playbar_tmax');
+  const tmin = document.getElementById('playbar_tmin');
+  const tmax = document.getElementById('playbar_tmax');
 
-    // Initialize DOM element values from initial activeWindow values
-    tmin.value = window.animationEngine.activeWindow.backward;
-    tmin.max = window.animationEngine.activeWindow.forward;
-    tmin.step = window.animationEngine.activeWindow.step;
-    tmax.value = window.animationEngine.activeWindow.forward;
-    tmax.min = window.animationEngine.activeWindow.backward;
-    tmax.step = window.animationEngine.activeWindow.step;
+  // Initialize DOM element values from initial activeWindow values
+  tmin.value = window.animationEngine.activeWindow.backward;
+  tmin.max = window.animationEngine.activeWindow.forward;
+  tmin.step = window.animationEngine.activeWindow.step;
+  tmax.value = window.animationEngine.activeWindow.forward;
+  tmax.min = window.animationEngine.activeWindow.backward;
+  tmax.step = window.animationEngine.activeWindow.step;
 
-    tmin.addEventListener('input',
-                          () => {
-                            const min = numberOrZero(tmin.value);
-                            window.animationEngine.activeWindow.backward = min;
-                            tmax.min = min;
-                            updateTimeWindow();
-                            window.animationEngine.updateTimeForAll();
-                          });
+  tmin.addEventListener('input',
+    () => {
+      const min = numberOrZero(tmin.value);
+      window.animationEngine.activeWindow.backward = min;
+      tmax.min = min;
+      updateTimeWindow();
+      window.animationEngine.updateTimeForAll();
+    });
 
-    tmax.addEventListener('input',
-                          () => {
-                            const max = numberOrZero(tmax.value);
-                            window.animationEngine.activeWindow.forward = max;
-                            tmin.max = max;
-                            updateTimeWindow();
-                            window.animationEngine.updateTimeForAll();
+  tmax.addEventListener('input',
+    () => {
+      const max = numberOrZero(tmax.value);
+      window.animationEngine.activeWindow.forward = max;
+      tmin.max = max;
+      updateTimeWindow();
+      window.animationEngine.updateTimeForAll();
                           });
 
     function updateSlider(slideval) {

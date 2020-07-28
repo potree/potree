@@ -451,3 +451,24 @@ async function saveLaneChangesHelper (lane, FlatbufferModule) {
   lane.leftPointAnnotationStatus = Array.from({ length: leftLength }).map(x => 1);
   lane.rightPointAnnotationStatus = Array.from({ length: rightLength }).map(x => 1);
 }
+
+function updateSpine (left, right) {
+  // <script src="https://sdk.amazonaws.com/js/aws-sdk-2.283.1.min.js"></script>
+
+  AWS.config.update({ region: 'REGION' });
+  AWS.config.credentials = new AWS.CognitoIdentityCredentials({ IdentityPoolId: 'IDENTITY_POOL_ID' });
+  var lambda = new AWS.Lambda({ region: 'REGION', apiVersion: '2015-03-31' });
+
+  const params = {
+    left: left,
+    right: right
+  };
+
+  lambda.invoke(params, function(err, data) {
+    if (err) {
+      prompt(err);
+    } else {
+      return JSON.parse(data.Payload);
+    }
+  });
+}

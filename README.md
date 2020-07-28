@@ -48,46 +48,54 @@ Copy the converted directory into &lt;potreeDirectory&gt;/pointclouds/data_conve
 
 <table>
 	<tr>
-		<td>
-			<a href="http://potree.org/potree/examples/vr.html" target="_blank">
-				<img src="examples/thumbnails/vr.jpg" width="100%" />
+		<td style="padding: 0px">
+			<a href="http://potree.org/potree/examples/viewer.html" target="_blank">
+				<img src="examples/thumbnails/viewer.png" width="100%" />
 			</a>
 		</td><td>
-			<a href="http://potree.org/potree/examples/oriented_images.html" target="_blank">
-				<img src="examples/thumbnails/oriented_images.jpg" width="100%" />
+			<a href="http://potree.org/potree/examples/ca13.html" target="_blank">
+				<img src="examples/thumbnails/ca13.png" width="100%" />
 			</a>
 		</td><td>
-			<a href="http://potree.org/potree/examples/geopackage.html" target="_blank">
-				<img src="examples/thumbnails/geopackage.jpg" width="100%" />
+			<a href="http://potree.org/potree/examples/cesium_retz.html" target="_blank">
+				<img src="examples/thumbnails/cesium_retz.png" width="100%" />
 			</a>
 		</td><td>
 			<a href="http://potree.org/potree/examples/classifications.html" target="_blank">
 				<img src="examples/thumbnails/classifications.jpg" width="100%" />
 			</a>
 		</td><td>
-			<a href="http://potree.org/potree/examples/camera_animation.html" target="_blank">
-				<img src="examples/thumbnails/camera_animation.jpg" width="100%" />
+			<a href="http://potree.org/potree/examples/features_sorvilier.html" target="_blank">
+				<img src="examples/thumbnails/features_sorvilier.png" width="100%" />
 			</a>
 		</td><td>
-			<a href="http://potree.org/potree/examples/load_project.html" target="_blank">
-				<img src="examples/thumbnails/load_project.jpg" width="100%" />
+			<a href="http://potree.org/potree/examples/toolbar.html" target="_blank">
+				<img src="examples/thumbnails/toolbar.jpg" width="100%" />
 			</a>
 		</td>
 	</tr>
 	<tr>
-		<th>Virtual Reality</th><th>Oriented Images</th><th>Geopackage</th><th>Classifications</th><th>Camera Animation</th><th>Load Project</th>
-	</tr><tr>
+		<th>Basic Viewer</th><th>CA13 (18 billion Points)</th><th>Retz (Potree + Cesium)</th><th>Classifications</th><th>Various Features</th><th>Toolbar</th>
+	</tr>
+</table>
+
+<details>
+<summary>More Examples</summary>
+
+
+<table>
+	<tr>
 		<td>
-			<a href="http://potree.org/potree/examples/toolbar.html" target="_blank">
-				<img src="examples/thumbnails/toolbar.jpg" width="100%" />
+			<a href="http://potree.org/potree/examples/load_project.html" target="_blank">
+				<img src="examples/thumbnails/load_project.jpg" width="100%" />
 			</a>
 		</td><td>
 			<a href="http://potree.org/potree/examples/matcap.html" target="_blank">
 				<img src="examples/thumbnails/matcap.jpg" width="100%" />
 			</a>
 		</td><td>
-			<a href="http://potree.org/potree/examples/viewer.html" target="_blank">
-				<img src="examples/thumbnails/viewer.png" width="100%" />
+			<a href="http://potree.org/potree/examples/vr.html" target="_blank">
+				<img src="examples/thumbnails/vr.jpg" width="100%" />
 			</a>
 		</td><td>
 			<a href="http://potree.org/potree/examples/heidentor.html" target="_blank">
@@ -104,7 +112,7 @@ Copy the converted directory into &lt;potreeDirectory&gt;/pointclouds/data_conve
 		</td>
 	</tr>
 	<tr>
-		<th>Toolbar</th><th>Matcap</th><th>Basic Viewer</th><th>Heidentor</th><th>Lion</th><th>Lion LAS</th>
+		<th>Load Project</th><th>Matcap</th><th>Virtual Reality</th><th>Heidentor</th><th>Lion</th><th>Lion LAS</th>
 	</tr><tr>
 		<td>
 			<a href="http://potree.org/potree/examples/lion_laz.html" target="_blank">
@@ -127,13 +135,13 @@ Copy the converted directory into &lt;potreeDirectory&gt;/pointclouds/data_conve
 				<img src="examples/thumbnails/clipping_volume.png" width="100%" />
 			</a>
 		</td><td>
-			<a href="http://potree.org/potree/examples/ca13.html" target="_blank">
-				<img src="examples/thumbnails/ca13.png" width="100%" />
+			<a href="http://potree.org/potree/examples/oriented_images.html" target="_blank">
+				<img src="examples/thumbnails/oriented_images.jpg" width="100%" />
 			</a>
 		</td>
 	</tr>
 	<tr>
-		<th>Lion LAZ</th><th>EPT</th><th>EPT Binary</th><th>EPT zstandard</th><th>Clipping Volume</th><th>CA13</th>
+		<th>Lion LAZ</th><th>EPT</th><th>EPT Binary</th><th>EPT zstandard</th><th>Clipping Volume</th><th>Oriented Images</th>
 	</tr><tr>
 		<td>
 			<a href="http://potree.org/potree/examples/elevation_profile.html" target="_blank">
@@ -152,8 +160,8 @@ Copy the converted directory into &lt;potreeDirectory&gt;/pointclouds/data_conve
 				<img src="examples/thumbnails/multiple_point_clouds.png" width="100%" />
 			</a>
 		</td><td>
-			<a href="http://potree.org/potree/examples/features_sorvilier.html" target="_blank">
-				<img src="examples/thumbnails/features_sorvilier.png" width="100%" />
+			<a href="http://potree.org/potree/examples/camera_animation.html" target="_blank">
+				<img src="examples/thumbnails/camera_animation.jpg" width="100%" />
 			</a>
 		</td><td>
 			<a href="http://potree.org/potree/examples/features_ca13.html" target="_blank">
@@ -162,7 +170,7 @@ Copy the converted directory into &lt;potreeDirectory&gt;/pointclouds/data_conve
 		</td>
 	</tr>
 	<tr>
-		<th>Elevation Profile</th><th>Measurements</th><th>Meshes</th><th>Multiple Point Clouds</th><th>Features (Sorvilier)</th><th>Features (CA13)</th>
+		<th>Elevation Profile</th><th>Measurements</th><th>Meshes</th><th>Multiple Point Clouds</th><th>Camera Animation</th><th>Features (CA13)</th>
 	</tr><tr>
 		<td>
 			<a href="http://potree.org/potree/examples/annotations.html" target="_blank">
@@ -185,13 +193,13 @@ Copy the converted directory into &lt;potreeDirectory&gt;/pointclouds/data_conve
 				<img src="examples/thumbnails/cesium_ca13.png" width="100%" />
 			</a>
 		</td><td>
-			<a href="http://potree.org/potree/examples/cesium_retz.html" target="_blank">
-				<img src="examples/thumbnails/cesium_retz.png" width="100%" />
+			<a href="http://potree.org/potree/examples/geopackage.html" target="_blank">
+				<img src="examples/thumbnails/geopackage.jpg" width="100%" />
 			</a>
 		</td>
 	</tr>
 	<tr>
-		<th>Annotations</th><th>Hierarchical Annotations</th><th>Animation Path</th><th>Shapefiles</th><th>Cesium CA13</th><th>Cesium Retz</th>
+		<th>Annotations</th><th>Hierarchical Annotations</th><th>Animation Path</th><th>Shapefiles</th><th>Cesium CA13</th><th>Geopackage</th>
 	</tr><tr>
 		<td>
 			<a href="http://potree.org/potree/examples/cesium_sorvilier.html" target="_blank">
@@ -215,6 +223,7 @@ Copy the converted directory into &lt;potreeDirectory&gt;/pointclouds/data_conve
 		<th>Cesium Sorvilier</th><th>Custom Sidebar Section</th><th>Embedded Iframe</th><th>Gradient Colors</th>
 	</tr>
 </table>
+</details>
 
 # Funding
 

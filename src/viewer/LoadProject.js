@@ -18,7 +18,15 @@ function loadPointCloud(viewer, data){
 
 			if(data.material.ranges != null){
 				for(let range of data.material.ranges){
-					target.setRange(range.name, range.value);
+
+					if(range.name === "elevationRange"){
+						target.elevationRange = range.value;
+					}else if(range.name === "intensityRange"){
+						target.intensityRange = range.value;
+					}else{
+						target.setRange(range.name, range.value);
+					}
+
 				}
 			}
 
@@ -238,59 +246,38 @@ function loadAnnotations(viewer, data){
 		return;
 	}
 
-	// const findDuplicate = (item) => {
+	const findDuplicate = (item) => {
 
-	// 	let duplicate = null;
+		let duplicate = null;
 
-	// 	viewer.scene.annotations.traverse( a => {
-	// 		if(a.uuid === item.uuid){
-	// 			duplicate = a;
-	// 		}
-	// 	});
+		viewer.scene.annotations.traverse( a => {
+			if(a.uuid === item.uuid){
+				duplicate = a;
+			}
+		});
 
-	// 	return duplicate;
-	// };
+		return duplicate;
+	};
 
-	// const traverse = (item, parent) => {
+	const traverse = (item, parent) => {
 
-	// 	const duplicate = findDuplicate(item);
-	// 	if(duplicate){
-	// 		return;
-	// 	}
-
-	// 	const annotation = loadAnnotationItem(item);
-
-	// 	for(const childItem of item.children){
-	// 		traverse(childItem, annotation);
-	// 	}
-
-	// 	parent.add(annotation);
-
-	// };
-
-	// for(const item of data.items){
-	// 	traverse(item, viewer.scene.annotations);
-	// 	// viewer.scene.annotations.add(annotation);
-	// }
-
-
-
-	const {items, hierarchy} = data;
-
-	const existingAnnotations = [];
-	viewer.scene.annotations.traverseDescendants(annotation => {
-		existingAnnotations.push(annotation);
-	});
-
-	for(const item of items){
-
-		const duplicate = existingAnnotations.find(ann => ann.uuid === item.uuid);
+		const duplicate = findDuplicate(item);
 		if(duplicate){
-			continue;
+			return;
 		}
 
 		const annotation = loadAnnotationItem(item);
-		viewer.scene.annotations.add(annotation);
+
+		for(const childItem of item.children){
+			traverse(childItem, annotation);
+		}
+
+		parent.add(annotation);
+
+	};
+
+	for(const item of data){
+		traverse(item, viewer.scene.annotations);
 	}
 
 }

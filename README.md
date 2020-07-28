@@ -1,30 +1,26 @@
 
+
 # About
 
-Potree is a free open-source WebGL based point cloud renderer for large point clouds. It is based on the [TU Wien Scanopy project](https://www.cg.tuwien.ac.at/research/projects/Scanopy/) and research projects [Harvest4D](https://harvest4d.org/), [GCD Doctoral College](https://gcd.tuwien.ac.at/) and [Superhumans](https://www.cg.tuwien.ac.at/research/projects/Superhumans/).
-
-
+* Potree is a free open-source WebGL based point cloud renderer for large point clouds. It is based on the [TU Wien Scanopy project](https://www.cg.tuwien.ac.at/research/projects/Scanopy/) and research projects [Harvest4D](https://harvest4d.org/), [GCD Doctoral College](https://gcd.tuwien.ac.at/) and [Superhumans](https://www.cg.tuwien.ac.at/research/projects/Superhumans/).
+* Newest information and work in progress is usually available on [twitter](https://twitter.com/m_schuetz)
+* Contact: Markus Schütz (mschuetz@potree.org)
+* Reference: [Potree: Rendering Large Point Clouds in Web Browsers](https://www.cg.tuwien.ac.at/research/publications/2016/SCHUETZ-2016-POT/SCHUETZ-2016-POT-thesis.pdf)
 <a href="http://potree.org/wp/demo/" target="_blank"> ![](./docs/images/potree_screens.png) </a>
-
-Newest information and work in progress is usually available on [twitter](https://twitter.com/m_schuetz)
-
-Contact: Markus Schütz (mschuetz@potree.org)
-
-Reference: [Potree: Rendering Large Point Clouds in Web Browsers](https://www.cg.tuwien.ac.at/research/publications/2016/SCHUETZ-2016-POT/SCHUETZ-2016-POT-thesis.pdf)
 
 # Getting Started
 
-### Build and Run
+### Install
 
 Install [node.js](http://nodejs.org/)
 
-Install all dependencies, as specified in package.json: 
+Install dependencies, as specified in package.json, and create a build in ./build/potree.
 
 ```bash
 npm install
 ```
 
-Use `npm run build` to create ./build/potree.
+### Run
 
 Use the `npm start` command to 
 
@@ -34,7 +30,7 @@ Use the `npm start` command to
 
 Go to http://localhost:1234/examples/ to test the examples.
 
-### Convert
+### Convert Point Clouds to Potree Format
 
 Download [PotreeConverter](https://github.com/potree/PotreeConverter) and run it like this:
 
@@ -294,6 +290,9 @@ We would like to thank our sponsors for their financial contributions that keep 
 			€ 1,000+
 		</th>
 		<td>
+			<a href="https://biology.anu.edu.au/research/facilities/australian-plant-phenomics-facility-anu">
+				<img src="docs/sponsors/APPF full logo.png" height="60"/> &nbsp;
+			</a>
 			<a href="http://www.helimap.com/">
 				<img src="docs/sponsors/helimap.gif" height="60"/> &nbsp;
 			</a>

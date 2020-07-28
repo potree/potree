@@ -30,6 +30,7 @@ import {DeviceOrientationControls} from "../navigation/DeviceOrientationControls
 import { EventDispatcher } from "../EventDispatcher.js";
 import { ClassificationScheme } from "../materials/ClassificationScheme.js";
 
+import JSON5 from "../../libs/json5-2.1.3/json5.mjs";
 
 
 export class Viewer extends EventDispatcher{
@@ -925,7 +926,8 @@ export class Viewer extends EventDispatcher{
 
 		const response = await fetch(url);
 	
-		const json = await response.json();
+		const text = await response.text();
+		const json = JSON5.parse(text);
 		// const json = JSON.parse(text);
 
 		if(json.type === "Potree"){

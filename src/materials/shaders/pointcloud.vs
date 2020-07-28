@@ -245,30 +245,6 @@ float getLOD(){
 			float lodOffset = (255.0 * value.a) / 10.0 - 10.0;
 
 			return depth  + lodOffset;
-
-			// if(255.0 * value.a < 4.0){
-			// 	return depth - 0.5;
-			// }if(255.0 * value.a < 12.0){
-			// 	return depth;
-			// }else if(255.0 * value.a < 24.0){
-			// 	return depth + 1.0;
-			// }else if(255.0 * value.a < 48.0){
-			// 	return depth + 1.5;
-			// }else{
-			// 	return depth + 2.0;
-			// }
-
-			// return depth;
-
-			// test
-			// bool isLeaf = value.a > 0.0;
-
-			// if(isLeaf){
-			// 	return 1000.0;
-			// }else{
-			// 	//return value.a * 255.0;
-			// 	return depth;
-			// }
 		}
 		
 		offset = offset + (vec3(1.0, 1.0, 1.0) * nodeSizeAtLevel * 0.5) * index3d;

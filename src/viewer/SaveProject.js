@@ -13,6 +13,19 @@ function createPointcloudData(pointcloud) {
 		});
 	}
 
+	if(typeof material.elevationRange[0] === "number"){
+		ranges.push({
+			name: "elevationRange",
+			value: material.elevationRange,
+		});
+	}
+	if(typeof material.intensityRange[0] === "number"){
+		ranges.push({
+			name: "intensityRange",
+			value: material.intensityRange,
+		});
+	}
+
 	let pointSizeTypeName = Object.entries(Potree.PointSizeType).find(e => e[1] === material.pointSizeType)[0];
 
 	let jsonMaterial = {

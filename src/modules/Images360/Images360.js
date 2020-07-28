@@ -86,11 +86,12 @@ export class Images360 extends EventDispatcher{
 			return;
 		}
 
+
 		for(const image of this.images){
-			image.mesh.visible = visible;
-			// image.line.visible = visible;
+			image.mesh.visible = visible && (this.focusedImage == null);
 		}
 
+		this.sphere.visible = visible && (this.focusedImage != null);
 		this._visible = visible;
 		this.dispatchEvent({
 			type: "visibility_changed",

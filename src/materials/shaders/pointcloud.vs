@@ -17,6 +17,9 @@ attribute float spacing;
 attribute float gpsTime;
 attribute vec3 originalRtkPosition;
 attribute vec3 originalRtkOrientation;
+attribute float dualDistance;
+attribute float dualReflectivity;
+attribute float confidence;
 
 uniform vec3 currentRtkPosition;
 uniform vec3 currentRtkOrientation;
@@ -114,6 +117,9 @@ uniform float wElevation;
 uniform float wClassification;
 uniform float wReturnNumber;
 uniform float wSourceID;
+uniform float wDualDistance;
+uniform float wDualReflectivity;
+uniform float wConfidence;
 
 uniform vec3 uShadowColor;
 
@@ -581,6 +587,31 @@ vec3 getSourceID(){
 	return texture2D(gradient, vec2(w,1.0 - w)).rgb;
 }
 
+vec3 getDualDistance(){
+	if (dualDistance == 0.0) {
+		return vec3(0.19, 0.49, 0.65);
+	} else if (dualDistance == 1.0) {
+		return vec3(0.5, 0.5, 0.5);
+	} else if (dualDistance == 2.0) {
+		return vec3(0.44, 0.15, 0.15);
+	}
+}
+
+vec3 getDualReflectivity(){
+	if (dualReflectivity == 0.0) {
+		return vec3(0.5, 0.1, 0.7);
+	} else if (dualDistance == 1.0) {
+		return vec3(0.5, 0.5, 0.5);
+	} else if (dualDistance == 2.0) {
+		return vec3(1.0, 0.9, 0.0);
+	}
+}
+
+vec3 getConfidence(){
+	float w = confidence / 7.0;
+	return texture2D(gradient, vec2(w,1.0-w)).rgb;
+}
+
 vec3 getCompositeColor(vec4 correctedPosition){
 	vec3 c;
 	float w;
@@ -600,6 +631,15 @@ vec3 getCompositeColor(vec4 correctedPosition){
 	c += wSourceID * getSourceID();
 	w += wSourceID;
 
+	c += wDualDistance * getDualDistance();
+	w += wDualDistance;
+
+	c += wDualReflectivity * getDualReflectivity();
+	w += wDualReflectivity;
+
+	c += wConfidence * getConfidence();
+	w += wConfidence;
+
 	vec4 cl = wClassification * getClassification();
     c += cl.a * cl.rgb;
 	w += wClassification * cl.a;
@@ -613,7 +653,6 @@ vec3 getCompositeColor(vec4 correctedPosition){
 
 	return c;
 }
-
 
 //
 //  ######  ##       #### ########  ########  #### ##    ##  ######
@@ -671,6 +710,12 @@ vec3 getColor(vec4 correctedPosition){
 		color = color;
 	#elif defined color_type_composite
 		color = getCompositeColor(correctedPosition);
+	#elif defined color_type_dual_distance
+		color = getDualDistance();
+	#elif defined color_type_dual_reflectivity
+		color = getDualReflectivity();
+	#elif defined color_type_confidence
+		color = getConfidence();
 	#endif
 
 	return color;

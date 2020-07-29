@@ -124,6 +124,9 @@ export class PropertiesPanel{
 					<li>Classification: <span id="lblWeightClassification"></span> <div id="sldWeightClassification"></div>	</li>
 					<li>Return Number: <span id="lblWeightReturnNumber"></span> <div id="sldWeightReturnNumber"></div>	</li>
 					<li>Source ID: <span id="lblWeightSourceID"></span> <div id="sldWeightSourceID"></div>	</li>
+					<li>Dual Distance: <span id="lblWeightDualDistance"></span> <div id="sldWeightDualDistance"></div>	</li>
+					<li>Dual Reflectivity: <span id="lblWeightDualReflectivity"></span> <div id="sldWeightDualReflectivity"></div>	</li>
+					<li>Confidence: <span id="lblWeightConfidence"></span> <div id="sldWeightConfidence"></div>	</li>
 				</div>
 
 				<div id="materials.rgb_container">
@@ -207,6 +210,28 @@ export class PropertiesPanel{
 					</div>
 				</div>
 
+				<div id="materials.dual_distance_container">
+					<div class="divider">
+						<span>Dual Distance</span>
+					</div>
+				</div>
+
+				<div id="materials.dual_reflectivity_container">
+					<div class="divider">
+						<span>Dual Reflectivity</span>
+					</div>
+				</div>
+
+				<div id="materials.confidence_container">
+					<div class="divider">
+						<span>Confidence</span>
+					</div>
+
+					<li>
+						<span>Gradient Scheme:</span>
+						<div id="confidence_gradient_scheme_selection" style="display: flex"/>
+					</li>
+				</div>
 
 				</ul>
 			</div>
@@ -308,6 +333,9 @@ export class PropertiesPanel{
 				'GPS Time',
 				'Index',
 				'Level of Detail',
+				'Dual Distance',
+				'Dual Reflectivity',
+				'Confidence',
 				'Composite'
 			];
 
@@ -328,6 +356,9 @@ export class PropertiesPanel{
 				let blockIntensity = $('#materials\\.intensity_container');
 				let blockIndex = $('#materials\\.index_container');
 				let blockTransition = $('#materials\\.transition_container');
+				let blockDualDistance = $('#materials\\.dual_distance_container');
+				let blockDualReflectivity = $('#materials\\.dual_reflectivity_container');
+				let blockConfidence = $('#materials\\.confidence_container');
 
 				blockIndex.css('display', 'none');
 				blockIntensity.css('display', 'none');
@@ -336,6 +367,9 @@ export class PropertiesPanel{
 				blockColor.css('display', 'none');
 				blockWeights.css('display', 'none');
 				blockTransition.css('display', 'none');
+				blockDualDistance.css('display', 'none');
+				blockDualReflectivity.css('display', 'none');
+				blockConfidence.css('display', 'none');
 
 				if (selectedValue === 'Composite') {
 					blockWeights.css('display', 'block');
@@ -357,6 +391,12 @@ export class PropertiesPanel{
 					blockIntensity.css('display', 'block');
 				} else if (selectedValue === "Index" ){
 					blockIndex.css('display', 'block');
+				} else if (selectedValue === 'Dual Distance') {
+					blockDualDistance.css('display', 'block');
+				} else if (selectedValue === 'Dual Reflectivity') {
+					blockDualReflectivity.css('display', 'block');
+				} else if (selectedValue === 'Confidence') {
+					blockConfidence.css('display', 'block');
 				}
                                 window.animationEngine.updateTimeForAll();
 			};
@@ -382,6 +422,7 @@ export class PropertiesPanel{
 			];
 
 			let elSchemeContainer = panel.find("#elevation_gradient_scheme_selection");
+			let confSchemeContainer = panel.find("#confidence_gradient_scheme_selection");
 
 			for(let scheme of schemes){
 				let elScheme = $(`
@@ -394,7 +435,18 @@ export class PropertiesPanel{
 					material.gradient = Gradients[scheme.name];
 				});
 
+				let confScheme = $(`
+				<span style="flex-grow: 1;">
+					<img src="${scheme.icon}" class="button-icon" style="max-width: 100%" />
+				</span>
+			`	);
+
+				confScheme.click( () => {
+					material.gradient = Gradients[scheme.name];
+				});
+
 				elSchemeContainer.append(elScheme);
+				confSchemeContainer.append(confScheme);
 			}
 
 			//panel.find("#gradient_spectral").click( () => {
@@ -498,6 +550,24 @@ export class PropertiesPanel{
 				value: material.weightSourceID,
 				min: 0, max: 1, step: 0.01,
 				slide: (event, ui) => {material.weightSourceID = ui.value}
+			});
+
+			panel.find('#sldWeightDualDistance').slider({
+				value: material.weightDualDistance,
+				min: 0, max: 1, step: 0.01,
+				slide: (event, ui) => {material.weightDualDistance = ui.value}
+			});
+
+			panel.find('#sldWeightDualReflectivity').slider({
+				value: material.weightDualReflectivity,
+				min: 0, max: 1, step: 0.01,
+				slide: (event, ui) => {material.weightDualReflectivity = ui.value}
+			});
+
+			panel.find('#sldWeightConfidence').slider({
+				value: material.weightConfidence,
+				min: 0, max: 1, step: 0.01,
+				slide: (event, ui) => {material.weightConfidence = ui.value}
 			});
 
 			panel.find(`#materials\\.color\\.picker`).spectrum({

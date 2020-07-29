@@ -7,6 +7,8 @@ import {Points} from "../Points.js";
 import {CSVExporter} from "../exporter/CSVExporter.js";
 import {LASExporter} from "../exporter/LASExporter.js";
 import { EventDispatcher } from "../EventDispatcher.js";
+import {unpackDual} from "../../schemas/Lidar_functions.js";
+import {unpackConfidence} from "../../schemas/Lidar_functions.js";
 
 class ProfilePointCloudEntry{
 
@@ -69,7 +71,8 @@ class ProfilePointCloudEntry{
 				classification: new Uint8Array(batchSize),
 				returnNumber: new Uint8Array(batchSize),
 				numberOfReturns: new Uint8Array(batchSize),
-				pointSourceID: new Uint16Array(batchSize)
+				pointSourceID: new Uint16Array(batchSize),
+				dualPlusConfidence: new Uint16Array(batchSize)
 			};
 
 			geometry.addAttribute('position', new THREE.BufferAttribute(buffers.position, 3));
@@ -79,6 +82,13 @@ class ProfilePointCloudEntry{
 			geometry.addAttribute('returnNumber', new THREE.BufferAttribute(buffers.returnNumber, 1, false));
 			geometry.addAttribute('numberOfReturns', new THREE.BufferAttribute(buffers.numberOfReturns, 1, false));
 			geometry.addAttribute('pointSourceID', new THREE.BufferAttribute(buffers.pointSourceID, 1, false));
+
+			let dualDistance = new Uint8Array(dualPlusConfidence.map(function(DPC) { return unpackDual(DPC).distFlag }));
+			let dualReflectivity = new Uint8Array(dualPlusConfidence.map(function(DPC) { return unpackDual(DPC).intenFlag }));
+			let confidence = new Uint8Array(dualPlusConfidence.map(function(DPC) { return unpackConfidence(DPC).confidence }));
+			geometry.addAttribute('dualDistance', new THREE.BufferAttribute(dualDistance, 1));
+			geometry.addAttribute('dualReflectivity', new THREE.BufferAttribute(dualReflectivity, 1));
+			geometry.addAttribute('confidence', new THREE.BufferAttribute(confidence, 1));
 
 			geometry.drawRange.start = 0;
 			geometry.drawRange.count = 0;
@@ -164,6 +174,12 @@ class ProfilePointCloudEntry{
 
 				if(data.data.pointSourceID){
 					attributes.pointSourceID.array[currentIndex] = data.data.pointSourceID[i];
+				}
+
+				if(data.data.dualPlusConfidence){
+					attributes.dualDistance.array[currentIndex] = unpackDual(data.data.dualPlusConfidence[i]).distFlag;
+					attributes.dualReflectivity.array[currentIndex] = unpackDual(data.data.dualPlusConfidence[i]).intenFlag;
+					attributes.confidence.array[currentIndex] = unpackDual(data.data.dualPlusConfidence[i]).confidence;
 				}
 
 				updateRange.count++;
@@ -805,7 +821,9 @@ export class ProfileWindow extends EventDispatcher {
 				material.uniforms.wClassification.value = pointcloud.material.uniforms.wClassification.value;
 				material.uniforms.wReturnNumber.value = pointcloud.material.uniforms.wReturnNumber.value;
 				material.uniforms.wSourceID.value = pointcloud.material.uniforms.wSourceID.value;
-
+				material.uniforms.wDualDistance.value = pointcloud.material.uniforms.wDualDistance.value;
+				material.uniforms.wDualReflectivity.value = pointcloud.material.uniforms.wDualReflectivity.value;
+				material.uniforms.wConfidence.value = pointcloud.material.uniforms.wConfidence.value;
 			}
 
 			this.pickSphere.visible = true;

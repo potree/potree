@@ -66,7 +66,10 @@ export class PointCloudMaterial extends THREE.RawShaderMaterial {
 			returnNumber: { type: 'f', value: [] },
 			numberOfReturns: { type: 'f', value: [] },
 			pointSourceID: { type: 'f', value: [] },
-			indices: { type: 'fv', value: [] }
+			indices: { type: 'fv', value: [] },
+			dualDistance: { type: 'f', value: [] },
+			dualReflectivity: { type: 'f', value: [] },
+			confidence: { type: 'f', value: [] }
 		};
 
 		this.uniforms = {
@@ -124,6 +127,9 @@ export class PointCloudMaterial extends THREE.RawShaderMaterial {
 			wClassification:	{ type: "f", value: 0 },
 			wReturnNumber:		{ type: "f", value: 0 },
 			wSourceID:			{ type: "f", value: 0 },
+			wDualDistance:		{ type: "f", value: 0 },
+			wDualReflectivity:	{ type: "f", value: 0 },
+			wConfidence:		{ type: "f", value: 0 },
 			useOrthographicCamera: { type: "b", value: false },
 			clipTask:			{ type: "i", value: 1 },
 			clipMethod:			{ type: "i", value: 1 },
@@ -298,6 +304,12 @@ export class PointCloudMaterial extends THREE.RawShaderMaterial {
 			defines.push('#define color_type_gpstime');
 		} else if (this._pointColorType === PointColorType.COMPOSITE) {
 			defines.push('#define color_type_composite');
+		} else if (this._pointColorType === PointColorType.DUAL_DISTANCE) {
+			defines.push('#define color_type_dual_distance');
+		} else if (this._pointColorType === PointColorType.DUAL_REFLECTIVITY) {
+			defines.push('#define color_type_dual_reflectivity');
+		} else if (this._pointColorType === PointColorType.CONFIDENCE) {
+			defines.push('#define color_type_confidence');
 		}
 
 		if(this._treeType === TreeType.OCTREE){
@@ -944,6 +956,48 @@ export class PointCloudMaterial extends THREE.RawShaderMaterial {
 	set weightSourceID (value) {
 		if(this.uniforms.wSourceID.value !== value){
 			this.uniforms.wSourceID.value = value;
+			this.dispatchEvent({
+				type: 'material_property_changed',
+				target: this
+			});
+		}
+	}
+
+	get weightDualDistance () {
+		return this.uniforms.wDualDistance.value;
+	}
+
+	set weightDualDistance (value) {
+		if(this.uniforms.wDualDistance.value !== value){
+			this.uniforms.wDualDistance.value = value;
+			this.dispatchEvent({
+				type: 'material_property_changed',
+				target: this
+			});
+		}
+	}
+
+	get weightDualReflectivity () {
+		return this.uniforms.wDualReflectivity.value;
+	}
+
+	set weightDualReflectivity (value) {
+		if(this.uniforms.wDualReflectivity.value !== value){
+			this.uniforms.wDualReflectivity.value = value;
+			this.dispatchEvent({
+				type: 'material_property_changed',
+				target: this
+			});
+		}
+	}
+
+	get weightConfidence () {
+		return this.uniforms.wConfidence.value;
+	}
+
+	set weightConfidence (value) {
+		if(this.uniforms.wConfidence.value !== value){
+			this.uniforms.wConfidence.value = value;
 			this.dispatchEvent({
 				type: 'material_property_changed',
 				target: this

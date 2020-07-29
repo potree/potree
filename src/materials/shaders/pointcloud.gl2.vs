@@ -16,6 +16,9 @@ in float pointSourceID;
 in vec4 indices;
 in float spacing;
 in float gpsTime;
+in float dualDistance;
+in float dualReflectivity;
+in float confidence;
 
 uniform mat4 modelMatrix;
 uniform mat4 modelViewMatrix;
@@ -105,6 +108,9 @@ uniform float wElevation;
 uniform float wClassification;
 uniform float wReturnNumber;
 uniform float wSourceID;
+uniform float wDualDistance;
+uniform float wDualReflectivity;
+uniform float wConfidence;
 
 uniform vec3 uShadowColor;
 
@@ -452,6 +458,36 @@ vec3 getSourceID(){
 	return texture(gradient, vec2(w,1.0 - w)).rgb;
 }
 
+// [0.0, 1.0, 2.0] -> [low/near, single, high/far]
+// they are mapped to colors that match veloview
+// roughly blue, grey, red for dual distance
+// roughly purple, grey, yellow for dual reflectivity
+
+vec3 getDualDistance(){
+	if (dualDistance == 0.0) {
+		return vec3(0.19, 0.49, 0.65);
+	} else if (dualDistance == 1.0) {
+		return vec3(0.5, 0.5, 0.5);
+	} else if (dualDistance == 2.0) {
+		return vec3(0.44, 0.15, 0.15);
+	}
+}
+
+vec3 getDualReflectivity(){
+	if (dualReflectivity == 0.0) {
+		return vec3(0.5, 0.1, 0.7);
+	} else if (dualReflectivity == 1.0) {
+		return vec3(0.5, 0.5, 0.5);
+	} else if (dualReflectivity == 2.0) {
+		return vec3(1.0, 0.9, 0.0);
+	}
+}
+
+vec3 getConfidence(){
+	float w = confidence / 7.0;
+	return texture(gradient, vec2(w,1.0-w)).rgb;
+}
+
 vec3 getCompositeColor(){
 	vec3 c;
 	float w;
@@ -470,6 +506,15 @@ vec3 getCompositeColor(){
 	
 	c += wSourceID * getSourceID();
 	w += wSourceID;
+
+	c += wDualDistance * getDualDistance();
+	w += wDualDistance;
+
+	c += wDualReflectivity * getDualReflectivity();
+	w += wDualReflectivity;
+
+	c += wConfidence * getConfidence();
+	w += wConfidence;
 	
 	vec4 cl = wClassification * getClassification();
     c += cl.a * cl.rgb;
@@ -484,7 +529,6 @@ vec3 getCompositeColor(){
 	
 	return c;
 }
-
 
 // 
 //  ######  ##       #### ########  ########  #### ##    ##  ######   
@@ -542,6 +586,12 @@ vec3 getColor(){
 		color = color;
 	#elif defined color_type_composite
 		color = getCompositeColor();
+	#elif defined color_type_dual_distance
+		color = getDualDistance();
+	#elif defined color_type_dual_reflectivity 
+		color = getDualReflectivity();
+	#elif defined color_type_confidence
+		color = getConfidence();
 	#endif
 	
 	return color;

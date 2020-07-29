@@ -15,6 +15,185 @@ Flatbuffer.LIDAR = Flatbuffer.LIDAR || {};
 /**
  * @constructor
  */
+Flatbuffer.LIDAR.RtkPose = function() {
+  /**
+   * @type {flatbuffers.ByteBuffer}
+   */
+  this.bb = null;
+
+  /**
+   * @type {number}
+   */
+  this.bb_pos = 0;
+};
+
+/**
+ * @param {number} i
+ * @param {flatbuffers.ByteBuffer} bb
+ * @returns {Flatbuffer.LIDAR.RtkPose}
+ */
+Flatbuffer.LIDAR.RtkPose.prototype.__init = function(i, bb) {
+  this.bb_pos = i;
+  this.bb = bb;
+  return this;
+};
+
+/**
+ * @returns {number}
+ */
+Flatbuffer.LIDAR.RtkPose.prototype.x = function() {
+  return this.bb.readFloat64(this.bb_pos);
+};
+
+/**
+ * @param {number} value
+ * @returns {boolean}
+ */
+Flatbuffer.LIDAR.RtkPose.prototype.mutate_x = function(value) {
+  var offset = this.bb.__offset(this.bb_pos, 0);
+
+  if (offset === 0) {
+    return false;
+  }
+
+  this.bb.writeFloat64(this.bb_pos + offset, value);
+  return true;
+};
+
+/**
+ * @returns {number}
+ */
+Flatbuffer.LIDAR.RtkPose.prototype.y = function() {
+  return this.bb.readFloat64(this.bb_pos + 8);
+};
+
+/**
+ * @param {number} value
+ * @returns {boolean}
+ */
+Flatbuffer.LIDAR.RtkPose.prototype.mutate_y = function(value) {
+  var offset = this.bb.__offset(this.bb_pos, 8);
+
+  if (offset === 0) {
+    return false;
+  }
+
+  this.bb.writeFloat64(this.bb_pos + offset, value);
+  return true;
+};
+
+/**
+ * @returns {number}
+ */
+Flatbuffer.LIDAR.RtkPose.prototype.z = function() {
+  return this.bb.readFloat64(this.bb_pos + 16);
+};
+
+/**
+ * @param {number} value
+ * @returns {boolean}
+ */
+Flatbuffer.LIDAR.RtkPose.prototype.mutate_z = function(value) {
+  var offset = this.bb.__offset(this.bb_pos, 16);
+
+  if (offset === 0) {
+    return false;
+  }
+
+  this.bb.writeFloat64(this.bb_pos + offset, value);
+  return true;
+};
+
+/**
+ * @returns {number}
+ */
+Flatbuffer.LIDAR.RtkPose.prototype.roll = function() {
+  return this.bb.readFloat64(this.bb_pos + 24);
+};
+
+/**
+ * @param {number} value
+ * @returns {boolean}
+ */
+Flatbuffer.LIDAR.RtkPose.prototype.mutate_roll = function(value) {
+  var offset = this.bb.__offset(this.bb_pos, 24);
+
+  if (offset === 0) {
+    return false;
+  }
+
+  this.bb.writeFloat64(this.bb_pos + offset, value);
+  return true;
+};
+
+/**
+ * @returns {number}
+ */
+Flatbuffer.LIDAR.RtkPose.prototype.pitch = function() {
+  return this.bb.readFloat64(this.bb_pos + 32);
+};
+
+/**
+ * @param {number} value
+ * @returns {boolean}
+ */
+Flatbuffer.LIDAR.RtkPose.prototype.mutate_pitch = function(value) {
+  var offset = this.bb.__offset(this.bb_pos, 32);
+
+  if (offset === 0) {
+    return false;
+  }
+
+  this.bb.writeFloat64(this.bb_pos + offset, value);
+  return true;
+};
+
+/**
+ * @returns {number}
+ */
+Flatbuffer.LIDAR.RtkPose.prototype.yaw = function() {
+  return this.bb.readFloat64(this.bb_pos + 40);
+};
+
+/**
+ * @param {number} value
+ * @returns {boolean}
+ */
+Flatbuffer.LIDAR.RtkPose.prototype.mutate_yaw = function(value) {
+  var offset = this.bb.__offset(this.bb_pos, 40);
+
+  if (offset === 0) {
+    return false;
+  }
+
+  this.bb.writeFloat64(this.bb_pos + offset, value);
+  return true;
+};
+
+/**
+ * @param {flatbuffers.Builder} builder
+ * @param {number} x
+ * @param {number} y
+ * @param {number} z
+ * @param {number} roll
+ * @param {number} pitch
+ * @param {number} yaw
+ * @returns {flatbuffers.Offset}
+ */
+Flatbuffer.LIDAR.RtkPose.createRtkPose = function(builder, x, y, z, roll, pitch, yaw) {
+  builder.prep(8, 48);
+  builder.writeFloat64(yaw);
+  builder.writeFloat64(pitch);
+  builder.writeFloat64(roll);
+  builder.writeFloat64(z);
+  builder.writeFloat64(y);
+  builder.writeFloat64(x);
+  return builder.offset();
+};
+
+/**
+ * @constructor
+ */
 Flatbuffer.LIDAR.Point = function() {
   /**
    * @type {flatbuffers.ByteBuffer}
@@ -171,6 +350,58 @@ Flatbuffer.LIDAR.Point.prototype.mutate_beamID = function(value) {
 };
 
 /**
+ * @returns {number}
+ */
+Flatbuffer.LIDAR.Point.prototype.dualPlusConfidence = function() {
+  return this.bb.readUint16(this.bb_pos + 42);
+};
+
+/**
+ * @param {number} value
+ * @returns {boolean}
+ */
+Flatbuffer.LIDAR.Point.prototype.mutate_dualPlusConfidence = function(value) {
+  var offset = this.bb.__offset(this.bb_pos, 42);
+
+  if (offset === 0) {
+    return false;
+  }
+
+  this.bb.writeUint16(this.bb_pos + offset, value);
+  return true;
+};
+
+/**
+ * @returns {number}
+ */
+Flatbuffer.LIDAR.Point.prototype.dualReturnMatching = function() {
+  return this.bb.readUint32(this.bb_pos + 44);
+};
+
+/**
+ * @param {number} value
+ * @returns {boolean}
+ */
+Flatbuffer.LIDAR.Point.prototype.mutate_dualReturnMatching = function(value) {
+  var offset = this.bb.__offset(this.bb_pos, 44);
+
+  if (offset === 0) {
+    return false;
+  }
+
+  this.bb.writeUint32(this.bb_pos + offset, value);
+  return true;
+};
+
+/**
+ * @param {Flatbuffer.LIDAR.RtkPose=} obj
+ * @returns {Flatbuffer.LIDAR.RtkPose|null}
+ */
+Flatbuffer.LIDAR.Point.prototype.rtkPose = function(obj) {
+  return (obj || new Flatbuffer.LIDAR.RtkPose).__init(this.bb_pos + 48, this.bb);
+};
+
+/**
  * @param {flatbuffers.Builder} builder
  * @param {number} x
  * @param {number} y
@@ -178,11 +409,28 @@ Flatbuffer.LIDAR.Point.prototype.mutate_beamID = function(value) {
  * @param {number} intensity
  * @param {number} timestamp
  * @param {number} beamID
+ * @param {number} dualPlusConfidence
+ * @param {number} dualReturnMatching
+ * @param {number} rtkPose_x
+ * @param {number} rtkPose_y
+ * @param {number} rtkPose_z
+ * @param {number} rtkPose_roll
+ * @param {number} rtkPose_pitch
+ * @param {number} rtkPose_yaw
  * @returns {flatbuffers.Offset}
  */
-Flatbuffer.LIDAR.Point.createPoint = function(builder, x, y, z, intensity, timestamp, beamID) {
+Flatbuffer.LIDAR.Point.createPoint = function(builder, x, y, z, intensity, timestamp, beamID, dualPlusConfidence, dualReturnMatching, rtkPose_x, rtkPose_y, rtkPose_z, rtkPose_roll, rtkPose_pitch, rtkPose_yaw) {
+  builder.prep(8, 96);
   builder.prep(8, 48);
-  builder.pad(7);
+  builder.writeFloat64(rtkPose_yaw);
+  builder.writeFloat64(rtkPose_pitch);
+  builder.writeFloat64(rtkPose_roll);
+  builder.writeFloat64(rtkPose_z);
+  builder.writeFloat64(rtkPose_y);
+  builder.writeFloat64(rtkPose_x);
+  builder.writeInt32(dualReturnMatching);
+  builder.writeInt16(dualPlusConfidence);
+  builder.pad(1);
   builder.writeInt8(beamID);
   builder.writeFloat64(timestamp);
   builder.pad(7);
@@ -235,7 +483,7 @@ Flatbuffer.LIDAR.PointCloud.getRootAsPointCloud = function(bb, obj) {
  */
 Flatbuffer.LIDAR.PointCloud.prototype.points = function(index, obj) {
   var offset = this.bb.__offset(this.bb_pos, 4);
-  return offset ? (obj || new Flatbuffer.LIDAR.Point).__init(this.bb.__vector(this.bb_pos + offset) + index * 48, this.bb) : null;
+  return offset ? (obj || new Flatbuffer.LIDAR.Point).__init(this.bb.__vector(this.bb_pos + offset) + index * 96, this.bb) : null;
 };
 
 /**
@@ -266,7 +514,7 @@ Flatbuffer.LIDAR.PointCloud.addPoints = function(builder, pointsOffset) {
  * @param {number} numElems
  */
 Flatbuffer.LIDAR.PointCloud.startPointsVector = function(builder, numElems) {
-  builder.startVector(48, numElems, 8);
+  builder.startVector(96, numElems, 8);
 };
 
 /**

@@ -149,6 +149,9 @@ let attributeLocations = {
 	// "rtk2vehicleRPY": 14,
 	// "velo2rtkXYZ": 15,
 	// "velo2rtkRPY": 16
+	"dualDistance": 13,
+	"dualReflectivity": 14,
+	"confidence": 15
 };
 
 class Shader {
@@ -1240,6 +1243,9 @@ export class Renderer {
 			shader.setUniform1f("wClassification", material.weightClassification);
 			shader.setUniform1f("wReturnNumber", material.weightReturnNumber);
 			shader.setUniform1f("wSourceID", material.weightSourceID);
+			shader.setUniform1f("wDualDistance", material.weightDualDistance);
+			shader.setUniform1f("wDualReflectivity", material.weightDualReflectivity);
+			shader.setUniform1f("wConfidence", material.weightConfidence);
 
 			let vnWebGLTexture = this.textures.get(material.visibleNodesTexture);
 			shader.setUniform1i("visibleNodesTexture", currentTextureBindingPoint);

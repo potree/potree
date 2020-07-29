@@ -2,7 +2,8 @@
 
 import {PointAttributeNames} from "./PointAttributes.js";
 import {Version} from "../Version.js";
-
+import {unpackDual} from "../../schemas/Lidar_functions.js";
+import {unpackConfidence} from "../../schemas/Lidar_functions.js";
 
 export class BinaryLoader{
 
@@ -99,6 +100,14 @@ export class BinaryLoader{
 					geometry.addAttribute('originalRtkPosition', new THREE.BufferAttribute(new Float32Array(buffer), 3, false));
 				} else if (parseInt(property) === PointAttributeNames.RTK_ORIENT) {
 					geometry.addAttribute('originalRtkOrientation', new THREE.BufferAttribute(new Float32Array(buffer), 3, false));
+				}  else if (parseInt(property) === PointAttributeNames.DUAL_PLUS_CONFIDENCE) {
+					let DPCs = new Uint16Array(buffer);
+					let dualDistance = new Uint8Array(DPCs.map(function(DPC) { return unpackDual(DPC).distFlag }));
+					let dualReflectivity = new Uint8Array(DPCs.map(function(DPC) { return unpackDual(DPC).intenFlag }));
+					let confidence = new Uint8Array(DPCs.map(function(DPC) { return unpackConfidence(DPC).confidence }));
+					geometry.addAttribute('dualDistance', new THREE.BufferAttribute(dualDistance, 1));
+					geometry.addAttribute('dualReflectivity', new THREE.BufferAttribute(dualReflectivity, 1));
+					geometry.addAttribute('confidence', new THREE.BufferAttribute(confidence, 1));
 				}
 			}
 

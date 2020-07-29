@@ -25,6 +25,8 @@ export function toInterleavedBufferAttribute(pointAttribute){
 		att = new Potree.InterleavedBufferAttribute("normal", 12, 3, "FLOAT", false);
 	} else if (pointAttribute.name === PointAttribute.NORMAL.name) {
 		att = new Potree.InterleavedBufferAttribute("normal", 12, 3, "FLOAT", false);
+	} else if (pointAttribute.name === PointAttribute.DUAL_PLUS_CONFIDENCE.name) {
+		att = new Potree.InterleavedBufferAttribute("dualPlusConfidence", 4, 1, "FLOAT", false);
 	}
 	
 	return att;

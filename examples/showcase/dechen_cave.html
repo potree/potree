@@ -61,7 +61,7 @@
 			viewer.toggleSidebar();
 
 			$('#sldPointBudget').slider({
-				max: 3 * 1000 * 1000,
+				max: 3_000_000,
 				step: 1000,
 			});
 		});
@@ -79,14 +79,16 @@
 			
 			scene.addPointCloud(pointcloud);
 			
-			let volume = new Potree.Volume();
+			let volume = new Potree.BoxVolume();
 			volume.position.set(18.11, 14.94, 1.50);
 			volume.scale.set(28.08, 19.07, 4.41);
 			volume.clip = true;
 			scene.addVolume(volume);
 			
-			scene.view.position.set(5.69, 15.51, 10.62);
-			scene.view.lookAt(15.80, 15.27, 0.72);
+			scene.view.setView(
+				[5.69, 15.51, 10.62],
+				[15.80, 15.27, 0.72],
+			);
 
 		});
 		

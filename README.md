@@ -225,6 +225,137 @@ Copy the converted directory into &lt;potreeDirectory&gt;/pointclouds/data_conve
 </table>
 </details>
 
+# Showcase
+
+<table>
+	<tr>
+		<td>
+			<a href="http://potree.org/potree/examples/showcase/matterhorn.html" target="_blank">
+				<img src="examples/thumbnails/matterhorn.jpg" width="100%" />
+			</a>
+		</td><td>
+			<a href="http://potree.org/potree/examples/showcase/retz.html" target="_blank">
+				<img src="examples/thumbnails/retz.jpg" width="100%" />
+			</a>
+		</td><td>
+			<a href="http://potree.org/potree/examples/showcase/lake_tahoe.html" target="_blank">
+				<img src="examples/thumbnails/lake_tahoe.jpg" width="100%" />
+			</a>
+		</td><td>
+			<a href="http://potree.org/potree/examples/showcase/sorvilier.html" target="_blank">
+				<img src="examples/thumbnails/vol_total.jpg" width="100%" />
+			</a>
+		</td><td>
+			<a href="http://potree.org/potree/examples/showcase/grab_15.html" target="_blank">
+				<img src="examples/thumbnails/grab_15.jpg" width="100%" />
+			</a>
+		</td><td>
+			<a href="http://potree.org/potree/examples/showcase/tern_auscover_chowilla.html" target="_blank">
+				<img src="examples/thumbnails/chowilla.jpg" width="100%" />
+			</a>
+		</td>
+	</tr>
+	<tr>
+		<th>Matterhorn</th><th>Retz</th><th>Lake Tahoe</th><th>Sorvilier</th><th>Grave</th><th>Chowilla</th>
+	</tr>
+</table>
+
+<details>
+<summary>More</summary>
+
+<table>
+	<tr>
+		<td>
+			<a href="http://potree.org/potree/examples/showcase/chiller.html" target="_blank">
+				<img src="examples/thumbnails/chiller.jpg" width="100%" />
+			</a>
+		</td><td>
+			<a href="http://potree.org/potree/examples/showcase/cooler_tower.html" target="_blank">
+				<img src="examples/thumbnails/cooler_tower.jpg" width="100%" />
+			</a>
+		</td><td>
+			<a href="http://potree.org/potree/examples/showcase/dechen_cave.html" target="_blank">
+				<img src="examples/thumbnails/dechen_cave.jpg" width="100%" />
+			</a>
+		</td><td>
+			<a href="http://potree.org/potree/examples/showcase/doverMillRuins.html" target="_blank">
+				<img src="examples/thumbnails/DoverMillRuins.jpg" width="100%" />
+			</a>
+		</td><td>
+			<a href="http://potree.org/potree/examples/showcase/eclepens.html" target="_blank">
+				<img src="examples/thumbnails/eclepens.jpg" width="100%" />
+			</a>
+		</td><td>
+			<a href="http://potree.org/potree/examples/showcase/heidentor.html" target="_blank">
+				<img src="examples/thumbnails/heidentor.jpg" width="100%" />
+			</a>
+		</td>
+	</tr>
+	<tr>
+		<th>Chiller</th><th>Cooler</th><th>Dechen Cave</th><th>Ruins</th><th>Eclepens</th><th>Heidentor</th>
+	</tr><tr>
+		<td>
+			<a href="http://potree.org/potree/examples/showcase/land_building.html" target="_blank">
+				<img src="examples/thumbnails/land_building.jpg" width="100%" />
+			</a>
+		</td><td>
+			<a href="http://potree.org/potree/examples/showcase/LDHI_module.html" target="_blank">
+				<img src="examples/thumbnails/LDHI_module.jpg" width="100%" />
+			</a>
+		</td><td>
+			<a href="http://potree.org/potree/examples/showcase/lion_head_simone_garagnani.html" target="_blank">
+				<img src="examples/thumbnails/lion_head.jpg" width="100%" />
+			</a>
+		</td><td>
+			<a href="http://potree.org/potree/examples/showcase/overpass.html" target="_blank">
+				<img src="examples/thumbnails/overpass.jpg" width="100%" />
+			</a>
+		</td><td>
+			<a href="http://potree.org/potree/examples/showcase/pielach.html" target="_blank">
+				<img src="examples/thumbnails/pielach.jpg" width="100%" />
+			</a>
+		</td><td>
+			<a href="http://potree.org/potree/examples/showcase/pompei.html" target="_blank">
+				<img src="examples/thumbnails/pompei.jpg" width="100%" />
+			</a>
+		</td>
+	</tr>
+	<tr>
+		<th>Building</th><th>LDHI</th><th>Lion Head</th><th>Overpass</th><th>Pielach</th><th>pompei</th>
+	</tr><tr>
+		<td>
+			<a href="http://potree.org/potree/examples/showcase/santorini.html" target="_blank">
+				<img src="examples/thumbnails/santorini.jpg" width="100%" />
+			</a>
+		</td><td>
+			<a href="http://potree.org/potree/examples/showcase/skatepark.html" target="_blank">
+				<img src="examples/thumbnails/skatepark.jpg" width="100%" />
+			</a>
+		</td><td>
+			<a href="http://potree.org/potree/examples/showcase/subsea_equipment.html" target="_blank">
+				<img src="examples/thumbnails/subsea_equipment.jpg" width="100%" />
+			</a>
+		</td><td>
+			<a href="http://potree.org/potree/examples/showcase/subsea_manifold.html" target="_blank">
+				<img src="examples/thumbnails/subseamanifold.jpg" width="100%" />
+			</a>
+		</td><td>
+			<a href="http://potree.org/potree/examples/showcase/westend_palais.html" target="_blank">
+				<img src="examples/thumbnails/westend_palais.jpg" width="100%" />
+			</a>
+		</td><td>
+			<a href="http://potree.org/potree/examples/showcase/whitby.html" target="_blank">
+				<img src="examples/thumbnails/whitby.jpg" width="100%" />
+			</a>
+		</td>
+	</tr>
+	<tr>
+		<th>Santorini</th><th>Skatepark</th><th>Subsea Eq.</th><th>Subsea Man.</th><th>Westend Palais</th><th>Whitby</th>
+	</tr>
+</table>
+
+</details>
+
 # Funding
 
 Potree is funded by a combination of research projects, companies and institutions. 

@@ -195,6 +195,7 @@
 			"closed": false,
 			"showAngles": false,
 			"showHeight": false,
+			"showEdges": true,
 			"color": [
 				1,
 				0,
@@ -227,6 +228,7 @@
 			"closed": true,
 			"showAngles": true,
 			"showHeight": false,
+			"showEdges": true,
 			"color": [
 				1,
 				0,
@@ -276,6 +278,7 @@
 			"closed": false,
 			"showAngles": false,
 			"showHeight": true,
+			"showEdges": true,
 			"color": [
 				1,
 				0,
@@ -313,6 +316,7 @@
 			"closed": true,
 			"showAngles": false,
 			"showHeight": false,
+			"showEdges": true,
 			"color": [
 				1,
 				0,

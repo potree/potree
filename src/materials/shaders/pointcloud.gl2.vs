@@ -458,6 +458,11 @@ vec3 getSourceID(){
 	return texture(gradient, vec2(w,1.0 - w)).rgb;
 }
 
+// [0.0, 1.0, 2.0] -> [low/near, single, high/far]
+// they are mapped to colors that match veloview
+// roughly blue, grey, red for dual distance
+// roughly purple, grey, yellow for dual reflectivity
+
 vec3 getDualDistance(){
 	if (dualDistance == 0.0) {
 		return vec3(0.19, 0.49, 0.65);
@@ -471,9 +476,9 @@ vec3 getDualDistance(){
 vec3 getDualReflectivity(){
 	if (dualReflectivity == 0.0) {
 		return vec3(0.5, 0.1, 0.7);
-	} else if (dualDistance == 1.0) {
+	} else if (dualReflectivity == 1.0) {
 		return vec3(0.5, 0.5, 0.5);
-	} else if (dualDistance == 2.0) {
+	} else if (dualReflectivity == 2.0) {
 		return vec3(1.0, 0.9, 0.0);
 	}
 }

@@ -711,6 +711,10 @@ export class ProfileWindow extends EventDispatcher {
 
 	addPoints (pointcloud, points) {
 
+		if(points.numPoints === 0){
+			return;
+		}
+
 		let entry = this.pointclouds.get(pointcloud);
 		if(!entry){
 			entry = new ProfileFakeOctree(pointcloud);

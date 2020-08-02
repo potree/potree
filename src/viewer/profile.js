@@ -100,6 +100,8 @@ class ProfileFakeOctree extends PointCloudTree{
 		};
 		let projectedBox = new THREE.Box3();
 
+		let truePos = new THREE.Vector3();
+
 		for(let i = 0; i < data.numPoints; i++){
 
 			if(updateRange.start + updateRange.count >= this.batchSize){
@@ -122,9 +124,15 @@ class ProfileFakeOctree extends PointCloudTree{
 				};
 			}
 
+			truePos.set(
+				data.data.position[3 * i + 0] + this.trueOctree.position.x,
+				data.data.position[3 * i + 1] + this.trueOctree.position.y,
+				data.data.position[3 * i + 2] + this.trueOctree.position.z,
+			);
+
 			let x = data.data.mileage[i];
 			let y = 0;
-			let z = data.data.position[3 * i + 2];
+			let z = truePos.z;
 
 			projectedBox.expandByPoint(new THREE.Vector3(x, y, z));
 
@@ -339,7 +347,7 @@ export class ProfileWindow extends EventDispatcher {
 					this.elRoot.find('#profileSelectionProperties').fadeIn(200);
 					this.pickSphere.visible = true;
 					this.pickSphere.scale.set(0.5 * radius, 0.5 * radius, 0.5 * radius);
-					this.pickSphere.position.set(point.mileage, 0, point.position[2]);
+					this.pickSphere.position.set(point.mileage, 0, position[2]);
 
 					this.viewerPickSphere.position.set(...position);
 					
@@ -470,33 +478,40 @@ export class ProfileWindow extends EventDispatcher {
 			this.hide();
 		});
 
-		$('#potree_download_csv_icon').click(() => {
+		let getProfilePoints = () => {
 			let points = new Points();
 			
 			for(let [pointcloud, entry] of this.pointclouds){
 				for(let pointSet of entry.points){
+
+					let originPos = pointSet.data.position;
+					let trueElevationPosition = new Float32Array(originPos);
+					for(let i = 0; i < pointSet.numPoints; i++){
+						trueElevationPosition[3 * i + 2] += pointcloud.position.z;
+					}
+
+					pointSet.data.position = trueElevationPosition;
 					points.add(pointSet);
+					pointSet.data.position = originPos;
 				}
 			}
+
+			return points;
+		};
+
+		$('#potree_download_csv_icon').click(() => {
+			
+			let points = getProfilePoints();
 
 			let string = CSVExporter.toString(points);
 
 			let blob = new Blob([string], {type: "text/string"});
 			$('#potree_download_profile_ortho_link').attr('href', URL.createObjectURL(blob));
-
-			//let uri = 'data:application/octet-stream;base64,' + btoa(string);
-			//$('#potree_download_profile_ortho_link').attr('href', uri);
 		});
 
 		$('#potree_download_las_icon').click(() => {
 
-			let points = new Points();
-
-			for(let [pointcloud, entry] of this.pointclouds){
-				for(let pointSet of entry.points){
-					points.add(pointSet);
-				}
-			}
+			let points = getProfilePoints();
 
 			let buffer = LASExporter.toLAS(points);
 
@@ -544,7 +559,7 @@ export class ProfileWindow extends EventDispatcher {
 				for (let i = 0; i < points.numPoints; i++) {
 
 					let m = points.data.mileage[i] - mileage;
-					let e = points.data.position[3 * i + 2] - elevation;
+					let e = points.data.position[3 * i + 2] - elevation + pointcloud.position.z;
 					let r = Math.sqrt(m * m + e * e);
 
 					const withinDistance = r < radius && r < closest.distance;
@@ -695,6 +710,10 @@ export class ProfileWindow extends EventDispatcher {
 	}
 
 	addPoints (pointcloud, points) {
+
+		if(points.numPoints === 0){
+			return;
+		}
 
 		let entry = this.pointclouds.get(pointcloud);
 		if(!entry){

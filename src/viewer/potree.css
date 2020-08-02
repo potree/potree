@@ -56,7 +56,7 @@
 	z-index:	0;
 	width:		350px;
 	height:		100%;
-	overflow-y:	auto;
+	overflow-y:	scroll;
 	font-size:	85%;
 	border-right:	1px solid black;
 	background-color:	var(--bg-color);

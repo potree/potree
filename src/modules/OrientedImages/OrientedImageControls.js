@@ -23,7 +23,7 @@ export class OrientedImageControls extends EventDispatcher{
 		this.fadeFactor = 20;
 		this.fovDelta = 0;
 
-		this.fovMin = 5;
+		this.fovMin = 0.1;
 		this.fovMax = 120;
 
 		this.shear = [0, 0];

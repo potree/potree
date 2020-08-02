@@ -195,6 +195,7 @@
 			"closed": false,
 			"showAngles": false,
 			"showHeight": false,
+			"showEdges": true,
 			"color": [
 				1,
 				0,
@@ -227,6 +228,7 @@
 			"closed": true,
 			"showAngles": true,
 			"showHeight": false,
+			"showEdges": true,
 			"color": [
 				1,
 				0,
@@ -276,6 +278,7 @@
 			"closed": false,
 			"showAngles": false,
 			"showHeight": true,
+			"showEdges": true,
 			"color": [
 				1,
 				0,
@@ -313,6 +316,7 @@
 			"closed": true,
 			"showAngles": false,
 			"showHeight": false,
+			"showEdges": true,
 			"color": [
 				1,
 				0,
@@ -371,81 +375,74 @@
 			"width": 6
 		}
 	],
-	"annotations": {
-		"items": [
-			{
-				"uuid": "96E6ECB5-BED1-4903-B8C9-252AC78E864D",
-				"title": "Sorvilier",
-				"description": "",
-				"position": [
-					589847.17,
-					231436.78,
-					892.6
-				],
-				"offset": [
-					0,
-					0,
-					0
-				],
-				"cameraPosition": [590034.03, 231814.02, 961.68],
-				"cameraTarget": [589851.587, 231428.213, 715.634]
-			},{
-				"uuid": "D94E1D0B-7AA5-46FB-A513-A42282D3BD18",
-				"title": "Trees",
-				"description": "Point cloud of a small section in Sorvilier, Switzerland. <br>\n\t\t\t\tCourtesy of sigeom.sa",
-				"position": [
-					589850.15,
-					231300.1,
-					770.94
-				],
-				"offset": [
-					0,
-					0,
-					0
-				]
-			},
-			{
-				"uuid": "8B6543FC-64CA-4FD6-9C8D-ACE446D4A711",
-				"title": "About Annotations",
-				"description": "<ul><li>Click on the annotation label to move a predefined view.</li> \n\t\t\t\t<li>Click on the icon to execute the specified action.</li>\n\t\t\t\tIn this case, the action will bring you to another scene and point cloud.</ul>",
-				"position": [
-					590043.63,
-					231490.79,
-					740.78
-				],
-				"cameraPosition": [590105.53, 231541.63, 782.05],
-				"cameraTarget": [590043.63, 231488.79, 740.78]
-			},
-			{
-				"uuid": "EE329482-3EF6-448C-A12B-46BF95143F79",
-				"title": "About Annotations 2",
-				"description": "\n\t\t\t\tSuitable annotation positions and views can be obtained by \n\t\t\t\tlooking up the current camera position and target in the \"Scene\" panel, \n\t\t\t\tor by evaluating following lines in your browser's developer console:<br><br>\n\t\t\t\t<code>viewer.scene.view.position</code><br>\n\t\t\t\t<code>viewer.scene.view.getPivot()</code><br>\n\t\t\t\t",
-				"position": [
-					589621,
-					231437,
-					784
-				],
-				"cameraPosition": [
-					589585.81,
-					231463.63,
-					804
-				],
-				"cameraTarget": [
-					589625.86,
-					231439,
-					775.38
-				]
-			}
-		],
-		"hierarchy": {
-			"0": {},
-			"1": {},
-			"2": {},
-			"3": {},
-			"4": {},
-			"5": {},
-			"6": {}
+	"annotations": [
+		{
+			"uuid": "96E6ECB5-BED1-4903-B8C9-252AC78E864D",
+			"title": "Sorvilier",
+			"description": "",
+			"position": [
+				589847.17,
+				231436.78,
+				892.6
+			],
+			"children": [],
+			"offset": [
+				0,
+				0,
+				0
+			],
+			"cameraPosition": [590034.03, 231814.02, 961.68],
+			"cameraTarget": [589851.587, 231428.213, 715.634]
+		},{
+			"uuid": "D94E1D0B-7AA5-46FB-A513-A42282D3BD18",
+			"title": "Trees",
+			"description": "Point cloud of a small section in Sorvilier, Switzerland. <br>\n\t\t\t\tCourtesy of sigeom.sa",
+			"children": [],
+			"position": [
+				589850.15,
+				231300.1,
+				770.94
+			],
+			"offset": [
+				0,
+				0,
+				0
+			]
+		},
+		{
+			"uuid": "8B6543FC-64CA-4FD6-9C8D-ACE446D4A711",
+			"title": "About Annotations",
+			"description": "<ul><li>Click on the annotation label to move a predefined view.</li> \n\t\t\t\t<li>Click on the icon to execute the specified action.</li>\n\t\t\t\tIn this case, the action will bring you to another scene and point cloud.</ul>",
+			"children": [],
+			"position": [
+				590043.63,
+				231490.79,
+				740.78
+			],
+			"cameraPosition": [590105.53, 231541.63, 782.05],
+			"cameraTarget": [590043.63, 231488.79, 740.78]
+		},
+		{
+			"uuid": "EE329482-3EF6-448C-A12B-46BF95143F79",
+			"title": "About Annotations 2",
+			"description": "\n\t\t\t\tSuitable annotation positions and views can be obtained by \n\t\t\t\tlooking up the current camera position and target in the \"Scene\" panel, \n\t\t\t\tor by evaluating following lines in your browser's developer console:<br><br>\n\t\t\t\t<code>viewer.scene.view.position</code><br>\n\t\t\t\t<code>viewer.scene.view.getPivot()</code><br>\n\t\t\t\t",
+			"children": [],
+			"position": [
+				589621,
+				231437,
+				784
+			],
+			"cameraPosition": [
+				589585.81,
+				231463.63,
+				804
+			],
+			"cameraTarget": [
+				589625.86,
+				231439,
+				775.38
+			]
 		}
-	},
+	],
 	"objects": []
 }

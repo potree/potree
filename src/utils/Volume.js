@@ -115,33 +115,40 @@ export class BoxVolume extends Volume{
 
 		let boxFrameGeometry = new THREE.Geometry();
 		{
-			// bottom
-			boxFrameGeometry.vertices.push(new THREE.Vector3(-0.5, -0.5, 0.5));
-			boxFrameGeometry.vertices.push(new THREE.Vector3(0.5, -0.5, 0.5));
-			boxFrameGeometry.vertices.push(new THREE.Vector3(0.5, -0.5, 0.5));
-			boxFrameGeometry.vertices.push(new THREE.Vector3(0.5, -0.5, -0.5));
-			boxFrameGeometry.vertices.push(new THREE.Vector3(0.5, -0.5, -0.5));
-			boxFrameGeometry.vertices.push(new THREE.Vector3(-0.5, -0.5, -0.5));
-			boxFrameGeometry.vertices.push(new THREE.Vector3(-0.5, -0.5, -0.5));
-			boxFrameGeometry.vertices.push(new THREE.Vector3(-0.5, -0.5, 0.5));
-			// top
-			boxFrameGeometry.vertices.push(new THREE.Vector3(-0.5, 0.5, 0.5));
-			boxFrameGeometry.vertices.push(new THREE.Vector3(0.5, 0.5, 0.5));
-			boxFrameGeometry.vertices.push(new THREE.Vector3(0.5, 0.5, 0.5));
-			boxFrameGeometry.vertices.push(new THREE.Vector3(0.5, 0.5, -0.5));
-			boxFrameGeometry.vertices.push(new THREE.Vector3(0.5, 0.5, -0.5));
-			boxFrameGeometry.vertices.push(new THREE.Vector3(-0.5, 0.5, -0.5));
-			boxFrameGeometry.vertices.push(new THREE.Vector3(-0.5, 0.5, -0.5));
-			boxFrameGeometry.vertices.push(new THREE.Vector3(-0.5, 0.5, 0.5));
-			// sides
-			boxFrameGeometry.vertices.push(new THREE.Vector3(-0.5, -0.5, 0.5));
-			boxFrameGeometry.vertices.push(new THREE.Vector3(-0.5, 0.5, 0.5));
-			boxFrameGeometry.vertices.push(new THREE.Vector3(0.5, -0.5, 0.5));
-			boxFrameGeometry.vertices.push(new THREE.Vector3(0.5, 0.5, 0.5));
-			boxFrameGeometry.vertices.push(new THREE.Vector3(0.5, -0.5, -0.5));
-			boxFrameGeometry.vertices.push(new THREE.Vector3(0.5, 0.5, -0.5));
-			boxFrameGeometry.vertices.push(new THREE.Vector3(-0.5, -0.5, -0.5));
-			boxFrameGeometry.vertices.push(new THREE.Vector3(-0.5, 0.5, -0.5));
+			let Vector3 = THREE.Vector3;
+
+			boxFrameGeometry.vertices.push(
+
+				// bottom
+				new Vector3(-0.5, -0.5, 0.5),
+				new Vector3(0.5, -0.5, 0.5),
+				new Vector3(0.5, -0.5, 0.5),
+				new Vector3(0.5, -0.5, -0.5),
+				new Vector3(0.5, -0.5, -0.5),
+				new Vector3(-0.5, -0.5, -0.5),
+				new Vector3(-0.5, -0.5, -0.5),
+				new Vector3(-0.5, -0.5, 0.5),
+				// top
+				new Vector3(-0.5, 0.5, 0.5),
+				new Vector3(0.5, 0.5, 0.5),
+				new Vector3(0.5, 0.5, 0.5),
+				new Vector3(0.5, 0.5, -0.5),
+				new Vector3(0.5, 0.5, -0.5),
+				new Vector3(-0.5, 0.5, -0.5),
+				new Vector3(-0.5, 0.5, -0.5),
+				new Vector3(-0.5, 0.5, 0.5),
+				// sides
+				new Vector3(-0.5, -0.5, 0.5),
+				new Vector3(-0.5, 0.5, 0.5),
+				new Vector3(0.5, -0.5, 0.5),
+				new Vector3(0.5, 0.5, 0.5),
+				new Vector3(0.5, -0.5, -0.5),
+				new Vector3(0.5, 0.5, -0.5),
+				new Vector3(-0.5, -0.5, -0.5),
+				new Vector3(-0.5, 0.5, -0.5),
+
+			);
+
 		}
 
 		this.material = new THREE.MeshBasicMaterial({

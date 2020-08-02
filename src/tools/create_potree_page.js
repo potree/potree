@@ -2,12 +2,13 @@
 const path = require('path');
 const fs = require("fs");
 const fsp = fs.promises;
+const JSON5 = require('json5');
 
 
 async function createExamplesPage(){
 
 	const content = await fsp.readFile("./examples/page.json", 'utf8');
-	const settings = JSON.parse(content);
+	const settings = JSON5.parse(content);
 
 	const files = await fsp.readdir("./examples");
 

@@ -1,30 +1,26 @@
 
+
 # About
 
-Potree is a free open-source WebGL based point cloud renderer for large point clouds. It is based on the [TU Wien Scanopy project](https://www.cg.tuwien.ac.at/research/projects/Scanopy/) and research projects [Harvest4D](https://harvest4d.org/), [GCD Doctoral College](https://gcd.tuwien.ac.at/) and [Superhumans](https://www.cg.tuwien.ac.at/research/projects/Superhumans/).
-
-
+* Potree is a free open-source WebGL based point cloud renderer for large point clouds. It is based on the [TU Wien Scanopy project](https://www.cg.tuwien.ac.at/research/projects/Scanopy/) and research projects [Harvest4D](https://harvest4d.org/), [GCD Doctoral College](https://gcd.tuwien.ac.at/) and [Superhumans](https://www.cg.tuwien.ac.at/research/projects/Superhumans/).
+* Newest information and work in progress is usually available on [twitter](https://twitter.com/m_schuetz)
+* Contact: Markus Schütz (mschuetz@potree.org)
+* Reference: [Potree: Rendering Large Point Clouds in Web Browsers](https://www.cg.tuwien.ac.at/research/publications/2016/SCHUETZ-2016-POT/SCHUETZ-2016-POT-thesis.pdf)
 <a href="http://potree.org/wp/demo/" target="_blank"> ![](./docs/images/potree_screens.png) </a>
-
-Newest information and work in progress is usually available on [twitter](https://twitter.com/m_schuetz)
-
-Contact: Markus Schütz (mschuetz@potree.org)
-
-Reference: [Potree: Rendering Large Point Clouds in Web Browsers](https://www.cg.tuwien.ac.at/research/publications/2016/SCHUETZ-2016-POT/SCHUETZ-2016-POT-thesis.pdf)
 
 # Getting Started
 
-### Build and Run
+### Install
 
 Install [node.js](http://nodejs.org/)
 
-Install all dependencies, as specified in package.json: 
+Install dependencies, as specified in package.json, and create a build in ./build/potree.
 
 ```bash
 npm install
 ```
 
-Use `npm run build` to create ./build/potree.
+### Run
 
 Use the `npm start` command to 
 
@@ -34,7 +30,7 @@ Use the `npm start` command to
 
 Go to http://localhost:1234/examples/ to test the examples.
 
-### Convert
+### Convert Point Clouds to Potree Format
 
 Download [PotreeConverter](https://github.com/potree/PotreeConverter) and run it like this:
 
@@ -45,56 +41,61 @@ Copy the converted directory into &lt;potreeDirectory&gt;/pointclouds/data_conve
 # Downloads
 
 * [Potree](https://github.com/potree/potree/releases)
-* [PotreeConverter ](https://github.com/potree/PotreeConverter/releases)
+* [PotreeConverter ](https://github.com/potree/PotreeConverter/releases) - Convert your point cloud to the Potree format.
+* [PotreeDesktop ](https://github.com/potree/PotreeDesktop/releases) - Desktop version of Potree. Allows drag&drop of point clouds into the viewer.
 
 # Examples
 
-Take a look at the [potree showcase](http://potree.org/wp/demo/) for more examples.
-
-
-
 <table>
 	<tr>
-		<td>
-			<a href="http://potree.org/potree/examples/vr.html" target="_blank">
-				<img src="examples/thumbnails/vr.jpg" width="100%" />
+		<td style="padding: 0px">
+			<a href="http://potree.org/potree/examples/viewer.html" target="_blank">
+				<img src="examples/thumbnails/viewer.png" width="100%" />
 			</a>
 		</td><td>
-			<a href="http://potree.org/potree/examples/oriented_images.html" target="_blank">
-				<img src="examples/thumbnails/oriented_images.jpg" width="100%" />
+			<a href="http://potree.org/potree/examples/ca13.html" target="_blank">
+				<img src="examples/thumbnails/ca13.png" width="100%" />
 			</a>
 		</td><td>
-			<a href="http://potree.org/potree/examples/geopackage.html" target="_blank">
-				<img src="examples/thumbnails/geopackage.jpg" width="100%" />
+			<a href="http://potree.org/potree/examples/cesium_retz.html" target="_blank">
+				<img src="examples/thumbnails/cesium_retz.png" width="100%" />
 			</a>
 		</td><td>
 			<a href="http://potree.org/potree/examples/classifications.html" target="_blank">
 				<img src="examples/thumbnails/classifications.jpg" width="100%" />
 			</a>
 		</td><td>
-			<a href="http://potree.org/potree/examples/camera_animation.html" target="_blank">
-				<img src="examples/thumbnails/camera_animation.jpg" width="100%" />
+			<a href="http://potree.org/potree/examples/features_sorvilier.html" target="_blank">
+				<img src="examples/thumbnails/features_sorvilier.png" width="100%" />
 			</a>
 		</td><td>
-			<a href="http://potree.org/potree/examples/load_project.html" target="_blank">
-				<img src="examples/thumbnails/load_project.jpg" width="100%" />
+			<a href="http://potree.org/potree/examples/toolbar.html" target="_blank">
+				<img src="examples/thumbnails/toolbar.jpg" width="100%" />
 			</a>
 		</td>
 	</tr>
 	<tr>
-		<th>Virtual Reality</th><th>Oriented Images</th><th>Geopackage</th><th>Classifications</th><th>Camera Animation</th><th>Load Project</th>
-	</tr><tr>
+		<th>Basic Viewer</th><th>CA13 (18 billion Points)</th><th>Retz (Potree + Cesium)</th><th>Classifications</th><th>Various Features</th><th>Toolbar</th>
+	</tr>
+</table>
+
+<details>
+<summary>More Examples</summary>
+
+
+<table>
+	<tr>
 		<td>
-			<a href="http://potree.org/potree/examples/toolbar.html" target="_blank">
-				<img src="examples/thumbnails/toolbar.jpg" width="100%" />
+			<a href="http://potree.org/potree/examples/load_project.html" target="_blank">
+				<img src="examples/thumbnails/load_project.jpg" width="100%" />
 			</a>
 		</td><td>
 			<a href="http://potree.org/potree/examples/matcap.html" target="_blank">
 				<img src="examples/thumbnails/matcap.jpg" width="100%" />
 			</a>
 		</td><td>
-			<a href="http://potree.org/potree/examples/viewer.html" target="_blank">
-				<img src="examples/thumbnails/viewer.png" width="100%" />
+			<a href="http://potree.org/potree/examples/vr.html" target="_blank">
+				<img src="examples/thumbnails/vr.jpg" width="100%" />
 			</a>
 		</td><td>
 			<a href="http://potree.org/potree/examples/heidentor.html" target="_blank">
@@ -111,7 +112,7 @@ Take a look at the [potree showcase](http://potree.org/wp/demo/) for more exampl
 		</td>
 	</tr>
 	<tr>
-		<th>Toolbar</th><th>Matcap</th><th>Basic Viewer</th><th>Heidentor</th><th>Lion</th><th>Lion LAS</th>
+		<th>Load Project</th><th>Matcap</th><th>Virtual Reality</th><th>Heidentor</th><th>Lion</th><th>Lion LAS</th>
 	</tr><tr>
 		<td>
 			<a href="http://potree.org/potree/examples/lion_laz.html" target="_blank">
@@ -134,13 +135,13 @@ Take a look at the [potree showcase](http://potree.org/wp/demo/) for more exampl
 				<img src="examples/thumbnails/clipping_volume.png" width="100%" />
 			</a>
 		</td><td>
-			<a href="http://potree.org/potree/examples/ca13.html" target="_blank">
-				<img src="examples/thumbnails/ca13.png" width="100%" />
+			<a href="http://potree.org/potree/examples/oriented_images.html" target="_blank">
+				<img src="examples/thumbnails/oriented_images.jpg" width="100%" />
 			</a>
 		</td>
 	</tr>
 	<tr>
-		<th>Lion LAZ</th><th>EPT</th><th>EPT Binary</th><th>EPT zstandard</th><th>Clipping Volume</th><th>CA13</th>
+		<th>Lion LAZ</th><th>EPT</th><th>EPT Binary</th><th>EPT zstandard</th><th>Clipping Volume</th><th>Oriented Images</th>
 	</tr><tr>
 		<td>
 			<a href="http://potree.org/potree/examples/elevation_profile.html" target="_blank">
@@ -159,8 +160,8 @@ Take a look at the [potree showcase](http://potree.org/wp/demo/) for more exampl
 				<img src="examples/thumbnails/multiple_point_clouds.png" width="100%" />
 			</a>
 		</td><td>
-			<a href="http://potree.org/potree/examples/features_sorvilier.html" target="_blank">
-				<img src="examples/thumbnails/features_sorvilier.png" width="100%" />
+			<a href="http://potree.org/potree/examples/camera_animation.html" target="_blank">
+				<img src="examples/thumbnails/camera_animation.jpg" width="100%" />
 			</a>
 		</td><td>
 			<a href="http://potree.org/potree/examples/features_ca13.html" target="_blank">
@@ -169,7 +170,7 @@ Take a look at the [potree showcase](http://potree.org/wp/demo/) for more exampl
 		</td>
 	</tr>
 	<tr>
-		<th>Elevation Profile</th><th>Measurements</th><th>Meshes</th><th>Multiple Point Clouds</th><th>Features (Sorvilier)</th><th>Features (CA13)</th>
+		<th>Elevation Profile</th><th>Measurements</th><th>Meshes</th><th>Multiple Point Clouds</th><th>Camera Animation</th><th>Features (CA13)</th>
 	</tr><tr>
 		<td>
 			<a href="http://potree.org/potree/examples/annotations.html" target="_blank">
@@ -192,13 +193,13 @@ Take a look at the [potree showcase](http://potree.org/wp/demo/) for more exampl
 				<img src="examples/thumbnails/cesium_ca13.png" width="100%" />
 			</a>
 		</td><td>
-			<a href="http://potree.org/potree/examples/cesium_retz.html" target="_blank">
-				<img src="examples/thumbnails/cesium_retz.png" width="100%" />
+			<a href="http://potree.org/potree/examples/geopackage.html" target="_blank">
+				<img src="examples/thumbnails/geopackage.jpg" width="100%" />
 			</a>
 		</td>
 	</tr>
 	<tr>
-		<th>Annotations</th><th>Hierarchical Annotations</th><th>Animation Path</th><th>Shapefiles</th><th>Cesium CA13</th><th>Cesium Retz</th>
+		<th>Annotations</th><th>Hierarchical Annotations</th><th>Animation Path</th><th>Shapefiles</th><th>Cesium CA13</th><th>Geopackage</th>
 	</tr><tr>
 		<td>
 			<a href="http://potree.org/potree/examples/cesium_sorvilier.html" target="_blank">
@@ -222,6 +223,138 @@ Take a look at the [potree showcase](http://potree.org/wp/demo/) for more exampl
 		<th>Cesium Sorvilier</th><th>Custom Sidebar Section</th><th>Embedded Iframe</th><th>Gradient Colors</th>
 	</tr>
 </table>
+</details>
+
+# Showcase
+
+<table>
+	<tr>
+		<td>
+			<a href="http://potree.org/potree/examples/showcase/matterhorn.html" target="_blank">
+				<img src="examples/thumbnails/matterhorn.jpg" width="100%" />
+			</a>
+		</td><td>
+			<a href="http://potree.org/potree/examples/showcase/retz.html" target="_blank">
+				<img src="examples/thumbnails/retz.jpg" width="100%" />
+			</a>
+		</td><td>
+			<a href="http://potree.org/potree/examples/showcase/lake_tahoe.html" target="_blank">
+				<img src="examples/thumbnails/lake_tahoe.jpg" width="100%" />
+			</a>
+		</td><td>
+			<a href="http://potree.org/potree/examples/showcase/sorvilier.html" target="_blank">
+				<img src="examples/thumbnails/vol_total.jpg" width="100%" />
+			</a>
+		</td><td>
+			<a href="http://potree.org/potree/examples/showcase/grab_15.html" target="_blank">
+				<img src="examples/thumbnails/grab_15.jpg" width="100%" />
+			</a>
+		</td><td>
+			<a href="http://potree.org/potree/examples/showcase/tern_auscover_chowilla.html" target="_blank">
+				<img src="examples/thumbnails/chowilla.jpg" width="100%" />
+			</a>
+		</td>
+	</tr>
+	<tr>
+		<th>Matterhorn</th><th>Retz</th><th>Lake Tahoe</th><th>Sorvilier</th><th>Grave</th><th>Chowilla</th>
+	</tr>
+</table>
+
+<details>
+<summary>More</summary>
+
+<table>
+	<tr>
+		<td>
+			<a href="http://potree.org/potree/examples/showcase/chiller.html" target="_blank">
+				<img src="examples/thumbnails/chiller.jpg" width="100%" />
+			</a>
+		</td><td>
+			<a href="http://potree.org/potree/examples/showcase/cooler_tower.html" target="_blank">
+				<img src="examples/thumbnails/cooler_tower.jpg" width="100%" />
+			</a>
+		</td><td>
+			<a href="http://potree.org/potree/examples/showcase/dechen_cave.html" target="_blank">
+				<img src="examples/thumbnails/dechen_cave.jpg" width="100%" />
+			</a>
+		</td><td>
+			<a href="http://potree.org/potree/examples/showcase/doverMillRuins.html" target="_blank">
+				<img src="examples/thumbnails/DoverMillRuins.jpg" width="100%" />
+			</a>
+		</td><td>
+			<a href="http://potree.org/potree/examples/showcase/eclepens.html" target="_blank">
+				<img src="examples/thumbnails/eclepens.jpg" width="100%" />
+			</a>
+		</td><td>
+			<a href="http://potree.org/potree/examples/showcase/heidentor.html" target="_blank">
+				<img src="examples/thumbnails/heidentor.jpg" width="100%" />
+			</a>
+		</td>
+	</tr>
+	<tr>
+		<th>Chiller</th><th>Cooler</th><th>Dechen Cave</th><th>Ruins</th><th>Eclepens</th><th>Heidentor</th>
+	</tr><tr>
+		<td>
+			<a href="http://potree.org/potree/examples/showcase/land_building.html" target="_blank">
+				<img src="examples/thumbnails/land_building.jpg" width="100%" />
+			</a>
+		</td><td>
+			<a href="http://potree.org/potree/examples/showcase/LDHI_module.html" target="_blank">
+				<img src="examples/thumbnails/LDHI_module.jpg" width="100%" />
+			</a>
+		</td><td>
+			<a href="http://potree.org/potree/examples/showcase/lion_head_simone_garagnani.html" target="_blank">
+				<img src="examples/thumbnails/lion_head.jpg" width="100%" />
+			</a>
+		</td><td>
+			<a href="http://potree.org/potree/examples/showcase/overpass.html" target="_blank">
+				<img src="examples/thumbnails/overpass.jpg" width="100%" />
+			</a>
+		</td><td>
+			<a href="http://potree.org/potree/examples/showcase/pielach.html" target="_blank">
+				<img src="examples/thumbnails/pielach.jpg" width="100%" />
+			</a>
+		</td><td>
+			<a href="http://potree.org/potree/examples/showcase/pompei.html" target="_blank">
+				<img src="examples/thumbnails/pompei.jpg" width="100%" />
+			</a>
+		</td>
+	</tr>
+	<tr>
+		<th>Building</th><th>LDHI</th><th>Lion Head</th><th>Overpass</th><th>Pielach</th><th>pompei</th>
+	</tr><tr>
+		<td>
+			<a href="http://potree.org/potree/examples/showcase/santorini.html" target="_blank">
+				<img src="examples/thumbnails/santorini.jpg" width="100%" />
+			</a>
+		</td><td>
+			<a href="http://potree.org/potree/examples/showcase/skatepark.html" target="_blank">
+				<img src="examples/thumbnails/skatepark.jpg" width="100%" />
+			</a>
+		</td><td>
+			<a href="http://potree.org/potree/examples/showcase/subsea_equipment.html" target="_blank">
+				<img src="examples/thumbnails/subsea_equipment.jpg" width="100%" />
+			</a>
+		</td><td>
+			<a href="http://potree.org/potree/examples/showcase/subsea_manifold.html" target="_blank">
+				<img src="examples/thumbnails/subseamanifold.jpg" width="100%" />
+			</a>
+		</td><td>
+			<a href="http://potree.org/potree/examples/showcase/westend_palais.html" target="_blank">
+				<img src="examples/thumbnails/westend_palais.jpg" width="100%" />
+			</a>
+		</td><td>
+			<a href="http://potree.org/potree/examples/showcase/whitby.html" target="_blank">
+				<img src="examples/thumbnails/whitby.jpg" width="100%" />
+			</a>
+		</td>
+	</tr>
+	<tr>
+		<th>Santorini</th><th>Skatepark</th><th>Subsea Eq.</th><th>Subsea Man.</th><th>Westend Palais</th><th>Whitby</th>
+	</tr>
+</table>
+
+</details>
 
 # Funding
 
@@ -234,16 +367,15 @@ Potree is funded by a combination of research projects, companies and institutio
 	</tr>
 	<tr>
 		<td><a href="https://harvest4d.org/">Harvest4D</a></td>
-		<td>EU 7th Framework Program 323567</td>
-		<td></td>
+		<td><a href="https://ec.europa.eu/transport/themes/research/fp7_en">EU 7th Framework Program 323567</a></td>
 	</tr>
 	<tr>
 		<td><a href="https://gcd.tuwien.ac.at/">GCD Doctoral College</a></td>
-		<td>TU Wien</td>
+		<td><a href="https://www.tuwien.at/en/">TU Wien</a></td>
 	</tr>
 	<tr>
 		<td><a href="https://www.cg.tuwien.ac.at/research/projects/Superhumans/">Superhumans</a></td>
-		<td>FWF</td>
+		<td><a href="https://www.fwf.ac.at/">FWF</a></td>
 	</tr>
 </table>
 
@@ -298,6 +430,9 @@ We would like to thank our sponsors for their financial contributions that keep 
 			€ 1,000+
 		</th>
 		<td>
+			<a href="https://biology.anu.edu.au/research/facilities/australian-plant-phenomics-facility-anu">
+				<img src="docs/sponsors/APPF full logo.png" height="60"/> &nbsp;
+			</a>
 			<a href="http://www.helimap.com/">
 				<img src="docs/sponsors/helimap.gif" height="60"/> &nbsp;
 			</a>

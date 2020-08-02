@@ -1,70 +1,29 @@
 
 
 import {Version} from "../../Version.js";
-import {PointAttributes, PointAttribute} from "../../loader/PointAttributes.js";
+import {PointAttributes, PointAttribute, PointAttributeTypes} from "../../loader/PointAttributes.js";
 
-/* global onmessage:true postMessage:false */
-/* exported onmessage */
-// http://jsperf.com/uint8array-vs-dataview3/3
-function CustomView (buffer) {
-	this.buffer = buffer;
-	this.u8 = new Uint8Array(buffer);
-
-	let tmp = new ArrayBuffer(8);
-	let tmpf = new Float32Array(tmp);
-	let tmpd = new Float64Array(tmp);
-	let tmpu8 = new Uint8Array(tmp);
-	let tmpi8 = new Int8Array(tmp);
-
-	this.getUint32 = function (i) {
-		return (this.u8[i + 3] << 24) | (this.u8[i + 2] << 16) | (this.u8[i + 1] << 8) | this.u8[i];
-	};
-
-	this.getUint16 = function (i) {
-		return (this.u8[i + 1] << 8) | this.u8[i];
-	};
-
-	this.getFloat32 = function (i) {
-		tmpu8[0] = this.u8[i + 0];
-		tmpu8[1] = this.u8[i + 1];
-		tmpu8[2] = this.u8[i + 2];
-		tmpu8[3] = this.u8[i + 3];
-
-		return tmpf[0];
-	};
-
-	this.getFloat64 = function (i) {
-		tmpu8[0] = this.u8[i + 0];
-		tmpu8[1] = this.u8[i + 1];
-		tmpu8[2] = this.u8[i + 2];
-		tmpu8[3] = this.u8[i + 3];
-		tmpu8[4] = this.u8[i + 4];
-		tmpu8[5] = this.u8[i + 5];
-		tmpu8[6] = this.u8[i + 6];
-		tmpu8[7] = this.u8[i + 7];
-
-		return tmpd[0];
-	};
-
-	this.getUint8 = function (i) {
-		return this.u8[i];
-	};
-}
+const typedArrayMapping = {
+	"int8":   Int8Array,
+	"int16":  Int16Array,
+	"int32":  Int32Array,
+	"int64":  Float64Array,
+	"uint8":  Uint8Array,
+	"uint16": Uint16Array,
+	"uint32": Uint32Array,
+	"uint64": Float64Array,
+	"float":  Float32Array,
+	"double": Float64Array,
+};
 
 Potree = {};
 
 onmessage = function (event) {
 
-	// let buffer = event.data.buffer;
-	// let pointAttributes = event.data.pointAttributes;
-	let {buffer, pointAttributes, scale, min} = event.data;
+	let {buffer, pointAttributes, scale, name, min, max, size, offset} = event.data;
 
 	let numPoints = buffer.byteLength / pointAttributes.byteSize;
-	let cv = new CustomView(buffer);
-
-	// let scale = event.data.scale;
-	// let min = event.data.min;
-
+	let view = new DataView(buffer);
 	
 	let attributeBuffers = {};
 	let attributeOffset = 0;
@@ -74,9 +33,31 @@ onmessage = function (event) {
 		bytesPerPoint += pointAttribute.byteSize;
 	}
 
+	let gridSize = 32;
+	let grid = new Uint32Array(gridSize ** 3);
+	let toIndex = (x, y, z) => {
+		// let dx = gridSize * (x - min.x) / size.x;
+		// let dy = gridSize * (y - min.y) / size.y;
+		// let dz = gridSize * (z - min.z) / size.z;
+
+		// min is already subtracted
+		let dx = gridSize * x / size.x;
+		let dy = gridSize * y / size.y;
+		let dz = gridSize * z / size.z;
+
+		let ix = Math.min(parseInt(dx), gridSize - 1);
+		let iy = Math.min(parseInt(dy), gridSize - 1);
+		let iz = Math.min(parseInt(dz), gridSize - 1);
+
+		let index = ix + iy * gridSize + iz * gridSize * gridSize;
+
+		return index;
+	};
+
+	let numOccupiedCells = 0;
 	for (let pointAttribute of pointAttributes.attributes) {
 		
-		if (pointAttribute.name === "POSITION_CARTESIAN") {
+		if(["POSITION_CARTESIAN", "position"].includes(pointAttribute.name)){
 			let buff = new ArrayBuffer(numPoints * 4 * 3);
 			let positions = new Float32Array(buff);
 		
@@ -84,9 +65,15 @@ onmessage = function (event) {
 				
 				let pointOffset = j * bytesPerPoint;
 
-				let x = (cv.getUint32(pointOffset + attributeOffset + 0, true) * scale) - min.x;
-				let y = (cv.getUint32(pointOffset + attributeOffset + 4, true) * scale) - min.y;
-				let z = (cv.getUint32(pointOffset + attributeOffset + 8, true) * scale) - min.z;
+				let x = (view.getUint32(pointOffset + attributeOffset + 0, true) * scale[0]) + offset[0] - min.x;
+				let y = (view.getUint32(pointOffset + attributeOffset + 4, true) * scale[1]) + offset[1] - min.y;
+				let z = (view.getUint32(pointOffset + attributeOffset + 8, true) * scale[2]) + offset[2] - min.z;
+
+				let index = toIndex(x, y, z);
+				let count = grid[index]++;
+				if(count === 0){
+					numOccupiedCells++;
+				}
 
 				positions[3 * j + 0] = x;
 				positions[3 * j + 1] = y;
@@ -94,23 +81,77 @@ onmessage = function (event) {
 			}
 
 			attributeBuffers[pointAttribute.name] = { buffer: buff, attribute: pointAttribute };
-		}else if(pointAttribute.name === "RGBA"){
+		}else if(["RGBA", "rgba"].includes(pointAttribute.name)){
 			let buff = new ArrayBuffer(numPoints * 4);
 			let colors = new Uint8Array(buff);
 
 			for (let j = 0; j < numPoints; j++) {
 				let pointOffset = j * bytesPerPoint;
 
-				colors[4 * j + 0] = cv.getUint8(pointOffset + attributeOffset + 0);
-				colors[4 * j + 1] = cv.getUint8(pointOffset + attributeOffset + 1);
-				colors[4 * j + 2] = cv.getUint8(pointOffset + attributeOffset + 2);
+				let r = view.getUint16(pointOffset + attributeOffset + 0, true);
+				let g = view.getUint16(pointOffset + attributeOffset + 2, true);
+				let b = view.getUint16(pointOffset + attributeOffset + 4, true);
+
+				colors[4 * j + 0] = r > 255 ? r / 256 : r;
+				colors[4 * j + 1] = g > 255 ? g / 256 : g;
+				colors[4 * j + 2] = b > 255 ? b / 256 : b;
 			}
 
 			attributeBuffers[pointAttribute.name] = { buffer: buff, attribute: pointAttribute };
+		}else{
+			let buff = new ArrayBuffer(numPoints * 4);
+			let f32 = new Float32Array(buff);
+
+			let TypedArray = typedArrayMapping[pointAttribute.type.name];
+			preciseBuffer = new TypedArray(numPoints);
+
+			let [offset, scale] = [0, 1];
+
+			const getterMap = {
+				"int8":   view.getInt8,
+				"int16":  view.getInt16,
+				"int32":  view.getInt32,
+				// "int64":  view.getInt64,
+				"uint8":  view.getUint8,
+				"uint16": view.getUint16,
+				"uint32": view.getUint32,
+				// "uint64": view.getUint64,
+				"float":  view.getFloat32,
+				"double": view.getFloat64,
+			};
+			const getter = getterMap[pointAttribute.type.name].bind(view);
+
+			// compute offset and scale to pack larger types into 32 bit floats
+			if(pointAttribute.type.size > 4){
+				let [amin, amax] = pointAttribute.range;
+				offset = amin;
+				scale = 1 / (amax - amin);
+			}
+
+			for(let j = 0; j < numPoints; j++){
+				let pointOffset = j * bytesPerPoint;
+				let value = getter(pointOffset + attributeOffset, true);
+
+				f32[j] = (value - offset) * scale;
+				preciseBuffer[j] = value;
+			}
+
+			attributeBuffers[pointAttribute.name] = { 
+				buffer: buff,
+				preciseBuffer: preciseBuffer,
+				attribute: pointAttribute,
+				offset: offset,
+				scale: scale,
+			};
 		}
 
 		attributeOffset += pointAttribute.byteSize;
+
+
 	}
+
+	let occupancy = parseInt(numPoints / numOccupiedCells);
+	// console.log(`${name}: #points: ${numPoints}: #occupiedCells: ${numOccupiedCells}, occupancy: ${occupancy} points/cell`);
 
 	{ // add indices
 		let buff = new ArrayBuffer(numPoints * 4);
@@ -123,9 +164,51 @@ onmessage = function (event) {
 		attributeBuffers["INDICES"] = { buffer: buff, attribute: PointAttribute.INDICES };
 	}
 
+
+	{ // handle attribute vectors
+		let vectors = pointAttributes.vectors;
+
+		for(let vector of vectors){
+
+			let {name, attributes} = vector;
+			let numVectorElements = attributes.length;
+			let buffer = new ArrayBuffer(numVectorElements * numPoints * 4);
+			let f32 = new Float32Array(buffer);
+
+			let iElement = 0;
+			for(let sourceName of attributes){
+				let sourceBuffer = attributeBuffers[sourceName];
+				let {offset, scale} = sourceBuffer;
+				let view = new DataView(sourceBuffer.buffer);
+
+				const getter = view.getFloat32.bind(view);
+
+				for(let j = 0; j < numPoints; j++){
+					let value = getter(j * 4, true);
+
+					f32[j * numVectorElements + iElement] = (value / scale) + offset;
+				}
+
+				iElement++;
+			}
+
+			let vecAttribute = new PointAttribute(name, PointAttributeTypes.DATA_TYPE_FLOAT, 3);
+
+			attributeBuffers[name] = { 
+				buffer: buffer, 
+				attribute: vecAttribute,
+			};
+
+		}
+
+	}
+
+
+
 	let message = {
 		buffer: buffer,
 		attributeBuffers: attributeBuffers,
+		density: occupancy,
 	};
 
 	let transferables = [];

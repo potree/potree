@@ -38,6 +38,8 @@ export class OrbitControls extends EventDispatcher{
 		this.panDelta = new THREE.Vector2(0, 0);
 		this.radiusDelta = 0;
 
+		this.doubleClockZoomEnabled = true;
+
 		this.tweens = [];
 
 		let drag = (e) => {
@@ -82,7 +84,9 @@ export class OrbitControls extends EventDispatcher{
 		};
 
 		let dblclick = (e) => {
-			this.zoomToLocation(e.mouse);
+			if(this.doubleClockZoomEnabled){
+				this.zoomToLocation(e.mouse);
+			}
 		};
 
 		let previousTouch = null;

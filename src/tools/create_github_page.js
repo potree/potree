@@ -2,21 +2,14 @@
 const path = require('path');
 const fs = require("fs");
 const fsp = fs.promises;
+const JSON5 = require('json5');
 
+function toCode(files, data){
 
-async function createGithubPage(){
-	const content = await fsp.readFile("./examples/page.json", 'utf8');
-	const settings = JSON.parse(content);
-
-	const files = await fsp.readdir("./examples");
-
-	let unhandledCode = ``;
-	let exampleCode = ``;
-	let showcaseCode = ``;
-	let thirdpartyCode = ``;
+	let code = "";
 
 	{
-		let urls = settings.examples.map(e => e.url);
+		let urls = data.map(e => e.url);
 		let unhandled = [];
 		for(let file of files){
 			let isHandled = false;
@@ -36,16 +29,16 @@ async function createGithubPage(){
 			.filter(file => file !== "page.html");
 
 
-		for(let file of unhandled){
-			unhandledCode += `
-				<a href="${file}" class="unhandled">${file}</a>
-			`;
-		}
+		// for(let file of unhandled){
+		// 	unhandledCode += `
+		// 		<a href="${file}" class="unhandled">${file}</a>
+		// 	`;
+		// }
 	}
 
 	const rows = [];
 	let row = [];
-	for(let example of settings.examples){
+	for(let example of data){
 		row.push(example);
 
 		if(row.length >= 6){
@@ -61,9 +54,13 @@ async function createGithubPage(){
 		let labels = "";
 
 		for(let example of row){
+
+			let url = example.url.startsWith("http") ? 
+				example.url : 
+				`http://potree.org/potree/examples/${example.url}`;
 			
 			thumbnails += `<td>
-					<a href="http://potree.org/potree/examples/${example.url}" target="_blank">
+					<a href="${url}" target="_blank">
 						<img src="examples/${example.thumb}" width="100%" />
 					</a>
 				</td>`;
@@ -71,7 +68,7 @@ async function createGithubPage(){
 			labels += `<th>${example.label}</th>`;
 		}
 
-		exampleCode += `<tr>
+		code += `<tr>
 				${thumbnails}
 			</tr>
 			<tr>
@@ -79,9 +76,40 @@ async function createGithubPage(){
 			</tr>`;
 	}
 
+	return code;
+}
+
+
+async function createGithubPage(){
+	const content = await fsp.readFile("./examples/page.json", 'utf8');
+	const settings = JSON5.parse(content);
+
+	const files = await fsp.readdir("./examples");
+
+	let unhandledCode = ``;
+
+	let exampleCode = toCode(files, settings.examples);
+	let showcaseCode = toCode(files, settings.showcase);
+	let thirdpartyCode = toCode(files, settings.thirdparty);
+
 	let page = `
+
+		<h1>Examples</h1>
+
 		<table>
 			${exampleCode}
+		</table>
+
+		<h1>Showcase</h1>
+
+		<table>
+			${showcaseCode}
+		</table>
+
+		<h1>Third Party Showcase</h1>
+
+		<table>
+			${thirdpartyCode}
 		</table>`;
 
 	fs.writeFile(`examples/github.html`, page, (err) => {

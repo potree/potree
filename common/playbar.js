@@ -1,6 +1,6 @@
 'use strict';
 
-import { bucket, name, s3 } from "../demo/paramLoader.js";
+import { bucket, name, s3, lambda } from "../demo/paramLoader.js";
 import { writeFileToS3, createLanesFlatbuffer } from "../demo/loaderUtilities.js";
 
 
@@ -144,14 +144,15 @@ export function createPlaybar () {
       document.body.removeChild(element);
     }
 
+    let laneLEFT, laneRIGHT;
     // Download Left Lane Vertices:
     try {
       const laneLeftSegments = window.viewer.scene.scene.getChildByName("Left Lane Segments");
       if (laneLeftSegments === undefined) {
-        const laneLeft = window.viewer.scene.scene.getChildByName("Lane Left");
-        download(JSON.stringify(laneLeft.points, null, 2), "lane-left.json");
+        laneLEFT = window.viewer.scene.scene.getChildByName("Lane Left");
+        laneLEFT = laneLEFT.points;
       } else {
-        download(JSON.stringify(laneLeftSegments.getFinalPoints(), null, 2), "lane-left.json");
+        laneLEFT = laneLeftSegments.getFinalPoints()
       }
     } catch (e) {
       console.error("Couldn't download left lane vertices: ", e);
@@ -170,13 +171,21 @@ export function createPlaybar () {
       const laneRightSegments = window.viewer.scene.scene.getChildByName("Right Lane Segments");
       if (laneRightSegments === undefined) {
         const laneRight = window.viewer.scene.scene.getChildByName("Lane Right");
-        download(JSON.stringify(laneRight.points, null, 2), "lane-right.json", "text/plain");
+        laneRIGHT = laneRight.points
       } else {
-        download(JSON.stringify(laneRightSegments.getFinalPoints(), null, 2), "lane-right.json", "text/plain");
+        laneRIGHT = laneRightSegments.getFinalPoints()
       }
     } catch (e) {
       console.error("Couldn't download right lane vertices: ", e);
     }
+
+    const input = {
+      bucket: bucket,
+      name: name,
+      left: laneLEFT,
+      right: laneRIGHT
+    };
+    download(JSON.stringify(input, null, 2), "lanes.json", "text/plain");
   });
 
   playbarhtml.find("#save_lanes_button").click(function () {
@@ -428,16 +437,16 @@ async function saveLaneChanges () {
   }
 
   // Get New Spine Vertices
-  // lane.spine = await updateSpine(lane.left, lane.right);
+  lane.spine = await updateSpine(bucket, name, lane.left, lane.right);
 
-  const schemaUrl = s3.getSignedUrl('getObject', {
-    Bucket: bucket,
-    Key: `${name}/5_Schemas/GroundTruth_generated.js`
-  });
-  const FlatbufferModule = await import(schemaUrl);
-  await saveLaneChangesHelper(lane, FlatbufferModule);
-  const bytes = await createLanesFlatbuffer(lane, FlatbufferModule);
-  writeFileToS3(s3, bucket, name, "2_Truth", "upload-testing-lanes.fb", bytes);
+  // const schemaUrl = s3.getSignedUrl('getObject', {
+  //   Bucket: bucket,
+  //   Key: `${name}/5_Schemas/GroundTruth_generated.js`
+  // });
+  // const FlatbufferModule = await import(schemaUrl);
+  // await saveLaneChangesHelper(lane, FlatbufferModule);
+  // const bytes = await createLanesFlatbuffer(lane, FlatbufferModule);
+  // writeFileToS3(s3, bucket, name, "2_Truth", "upload-testing-lanes.fb", bytes);
 }
 
 async function saveLaneChangesHelper (lane, FlatbufferModule) {
@@ -452,23 +461,23 @@ async function saveLaneChangesHelper (lane, FlatbufferModule) {
   lane.rightPointAnnotationStatus = Array.from({ length: rightLength }).map(x => 1);
 }
 
-function updateSpine (left, right) {
-  // <script src="https://sdk.amazonaws.com/js/aws-sdk-2.283.1.min.js"></script>
-
-  AWS.config.update({ region: 'REGION' });
-  AWS.config.credentials = new AWS.CognitoIdentityCredentials({ IdentityPoolId: 'IDENTITY_POOL_ID' });
-  var lambda = new AWS.Lambda({ region: 'REGION', apiVersion: '2015-03-31' });
-
-  const params = {
+function updateSpine (bucket, name, left, right) {
+  const input = {
+    bucket: bucket,
+    name: name,
     left: left,
     right: right
   };
-
-  lambda.invoke(params, function(err, data) {
+  lambda.invoke({
+    FunctionName: 'lambda_handler',
+    InvocationType: 'RequestResponse',
+    LogType: 'None',
+    Payload: JSON.stringify(input)
+  }, function (err, data) {
     if (err) {
-      prompt(err);
+      console.log(err, err.stack);
     } else {
-      return JSON.parse(data.Payload);
+      return JSON.parse(data);
     }
   });
 }

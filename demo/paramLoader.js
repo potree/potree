@@ -54,6 +54,14 @@ export const s3 = bucket && region && name && accessKeyId && secretAccessKey &&
         sessionToken: sessionToken,
     });
 
+export const lambda = new AWS.Lambda({
+  region: region,
+  accessKeyId: accessKeyId,
+  secretAccessKey: secretAccessKey,
+  sessionToken: sessionToken,
+  // apiVersion: '2015-03-31'
+});
+
 if (!(s3 || window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) {
     window.history.back()
 };
@@ -67,7 +75,7 @@ export const defaultTimeRange = {
     initial: 0
 }
 
-// returns a THREE.ShaderMaterial object that should be used as standard 
+// returns a THREE.ShaderMaterial object that should be used as standard
 export function getShaderMaterial() {
     let uniforms = {
         color: { value: new THREE.Color(0x00ff00) },

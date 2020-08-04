@@ -59,7 +59,7 @@ export const lambda = new AWS.Lambda({
   accessKeyId: accessKeyId,
   secretAccessKey: secretAccessKey,
   sessionToken: sessionToken,
-  // apiVersion: '2015-03-31'
+  apiVersion: '2015-03-31'
 });
 
 if (!(s3 || window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) {

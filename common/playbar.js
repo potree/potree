@@ -144,15 +144,14 @@ export function createPlaybar () {
       document.body.removeChild(element);
     }
 
-    let laneLEFT, laneRIGHT;
     // Download Left Lane Vertices:
     try {
       const laneLeftSegments = window.viewer.scene.scene.getChildByName("Left Lane Segments");
       if (laneLeftSegments === undefined) {
-        laneLEFT = window.viewer.scene.scene.getChildByName("Lane Left");
-        laneLEFT = laneLEFT.points;
+        const laneLeft = window.viewer.scene.scene.getChildByName("Lane Left");
+        download(JSON.stringify(laneLeft.points, null, 2), "lane-left.json");
       } else {
-        laneLEFT = laneLeftSegments.getFinalPoints()
+        download(JSON.stringify(laneLeftSegments.getFinalPoints(), null, 2), "lane-left.json");
       }
     } catch (e) {
       console.error("Couldn't download left lane vertices: ", e);
@@ -171,21 +170,13 @@ export function createPlaybar () {
       const laneRightSegments = window.viewer.scene.scene.getChildByName("Right Lane Segments");
       if (laneRightSegments === undefined) {
         const laneRight = window.viewer.scene.scene.getChildByName("Lane Right");
-        laneRIGHT = laneRight.points
+        download(JSON.stringify(laneRight.points, null, 2), "lane-right.json", "text/plain");
       } else {
-        laneRIGHT = laneRightSegments.getFinalPoints()
+        download(JSON.stringify(laneRightSegments.getFinalPoints(), null, 2), "lane-right.json", "text/plain");
       }
     } catch (e) {
       console.error("Couldn't download right lane vertices: ", e);
     }
-
-    const input = {
-      bucket: bucket,
-      name: name,
-      left: laneLEFT,
-      right: laneRIGHT
-    };
-    download(JSON.stringify(input, null, 2), "lanes.json", "text/plain");
   });
 
   playbarhtml.find("#save_lanes_button").click(function () {
@@ -422,43 +413,22 @@ async function saveLaneChanges () {
   const laneLeftSegments = window.viewer.scene.scene.getChildByName("Left Lane Segments");
   if (laneLeftSegments === undefined) {
     const laneLeft = window.viewer.scene.scene.getChildByName("Lane Left");
-    lane.left = laneLeft.points; // download(JSON.stringify(laneLeft.points, null, 2), "lane-left.json");
+    lane.left = laneLeft.points;
   } else {
-    lane.left = laneLeftSegments.getFinalPoints(); // download(JSON.stringify(laneLeftSegments.getFinalPoints(), null, 2), "lane-left.json");
+    lane.left = laneLeftSegments.getFinalPoints();
   }
 
   // Right Lane Vertices:
   const laneRightSegments = window.viewer.scene.scene.getChildByName("Right Lane Segments");
   if (laneRightSegments === undefined) {
     const laneRight = window.viewer.scene.scene.getChildByName("Lane Right");
-    lane.right = laneRight.points; // download(JSON.stringify(laneRight.points, null, 2), "lane-right.json", "text/plain");
+    lane.right = laneRight.points;
   } else {
-    lane.right = laneRightSegments.getFinalPoints(); // download(JSON.stringify(laneRightSegments.getFinalPoints(), null, 2), "lane-right.json", "text/plain");
+    lane.right = laneRightSegments.getFinalPoints();
   }
 
   // Get New Spine Vertices
-  lane.spine = await updateSpine(bucket, name, lane.left, lane.right);
-
-  // const schemaUrl = s3.getSignedUrl('getObject', {
-  //   Bucket: bucket,
-  //   Key: `${name}/5_Schemas/GroundTruth_generated.js`
-  // });
-  // const FlatbufferModule = await import(schemaUrl);
-  // await saveLaneChangesHelper(lane, FlatbufferModule);
-  // const bytes = await createLanesFlatbuffer(lane, FlatbufferModule);
-  // writeFileToS3(s3, bucket, name, "2_Truth", "upload-testing-lanes.fb", bytes);
-}
-
-async function saveLaneChangesHelper (lane, FlatbufferModule) {
-  // const spineLength = lane.spine.length;
-  const leftLength = lane.left.length;
-  const rightLength = lane.right.length;
-
-  // lane.timestamp = Array.from({ length: spineLength }).map(x => 0.0)
-  lane.leftPointValidity = Array.from({ length: leftLength }).map(x => 0);
-  lane.rightPointValidity = Array.from({ length: rightLength }).map(x => 0);
-  lane.leftPointAnnotationStatus = Array.from({ length: leftLength }).map(x => 1);
-  lane.rightPointAnnotationStatus = Array.from({ length: rightLength }).map(x => 1);
+  await updateSpine(bucket, name, lane.left, lane.right);
 }
 
 function updateSpine (bucket, name, left, right) {
@@ -469,15 +439,15 @@ function updateSpine (bucket, name, left, right) {
     right: right
   };
   lambda.invoke({
-    FunctionName: 'lambda_handler',
-    InvocationType: 'RequestResponse',
+    FunctionName: 'arn:aws:lambda:us-east-1:757877321035:function:UpdateLanes',
+    // InvocationType: 'RequestResponse',
     LogType: 'None',
     Payload: JSON.stringify(input)
   }, function (err, data) {
     if (err) {
       console.log(err, err.stack);
     } else {
-      return JSON.parse(data);
+      console.log("Success", data);
     }
   });
 }

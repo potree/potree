@@ -120,10 +120,8 @@ export async function writeFileToS3 (s3, bucket, name, subdirectory, filename, b
       Body: buffer
     });
     request.on("httpUploadProgress", async (e) => {
-      // await updateLoadingBar(e.loaded / e.total * 100)
     });
     await request.promise();
-    // incrementLoadingBarTotal(`${filename} uploaded`)
   } catch (e) {
     console.error("Error: could not write file to S3: ", e);
   }

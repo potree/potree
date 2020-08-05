@@ -15,7 +15,7 @@ function createLoadingBar(id) {
 
   // https://loading.io/progress/#reference
   // data-stroke-width & data-stroke-width determines the height of the bar
-  // style width determines how long the bar is  
+  // style width determines how long the bar is
   const options = {
     "data-stroke":                  loadingBarColor,
     "data-stroke-trail-background": loadingBarColor,
@@ -58,11 +58,11 @@ export function resetProgressBars(numTasks=2) {
   setLoadingScreen()
 }
 
-/* 
+/*
  * Function that hands back control of the thread to the window such that it can update the progress bar.
- * Without using it whenever setting the loading bar, the javascript code will run and block the UI that 
- * needs to update the loading bar  
- * CURRENTLY: even though everything should be 
+ * Without using it whenever setting the loading bar, the javascript code will run and block the UI that
+ * needs to update the loading bar
+ * CURRENTLY: even though everything should be
 */
 export async function pause(name) {
   // argument for debugging if user wants to log what is currently trying to set the progress bar

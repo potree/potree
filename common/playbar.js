@@ -1,8 +1,7 @@
 'use strict';
 
-import { bucket, name, s3 } from "../demo/paramLoader.js";
-import { writeFileToS3, createLanesFlatbuffer } from "../demo/loaderUtilities.js";
-
+import { bucket, name, getLambda } from "../demo/paramLoader.js";
+import { resetProgressBars, incrementLoadingBarTotal } from "../common/overlay.js";
 
 const numberOrZero = (string) => {
   const value = Number(string);
@@ -184,6 +183,7 @@ export function createPlaybar () {
       confirm("Saving updated lanes will overwrite old lane data. Are you sure you want to proceed?") :
       true;
     if (proceed) {
+      resetProgressBars(1);
       saveLaneChanges();
     }
   });
@@ -394,7 +394,7 @@ function addPlaybarListeners () {
 }
 
 
-async function saveLaneChanges () {
+function saveLaneChanges () {
   const lane = {
     id: 0,
     timestamp: [],
@@ -413,41 +413,42 @@ async function saveLaneChanges () {
   const laneLeftSegments = window.viewer.scene.scene.getChildByName("Left Lane Segments");
   if (laneLeftSegments === undefined) {
     const laneLeft = window.viewer.scene.scene.getChildByName("Lane Left");
-    lane.left = laneLeft.points; // download(JSON.stringify(laneLeft.points, null, 2), "lane-left.json");
+    lane.left = laneLeft.points;
   } else {
-    lane.left = laneLeftSegments.getFinalPoints(); // download(JSON.stringify(laneLeftSegments.getFinalPoints(), null, 2), "lane-left.json");
+    lane.left = laneLeftSegments.getFinalPoints();
   }
 
   // Right Lane Vertices:
   const laneRightSegments = window.viewer.scene.scene.getChildByName("Right Lane Segments");
   if (laneRightSegments === undefined) {
     const laneRight = window.viewer.scene.scene.getChildByName("Lane Right");
-    lane.right = laneRight.points; // download(JSON.stringify(laneRight.points, null, 2), "lane-right.json", "text/plain");
+    lane.right = laneRight.points;
   } else {
-    lane.right = laneRightSegments.getFinalPoints(); // download(JSON.stringify(laneRightSegments.getFinalPoints(), null, 2), "lane-right.json", "text/plain");
+    lane.right = laneRightSegments.getFinalPoints();
   }
 
   // Get New Spine Vertices
-  // lane.spine = await updateSpine(lane.left, lane.right);
-
-  const schemaUrl = s3.getSignedUrl('getObject', {
-    Bucket: bucket,
-    Key: `${name}/5_Schemas/GroundTruth_generated.js`
-  });
-  const FlatbufferModule = await import(schemaUrl);
-  await saveLaneChangesHelper(lane, FlatbufferModule);
-  const bytes = await createLanesFlatbuffer(lane, FlatbufferModule);
-  writeFileToS3(s3, bucket, name, "2_Truth", "upload-testing-lanes.fb", bytes);
+  updateSpine(bucket, name, lane.left, lane.right);
 }
 
-async function saveLaneChangesHelper (lane, FlatbufferModule) {
-  // const spineLength = lane.spine.length;
-  const leftLength = lane.left.length;
-  const rightLength = lane.right.length;
-
-  // lane.timestamp = Array.from({ length: spineLength }).map(x => 0.0)
-  lane.leftPointValidity = Array.from({ length: leftLength }).map(x => 0);
-  lane.rightPointValidity = Array.from({ length: rightLength }).map(x => 0);
-  lane.leftPointAnnotationStatus = Array.from({ length: leftLength }).map(x => 1);
-  lane.rightPointAnnotationStatus = Array.from({ length: rightLength }).map(x => 1);
+function updateSpine (bucket, name, left, right) {
+  const input = {
+    bucket: bucket,
+    name: name,
+    left: left,
+    right: right
+  };
+  const lambda = getLambda();
+  lambda.invoke({
+    FunctionName: 'arn:aws:lambda:us-east-1:757877321035:function:UpdateLanes:1',
+    LogType: 'None',
+    Payload: JSON.stringify(input)
+  }, function (err, data) {
+    if (err) {
+      console.log(err, err.stack);
+    } else {
+      console.log("Successfully Uploaded lanes", data);
+    }
+    incrementLoadingBarTotal('lanes uploaded')
+  });
 }

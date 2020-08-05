@@ -48,7 +48,7 @@ async function loadRtk(s3, bucket, name) {
     const response = await fetch(rtkFiles.objectName);
     incrementLoadingBarTotal("rtk downloaded")
     const FlatbufferModule = await import(rtkFiles.schemaFile);
-    const result = await parseRTK(response.arrayBuffer(), FlatbufferModule);
+    const result = await parseRTK(await response.arrayBuffer(), FlatbufferModule);
     incrementLoadingBarTotal("rtk loaded")
     return result;
   }

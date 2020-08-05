@@ -57,7 +57,7 @@ export async function loadVelo2Rtk(s3, bucket, name) {
     try {
       const response = await fetch(calFiles.objectName);
       incrementLoadingBarTotal("cals downloaded")
-      const extrinsics = parseCalibrationFile(response.text());
+      const extrinsics = parseCalibrationFile(await response.text());
       incrementLoadingBarTotal("cals loaded")
       return extrinsics;
     } catch (err) {

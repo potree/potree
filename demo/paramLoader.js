@@ -54,13 +54,15 @@ export const s3 = bucket && region && name && accessKeyId && secretAccessKey &&
         sessionToken: sessionToken,
     });
 
-export const lambda = new AWS.Lambda({
-  region: region,
-  accessKeyId: accessKeyId,
-  secretAccessKey: secretAccessKey,
-  sessionToken: sessionToken,
-  apiVersion: '2015-03-31'
-});
+export function getLambda () {
+  return new AWS.Lambda({
+    region: region,
+    accessKeyId: accessKeyId,
+    secretAccessKey: secretAccessKey,
+    sessionToken: sessionToken,
+    apiVersion: '2015-03-31'
+  });
+}
 
 if (!(s3 || window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) {
     window.history.back()

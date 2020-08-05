@@ -1,8 +1,7 @@
 'use strict';
 
-import { bucket, name, s3, lambda } from "../demo/paramLoader.js";
-import { writeFileToS3, createLanesFlatbuffer } from "../demo/loaderUtilities.js";
-
+import { bucket, name, getLambda } from "../demo/paramLoader.js";
+import { resetProgressBars, incrementLoadingBarTotal } from "../common/overlay.js";
 
 const numberOrZero = (string) => {
   const value = Number(string);
@@ -184,6 +183,7 @@ export function createPlaybar () {
       confirm("Saving updated lanes will overwrite old lane data. Are you sure you want to proceed?") :
       true;
     if (proceed) {
+      resetProgressBars(1);
       saveLaneChanges();
     }
   });
@@ -431,23 +431,24 @@ async function saveLaneChanges () {
   await updateSpine(bucket, name, lane.left, lane.right);
 }
 
-function updateSpine (bucket, name, left, right) {
+async function updateSpine (bucket, name, left, right) {
   const input = {
     bucket: bucket,
     name: name,
     left: left,
     right: right
   };
-  lambda.invoke({
+  const lambda = getLambda();
+  await lambda.invoke({
     FunctionName: 'arn:aws:lambda:us-east-1:757877321035:function:UpdateLanes',
-    // InvocationType: 'RequestResponse',
     LogType: 'None',
     Payload: JSON.stringify(input)
   }, function (err, data) {
     if (err) {
       console.log(err, err.stack);
     } else {
-      console.log("Success", data);
+      console.log("Successfully Uploaded lanes", data);
     }
+    incrementLoadingBarTotal('lanes uploaded')
   });
 }

@@ -46,6 +46,17 @@ function finishLoading({pointcloud}) {
   const cloudCanUseCalibrationPanels = canUseCalibrationPanels(pointcloud.pcoGeometry.pointAttributes.attributes);
   window.canEnableCalibrationPanels = window.canEnableCalibrationPanels && cloudCanUseCalibrationPanels;
 
+  if (window.velo2RtkExtrinsicsLoaded) {
+
+    let velo2RtkOld = window.extrinsics.velo2Rtk.old;
+    let velo2RtkNew = window.extrinsics.velo2Rtk.new;
+
+    material.uniforms.velo2RtkXYZOld.value.set(velo2RtkOld.x, velo2RtkOld.y, velo2RtkOld.z);
+    material.uniforms.velo2RtkRPYOld.value.set(velo2RtkOld.roll, velo2RtkOld.pitch, velo2RtkOld.yaw);
+    material.uniforms.velo2RtkXYZNew.value.set(velo2RtkNew.x, velo2RtkNew.y, velo2RtkNew.z);
+    material.uniforms.velo2RtkRPYNew.value.set(velo2RtkNew.roll, velo2RtkNew.pitch, velo2RtkNew.yaw);
+  }
+
   if (window.canEnableCalibrationPanels) {
     enablePanels();
 
@@ -117,16 +128,7 @@ async function loadDataIntoDocument() {
 		    console.log("Velo2Rtk Extrinsics Loaded!");
 		    window.extrinsics.velo2Rtk = { old: velo2Rtk, new: velo2Rtk };
 		    storeVelo2Rtk(window.extrinsics.velo2Rtk.new);
-		    for (const cloud of viewer.scene.pointclouds) {
-
-		      let velo2RtkOld = window.extrinsics.velo2Rtk.old;
-		      let velo2RtkNew = window.extrinsics.velo2Rtk.new;
-
-		      cloud.material.uniforms.velo2RtkXYZOld.value.set(velo2RtkOld.x, velo2RtkOld.y, velo2RtkOld.z);
-		      cloud.material.uniforms.velo2RtkRPYOld.value.set(velo2RtkOld.roll, velo2RtkOld.pitch, velo2RtkOld.yaw);
-		      cloud.material.uniforms.velo2RtkXYZNew.value.set(velo2RtkNew.x, velo2RtkNew.y, velo2RtkNew.z);
-		      cloud.material.uniforms.velo2RtkRPYNew.value.set(velo2RtkNew.roll, velo2RtkNew.pitch, velo2RtkNew.yaw);
-		    }
+		    window.velo2RtkExtrinsicsLoaded = true;
                   } else {
 		    disablePanels("Unable to load extrinsics file");
                   }

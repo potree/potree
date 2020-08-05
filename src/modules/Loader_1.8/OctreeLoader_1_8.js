@@ -118,6 +118,7 @@ export class NodeLoader{
 			Potree.numNodesLoading--;
 
 			console.log(`failed to load ${node.name}`);
+			console.log(e);
 			console.log(`trying again!`);
 		}
 	}
@@ -164,6 +165,10 @@ export class NodeLoader{
 			}
 			
 			current.nodeType = type;
+
+			if(current.nodeType === 2){
+				continue;
+			}
 
 			for(let childIndex = 0; childIndex < 8; childIndex++){
 				let childExists = ((1 << childIndex) & childMask) !== 0;

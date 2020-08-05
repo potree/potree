@@ -45,7 +45,7 @@ async function loadLanes(s3, bucket, name, fname, supplierNum, annotationMode, v
     const response = await fetch(laneFiles.objectName);
     incrementLoadingBarTotal("lanes downloaded")
     const FlatbufferModule = await import(laneFiles.schemaFile);
-    const laneGeometries = await parseLanes(response.arrayBuffer(), FlatbufferModule, resolvedSupplierNum, annotationMode, volumes);
+    const laneGeometries = await parseLanes(await response.arrayBuffer(), FlatbufferModule, resolvedSupplierNum, annotationMode, volumes);
     incrementLoadingBarTotal("lanes loaded")
     return laneGeometries;
   }

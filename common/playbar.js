@@ -394,7 +394,7 @@ function addPlaybarListeners () {
 }
 
 
-async function saveLaneChanges () {
+function saveLaneChanges () {
   const lane = {
     id: 0,
     timestamp: [],
@@ -428,7 +428,7 @@ async function saveLaneChanges () {
   }
 
   // Get New Spine Vertices
-  await updateSpine(bucket, name, lane.left, lane.right);
+  updateSpine(bucket, name, lane.left, lane.right);
 }
 
 async function updateSpine (bucket, name, left, right) {

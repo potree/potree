@@ -431,7 +431,7 @@ function saveLaneChanges () {
   updateSpine(bucket, name, lane.left, lane.right);
 }
 
-async function updateSpine (bucket, name, left, right) {
+function updateSpine (bucket, name, left, right) {
   const input = {
     bucket: bucket,
     name: name,
@@ -439,8 +439,8 @@ async function updateSpine (bucket, name, left, right) {
     right: right
   };
   const lambda = getLambda();
-  await lambda.invoke({
-    FunctionName: 'arn:aws:lambda:us-east-1:757877321035:function:UpdateLanes',
+  lambda.invoke({
+    FunctionName: 'arn:aws:lambda:us-east-1:757877321035:function:UpdateLanes:1',
     LogType: 'None',
     Payload: JSON.stringify(input)
   }, function (err, data) {

@@ -15,7 +15,7 @@ export const detectionDownloads = async (datasetFiles) => {
 }
 
 async function loadDetections(s3, bucket, name, shaderMaterial, animationEngine) {
-  const tstart = performance.now();
+
   if (!detectionFiles) {
     console.log("No detection files present")
     return null
@@ -25,65 +25,30 @@ async function loadDetections(s3, bucket, name, shaderMaterial, animationEngine)
   }
 
   if (s3 && bucket && name) {
-    (async () => {
-      const schemaUrl = s3.getSignedUrl('getObject', {
-        Bucket: bucket,
-        Key: detectionFiles.schemaFile
-      });
-
-      const request = s3.getObject({Bucket: bucket,
-        Key: detectionFiles.objectName},
-        async (err, data) => {
-          let detectionGeometries = null // default to error state
-          if (err) {
-            console.log(err, err.stack);
-          } else {
-            const FlatbufferModule = await import(schemaUrl);
-            detectionGeometries = await parseDetections(data.Body, shaderMaterial, FlatbufferModule, animationEngine);
-          }
-          incrementLoadingBarTotal()
-          return detectionGeometries
-      });
-      request.on("httpDownloadProgress", async (e) => {
-        await updateLoadingBar(e.loaded/e.total * 100)
-      });
-
-      request.on("complete", () => {
-        incrementLoadingBarTotal()
-      });
-    })();
-
+    const request = s3.getObject({
+      Bucket: bucket,
+      Key: detectionFiles.objectName
+    });
+    request.on("httpDownloadProgress", async (e) => {
+      await updateLoadingBar(e.loaded / e.total * 100);
+    });
+    const data = await request.promise();
+    incrementLoadingBarTotal("detections downloaded");
+    const schemaUrl = s3.getSignedUrl('getObject', {
+      Bucket: bucket,
+      Key: detectionFiles.schemaFile
+    });
+    const FlatbufferModule = await import(schemaUrl);
+    const detectionGeometries = await parseDetections(data.Body, shaderMaterial, FlatbufferModule, animationEngine);
+    incrementLoadingBarTotal("detections loaded");
+    return detectionGeometries;
   } else {
-    let t0, t1;
-
-    const xhr = new XMLHttpRequest();
-    xhr.open("GET", detectionFiles.objectName);
-    xhr.responseType = "arraybuffer";
-
-    xhr.onprogress = async (e) => {
-      await updateLoadingBar(e.loaded/e.total*100)
-      t1 = performance.now();
-      t0 = t1;
-    }
-
-    xhr.onload = async (data) => {
-      incrementLoadingBarTotal()
-      const FlatbufferModule = await import(detectionFiles.schemaFile);
-
-      const response = data.target.response;
-      if (!response) {
-        console.error("Could not create buffer from detection data");
-        return;
-      }
-
-      let bytesArray = new Uint8Array(response);
-      const detectionResult = await parseDetections(bytesArray, shaderMaterial, FlatbufferModule, animationEngine);
-      incrementLoadingBarTotal()
-      return detectionResult
-    };
-
-    t0 = performance.now();
-    xhr.send();
+    const response = await fetch(detectionFiles.objectName);
+    incrementLoadingBarTotal("detections downloaded");
+    const FlatbufferModule = await import(detectionFiles.schemaFile);
+    const detectionGeometries = await parseDetections(await response.arrayBuffer(), shaderMaterial, FlatbufferModule, animationEngine);
+    incrementLoadingBarTotal("detections loaded");
+    return detectionGeometries;
   }
 }
 
@@ -231,7 +196,7 @@ window.detectionsLoaded = false;
 			let shaderMaterial = getShaderMaterial();
 			let detectionShaderMaterial = shaderMaterial.clone();
 			detectionShaderMaterial.uniforms.color.value = new THREE.Color(0xFFA500);
-      const detectionGeometries = await loadDetections(s3, bucket, name, detectionShaderMaterial, animationEngine)
+      const detectionGeometries = await loadDetections(s3, bucket, name, detectionShaderMaterial, animationEngine);
 
       if (detectionGeometries != null) {
         let detectionLayer = new THREE.Group();

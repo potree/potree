@@ -19,8 +19,8 @@
     </a>
   </body>
   <script type="module">
-import { Color, Vec3, EulerAngles, Scene, GLRenderer, PassType } from "./libs/zea-engine/dist/index.esm.js"
-import { PointCloudAsset, GLPointCloudPass } from "./libs/zea-pointclouds/dist/index.rawimport.js"
+import { Color, Vec3, EulerAngles, Scene, GLRenderer, PassType } from "https://unpkg.com/@zeainc/zea-engine/dist/index.esm.js"
+import { PointCloudAsset, GLPointCloudPass } from "https://unpkg.com/@zeainc/zea-pointclouds/dist/index.rawimport.js"
 
 // const socket = io('http://localhost');
 const domElement = document.getElementById("viewport");
@@ -42,12 +42,12 @@ renderer.resumeDrawing();
 const pointcloudPass = new GLPointCloudPass();
 renderer.addPass(pointcloudPass, PassType.OPAQUE);
 
-const pointcloudAsset = new PointCloudAsset();
-const pointClouudUrl = "https://storage.googleapis.com/visualive-tmp/CNA/Old_Aguathuna_Ship_Loading_Area-Medium_Density_Cloud2/cloud.js"
-pointcloudAsset.loadPointCloud(pointClouudUrl, "PointCloud").then(e => {
+const pointCloudAsset = new PointCloudAsset();
+const pointCloudUrl = "https://storage.googleapis.com/visualive-tmp/CNA/Old_Aguathuna_Ship_Loading_Area-Medium_Density_Cloud2/cloud.js"
+pointCloudAsset.loadPointCloud(pointCloudUrl, "PointCloud").then(e => {
   renderer.frameAll()
 });
-scene.getRoot().addChild(pointcloudAsset);
+scene.getRoot().addChild(pointCloudAsset);
 
 // renderer.getViewport().getCamera().setPositionAndTarget(
 //   new Vec3({"x":56.49008,"y":180.35938,"z":33.63845}),

@@ -1,9 +1,4 @@
-
-import {
-	GLShader,
-	sgFactory,
-	shaderLibrary
-} from '@zeainc/zea-engine'
+import { GLShader, Registry, shaderLibrary } from '@zeainc/zea-engine'
 
 class PotreePointsShader extends GLShader {
   constructor(gl) {
@@ -229,9 +224,7 @@ void main(void) {
   }
 }
 
-sgFactory.registerClass('PotreePointsShader', PotreePointsShader)
-
-
+Registry.register('PotreePointsShader', PotreePointsShader)
 
 class PotreePointsGeomDataShader extends PotreePointsShader {
   constructor(gl) {
@@ -279,7 +272,7 @@ void main(void) {
   }
 }
 
-sgFactory.registerClass('PotreePointsGeomDataShader', PotreePointsGeomDataShader)
+Registry.register('PotreePointsGeomDataShader', PotreePointsGeomDataShader)
 
 class PotreePointsHilighlightShader extends PotreePointsShader {
   constructor(gl) {
@@ -321,6 +314,6 @@ void main(void) {
   }
 }
 
-sgFactory.registerClass('PotreePointsHilighlightShader', PotreePointsHilighlightShader)
+Registry.register('PotreePointsHilighlightShader', PotreePointsHilighlightShader)
 
 export { PotreePointsShader, PotreePointsGeomDataShader, PotreePointsHilighlightShader }

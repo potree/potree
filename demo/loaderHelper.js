@@ -12,7 +12,7 @@ import { AnimationEngine } from "../demo/animationEngine.js"
 import { createPlaybar } from "../common/playbar.js"
 import { loadRtkCallback, rtkDownloads } from "../demo/rtkLoader.js"
 import { textureDownloads } from "../demo/textureLoader.js"
-import { loadVelo2Rtk, loadRtk2Vehicle, storeCalibration, calDownloads, addCalibrationButton } from "../demo/calibrationManager.js"
+import { loadCalibrationFile, loadRtk2Vehicle, storeCalibration, calDownloads, addCalibrationButton } from "../demo/calibrationManager.js"
 import { loadLanesCallback, addReloadLanesButton, laneDownloads } from "../demo/laneLoader.js"
 import { loadTracksCallback, trackDownloads } from "../demo/trackLoader.js"
 import { loadRemCallback, remDownloads } from "../demo/remLoader.js"
@@ -123,7 +123,7 @@ async function loadDataIntoDocument() {
 		// Load Extrinsics:
 		window.extrinsics = { rtk2Vehicle: null, velo2Rtk: {} };
 		try {
-		  const velo2Rtk = await loadVelo2Rtk(s3, bucket, name);
+		  const velo2Rtk = await loadCalibrationFile(s3, bucket, name, 'extrinsics');
 		  if (velo2Rtk) {
 		    console.log("Velo2Rtk Extrinsics Loaded!");
 		    window.extrinsics.velo2Rtk = { old: velo2Rtk, new: velo2Rtk };
@@ -136,7 +136,23 @@ async function loadDataIntoDocument() {
 		  const rtk2Vehicle = await loadRtk2Vehicle(s3, bucket, name);
 		  console.log("Rtk2Vehicle Extrinsics Loaded!");
 		  window.extrinsics.rtk2Vehicle = { old: rtk2Vehicle, new: rtk2Vehicle };
-		  storeRtk2Vehicle(window.extrinsics.rtk2Vehicle.new);
+		  // storeRtk2Vehicle(window.extrinsics.rtk2Vehicle.new);
+
+
+		  // Try to load nominal calibration
+		  const nominalExtrinsics = await loadCalibrationFile(s3, bucket, name, 'nominal');
+		  if (nominalExtrinsics) {
+		  	console.log("Nominal Extrinsics Loaded!");
+		  	debugger;
+		  }
+
+		  // Try to load metadata file
+		  const metadataCals = await loadCalibrationFile(s3, bucket, name, 'metadata');
+		  if (metadataCals) {
+		  	console.log("Metadata Calibrations Loaded!");
+		  	debugger;
+		  }
+
 		} catch (e) {
 		  console.error("Could not load Calibrations: ", e);
 		}

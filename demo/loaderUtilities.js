@@ -185,3 +185,45 @@ export async function createLanesFlatbuffer (lane, FlatbufferModule) {
   outbytes.set(bytes, lenBytes.length);
   return outbytes;
 }
+
+/**
+ * @brief Gets list of "all" files located in s3 for the dataset
+ * @note Have to do a request for each sub dir as there is a limit on # objects that can be requested
+ * (1_Viz has >1000 raw .bin that take up all the space so do multiple requests -- not all 1_Viz's .bin are included)
+ * @returns {Promise<Array<String> | null>} List of files located within s3 for the dataset (null if running local point cloud)
+ */
+export async function getS3Files (s3, bucket, name) {
+  if (bucket == null) return null; // local point cloud
+  const removePrefix = (str) => str.split(name + "/")[1];
+
+  const topLevel = await s3.listObjectsV2({
+    Bucket: bucket,
+    Delimiter: "/",
+    Prefix: `${name}/`
+  }).promise();
+  const topLevelDirs = topLevel.CommonPrefixes
+    .map(listing => listing.Prefix)
+    .filter(str => {
+      const noPrefix = removePrefix(str);
+      const delimIdx = noPrefix.indexOf("/");
+      // -1 if no other '/' found, meaning is a file & not a directory
+      return delimIdx !== -1;
+    })
+
+  // consolidate each subdirs' contents after doing multiple requests
+  // prevent one folder's numerous binary files from blocking the retrieval of other dirs' files
+  const filePaths = [];
+  const table = {};
+  for (const dir of topLevelDirs) {
+    const list = [];
+    const listData = await s3.listObjectsV2({
+      Bucket: bucket,
+      Prefix: dir
+    }).promise();
+    listData.Contents.forEach(fileListing => filePaths.push(fileListing.Key));
+    listData.Contents.forEach(fileListing => list.push(fileListing.Key));
+    const key = dir.split("/");
+    table[key[2]] = list;
+  }
+  return [filePaths, table];
+}

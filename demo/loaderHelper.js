@@ -22,6 +22,7 @@ import { addDetectionButton, detectionDownloads } from "../demo/detectionLoader.
 import { PointAttributeNames } from "../src/loader/PointAttributes.js";
 import { setNumTasks } from "../common/overlay.js"
 import { loadControlPointsCallback } from "../demo/controlPointLoader.js"
+import { getS3Files } from "../demo/loaderUtilities.js"
 
 
 function canUseCalibrationPanels(attributes) {
@@ -87,7 +88,9 @@ export async function loadPotree() {
   // now that animation engine has been created, can add event listeners
   createPlaybar();
 
-  const datasetFiles = await getS3Files()
+  const filesArray = await getS3Files(s3, bucket, name)
+  const datasetFiles = filesArray[0];
+  const s3FilesTable = filesArray[1];
   const numTasks = await determineNumTasks(datasetFiles)
   setNumTasks(numTasks)
 
@@ -173,47 +176,49 @@ async function loadDataIntoDocument() {
 			console.error("Could not load Tracks: ", e);
 		}
 
+
+
+		try {
+			loadControlPointsCallback(s3, bucket, name, animationEngine, s3FilesTable['3_Assessments']);
+		} catch (e) {
+			console.error("No control points: ", e);
+		}
+
 		// try {
 		// 	loadRemCallback(s3, bucket, name, animationEngine);
 		// } catch (e) {
 		// 	console.error("No rem points: ", e);
 		// }
 
-		try {
-			loadControlPointsCallback(s3, bucket, name, animationEngine, 'control_point_3_rtk_relative.fb');
-		} catch (e) {
-			console.error("No rem points: ", e);
-		}
-
-		try {
-			// LaneSense
-			loadControlPointsCallback(s3, bucket, name, animationEngine, 'viz_Spheres3D_LaneSense_cp1_0.7s_left.fb');
-			loadControlPointsCallback(s3, bucket, name, animationEngine, 'viz_Spheres3D_LaneSense_cp1_0.7s_right.fb');
-			loadControlPointsCallback(s3, bucket, name, animationEngine, 'viz_Spheres3D_LaneSense_cp2_1.0s_left.fb');
-			loadControlPointsCallback(s3, bucket, name, animationEngine, 'viz_Spheres3D_LaneSense_cp2_1.0s_right.fb');
-			loadControlPointsCallback(s3, bucket, name, animationEngine, 'viz_Spheres3D_LaneSense_cp3_1.3s_left.fb');
-			loadControlPointsCallback(s3, bucket, name, animationEngine, 'viz_Spheres3D_LaneSense_cp3_1.3s_right.fb');
-			loadControlPointsCallback(s3, bucket, name, animationEngine, 'viz_Spheres3D_LaneSense_cp4_2.0s_left.fb');
-			loadControlPointsCallback(s3, bucket, name, animationEngine, 'viz_Spheres3D_LaneSense_cp4_2.0s_right.fb');
-		} catch (e) {
-			console.error("Missing LaneSense sample points: ", e);
-		}
-
-		try {
-			// SPP
-			loadControlPointsCallback(s3, bucket, name, animationEngine, 'viz_Spheres3D_SPP_cp1_5.0m_spp.fb');
-			loadControlPointsCallback(s3, bucket, name, animationEngine, 'viz_Spheres3D_SPP_cp2_10.0m_spp.fb');
-			loadControlPointsCallback(s3, bucket, name, animationEngine, 'viz_Spheres3D_SPP_cp3_15.0m_spp.fb');
-			loadControlPointsCallback(s3, bucket, name, animationEngine, 'viz_Spheres3D_SPP_cp4_20.0m_spp.fb');
-			loadControlPointsCallback(s3, bucket, name, animationEngine, 'viz_Spheres3D_SPP_cp5_25.0m_spp.fb');
-			loadControlPointsCallback(s3, bucket, name, animationEngine, 'viz_Spheres3D_SPP_cp6_30.0m_spp.fb');
-			loadControlPointsCallback(s3, bucket, name, animationEngine, 'viz_Spheres3D_SPP_cp7_35.0m_spp.fb');
-			loadControlPointsCallback(s3, bucket, name, animationEngine, 'viz_Spheres3D_SPP_cp8_40.0m_spp.fb');
-			loadControlPointsCallback(s3, bucket, name, animationEngine, 'viz_Spheres3D_SPP_cp9_45.0m_spp.fb');
-			loadControlPointsCallback(s3, bucket, name, animationEngine, 'viz_Spheres3D_SPP_cp10_50.0m_spp.fb');
-		} catch (e) {
-			console.error("Missing SPP sample points: ", e);
-		}
+		// try {
+		// 	// LaneSense
+		// 	loadControlPointsCallback(s3, bucket, name, animationEngine, 'viz_Spheres3D_LaneSense_cp1_0.7s_left.fb');
+		// 	loadControlPointsCallback(s3, bucket, name, animationEngine, 'viz_Spheres3D_LaneSense_cp1_0.7s_right.fb');
+		// 	loadControlPointsCallback(s3, bucket, name, animationEngine, 'viz_Spheres3D_LaneSense_cp2_1.0s_left.fb');
+		// 	loadControlPointsCallback(s3, bucket, name, animationEngine, 'viz_Spheres3D_LaneSense_cp2_1.0s_right.fb');
+		// 	loadControlPointsCallback(s3, bucket, name, animationEngine, 'viz_Spheres3D_LaneSense_cp3_1.3s_left.fb');
+		// 	loadControlPointsCallback(s3, bucket, name, animationEngine, 'viz_Spheres3D_LaneSense_cp3_1.3s_right.fb');
+		// 	loadControlPointsCallback(s3, bucket, name, animationEngine, 'viz_Spheres3D_LaneSense_cp4_2.0s_left.fb');
+		// 	loadControlPointsCallback(s3, bucket, name, animationEngine, 'viz_Spheres3D_LaneSense_cp4_2.0s_right.fb');
+		// } catch (e) {
+		// 	console.error("Missing LaneSense sample points: ", e);
+		// }
+		//
+		// try {
+		// 	// SPP
+		// 	loadControlPointsCallback(s3, bucket, name, animationEngine, 'viz_Spheres3D_SPP_cp1_5.0m_spp.fb');
+		// 	loadControlPointsCallback(s3, bucket, name, animationEngine, 'viz_Spheres3D_SPP_cp2_10.0m_spp.fb');
+		// 	loadControlPointsCallback(s3, bucket, name, animationEngine, 'viz_Spheres3D_SPP_cp3_15.0m_spp.fb');
+		// 	loadControlPointsCallback(s3, bucket, name, animationEngine, 'viz_Spheres3D_SPP_cp4_20.0m_spp.fb');
+		// 	loadControlPointsCallback(s3, bucket, name, animationEngine, 'viz_Spheres3D_SPP_cp5_25.0m_spp.fb');
+		// 	loadControlPointsCallback(s3, bucket, name, animationEngine, 'viz_Spheres3D_SPP_cp6_30.0m_spp.fb');
+		// 	loadControlPointsCallback(s3, bucket, name, animationEngine, 'viz_Spheres3D_SPP_cp7_35.0m_spp.fb');
+		// 	loadControlPointsCallback(s3, bucket, name, animationEngine, 'viz_Spheres3D_SPP_cp8_40.0m_spp.fb');
+		// 	loadControlPointsCallback(s3, bucket, name, animationEngine, 'viz_Spheres3D_SPP_cp9_45.0m_spp.fb');
+		// 	loadControlPointsCallback(s3, bucket, name, animationEngine, 'viz_Spheres3D_SPP_cp10_50.0m_spp.fb');
+		// } catch (e) {
+		// 	console.error("Missing SPP sample points: ", e);
+		// }
 
 		// Load Radar:
 		try {
@@ -235,45 +240,6 @@ async function loadDataIntoDocument() {
 		// animationEngine.configure(tstart, tend, playbackRate);
 		// animationEngine.launch();
 	}); // END loadRtkCallback()
-}
-
-/**
- * @brief Gets list of "all" files located in s3 for the dataset
- * @note Have to do a request for each sub dir as there is a limit on # objects that can be requested
- * (1_Viz has >1000 raw .bin that take up all the space so do multiple requests -- not all 1_Viz's .bin are included)
- * @returns {Promise<Array<String> | null>} List of files located within s3 for the dataset (null if running local point cloud)
- */
-async function getS3Files() {
-	if (bucket == null) return null // local point cloud
-	const removePrefix = (str) => str.split(name+'/')[1]
-
-	const topLevel = await s3.listObjectsV2({
-		Bucket: bucket,
-		Delimiter: "/",
-		Prefix: `${name}/`
-	}).promise()
-
-	const topLevelDirs = topLevel.CommonPrefixes
-		.map(listing => listing.Prefix)
-		.filter(str => {
-			const noPrefix = removePrefix(str)
-			const delimIdx = noPrefix.indexOf("/")
-			// -1 if no other '/' found, meaning is a file & not a directory
-			return delimIdx != -1
-		})
-
-	// consolidate each subdirs' contents after doing multiple requests
-	// prevent one folder's numerous binary files from blocking the retrieval of other dirs' files
-	const filePaths = []
-	for (const dir of topLevelDirs) {
-		const listData = await s3.listObjectsV2({
-			Bucket: bucket,
-			Prefix: dir,
-		}).promise()
-		listData.Contents.forEach(fileListing => filePaths.push(fileListing.Key))
-	}
-
-	return filePaths
 }
 
 /**

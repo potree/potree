@@ -3,7 +3,24 @@ import { getShaderMaterial } from '../demo/paramLoader.js';
 import { updateLoadingBar, incrementLoadingBarTotal } from '../common/overlay.js';
 
 // load control points
-export async function loadControlPointsCallback (s3, bucket, name, animationEngine, controlPointType) {
+export async function loadControlPointsCallback (s3, bucket, name, animationEngine, s3Files = null) {
+  // Handle local files
+  if (!s3Files) {
+    await loadControlPointsCallbackHelper(s3, bucket, name, animationEngine);
+  } else {
+    // Handle s3 files
+    for (let s3File of s3Files) {
+      s3File = s3File.split(/.*[\/|\\]/)[1];
+      if (!s3File.endsWith('cp.fb')) {
+        continue;
+      } else {
+        await loadControlPointsCallbackHelper(s3, bucket, name, animationEngine, s3File);
+      }
+    }
+  }
+}
+
+async function loadControlPointsCallbackHelper (s3, bucket, name, animationEngine, controlPointType) {
   const shaderMaterial = getShaderMaterial();
   const controlPointShaderMaterial = shaderMaterial.clone();
   await loadControlPoints(s3, bucket, name, controlPointShaderMaterial, animationEngine, (sphereMeshes) => {
@@ -148,31 +165,48 @@ async function createControlMeshes (controlPoints, controlPointShaderMaterial, F
   return allSpheres;
 }
 
-const controlPointColorsTable = {
-  'control_point_3_rtk_relative.fb': new THREE.Color(0x00ffff),
+function getControlPointColor (controlPointType) {
+  if (controlPointType.includes("rtk")) {
+    return new THREE.Color(0x00ffff);
+  } else if (controlPointType.includes("left")) {
+    return new THREE.Color(0xffff00);
+  } else if (controlPointType.includes("right")) {
+    return new THREE.Color(0x0000ff);
+  // } else if (controlPointType.includes("left")) {
+  //   return new THREE.Color(0xffff00);
+  // } else if (controlPointType.includes("right")) {
+  //   return new THREE.Color(0x0000ff);
+  } else {
+    return new THREE.Color(0x0000ff);
+  }
+  // return controlPointColorsTable[controlPointType]
+}
 
-  'viz_Spheres3D_LaneSense_cp1_0.7s_left.fb': new THREE.Color(0xffff00),
-  'viz_Spheres3D_LaneSense_cp2_1.0s_left.fb': new THREE.Color(0xffff00),
-  'viz_Spheres3D_LaneSense_cp3_1.3s_left.fb': new THREE.Color(0xffff00),
-  'viz_Spheres3D_LaneSense_cp4_2.0s_left.fb': new THREE.Color(0xffff00),
-
-  'viz_Spheres3D_LaneSense_cp1_0.7s_right.fb': new THREE.Color(0x0000ff),
-  'viz_Spheres3D_LaneSense_cp2_1.0s_right.fb': new THREE.Color(0x0000ff),
-  'viz_Spheres3D_LaneSense_cp3_1.3s_right.fb': new THREE.Color(0x0000ff),
-  'viz_Spheres3D_LaneSense_cp4_2.0s_right.fb': new THREE.Color(0x0000ff),
-
-  'viz_Spheres3D_SPP_cp1_5.0m_spp.fb' : new THREE.Color(0xff0000),
-  'viz_Spheres3D_SPP_cp2_10.0m_spp.fb' : new THREE.Color(0xff0000),
-  'viz_Spheres3D_SPP_cp3_15.0m_spp.fb' : new THREE.Color(0xff0000),
-  'viz_Spheres3D_SPP_cp4_20.0m_spp.fb' : new THREE.Color(0xff0000),
-  'viz_Spheres3D_SPP_cp5_25.0m_spp.fb' : new THREE.Color(0xff0000),
-  'viz_Spheres3D_SPP_cp6_30.0m_spp.fb' : new THREE.Color(0xff0000),
-  'viz_Spheres3D_SPP_cp7_35.0m_spp.fb' : new THREE.Color(0xff0000),
-  'viz_Spheres3D_SPP_cp8_40.0m_spp.fb' : new THREE.Color(0xff0000),
-  'viz_Spheres3D_SPP_cp9_45.0m_spp.fb' : new THREE.Color(0xff0000),
-  'viz_Spheres3D_SPP_cp10_50.0m_spp.fb' : new THREE.Color(0xff0000)
-};
-const getControlPointColor = (controlPointType) => controlPointColorsTable[controlPointType];
+// const controlPointColorsTable = {
+//   'control_point_3_rtk_relative.fb': new THREE.Color(0x00ffff),
+//
+//   'viz_Spheres3D_LaneSense_cp1_0.7s_left.fb': new THREE.Color(0xffff00),
+//   'viz_Spheres3D_LaneSense_cp2_1.0s_left.fb': new THREE.Color(0xffff00),
+//   'viz_Spheres3D_LaneSense_cp3_1.3s_left.fb': new THREE.Color(0xffff00),
+//   'viz_Spheres3D_LaneSense_cp4_2.0s_left.fb': new THREE.Color(0xffff00),
+//
+//   'viz_Spheres3D_LaneSense_cp1_0.7s_right.fb': new THREE.Color(0x0000ff),
+//   'viz_Spheres3D_LaneSense_cp2_1.0s_right.fb': new THREE.Color(0x0000ff),
+//   'viz_Spheres3D_LaneSense_cp3_1.3s_right.fb': new THREE.Color(0x0000ff),
+//   'viz_Spheres3D_LaneSense_cp4_2.0s_right.fb': new THREE.Color(0x0000ff),
+//
+//   'viz_Spheres3D_SPP_cp1_5.0m_spp.fb' : new THREE.Color(0xff0000),
+//   'viz_Spheres3D_SPP_cp2_10.0m_spp.fb' : new THREE.Color(0xff0000),
+//   'viz_Spheres3D_SPP_cp3_15.0m_spp.fb' : new THREE.Color(0xff0000),
+//   'viz_Spheres3D_SPP_cp4_20.0m_spp.fb' : new THREE.Color(0xff0000),
+//   'viz_Spheres3D_SPP_cp5_25.0m_spp.fb' : new THREE.Color(0xff0000),
+//   'viz_Spheres3D_SPP_cp6_30.0m_spp.fb' : new THREE.Color(0xff0000),
+//   'viz_Spheres3D_SPP_cp7_35.0m_spp.fb' : new THREE.Color(0xff0000),
+//   'viz_Spheres3D_SPP_cp8_40.0m_spp.fb' : new THREE.Color(0xff0000),
+//   'viz_Spheres3D_SPP_cp9_45.0m_spp.fb' : new THREE.Color(0xff0000),
+//   'viz_Spheres3D_SPP_cp10_50.0m_spp.fb' : new THREE.Color(0xff0000)
+// };
+// const getControlPointColor = (controlPointType) => controlPointColorsTable[controlPointType];
 
 const controlPointNamesTable = {
   'control_point_3_rtk_relative.fb': 'REM Control Points',
@@ -197,4 +231,15 @@ const controlPointNamesTable = {
   'viz_Spheres3D_SPP_cp9_45.0m_spp.fb' : '45m SPP Control Points',
   'viz_Spheres3D_SPP_cp10_50.0m_spp.fb' : '50m SPP Control Points'
 };
-const getControlPointName = (controlPointType) => controlPointNamesTable[controlPointType];
+
+function getControlPointName (controlPointType) {
+  if (controlPointType.includes('viz_Spheres3D_LanseSense')) {
+    return controlPointNamesTable[controlPointType];
+  } else if (controlPointType.includes("rtk_relative")) {
+    return controlPointNamesTable[controlPointType];
+  }
+  let words = controlPointType.substring(13);
+  words = words.split("_");
+  words = words.join(" ");
+  return words;
+}

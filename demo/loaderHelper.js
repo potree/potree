@@ -187,13 +187,16 @@ async function loadDataIntoDocument() {
 		try {
 			// SPP
 			console.log("Loading SPP...")
-			loadControlPointsCallback(s3, bucket, name, animationEngine, 'viz_Spheres3D_SPP_cp1_5.0m_center.fb');
-			loadControlPointsCallback(s3, bucket, name, animationEngine, 'viz_Spheres3D_SPP_cp2_10.0m_center.fb');
-			loadControlPointsCallback(s3, bucket, name, animationEngine, 'viz_Spheres3D_SPP_cp3_15.0m_center.fb');
-			loadControlPointsCallback(s3, bucket, name, animationEngine, 'viz_Spheres3D_SPP_cp4_20.0m_center.fb');
-			loadControlPointsCallback(s3, bucket, name, animationEngine, 'viz_Spheres3D_SPP_cp5_25.0m_center.fb');
-			loadControlPointsCallback(s3, bucket, name, animationEngine, 'viz_Spheres3D_SPP_cp6_30.0m_center.fb');
-			loadControlPointsCallback(s3, bucket, name, animationEngine, 'viz_Spheres3D_SPP_cp7_35.0m_center.fb');
+			loadControlPointsCallback(s3, bucket, name, animationEngine, 'viz_Spheres3D_SPP_cp1_5.0m_spp.fb');
+			loadControlPointsCallback(s3, bucket, name, animationEngine, 'viz_Spheres3D_SPP_cp2_10.0m_spp.fb');
+			loadControlPointsCallback(s3, bucket, name, animationEngine, 'viz_Spheres3D_SPP_cp3_15.0m_spp.fb');
+			loadControlPointsCallback(s3, bucket, name, animationEngine, 'viz_Spheres3D_SPP_cp4_20.0m_spp.fb');
+			loadControlPointsCallback(s3, bucket, name, animationEngine, 'viz_Spheres3D_SPP_cp5_25.0m_spp.fb');
+			loadControlPointsCallback(s3, bucket, name, animationEngine, 'viz_Spheres3D_SPP_cp6_30.0m_spp.fb');
+			loadControlPointsCallback(s3, bucket, name, animationEngine, 'viz_Spheres3D_SPP_cp7_35.0m_spp.fb');
+			loadControlPointsCallback(s3, bucket, name, animationEngine, 'viz_Spheres3D_SPP_cp8_40.0m_spp.fb');
+			loadControlPointsCallback(s3, bucket, name, animationEngine, 'viz_Spheres3D_SPP_cp9_45.0m_spp.fb');
+			loadControlPointsCallback(s3, bucket, name, animationEngine, 'viz_Spheres3D_SPP_cp10_50.0m_spp.fb');
 		} catch (e) {
 			console.error("No SPP sample points: ", e);
 		}

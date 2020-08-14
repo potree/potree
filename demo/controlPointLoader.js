@@ -164,13 +164,16 @@ const controlPointColorsTable = {
   'viz_Spheres3D_LaneSense_cp3_1.3s_right.fb': new THREE.Color(0x0000ff),
   'viz_Spheres3D_LaneSense_cp4_2.0s_right.fb': new THREE.Color(0x0000ff),
 
-  'viz_Spheres3D_SPP_cp1_5.0m_center.fb' : new THREE.Color(0xff0000),
-  'viz_Spheres3D_SPP_cp2_10.0m_center.fb' : new THREE.Color(0xff0000),
-  'viz_Spheres3D_SPP_cp3_15.0m_center.fb' : new THREE.Color(0xff0000),
-  'viz_Spheres3D_SPP_cp4_20.0m_center.fb' : new THREE.Color(0xff0000),
-  'viz_Spheres3D_SPP_cp5_25.0m_center.fb' : new THREE.Color(0xff0000),
-  'viz_Spheres3D_SPP_cp6_30.0m_center.fb' : new THREE.Color(0xff0000),
-  'viz_Spheres3D_SPP_cp7_35.0m_center.fb' : new THREE.Color(0xff0000)
+  'viz_Spheres3D_SPP_cp1_5.0m_spp.fb' : new THREE.Color(0xff0000),
+  'viz_Spheres3D_SPP_cp2_10.0m_spp.fb' : new THREE.Color(0xff0000),
+  'viz_Spheres3D_SPP_cp3_15.0m_spp.fb' : new THREE.Color(0xff0000),
+  'viz_Spheres3D_SPP_cp4_20.0m_spp.fb' : new THREE.Color(0xff0000),
+  'viz_Spheres3D_SPP_cp5_25.0m_spp.fb' : new THREE.Color(0xff0000),
+  'viz_Spheres3D_SPP_cp6_30.0m_spp.fb' : new THREE.Color(0xff0000),
+  'viz_Spheres3D_SPP_cp7_35.0m_spp.fb' : new THREE.Color(0xff0000),
+  'viz_Spheres3D_SPP_cp8_40.0m_spp.fb' : new THREE.Color(0xff0000),
+  'viz_Spheres3D_SPP_cp9_45.0m_spp.fb' : new THREE.Color(0xff0000),
+  'viz_Spheres3D_SPP_cp10_50.0m_spp.fb' : new THREE.Color(0xff0000)
 };
 const getControlPointColor = (controlPointType) => controlPointColorsTable[controlPointType];
 
@@ -186,12 +189,15 @@ const controlPointNamesTable = {
   'viz_Spheres3D_LaneSense_cp3_1.3s_right.fb': '1.3s Right Control Points',
   'viz_Spheres3D_LaneSense_cp4_2.0s_right.fb': '2.0s Right Control Points',
 
-  'viz_Spheres3D_SPP_cp1_5.0m_center.fb' : '5m SPP Control Points',
-  'viz_Spheres3D_SPP_cp2_10.0m_center.fb' : '10m SPP Control Points',
-  'viz_Spheres3D_SPP_cp3_15.0m_center.fb' : '15m SPP Control Points',
-  'viz_Spheres3D_SPP_cp4_20.0m_center.fb' : '20m SPP Control Points',
-  'viz_Spheres3D_SPP_cp5_25.0m_center.fb' : '25m SPP Control Points',
-  'viz_Spheres3D_SPP_cp6_30.0m_center.fb' : '30m SPP Control Points',
-  'viz_Spheres3D_SPP_cp7_35.0m_center.fb' : '35m SPP Control Points'
+  'viz_Spheres3D_SPP_cp1_5.0m_spp.fb' : '5m SPP Control Points',
+  'viz_Spheres3D_SPP_cp2_10.0m_spp.fb' : '10m SPP Control Points',
+  'viz_Spheres3D_SPP_cp3_15.0m_spp.fb' : '15m SPP Control Points',
+  'viz_Spheres3D_SPP_cp4_20.0m_spp.fb' : '20m SPP Control Points',
+  'viz_Spheres3D_SPP_cp5_25.0m_spp.fb' : '25m SPP Control Points',
+  'viz_Spheres3D_SPP_cp6_30.0m_spp.fb' : '30m SPP Control Points',
+  'viz_Spheres3D_SPP_cp7_35.0m_spp.fb' : '35m SPP Control Points',
+  'viz_Spheres3D_SPP_cp8_40.0m_spp.fb' : '40m SPP Control Points',
+  'viz_Spheres3D_SPP_cp9_45.0m_spp.fb' : '45m SPP Control Points',
+  'viz_Spheres3D_SPP_cp10_50.0m_spp.fb' : '50m SPP Control Points'
 };
 const getControlPointName = (controlPointType) => controlPointNamesTable[controlPointType];

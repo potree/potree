@@ -139,9 +139,6 @@ async function createControlMeshes (controlPoints, controlPointShaderMaterial, F
     const timestampArray = new Float64Array(64).fill(timestamp)
     const sphereGeo = new THREE.SphereBufferGeometry(radius);
 
-    // TODO
-    // const key = trimmed controlPointType, exclude all except left/right/rtk
-
     controlPointShaderMaterial.uniforms.color.value = getControlPointColor(controlPointType);
     const sphereMesh = new THREE.Mesh(sphereGeo, controlPointShaderMaterial);
     sphereMesh.position.set(vertex.x, vertex.y, vertex.z);

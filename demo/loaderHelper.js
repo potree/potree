@@ -186,7 +186,6 @@ async function loadDataIntoDocument() {
 
 		try {
 			// SPP
-			console.log("Loading SPP...")
 			loadControlPointsCallback(s3, bucket, name, animationEngine, 'viz_Spheres3D_SPP_cp1_5.0m_spp.fb');
 			loadControlPointsCallback(s3, bucket, name, animationEngine, 'viz_Spheres3D_SPP_cp2_10.0m_spp.fb');
 			loadControlPointsCallback(s3, bucket, name, animationEngine, 'viz_Spheres3D_SPP_cp3_15.0m_spp.fb');

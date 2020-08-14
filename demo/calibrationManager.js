@@ -43,26 +43,12 @@ export const calDownloads = async (datasetFiles) => {
   return calFiles;
 }
 
-let nominalCalFile = null;
-
-export async function loadNominalVelo2Rtk(s3, bucket, name) {
-  if (!nominalCalFile) {
-    console.log("No nominal calibration present")
-    return null;
-  }
-
-
-
-}
-
 // NOTE: calType is one of the following: ["extrinsics", "nominal", "metadata"]
 export async function loadCalibrationFile(s3, bucket, name, calType) {
   if (!calFiles) {
     console.log("No calibration files present")
     return null;
   }
-
-  debugger;
 
   //is name here the dataset name? We should be more careful about that....
   if (s3 && bucket && name) {

@@ -121,7 +121,7 @@ async function loadDataIntoDocument() {
 	        // Load Data Sources in loadRtkCallback:
                 await loadRtkCallback(s3, bucket, name, async () => {
 		// Load Extrinsics:
-		window.extrinsics = { rtk2Vehicle: null, velo2Rtk: {} };
+		window.extrinsics = { rtk2Vehicle: null, velo2Rtk: {}, nominal: null, vat: null };
 		try {
 		  const velo2Rtk = await loadCalibrationFile(s3, bucket, name, 'extrinsics');
 		  if (velo2Rtk) {
@@ -143,16 +143,15 @@ async function loadDataIntoDocument() {
 		  const nominalExtrinsics = await loadCalibrationFile(s3, bucket, name, 'nominal');
 		  if (nominalExtrinsics) {
 		  	console.log("Nominal Extrinsics Loaded!");
-		  	debugger;
+		  	window.extrinsics.nominal = nominalExtrinsics;
 		  }
 
 		  // Try to load metadata file
 		  const metadataCals = await loadCalibrationFile(s3, bucket, name, 'metadata');
 		  if (metadataCals) {
 		  	console.log("Metadata Calibrations Loaded!");
-		  	debugger;
+		  	window.extrinsics.vat = metadataCals.vat;
 		  }
-
 		} catch (e) {
 		  console.error("Could not load Calibrations: ", e);
 		}

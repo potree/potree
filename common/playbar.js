@@ -440,7 +440,7 @@ function updateSpine (bucket, name, left, right) {
   };
   const lambda = getLambda();
   lambda.invoke({
-    FunctionName: 'arn:aws:lambda:us-east-1:757877321035:function:UpdateLanes:1',
+    FunctionName: 'arn:aws:lambda:us-east-1:757877321035:function:UpdateLanes:2',
     LogType: 'None',
     Payload: JSON.stringify(input)
   }, function (err, data) {

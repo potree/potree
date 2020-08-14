@@ -181,7 +181,7 @@ async function loadDataIntoDocument() {
 			loadControlPointsCallback(s3, bucket, name, animationEngine, 'viz_Spheres3D_LaneSense_cp4_2.0s_left.fb');
 			loadControlPointsCallback(s3, bucket, name, animationEngine, 'viz_Spheres3D_LaneSense_cp4_2.0s_right.fb');
 		} catch (e) {
-			console.error("No LaneSense sample points: ", e);
+			console.error("Missing LaneSense sample points: ", e);
 		}
 
 		try {
@@ -197,7 +197,7 @@ async function loadDataIntoDocument() {
 			loadControlPointsCallback(s3, bucket, name, animationEngine, 'viz_Spheres3D_SPP_cp9_45.0m_spp.fb');
 			loadControlPointsCallback(s3, bucket, name, animationEngine, 'viz_Spheres3D_SPP_cp10_50.0m_spp.fb');
 		} catch (e) {
-			console.error("No SPP sample points: ", e);
+			console.error("Missing SPP sample points: ", e);
 		}
 
 		// Load Radar:

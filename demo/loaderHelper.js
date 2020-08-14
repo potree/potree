@@ -171,6 +171,7 @@ async function loadDataIntoDocument() {
 		}
 
 		try {
+			// LaneSense
 			loadControlPointsCallback(s3, bucket, name, animationEngine, 'viz_Spheres3D_LaneSense_cp1_0.7s_left.fb');
 			loadControlPointsCallback(s3, bucket, name, animationEngine, 'viz_Spheres3D_LaneSense_cp1_0.7s_right.fb');
 			loadControlPointsCallback(s3, bucket, name, animationEngine, 'viz_Spheres3D_LaneSense_cp2_1.0s_left.fb');
@@ -180,7 +181,23 @@ async function loadDataIntoDocument() {
 			loadControlPointsCallback(s3, bucket, name, animationEngine, 'viz_Spheres3D_LaneSense_cp4_2.0s_left.fb');
 			loadControlPointsCallback(s3, bucket, name, animationEngine, 'viz_Spheres3D_LaneSense_cp4_2.0s_right.fb');
 		} catch (e) {
-			console.error("No sample points: ", e);
+			console.error("Missing LaneSense sample points: ", e);
+		}
+
+		try {
+			// SPP
+			loadControlPointsCallback(s3, bucket, name, animationEngine, 'viz_Spheres3D_SPP_cp1_5.0m_spp.fb');
+			loadControlPointsCallback(s3, bucket, name, animationEngine, 'viz_Spheres3D_SPP_cp2_10.0m_spp.fb');
+			loadControlPointsCallback(s3, bucket, name, animationEngine, 'viz_Spheres3D_SPP_cp3_15.0m_spp.fb');
+			loadControlPointsCallback(s3, bucket, name, animationEngine, 'viz_Spheres3D_SPP_cp4_20.0m_spp.fb');
+			loadControlPointsCallback(s3, bucket, name, animationEngine, 'viz_Spheres3D_SPP_cp5_25.0m_spp.fb');
+			loadControlPointsCallback(s3, bucket, name, animationEngine, 'viz_Spheres3D_SPP_cp6_30.0m_spp.fb');
+			loadControlPointsCallback(s3, bucket, name, animationEngine, 'viz_Spheres3D_SPP_cp7_35.0m_spp.fb');
+			loadControlPointsCallback(s3, bucket, name, animationEngine, 'viz_Spheres3D_SPP_cp8_40.0m_spp.fb');
+			loadControlPointsCallback(s3, bucket, name, animationEngine, 'viz_Spheres3D_SPP_cp9_45.0m_spp.fb');
+			loadControlPointsCallback(s3, bucket, name, animationEngine, 'viz_Spheres3D_SPP_cp10_50.0m_spp.fb');
+		} catch (e) {
+			console.error("Missing SPP sample points: ", e);
 		}
 
 		// Load Radar:

@@ -88,9 +88,13 @@ export async function loadPotree() {
   // now that animation engine has been created, can add event listeners
   createPlaybar();
 
+  // get files from s3
   const filesArray = await getS3Files(s3, bucket, name)
   const datasetFiles = filesArray[0];
-  const s3FilesTable = filesArray[1];
+  const filesTable = filesArray[1];
+
+  // TODO get local files
+
   const numTasks = await determineNumTasks(datasetFiles)
   setNumTasks(numTasks)
 
@@ -105,7 +109,7 @@ export async function loadPotree() {
   addCalibrationButton();
   addDetectionButton();
   // load in actual data & configure playbar along the way
-  await loadDataIntoDocument();
+  await loadDataIntoDocument(filesTable);
 
   // Load Pointclouds
   if (runLocalPointCloud) {
@@ -120,7 +124,7 @@ export async function loadPotree() {
 }
 
 // loads all necessary data (car obj/texture, rtk, radar, tracks, etc...)
-async function loadDataIntoDocument() {
+async function loadDataIntoDocument(filesTable) {
 	        // Load Data Sources in loadRtkCallback:
                 await loadRtkCallback(s3, bucket, name, async () => {
 		// Load Extrinsics:
@@ -176,49 +180,12 @@ async function loadDataIntoDocument() {
 			console.error("Could not load Tracks: ", e);
 		}
 
-
-
+    // Load Control Points (REM, LaneSense, SPP)
 		try {
-			loadControlPointsCallback(s3, bucket, name, animationEngine, s3FilesTable['3_Assessments']);
+			loadControlPointsCallback(s3, bucket, name, animationEngine, filesTable['3_Assessments']);
 		} catch (e) {
 			console.error("No control points: ", e);
 		}
-
-		// try {
-		// 	loadRemCallback(s3, bucket, name, animationEngine);
-		// } catch (e) {
-		// 	console.error("No rem points: ", e);
-		// }
-
-		// try {
-		// 	// LaneSense
-		// 	loadControlPointsCallback(s3, bucket, name, animationEngine, 'viz_Spheres3D_LaneSense_cp1_0.7s_left.fb');
-		// 	loadControlPointsCallback(s3, bucket, name, animationEngine, 'viz_Spheres3D_LaneSense_cp1_0.7s_right.fb');
-		// 	loadControlPointsCallback(s3, bucket, name, animationEngine, 'viz_Spheres3D_LaneSense_cp2_1.0s_left.fb');
-		// 	loadControlPointsCallback(s3, bucket, name, animationEngine, 'viz_Spheres3D_LaneSense_cp2_1.0s_right.fb');
-		// 	loadControlPointsCallback(s3, bucket, name, animationEngine, 'viz_Spheres3D_LaneSense_cp3_1.3s_left.fb');
-		// 	loadControlPointsCallback(s3, bucket, name, animationEngine, 'viz_Spheres3D_LaneSense_cp3_1.3s_right.fb');
-		// 	loadControlPointsCallback(s3, bucket, name, animationEngine, 'viz_Spheres3D_LaneSense_cp4_2.0s_left.fb');
-		// 	loadControlPointsCallback(s3, bucket, name, animationEngine, 'viz_Spheres3D_LaneSense_cp4_2.0s_right.fb');
-		// } catch (e) {
-		// 	console.error("Missing LaneSense sample points: ", e);
-		// }
-		//
-		// try {
-		// 	// SPP
-		// 	loadControlPointsCallback(s3, bucket, name, animationEngine, 'viz_Spheres3D_SPP_cp1_5.0m_spp.fb');
-		// 	loadControlPointsCallback(s3, bucket, name, animationEngine, 'viz_Spheres3D_SPP_cp2_10.0m_spp.fb');
-		// 	loadControlPointsCallback(s3, bucket, name, animationEngine, 'viz_Spheres3D_SPP_cp3_15.0m_spp.fb');
-		// 	loadControlPointsCallback(s3, bucket, name, animationEngine, 'viz_Spheres3D_SPP_cp4_20.0m_spp.fb');
-		// 	loadControlPointsCallback(s3, bucket, name, animationEngine, 'viz_Spheres3D_SPP_cp5_25.0m_spp.fb');
-		// 	loadControlPointsCallback(s3, bucket, name, animationEngine, 'viz_Spheres3D_SPP_cp6_30.0m_spp.fb');
-		// 	loadControlPointsCallback(s3, bucket, name, animationEngine, 'viz_Spheres3D_SPP_cp7_35.0m_spp.fb');
-		// 	loadControlPointsCallback(s3, bucket, name, animationEngine, 'viz_Spheres3D_SPP_cp8_40.0m_spp.fb');
-		// 	loadControlPointsCallback(s3, bucket, name, animationEngine, 'viz_Spheres3D_SPP_cp9_45.0m_spp.fb');
-		// 	loadControlPointsCallback(s3, bucket, name, animationEngine, 'viz_Spheres3D_SPP_cp10_50.0m_spp.fb');
-		// } catch (e) {
-		// 	console.error("Missing SPP sample points: ", e);
-		// }
 
 		// Load Radar:
 		try {

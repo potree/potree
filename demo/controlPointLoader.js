@@ -3,18 +3,16 @@ import { getShaderMaterial } from '../demo/paramLoader.js';
 import { updateLoadingBar, incrementLoadingBarTotal } from '../common/overlay.js';
 
 // load control points
-export async function loadControlPointsCallback (s3, bucket, name, animationEngine, s3Files = null) {
+export async function loadControlPointsCallback (s3, bucket, name, animationEngine, files) {
   // Handle local files
-  if (!s3Files) {
-    await loadControlPointsCallbackHelper(s3, bucket, name, animationEngine);
-  } else {
+  if (files) {
     // Handle s3 files
-    for (let s3File of s3Files) {
-      s3File = s3File.split(/.*[\/|\\]/)[1];
-      if (!s3File.endsWith('cp.fb')) {
-        continue;
-      } else {
-        await loadControlPointsCallbackHelper(s3, bucket, name, animationEngine, s3File);
+    for (let file of files) {
+      // Remove prefix filepath
+      file = file.split(/.*[\/|\\]/)[1];
+      // Handle old naming and new naming schemas
+      if (file.includes('rtk_relative') || file.includes('viz_Spheres3D_')) {
+        await loadControlPointsCallbackHelper(s3, bucket, name, animationEngine, file);
       }
     }
   }
@@ -172,14 +170,8 @@ function getControlPointColor (controlPointType) {
     return new THREE.Color(0xffff00);
   } else if (controlPointType.includes("right")) {
     return new THREE.Color(0x0000ff);
-  // } else if (controlPointType.includes("left")) {
-  //   return new THREE.Color(0xffff00);
-  // } else if (controlPointType.includes("right")) {
-  //   return new THREE.Color(0x0000ff);
-  } else {
-    return new THREE.Color(0x0000ff);
   }
-  // return controlPointColorsTable[controlPointType]
+  return new THREE.Color(0x0000ff);
 }
 
 const controlPointNamesTable = {
@@ -192,26 +184,29 @@ const controlPointNamesTable = {
   'viz_Spheres3D_LaneSense_cp2_1.0s_right.fb': '1.0s Right Control Points',
   'viz_Spheres3D_LaneSense_cp3_1.3s_right.fb': '1.3s Right Control Points',
   'viz_Spheres3D_LaneSense_cp4_2.0s_right.fb': '2.0s Right Control Points',
-
-  // 'viz_Spheres3D_SPP_cp1_5.0m_spp.fb' : '5m SPP Control Points',
-  // 'viz_Spheres3D_SPP_cp2_10.0m_spp.fb' : '10m SPP Control Points',
-  // 'viz_Spheres3D_SPP_cp3_15.0m_spp.fb' : '15m SPP Control Points',
-  // 'viz_Spheres3D_SPP_cp4_20.0m_spp.fb' : '20m SPP Control Points',
-  // 'viz_Spheres3D_SPP_cp5_25.0m_spp.fb' : '25m SPP Control Points',
-  // 'viz_Spheres3D_SPP_cp6_30.0m_spp.fb' : '30m SPP Control Points',
-  // 'viz_Spheres3D_SPP_cp7_35.0m_spp.fb' : '35m SPP Control Points',
-  // 'viz_Spheres3D_SPP_cp8_40.0m_spp.fb' : '40m SPP Control Points',
-  // 'viz_Spheres3D_SPP_cp9_45.0m_spp.fb' : '45m SPP Control Points',
-  // 'viz_Spheres3D_SPP_cp10_50.0m_spp.fb' : '50m SPP Control Points'
+  'viz_Spheres3D_SPP_cp1_5.0m_spp.fb': '5m SPP Control Points',
+  'viz_Spheres3D_SPP_cp2_10.0m_spp.fb': '10m SPP Control Points',
+  'viz_Spheres3D_SPP_cp3_15.0m_spp.fb': '15m SPP Control Points',
+  'viz_Spheres3D_SPP_cp4_20.0m_spp.fb': '20m SPP Control Points',
+  'viz_Spheres3D_SPP_cp5_25.0m_spp.fb': '25m SPP Control Points',
+  'viz_Spheres3D_SPP_cp6_30.0m_spp.fb': '30m SPP Control Points',
+  'viz_Spheres3D_SPP_cp7_35.0m_spp.fb': '35m SPP Control Points',
+  'viz_Spheres3D_SPP_cp8_40.0m_spp.fb': '40m SPP Control Points',
+  'viz_Spheres3D_SPP_cp9_45.0m_spp.fb': '45m SPP Control Points',
+  'viz_Spheres3D_SPP_cp10_50.0m_spp.fb': '50m SPP Control Points'
 };
 
 function getControlPointName (controlPointType) {
-  if (controlPointType.includes('viz_Spheres3D_LanseSense')) {
+  if (controlPointType.includes('viz_Spheres3D_')) {
     return controlPointNamesTable[controlPointType];
   } else if (controlPointType.includes("rtk_relative")) {
     return controlPointNamesTable[controlPointType];
   }
-  let words = controlPointType.substring(13);
+  // slice off file extension
+  let words = controlPointType.slice(0, -3);
+  // remove 'viz_Spheres3D_' prefix
+  words = words.substring(13);
+  // split on '_', join into display name
   words = words.split("_");
   words = words.join(" ");
   return words;

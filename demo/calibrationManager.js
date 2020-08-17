@@ -21,14 +21,14 @@ export async function loadRtk2Vehicle(s3, bucket, name) {
 let calFiles = null;
 export const calDownloads = async (datasetFiles) => {
   // ${name}/7_cals/extrinsics.txt
-  let extrinsicsCal = await getFileInfo(datasetFiles,
+  const extrinsicsCal = await getFileInfo(datasetFiles,
                                "extrinsics.txt",
                                "../cals/extrinsics.txt");
 
-  let nominalCal = await getFileInfo(datasetFiles,
+  const nominalCal = await getFileInfo(datasetFiles,
                                "extrinsics-nominal.txt",
                                "../cals/extrinsics-nominal.txt");
-  let metadataCal = await getFileInfo(datasetFiles,
+  const metadataCal = await getFileInfo(datasetFiles,
                                "metadata.json",
                                "../cals/metadata.json");
 

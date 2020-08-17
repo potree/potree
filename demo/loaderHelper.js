@@ -12,7 +12,7 @@ import { AnimationEngine } from "../demo/animationEngine.js"
 import { createPlaybar } from "../common/playbar.js"
 import { loadRtkCallback, rtkDownloads } from "../demo/rtkLoader.js"
 import { textureDownloads } from "../demo/textureLoader.js"
-import { loadCalibrationFile, loadRtk2Vehicle, storeCalibration, calDownloads, addCalibrationButton } from "../demo/calibrationManager.js"
+import { loadCalibrationFile, loadRtk2Vehicle, storeCalibration, calDownloads, addCalibrationButton, getAdjustedTransform, getCalibrationSettings } from "../demo/calibrationManager.js"
 import { loadLanesCallback, addReloadLanesButton, laneDownloads } from "../demo/laneLoader.js"
 import { loadTracksCallback, trackDownloads } from "../demo/trackLoader.js"
 import { loadRemCallback, remDownloads } from "../demo/remLoader.js"
@@ -58,13 +58,24 @@ function finishLoading({pointcloud}) {
     material.uniforms.velo2RtkRPYNew.value.set(velo2RtkNew.roll, velo2RtkNew.pitch, velo2RtkNew.yaw);
   }
 
+
+  window.addEventListener('update-calibration-panel', (e) => {
+  	console.log("UPDATE RECEIVED: ", e);
+
+  	const calibrationPanelValues = getVelo2Rtk();
+  	const transform = getAdjustedTransform(window.extrinsics.velo2Rtk.old, window.extrinsics.nominal, window.extrinsics.vat, calibrationPanelValues, window.calibrationSettings);
+  	console.log("Updated transforms:", transform);
+
+  	material.uniforms.uCalMatrix.value = transform;
+
+  });
+
   if (window.canEnableCalibrationPanels) {
     enablePanels();
 
   } else {
     const reason = "Pointcloud was not serialized with the necessary point attributes"
     disablePanels(reason);
-    console.error("Cannot use calibration panels: ", reason);
   }
 }
 
@@ -161,6 +172,12 @@ async function loadDataIntoDocument(filesTable) {
 		  }
 		} catch (e) {
 		  console.error("Could not load Calibrations: ", e);
+		}
+
+		window.calibrationSettings = getCalibrationSettings(window.extrinsics.velo2Rtk.old, window.extrinsics.nominal, window.extrinsics.vat);
+		if (!window.calibrationSettings.valid) {
+			window.canEnableCalibrationPanels = false;
+			disablePanels("Do not have necessary calibration files for calibration panels");
 		}
 
 		// Load Lanes:

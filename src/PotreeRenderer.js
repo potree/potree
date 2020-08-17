@@ -1111,6 +1111,8 @@ export class Renderer {
 				const velo2RtkXYZNew = octree.material.uniforms.velo2RtkXYZNew.value.toArray();
 				const velo2RtkRPYNew = octree.material.uniforms.velo2RtkRPYNew.value.toArray();
 
+				const calMatrix = octree.material.uniforms.uCalMatrix.value;
+
 				// shader.setUniform3f("currentRtkPosition", currentRtkPosition);
 				// shader.setUniform3f("currentRtkOrientation", currentRtkOrientation);
 				shader.setUniform3f("rtk2VehicleXYZOld", rtk2VehicleXYZOld);
@@ -1121,6 +1123,8 @@ export class Renderer {
 				shader.setUniform3f("rtk2VehicleRPYNew", rtk2VehicleRPYNew);
 				shader.setUniform3f("velo2RtkXYZNew", velo2RtkXYZNew);
 				shader.setUniform3f("velo2RtkRPYNew", velo2RtkRPYNew);
+
+				shader.setUniformMatrix4('uCalMatrix', calMatrix);
 
 			} catch(e) {
 				debugger; // currentRtkPosition/Orientation doesn't exist

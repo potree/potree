@@ -34,6 +34,8 @@ uniform vec3 rtk2VehicleRPYNew;
 uniform vec3 velo2RtkXYZNew;
 uniform vec3 velo2RtkRPYNew;
 
+uniform mat4 uCalMatrix;
+
 uniform mat4 modelMatrix;
 uniform mat4 modelViewMatrix;
 uniform mat4 projectionMatrix;
@@ -948,7 +950,8 @@ void main() {
 		T_full = getSE3(origin.xyz, identityRotation);
 	} else {
 		// T_full = T_rtk_from_grid;
-		T_full = T_grid_from_rtk * T_rtk_from_velo * T_velo_from_rtk * T_rtk_from_grid;
+		// T_full = T_grid_from_rtk * T_rtk_from_velo * T_velo_from_rtk * T_rtk_from_grid;
+		T_full = T_grid_from_rtk * uCalMatrix * T_rtk_from_grid;
 	}
 
 

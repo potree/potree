@@ -157,6 +157,8 @@ export class PointCloudMaterial extends THREE.RawShaderMaterial {
 			rtk2VehicleRPYNew: 				{type: "v3", value: new THREE.Vector3(0, 0, 0)},
 		    velo2RtkXYZNew: 				{type: "v3", value: new THREE.Vector3(0, 0, 0)},
 			velo2RtkRPYNew: 				{type: "v3", value: new THREE.Vector3(0, 0, 0)},
+
+			uCalMatrix: { type: "Matrix4fv", value: new THREE.Matrix4() },
 		};
 
 		this.classification = ClassificationScheme.DEFAULT;

@@ -21,13 +21,30 @@ export async function loadRtk2Vehicle(s3, bucket, name) {
 let calFiles = null;
 export const calDownloads = async (datasetFiles) => {
   // ${name}/7_cals/extrinsics.txt
-  calFiles = await getFileInfo(datasetFiles,
+  const extrinsicsCal = await getFileInfo(datasetFiles,
                                "extrinsics.txt",
                                "../cals/extrinsics.txt");
+
+  const nominalCal = await getFileInfo(datasetFiles,
+                               "extrinsics-nominal.txt",
+                               "../cals/extrinsics-nominal.txt");
+  const metadataCal = await getFileInfo(datasetFiles,
+                               "metadata.json",
+                               "../cals/metadata.json");
+
+  if (extrinsicsCal || nominalCal || rdMetadataCal) {
+    calFiles = {
+      extrinsics: extrinsicsCal ? extrinsicsCal : null,
+      nominal: nominalCal ? nominalCal : null,
+      metadata: metadataCal ? metadataCal : null
+    };
+  }
+
   return calFiles;
 }
 
-export async function loadVelo2Rtk(s3, bucket, name) {
+// NOTE: calType is one of the following: ["extrinsics", "nominal", "metadata"]
+export async function loadCalibrationFile(s3, bucket, name, calType) {
   if (!calFiles) {
     console.log("No calibration files present")
     return null;
@@ -38,28 +55,44 @@ export async function loadVelo2Rtk(s3, bucket, name) {
     try {
       const request = s3.getObject({
         Bucket: bucket,
-        Key: calFiles.objectName
+        Key: calFiles[calType].objectName,
       });
       request.on("httpDownloadProgress", async (e) => {
         await updateLoadingBar(e.loaded/e.total*100)
       });
       const data = await request.promise();
       incrementLoadingBarTotal("cals downloaded");
+
+      let calibration;
       const calibrationText = new TextDecoder("utf-8").decode(data.Body);
-      const extrinsics = parseCalibrationFile(calibrationText);
-      incrementLoadingBarTotal("cals loaded")
-      return extrinsics;
+      if (calType === 'metadata') {
+        calibration = JSON.parse(calibrationText);
+      } else if (calType === 'extrinsics' || calType === 'nominal') {
+        calibration = parseCalibrationFile(calibrationText);
+      } else {
+        console.error("Cannot parse unknown calibration file type: ", calType);
+      }
+      incrementLoadingBarTotal("cals loaded");
+      return calibration;
     } catch (err) {
-      console.error('Error loading extrinsics.txt', err, err.stack);
+      console.error(`Error loading calibration file: ${calType}`, err, err.stack);
       return null;
     }
   } else {
     try {
-      const response = await fetch(calFiles.objectName);
-      incrementLoadingBarTotal("cals downloaded")
-      const extrinsics = parseCalibrationFile(await response.text());
-      incrementLoadingBarTotal("cals loaded")
-      return extrinsics;
+      const response = await fetch(calFiles[calType].objectName);
+      incrementLoadingBarTotal("cals downloaded");
+
+      let calibration;
+      if (calType === 'metadata') {
+        calibration = await response.json(); 
+      } else if (calType === 'extrinsics' || calType === 'nominal') {
+        calibration = parseCalibrationFile(await response.text());
+      } else {
+        console.error("Cannot parse unknown calibration file type: ", calType);
+      }
+      incrementLoadingBarTotal("cals loaded");
+      return calibration;
     } catch (err) {
       console.error('Error loading extrinsics.txt', err, err.stack);
       return null;

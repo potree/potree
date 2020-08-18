@@ -32,7 +32,7 @@ export const calDownloads = async (datasetFiles) => {
                                "metadata.json",
                                "../cals/metadata.json");
 
-  if (extrinsicsCal || nominalCal || rdMetadataCal) {
+  if (extrinsicsCal || nominalCal || metadataCal) {
     calFiles = {
       extrinsics: extrinsicsCal ? extrinsicsCal : null,
       nominal: nominalCal ? nominalCal : null,
@@ -76,9 +76,23 @@ function validateCalibrationSettings(settings, correctionsCal, nominalCal, vatCa
   
   let valid = true;
 
+  // Check if corrections cal is present:
+  if (!correctionsCal) {
+    console.error("Calibration Settings INVALID - No extrinsics/corrections calibration file present, which is required for calibration");
+    return false;
+  }
+
   // Check 1: If using vat parameters, need to have all calibration files (corrections, nominal and vat)
   if (settings.useVatParameters && (!correctionsCal || !nominalCal || !vatCal)) {
-    valid = false;
+    let missingFiles = [
+      !correctionsCal ? "corrections" : null,
+      !nominalCal ? "nominal" : null,
+      !vatCal ? "metadata/VAT" : null
+    ].filter(elem => elem);
+
+    console.error(`Calibration Settings INVALID - calibration using VAT parameters specified however missing required calibration files [missing: ${missingFiles}]`);
+
+    return false;
   } 
 
   // Other checks?
@@ -115,13 +129,13 @@ function getAdjustedTransformSimple(originalExtrinsics, newExtrinsics) {
   const isPassiveTransform = false;
 
   // Construct Reverse Transformation Matrices from newExtrinsics:
-  const T_ISO2Velo = new THREE.Matrix4().getInverse(getTxMat(newExtrinsics, isPassiveTransform)); // Inverse 
+  const T_ISO2Velo = new THREE.Matrix4().getInverse(getTxMat(originalExtrinsics, isPassiveTransform)); // Inverse 
 
   // Construct Forward Transformation Matrices from originalExtrinsics:
-  const T_Velo2ISO = getTxMat(originalExtrinsics, isPassiveTransform);
+  const T_Velo2ISO = getTxMat(newExtrinsics, isPassiveTransform);
 
   // Chain Reverse and Forward Transformations:
-  const adjustedTransform = new THREE.Matrix4().multiply(T_ISO2Velo, T_Velo2ISO); // T_ISO2Velo x T_Velo2ISO
+  const adjustedTransform = new THREE.Matrix4().multiplyMatrices(T_ISO2Velo, T_Velo2ISO); // T_ISO2Velo x T_Velo2ISO
 
   return adjustedTransform;
 }
@@ -163,16 +177,26 @@ function getAdjustedTransformFull(originalCorrections, nominalCal, vatCal, newCo
                                        .premultiply(T8_Corr2Velo);
 
 
+  let adjustedTransform = new THREE.Matrix4().multiply(T4_Veh2ISO)
+                                             .multiply(T3_IMU2Veh)
+                                             .multiply(T2_Corr2IMU)
+                                             .multiply(T1_Velo2Corr)
+                                             .multiply(T8_Corr2Velo)
+                                             .multiply(T7_IMU2Corr)
+                                             .multiply(T6_Veh2IMU)
+                                             .multiply(T5_ISO2Veh);
+
 
   // Full Chain: 
   // T_full = T_forward * T_reverse
   // Explanation: This transform takes a point from ISO 8855 Vehicle Frame to Velodyne Frame (using the reverse transform based on original extrinsics), 
   //              and then from Velodyne Frame to the new ISO Vehicle Frame (using the forward transform based on new extrinsics) 
-  const adjustedTransform = new THREE.Matrix4().multiplyMatrices(T_forward, T_reverse);
+  const adjustedTransformNew = new THREE.Matrix4().multiplyMatrices(T_forward, T_reverse);
+  const adjustedTransformNewInverse = new THREE.Matrix4().getInverse(adjustedTransformNew);
 
   debugger;
 
-  return adjustedTransform;
+  return adjustedTransformNew;
 }
 
 export const getAdjustedTransform = (correctionsCal, nominalCal, vatCal, calibrationPanelCorrections, settings) => {
@@ -205,7 +229,7 @@ export const getAdjustedTransform = (correctionsCal, nominalCal, vatCal, calibra
 
     } else {
 
-      transform = getAdjustedTransformSimple(correctionsCal);
+      transform = getAdjustedTransformSimple(correctionsCal, calibrationPanelCorrections);
 
     }
   }
@@ -236,7 +260,7 @@ export async function loadCalibrationFile(s3, bucket, name, calType) {
       let calibration;
       const calibrationText = new TextDecoder("utf-8").decode(data.Body);
       if (calType === 'metadata') {
-        calibration = JSON.parse(calibrationText);
+        calibration = parseMetadataFile(calibrationText);
       } else if (calType === 'extrinsics' || calType === 'nominal') {
         calibration = parseCalibrationFile(calibrationText);
       } else {
@@ -246,6 +270,7 @@ export async function loadCalibrationFile(s3, bucket, name, calType) {
       return calibration;
     } catch (err) {
       console.error(`Error loading calibration file: ${calType}`, err, err.stack);
+      incrementLoadingBarTotal("cals loaded");
       return null;
     }
   } else {
@@ -255,7 +280,7 @@ export async function loadCalibrationFile(s3, bucket, name, calType) {
 
       let calibration;
       if (calType === 'metadata') {
-        calibration = await response.json(); 
+        calibration = parseMetadataFile(await response.text()); 
       } else if (calType === 'extrinsics' || calType === 'nominal') {
         calibration = parseCalibrationFile(await response.text());
       } else {
@@ -265,9 +290,22 @@ export async function loadCalibrationFile(s3, bucket, name, calType) {
       return calibration;
     } catch (err) {
       console.error('Error loading calibration file', err, err.stack);
+      incrementLoadingBarTotal("cals loaded");
       return null;
     }
   }
+}
+
+function parseMetadataFile(calibrationText) {
+
+  const calibration = JSON.parse(calibrationText);
+
+  // convert vat params from degrees to radians:
+  calibration.vat["roll"] = Math.PI * calibration.vat["roll"] / 180.0; 
+  calibration.vat["pitch"] = Math.PI * calibration.vat["pitch"] / 180.0; 
+  calibration.vat["yaw"] = Math.PI * calibration.vat["yaw"] / 180.0; 
+
+  return calibration;
 }
 
 function parseCalibrationFile(calibrationText){
@@ -342,4 +380,5 @@ export function addCalibrationButton() {
   });
 
   window.canEnableCalibrationPanels = true;
+  window.disableReason = "";
 }

@@ -70,12 +70,14 @@ function finishLoading({pointcloud}) {
 
   });
 
-  if (window.canEnableCalibrationPanels) {
+  if (window.canEnableCalibrationPanels && cloudCanUseCalibrationPanels) {
     enablePanels();
 
   } else {
-    const reason = "Pointcloud was not serialized with the necessary point attributes"
-    disablePanels(reason);
+  	if (!cloudCanUseCalibrationPanels) {
+    	window.disableReason = "Pointcloud was not serialized with the necessary point attributes"
+    } 
+  	disablePanels(window.disableReason);
   }
 }
 
@@ -124,8 +126,8 @@ export async function loadPotree() {
 
   // Load Pointclouds
   if (runLocalPointCloud) {
-    Potree.loadPointCloud("../pointclouds/test/cloud.js", "full-cloud", finishLoading);
-    Potree.loadPointCloud("../pointclouds/test_2/cloud.js", "full-cloud-2", finishLoading);
+    Potree.loadPointCloud("../data/test10/WorldFrameCloud.fb_converted/cloud.js", "full-cloud", finishLoading);
+    // Potree.loadPointCloud("../pointclouds/test_2/cloud.js", "full-cloud-2", finishLoading);
   } else {
     Potree.loadPointCloud({ s3, bucket, name }, name.substring(5), e => {
       finishLoading(e);
@@ -148,14 +150,14 @@ async function loadDataIntoDocument(filesTable) {
 		    storeVelo2Rtk(window.extrinsics.velo2Rtk.new);
 		    window.velo2RtkExtrinsicsLoaded = true;
                   } else {
-		    disablePanels("Unable to load extrinsics file");
+		    window.canEnableCalibrationPanels = false;
+		    window.disableReason = "Unable to load extrinsics file";
                   }
 
 		  const rtk2Vehicle = await loadRtk2Vehicle(s3, bucket, name);
 		  console.log("Rtk2Vehicle Extrinsics Loaded!");
 		  window.extrinsics.rtk2Vehicle = { old: rtk2Vehicle, new: rtk2Vehicle };
 		  // storeRtk2Vehicle(window.extrinsics.rtk2Vehicle.new);
-
 
 		  // Try to load nominal calibration
 		  const nominalExtrinsics = await loadCalibrationFile(s3, bucket, name, 'nominal');
@@ -177,7 +179,7 @@ async function loadDataIntoDocument(filesTable) {
 		window.calibrationSettings = getCalibrationSettings(window.extrinsics.velo2Rtk.old, window.extrinsics.nominal, window.extrinsics.vat);
 		if (!window.calibrationSettings.valid) {
 			window.canEnableCalibrationPanels = false;
-			disablePanels("Do not have necessary calibration files for calibration panels");
+			window.disableReason = "Do not have necessary calibration files to use calibration panels";
 		}
 
 		// Load Lanes:

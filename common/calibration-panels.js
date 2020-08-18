@@ -257,6 +257,7 @@ function getVelo2Rtk() {
 
 function disablePanels(reason) {
   console.error("Calibration Panels DISABLED - ", reason);
+
   $("#calibration-overlay-velo2rtk :input").attr("disabled", true);
   $("#calibration-overlay-rtk2vehicle :input").attr("disabled", true);
 
@@ -265,6 +266,7 @@ function disablePanels(reason) {
 }
 
 function enablePanels() {
+  console.log("Calibration Panels ENABLED");
   $("#calibration-overlay-velo2rtk :input").attr("disabled", false);
   $("#calibration-overlay-rtk2vehicle :input").attr("disabled", false);
 

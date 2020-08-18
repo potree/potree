@@ -135,9 +135,9 @@ function getAdjustedTransformSimple(originalExtrinsics, newExtrinsics) {
   const T_Velo2ISO = getTxMat(newExtrinsics, isPassiveTransform);
 
   // Chain Reverse and Forward Transformations:
-  const adjustedTransform = new THREE.Matrix4().multiplyMatrices(T_ISO2Velo, T_Velo2ISO); // T_ISO2Velo x T_Velo2ISO
+  const adjustedTransformSimple = new THREE.Matrix4().multiplyMatrices(T_ISO2Velo, T_Velo2ISO); // T_ISO2Velo x T_Velo2ISO
 
-  return adjustedTransform;
+  return adjustedTransformSimple;
 }
 
 function getAdjustedTransformFull(originalCorrections, nominalCal, vatCal, newCorrections) {
@@ -176,27 +176,13 @@ function getAdjustedTransformFull(originalCorrections, nominalCal, vatCal, newCo
                                        .premultiply(T7_IMU2Corr)
                                        .premultiply(T8_Corr2Velo);
 
-
-  let adjustedTransform = new THREE.Matrix4().multiply(T4_Veh2ISO)
-                                             .multiply(T3_IMU2Veh)
-                                             .multiply(T2_Corr2IMU)
-                                             .multiply(T1_Velo2Corr)
-                                             .multiply(T8_Corr2Velo)
-                                             .multiply(T7_IMU2Corr)
-                                             .multiply(T6_Veh2IMU)
-                                             .multiply(T5_ISO2Veh);
-
-
   // Full Chain: 
   // T_full = T_forward * T_reverse
   // Explanation: This transform takes a point from ISO 8855 Vehicle Frame to Velodyne Frame (using the reverse transform based on original extrinsics), 
   //              and then from Velodyne Frame to the new ISO Vehicle Frame (using the forward transform based on new extrinsics) 
-  const adjustedTransformNew = new THREE.Matrix4().multiplyMatrices(T_forward, T_reverse);
-  const adjustedTransformNewInverse = new THREE.Matrix4().getInverse(adjustedTransformNew);
+  const adjustedTransformFull = new THREE.Matrix4().multiplyMatrices(T_forward, T_reverse);
 
-  debugger;
-
-  return adjustedTransformNew;
+  return adjustedTransformFull;
 }
 
 export const getAdjustedTransform = (correctionsCal, nominalCal, vatCal, calibrationPanelCorrections, settings) => {

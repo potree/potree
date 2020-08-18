@@ -126,8 +126,8 @@ export async function loadPotree() {
 
   // Load Pointclouds
   if (runLocalPointCloud) {
-    Potree.loadPointCloud("../data/test10/WorldFrameCloud.fb_converted/cloud.js", "full-cloud", finishLoading);
-    // Potree.loadPointCloud("../pointclouds/test_2/cloud.js", "full-cloud-2", finishLoading);
+    Potree.loadPointCloud("../pointclouds/test/cloud.js", "full-cloud", finishLoading);
+    Potree.loadPointCloud("../pointclouds/test_2/cloud.js", "full-cloud-2", finishLoading);
   } else {
     Potree.loadPointCloud({ s3, bucket, name }, name.substring(5), e => {
       finishLoading(e);

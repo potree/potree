@@ -968,106 +968,22 @@ void main() {
 	// Initialize Point Position:
 	vec3 p = position.xyz;
 	vec4 p_grid = vec4(p, 1.0); 	// Position of point in grid (octree node) frame
-	vec3 identityRotation = vec3(0.0, 0.0, 0.0);
-	vec4 origin = vec4(0.0, 0.0, 0.0, 1.0);
-	mat4 identityTransform = getSE3(vec3(0,0,0), vec3(0,0,0));
 
-
-
-	// Construct Transformation Matrices (Test):
-	mat4 T_grid_from_rtk = getSE3(originalRtkPosition, originalRtkOrientation);
-	mat4 T_rtk_from_velo = getSE3(velo2RtkXYZNew, velo2RtkRPYNew);
-	mat4 T_velo_from_rtk = getSE3Inverse(velo2RtkXYZOld, velo2RtkRPYOld);
-	mat4 T_rtk_from_grid = getSE3Inverse(originalRtkPosition, originalRtkOrientation);
+	// Construct Transforms relating Potree's Octree Grid (Node) Reference Frame and ISO 8855 Vehicle Frame:
+	mat4 T5_ISO_to_Grid  = getSE3(originalRtkPosition, originalRtkOrientation);	// Should be based on originalRtkPosition and originalRtkOrientation
+	mat4 T5_Grid_to_ISO  = inverse(T5_ISO_to_Grid);								// Should be based on originalRtkPosition and originalRtkOrientation (inverse of T_ISO_to_Grid)
+	
+	// Construct Full Calibration Transform Matrix:
 	mat4 T_full;
-
-
-	// vec3 vatParams = vec3(rad(171.85089), rad(87.128977), rad(81.860769)); // Hardcoded for Durango Dataset (SH1)
-
-
-	// // Transforms:
-	// mat4 T_ISO_from_grid = getSE3Inverse(originalRtkPosition, originalRtkOrientation); 	// grid to ISO 
-	// mat4 T_Veh_from_ISO  = getSE3Inverse(vec3(0,0,0), vec3(PI, 0, 0)); 					// ISO to Veh
-	// mat4 T_IMUcorr_from_Veh  = getCalibrationMatrixInverse(vec3(0,0,0), vatParams); 						// Veh to IMU 
-	// mat4 T_IMU_from_IMUcorr = getCalibrationMatrixInverse(velo2RtkXYZOld, velo2RtkRPYOld); 				// IMU to Velo 
-	
-	// mat4 T_IMUcorr_from_IMU = getCalibrationMatrix(velo2RtkXYZNew, velo2RtkRPYNew); 						// Velo to IMU 
-	// mat4 T_Veh_from_IMUcorr  = getCalibrationMatrix(vec3(0,0,0), vatParams); 								// IMU to Veh 
-	// mat4 T_ISO_from_Veh  = getSE3(vec3(0,0,0), vec3(PI,0,0)); 							// Veh to ISO 
-	// mat4 T_grid_from_ISO = getSE3(originalRtkPosition, originalRtkOrientation);			// ISO to Grid 
-
-
-	// Transforms:
-	// 	Forward:
-	//		Velo --> Velo (correction)
-	//		Velo (correction) --> IMU
-	//		IMU --> Vehicle Frame
-	//		Vehicle Frame --> ISO 8855 
-	//		ISO 8855 --> World Frame 
-	//		World --> Grid
-	//
-	//	Backward:
-	//		Grid --> World 
-	//		World --> ISO 8855
-	//		ISO --> Vehicle Frame 
-	//		Vehicle --> IMU 
-	//		IMU --> Velodyne (corrected)
-	//		Velodyne (corrected) --> Velodyne
-	//
-
-	// Hardcoded Values:
-	// vec3 vatParams = vec3(rad(171.85089), rad(87.128977), rad(81.860769)); // Hardcoded for Durango Dataset (SH1)
-	// vec3 vatParams = vec3(rad(-64.589090), rad(89.736134), rad(-154.589311)); // Hardcoded for Ford Dataset (PriAnt)
-	vec3 vatParams = vec3(rad(-95.539625), rad(89.879114), rad(174.460152)); // Hardcoded for pre-Aptiv/Sam's car Dataset (Pike Segment)
-	vec3 nominalVelo2IMU_position = vec3(0.18823, -0.05708, -0.18777);	// Nominal Extrinsics for Velo --> RT offsets
-	vec3 nominalVelo2IMU_orientation = vec3(1.5707963, 0, -1.5707963);	// Nomninal Extrinsics for Velo --> RT relative rotation 
-
-
-	mat4 T1_Velo_to_Corr = getSE3(velo2RtkXYZNew, velo2RtkRPYNew); 										// Should be based on calibration panel values (velo2RtkNew)
-	mat4 T2_Corr_to_IMU  = getCalibrationMatrix(nominalVelo2IMU_position, nominalVelo2IMU_orientation); // Should be based on nominal Velo-RT extrinsics 
-	mat4 T3_IMU_to_Veh   = getCalibrationMatrix(vec3(0,0,0), vatParams);								// Should be based on VAT file parameters
-	mat4 T4_Veh_to_ISO   = getSE3(vec3(0,0,0), vec3(PI, 0, 0));											// 180 degree rotation about X-axis
-	mat4 T5_ISO_to_Grid  = getSE3(originalRtkPosition, originalRtkOrientation);							// Should be based on originalRtkPosition and originalRtkOrientation
-	// mat4 T_forward = T5_ISO_to_Grid * T4_Veh_to_ISO * T3_IMU_to_Veh * T2_Corr_to_IMU * T1_Velo_to_Corr;
-	mat4 T_forward_test = T5_ISO_to_Grid * T4_Veh_to_ISO * T3_IMU_to_Veh * T2_Corr_to_IMU;
-
-
-	mat4 T5_Grid_to_ISO  = inverse(T5_ISO_to_Grid);					// Should be based on originalRtkPosition and originalRtkOrientation (inverse of T_ISO_to_Grid)
-	mat4 T4_ISO_to_Veh	 = inverse(T4_Veh_to_ISO);					// 180 degree rotation about X-axis (inverse of T_Veh_to_ISO)
-	mat4 T3_Veh_to_IMU	 = inverse(T3_IMU_to_Veh);					// Should be based on VAT file parameters (inverse of T_IMU_to_Veh)
-	mat4 T2_IMU_to_Corr  = inverse(T2_Corr_to_IMU); 				// Should be based on nominal Velo-RT extrinsics (inverse of T_Corr_to_IMU)
-	mat4 T1_Corr_to_Velo = getSE3(velo2RtkXYZOld, velo2RtkRPYOld);	// Should be based on calibration panel values previously used in reconstruction (velo2RtkOld)
-	// mat4 T_reverse = T1_Corr_to_Velo * T2_IMU_to_Corr * T3_Veh_to_IMU * T4_ISO_to_Veh * T5_Grid_to_ISO;
-	mat4 T_reverse_test =  T2_IMU_to_Corr * T3_Veh_to_IMU * T4_ISO_to_Veh * T5_Grid_to_ISO;
-
-
-	
-
 	if (uDebug) {
+		mat4 identityTransform = getSE3(vec3(0,0,0), vec3(0,0,0));
 		T_full = identityTransform;
 	} else {
-		// T_full = T_rtk_from_grid;
-		// T_full = T_grid_from_rtk * T_rtk_from_velo * T_velo_from_rtk * T_rtk_from_grid;
-
-		// T_full = T_grid_from_ISO * T_ISO_from_Veh * T_Veh_from_IMUcorr * T_IMUcorr_from_IMU * T_IMU_from_IMUcorr * T_IMUcorr_from_Veh * T_Veh_from_ISO * T_ISO_from_grid;
-
-		// T_full = identityTransform;
-		
 		T_full = T5_ISO_to_Grid * uCalMatrix * T5_Grid_to_ISO;
-
-		// T_full = T_forward * T_reverse;
-		// T_full = T_forward_test * T_reverse_test;
-
 	}
 
-
-	// Apply Transformation:
+	// Apply Full Transformation:
 	correctedPosition = T_full * p_grid; // Multiply the transformation matrix B by the origin to the get the position of the point in grid frame
-
-	// DEPRECATED
-	// correctedPosition = applyRtk2VehicleExtrinsics(correctedPosition); // Apply Rtk 2 Vehicle Mesh Extrinsics
-	// DEBUG
-	// correctedPosition = vec4(originalRtkPosition, 1.0);
 
 	// Camera Transforms:
 	mvPosition = modelViewMatrix * correctedPosition;

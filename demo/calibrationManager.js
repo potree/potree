@@ -187,26 +187,7 @@ function getAdjustedTransformFull(originalCorrections, nominalCal, vatCal, newCo
 
 export const getAdjustedTransform = (correctionsCal, nominalCal, vatCal, calibrationPanelCorrections, settings) => {
 
-  /* Logic:
-    If correctionsCal.version == 2, then 
-      ignore nominal and vat
-      construct backward and forward chains as is currently done
-
-    If correctionsCal.version >= 3.0 , then
-      if (vatCal === null || nominalCal === null) 
-        disableCalbrationPanels("missing nominal and vat cal (for corrections version 3.0+)")
-      else 
-        construct backward and forward transform chains using new approach
-  */
-
-  let transform =  new THREE.Matrix4();
-
-  // console.warn("Identity Matrix is being returned as calibration matrix");
-
-  // console.log("Corrections: ", correctionsCal);
-  // console.log("Nominal: ", nominalCal);
-  // console.log("vatCal: ", vatCal);
-  // console.log("Panel Values: ", calibrationPanelCorrections);
+  let transform =  new THREE.Matrix4(); // Identity matrix
 
   if (settings.valid) {
     if (settings.useVatParameters) {

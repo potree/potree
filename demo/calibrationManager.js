@@ -267,10 +267,16 @@ function parseMetadataFile(calibrationText) {
 
   const calibration = JSON.parse(calibrationText);
 
-  // convert vat params from degrees to radians:
+  // Convert vat params from degrees to radians:
   calibration.vat["roll"] = Math.PI * calibration.vat["roll"] / 180.0; 
   calibration.vat["pitch"] = Math.PI * calibration.vat["pitch"] / 180.0; 
   calibration.vat["yaw"] = Math.PI * calibration.vat["yaw"] / 180.0; 
+
+  // Add translational components:
+  // Note: VAT parameters by definition specify only the rotational component, so translational offsets are zero
+  calibration.vat.x = 0.0;
+  calibration.vat.y = 0.0;
+  calibration.vat.z = 0.0;
 
   return calibration;
 }

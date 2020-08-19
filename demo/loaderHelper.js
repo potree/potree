@@ -60,12 +60,12 @@ function finishLoading({pointcloud}) {
 
 
   window.addEventListener('update-calibration-panel', (e) => {
-  	console.log("UPDATE RECEIVED: ", e);
 
+  	// Generate new calibration transform matrix:
   	const calibrationPanelValues = getVelo2Rtk();
   	const transform = getAdjustedTransform(window.extrinsics.velo2Rtk.old, window.extrinsics.nominal, window.extrinsics.vat, calibrationPanelValues, window.calibrationSettings);
-  	console.log("Updated transforms:", transform);
 
+  	// Update pointcloud material uniform (pass to shader):
   	material.uniforms.uCalMatrix.value = transform;
 
   });

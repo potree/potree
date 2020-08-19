@@ -241,22 +241,6 @@ mat4 getSE3Inverse(vec3 dX, vec3 dTheta) {
 	return SE3;
 }
 
-mat4 getCalibrationMatrix(vec3 dX, vec3 dTheta) {
-	return getSE3Inverse(dX, dTheta);
-
-	// mat3 R = makeRotationMatrix(dTheta);
-	// mat3 R_transpose = transpose(R);
-
-	// mat4 Transformation = mat4(R_transpose);
-	// Transformation[3] = vec4(dX, 1.0);
-	// return Transformation;
-}
-
-mat4 getCalibrationMatrixInverse(vec3 dX, vec3 dTheta) {
-	mat4 calMatrix = getCalibrationMatrix(dX, dTheta);
-	return inverse(calMatrix);
-}
-
 // Deprecated - Used for original vehicle-centric streaming player
 vec4 applyRtk2VehicleExtrinsics(vec4 X) {
   mat4 Extrinsics = getSE3(rtk2VehicleXYZNew, rtk2VehicleRPYNew);
@@ -955,10 +939,6 @@ void doClipping(vec4 correctedPosition){
 // ##     ## ##     ##  ##  ##   ###
 // ##     ## ##     ## #### ##    ##
 //
-
-float rad(float deg) {
-	return deg/180.*PI;
-}
 
 void main() {
 

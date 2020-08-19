@@ -1,6 +1,6 @@
 'use strict';
 
-import { bucket, name, getLambda } from "../demo/paramLoader.js";
+import { bucket, name, getLambda, region } from "../demo/paramLoader.js";
 import { resetProgressBars, incrementLoadingBarTotal } from "../common/overlay.js";
 
 const numberOrZero = (string) => {
@@ -393,7 +393,9 @@ function addPlaybarListeners () {
   });
 }
 
-
+/**
+ * @brief Function that saves changes made to lanes when annotating in potree. Calls the AWS Lambda function 'UpdateLanes'
+ */
 function saveLaneChanges () {
   const lane = {
     id: 0,
@@ -426,13 +428,19 @@ function saveLaneChanges () {
   } else {
     lane.right = laneRightSegments.getFinalPoints();
   }
-
-  // Get New Spine Vertices
-  updateSpine(bucket, name, lane.left, lane.right);
+  callUpdateLanesLambdaFunction(bucket, name, lane.left, lane.right);
 }
 
-function updateSpine (bucket, name, left, right) {
-  const input = {
+/**
+ * @brief Function that calls the AWS Lambda function 'UpdateLanes' that generates a new lanes flatbuffer file and writes it to S3
+ * @param { String } bucket The AWS S3 bucket used by this dataset
+ * @param { String } name The AWS S3 dataset
+ * @param { Array } left The left lane polyline
+ * @param { Array } right The right lane polyline
+ */
+function callUpdateLanesLambdaFunction (bucket, name, left, right) {
+  const payload = {
+    region: region,
     bucket: bucket,
     name: name,
     left: left,
@@ -440,9 +448,9 @@ function updateSpine (bucket, name, left, right) {
   };
   const lambda = getLambda();
   lambda.invoke({
-    FunctionName: 'arn:aws:lambda:us-east-1:757877321035:function:UpdateLanes:2',
+    FunctionName: 'UpdateLanes:3',
     LogType: 'None',
-    Payload: JSON.stringify(input)
+    Payload: JSON.stringify(payload)
   }, function (err, data) {
     if (err) {
       console.log(err, err.stack);

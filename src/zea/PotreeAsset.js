@@ -9,8 +9,16 @@ import {POCLoader} from "../loader/POCLoader";
 
 // Note: replaces PointCloudOctree.
 // 
-export class PotreeAsset extends AssetItem {
+/**
+ * The PotreeAsset class
+ *
+ * @extends {AssetItem}
+ */
+class PotreeAsset extends AssetItem {
 
+  /**
+   * Creates an instance of PotreeAsset.
+   */
   constructor(){
     super();
     
@@ -32,10 +40,23 @@ export class PotreeAsset extends AssetItem {
     this.addParameter(new NumberParameter('Num Points', 0))
   }
 
+  /**
+   * The getGlobalMat4 method
+   *
+   * @return {Mat4} - The global mat4
+   * @memberof PotreeAsset
+   */
   getGlobalMat4() {
     return this.getGlobalXfo().toMat4();
   }
   
+  /**
+   * The _cleanBoundingBox method
+   *
+   * @param {*} bbox
+   * @return {*}
+   * @private
+   */
   _cleanBoundingBox(bbox) {
     bbox = super._cleanBoundingBox(bbox)
     const mat4 = this.getGlobalMat4();
@@ -47,6 +68,11 @@ export class PotreeAsset extends AssetItem {
     return bbox;
   }
 
+  /**
+   * The setGeometry method
+   *
+   * @param {*} pcoGeometry - The pcoGeometry value
+   */
   setGeometry(pcoGeometry) {
 
     this.pcoGeometry = pcoGeometry;
@@ -68,11 +94,24 @@ export class PotreeAsset extends AssetItem {
     //   this.updateVisibility();
   }
 
+  /**
+   * The getGeometry method
+   *
+   * @return {*} - The pco geometry
+   */
   getGeometry() {
-      return this.pcoGeometry;
+    return this.pcoGeometry;
   };
-  
-  // // Load and add point cloud to scene
+
+
+  /**
+   * Load and add point cloud to scene
+   *
+   * @param {*} path - The path value
+   * @param {*} name - The name value
+   * @return {Promise} - The promise
+   * @memberof PotreeAsset
+   */
   loadPointCloud(path, name) {
     return new Promise((resolve, reject) => {
       POCLoader.load(path, geometry => {
@@ -86,3 +125,6 @@ export class PotreeAsset extends AssetItem {
     });
   }
 };
+
+export default PotreeAsset
+export { PotreeAsset }

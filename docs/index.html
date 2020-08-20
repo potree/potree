@@ -2,20 +2,128 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>@zeainc/zea-potree - WebGL point cloud viewer for Zea Engine</title>
+  <title>Zea Point Clouds Documentation</title>
   <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
-  <meta name="description" content="WebGL point cloud viewer for Zea Engine">
+  <meta name="description" content="Description">
   <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
-  <link rel="stylesheet" href="//unpkg.com/docsify/lib/themes/vue.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/docsify/lib/themes/vue.css">
+	<link rel="icon" type="image/png" sizes="16x16" href="/_media/favicon-16x16.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/_media/favicon-32x32.png">
+
+  <style>
+    .cover-main {
+      color: #E0E0E0;
+    }
+
+    .download-btn {
+      color: #222323;
+      position: relative;
+      cursor: pointer;
+    }
+
+    section.cover .cover-main>p:last-child a:last-child {
+      background-color: #F9cE03;
+      border-color:#F9cE03;
+      color: #222323;
+      font-weight: bold;
+    }
+
+    section.cover .cover-main>p:last-child a:last-child:hover {
+      background-color: #FBE167;
+      border-color:#FBE167;
+      color: #222323;
+      font-weight: bold;
+      opacity: 1;
+    }
+
+    .cover-main .anchor span {
+      color: #E0E0E0;
+    }
+
+    .markdown-section a, .sidebar ul li.active>a {
+      color: #965CB8;
+    }
+
+    footer div#copyright {
+      margin-bottom: 1rem;
+    }
+
+    footer div#cc {
+      display: flex;
+      align-items: center;
+    }
+
+    footer div#cc img {
+      margin-right: 1rem;
+    }
+  </style>
 </head>
 <body>
   <div id="app"></div>
   <script>
-    window.$docsify = {
-      name: '@zeainc/zea-potree',
-      repo: ''
+    const loadScript = (src)=> {
+      var scriptElm = document.createElement('script');
+      scriptElm.src = src;
+      document.body.appendChild(scriptElm);
     }
+
+    fetch('./searchToc.json')
+      .then(
+        function(response) {
+          if (response.status !== 200) {
+            console.log('Looks like there was a problem. Status Code: ' +
+              response.status);
+            return;
+          }
+
+          // Examine the text in the response
+          response.json().then(function(data) {
+            const search = {
+              paths: [
+                '/',
+                ...data.searchToc
+              ],
+              depth: 6,
+            }
+
+            window.$docsify = {
+              name:'Zea Pointclouds Docs',
+              coverpage: true,
+              loadSidebar: true,
+              subMaxLevel: 6,
+              loadNavbar: false,
+              alias: {
+                '/.*/_sidebar.md': '/_sidebar.md',
+              },
+              search,
+              plugins: [
+                function(hook) {
+                  var footer = [
+                    '<hr/>',
+                    '<footer>',
+                    '<div id="copyright">Copyright &copy;2020 <a href="http://zea.live/">Zea</a>. </div>',
+                    '<div id="cc">',
+                    '<img src="_media/copyright.png" alt="copyright" />',
+                    '<span>Except where otherwise noted, work provided on Zea Docs is licensed under a <a href="https://creativecommons.org/licenses/by-nc-sa/3.0/" target="_blank">Creative Commons Attribution-NonCommercial-ShareAlike 3.0</a> Unported License.</span>',
+                    '</div>',
+                    '</footer>'
+                  ].join('');
+
+                  hook.afterEach(function(html) {
+                    return html + footer;
+                  });
+                }
+              ]
+            }
+
+            loadScript("//cdn.jsdelivr.net/npm/docsify@4")
+            loadScript("//cdn.jsdelivr.net/npm/docsify@4/lib/plugins/search.min.js")
+          });
+        }
+      )
+      .catch(function(err) {
+        console.log('Fetch Error :-S', err);
+      });
   </script>
-  <script src="//unpkg.com/docsify/lib/docsify.min.js"></script>
 </body>
 </html>

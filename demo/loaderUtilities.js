@@ -215,6 +215,8 @@ export async function getS3Files (s3, bucket, name) {
   const filePaths = [];
   const table = {};
   for (const dir of topLevelDirs) {
+    // Exclude '1_Viz' directory
+    if (dir.includes('1_Viz/')) continue;
     const list = [];
     const listData = await s3.listObjectsV2({
       Bucket: bucket,

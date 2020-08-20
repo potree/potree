@@ -152,7 +152,7 @@ async function createControlMeshes (controlPoints, controlPointShaderMaterial, F
       .timestamp(new FlatbufferModule.Flatbuffer.Primitives.ObjectTimestamp())
       .value() - animationEngine.tstart;
     const timestampArray = new Float64Array(64).fill(timestamp)
-    const sphereGeo = new THREE.SphereBufferGeometry(radius);
+    const sphereGeo = new THREE.BoxBufferGeometry(0.3,0.3,0.3);
 
     controlPointShaderMaterial.uniforms.color.value = getControlPointColor(controlPointType);
     const sphereMesh = new THREE.Mesh(sphereGeo, controlPointShaderMaterial);

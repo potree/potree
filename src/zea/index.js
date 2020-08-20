@@ -8,5 +8,5 @@ export const version = {
 
 console.log('ZeaPotree ' + version.major + '.' + version.minor + version.suffix);
 
-export * from "./GLPotreePass.js";
-export * from "./PotreeAsset.js";
+export * from "./GLPotreePass";
+export * from "./PotreeAsset";

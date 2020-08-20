@@ -13,7 +13,15 @@ import { BinaryHeap } from "../../libs/other/BinaryHeap.js";
 import { PotreePointsShader, PotreePointsGeomDataShader, PotreePointsHilighlightShader } from "./PotreePointsShader.js";
 import {LRU} from "../LRU.js";
 
-export class GLPotreePass extends GLPass {
+/**
+ * The GLPotreePass class
+ *
+ * @extends {GLPass}
+ */
+class GLPotreePass extends GLPass {
+  /**
+   * Creates an instance of GLPotreePass.
+   */
   constructor(){
     super();
     
@@ -48,8 +56,8 @@ export class GLPotreePass extends GLPass {
   }
   /**
    * The init method.
-   * @param {any} renderer - The renderer param.
-   * @param {any} passIndex - The passIndex param.
+   * @param {*} renderer - The renderer param.
+   * @param {*} passIndex - The passIndex param.
    */
   init(renderer, passIndex) {
     super.init(renderer, passIndex)
@@ -91,6 +99,11 @@ export class GLPotreePass extends GLPass {
     )
   }
 
+  /**
+   * The addPotreeasset method
+   *
+   * @param {*} potreeAsset - The potreeAsset
+   */
   addPotreeasset(potreeAsset){
     const __bindAsset = potreeAsset => {
       const glpotreeAsset = new GLPotreeAsset(this.__gl, potreeAsset, this.glshader);
@@ -122,6 +135,11 @@ export class GLPotreePass extends GLPass {
   // ///////////////////////////////////
   // Visiblity
 
+  /**
+   * The setViewport method
+   *
+   * @param {*} viewport - The viewport value
+   */
   setViewport(viewport){
     this.viewport = viewport;
     this.viewport.viewChanged.connect(()=>{
@@ -133,6 +151,12 @@ export class GLPotreePass extends GLPass {
     this.visibleNodesNeedUpdating = true;
   }
   
+  /**
+   * The updateVisibilityStructures method
+   *
+   * @param {*} priorityQueue - The priorityQueue value
+   * @return {array} - The result
+   */
   updateVisibilityStructures(priorityQueue) {
     
     const camera = this.viewport.getCamera();
@@ -168,6 +192,9 @@ export class GLPotreePass extends GLPass {
   };
 
 
+  /**
+   * The updateVisibility method
+   */
   updateVisibility() {
     const priorityQueue = new BinaryHeap(function (x) { return 1 / x.weight; });
     const camera = this.viewport.getCamera();
@@ -288,6 +315,12 @@ export class GLPotreePass extends GLPass {
     // this.updated.emit();
   }
 
+  /**
+   * The computeVisibilityTextureData method
+   *
+   * @param {*} nodes - The nodes value
+   * @return {Map} - The result
+   */
   computeVisibilityTextureData(nodes){
 
     const data = new Uint8Array(nodes.length * 4);
@@ -347,7 +380,7 @@ export class GLPotreePass extends GLPass {
 
   /**
    * The draw method.
-   * @param {any} renderstate - The renderstate param.
+   * @param {*} renderstate - The renderstate param.
    */
   draw(renderstate) {
     if (this.glpotreeAssets.length == 0) return;
@@ -378,7 +411,7 @@ export class GLPotreePass extends GLPass {
 
   /**
    * The drawHighlightedGeoms method.
-   * @param {any} renderstate - The renderstate param.
+   * @param {*} renderstate - The renderstate param.
    */
   drawHighlightedGeoms(renderstate) {
     if (this.hilghlightedAssets.length == 0) return;
@@ -401,7 +434,7 @@ export class GLPotreePass extends GLPass {
 
   /**
    * The drawGeomData method.
-   * @param {any} renderstate - The renderstate param.
+   * @param {*} renderstate - The renderstate param.
    */
   drawGeomData(renderstate) {
     if (this.glpotreeAssets.length == 0) return;
@@ -434,7 +467,7 @@ export class GLPotreePass extends GLPass {
 
   /**
    * The getGeomItemAndDist method.
-   * @param {any} geomData - The geomData param.
+   * @param {*} geomData - The geomData param.
    */
   getGeomItemAndDist(geomData) {
     const itemId = Math.round(geomData[1])
@@ -448,3 +481,6 @@ export class GLPotreePass extends GLPass {
     }
   }
 }
+
+export default GLPotreePass
+export { GLPotreePass }

@@ -417,7 +417,9 @@ function saveLaneChanges () {
     const laneLeft = window.viewer.scene.scene.getChildByName("Lane Left");
     lane.left = laneLeft.points;
   } else {
-    lane.left = laneLeftSegments.getFinalPoints();
+    const leftPointsAndValidities = laneLeftSegments.getFinalPoints();
+    lane.left = leftPointsAndValidities.finalPoints;
+    lane.leftPointValidity = leftPointsAndValidities.finalPointValidities;
   }
 
   // Right Lane Vertices:
@@ -426,29 +428,33 @@ function saveLaneChanges () {
     const laneRight = window.viewer.scene.scene.getChildByName("Lane Right");
     lane.right = laneRight.points;
   } else {
-    lane.right = laneRightSegments.getFinalPoints();
+    const rightPointsAndValidities = laneRightSegments.getFinalPoints();
+    lane.right = rightPointsAndValidities.finalPoints;
+    lane.rightPointValidity = rightPointsAndValidities.finalPointValidities;
   }
-  callUpdateLanesLambdaFunction(bucket, name, lane.left, lane.right);
+  callUpdateLanesLambdaFunction(bucket, name, lane);
 }
 
 /**
  * @brief Function that calls the AWS Lambda function 'UpdateLanes' that generates a new lanes flatbuffer file and writes it to S3
  * @param { String } bucket The AWS S3 bucket used by this dataset
  * @param { String } name The AWS S3 dataset
- * @param { Array } left The left lane polyline
+ * @param { JSONObj } lane A JSON object that represents a lanes flatbuffer
  * @param { Array } right The right lane polyline
  */
-function callUpdateLanesLambdaFunction (bucket, name, left, right) {
+function callUpdateLanesLambdaFunction (bucket, name, lane) {
   const payload = {
     region: region,
     bucket: bucket,
     name: name,
-    left: left,
-    right: right
+    left: lane.left,
+    leftPointValidity: lane.leftPointValidity,
+    right: lane.right,
+    rightPointValidity: lane.rightPointValidity
   };
   const lambda = getLambda();
   lambda.invoke({
-    FunctionName: 'UpdateLanes:3',
+    FunctionName: 'UpdateLanes:5',
     LogType: 'None',
     Payload: JSON.stringify(payload)
   }, function (err, data) {

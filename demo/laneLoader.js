@@ -77,118 +77,6 @@ async function parseLanes(arrayBuffer, FlatbufferModule, supplierNum, annotation
   return await createLaneGeometriesOld(lanes, supplierNum, annotationMode, volumes);
 }
 
-
-// TODO we are not using this function and will need to rewrite is to accomodate annotations and amomalies. Recmommend removing
-function splitLaneVertices(lanes) {
-
-  let leftVertices = [];
-  let rightVertices = [];
-  let spineVertices = [];
-
-  let lane, vtx, laneVertices;
-  for (let ii=0, numLanes=lanes.length; ii<numLanes; ii++) {
-
-    lane = lanes[ii];
-
-    laneVertices = [];
-    for (let jj=0, numLeftVtx=lane.leftLength(); jj<numLeftVtx; jj++) {
-      vtx = lane.left(jj);
-      laneVertices.push( new THREE.Vector3(vtx.x(), vtx.y(), vtx.z()) );
-    }
-    leftVertices.push(laneVertices);
-
-    laneVertices = [];
-    for (let jj=0, numRightVtx=lane.rightLength(); jj<numRightVtx; jj++) {
-      vtx = lane.right(jj);
-      laneVertices.push( new THREE.Vector3(vtx.x(), vtx.y(), vtx.z()) );
-    }
-    rightVertices.push(laneVertices);
-
-    laneVertices = [];
-    for (let jj=0, numSpineVtx=lane.spineLength(); jj<numSpineVtx; jj++) {
-      vtx = lane.spine(jj);
-      spineVertices.push( new THREE.Vector3(vtx.x(), vtx.y(), vtx.z()) );
-    }
-    spineVertices.push(laneVertices);
-  }
-
-  let output = {
-    leftGroups: leftVertices,
-    rightGroups: rightVertices,
-    spineGroups: spineVertices
-  }
-
-  return output;
-}
-
-
-// TODO we are not using this function and will need to rewrite is to accomodate annotations and amomalies. Recmommend removing
-function createLaneGeometries(vertexGroups, material) {
-
-  let laneGeometries = [];
-  let allBoxes = new THREE.Geometry();
-
-  let allLanes = [];
-  let vertexGroup;
-  let v1, v2;
-  let length, width, height;
-  let vector, axis;
-  let center, firstCenter, delta;
-  let boxGeometry, se3, quaternion;
-  debugger; // vertexGroups.length
-  for (let ii=0, len=vertexGroups.length; ii<len; ii++) {
-
-    vertexGroup = vertexGroups[ii];
-
-    for (let jj=1, numVertices=vertexGroup.length; jj<numVertices; jj++) {
-
-      v1 = vertexGroup[jj-1];
-      v2 = vertexGroup[jj];
-
-      length = v1.distanceTo(v2);
-      height = 0.01;
-      width = 0.1;
-
-      vector = v2.sub(v1);
-      axis = new THREE.Vector3(1, 0, 0);
-      center = v1.addScaledVector(vector, 0.5);
-
-      if (firstCenter == undefined) {
-        firstCenter = center.clone();
-      }
-
-      delta = center.clone().sub(firstCenter);
-      lastCenter = center.clone();
-      // debugger; // delta
-
-      // Transform Box:
-      boxGeometry = new THREE.BoxGeometry(length, width, height);
-      se3 = new THREE.Matrix4();
-      quaternion = new THREE.Quaternion().setFromUnitVectors(axis, vector.clone().normalize());
-      // debugger; // se3;
-      se3.makeRotationFromQuaternion(quaternion); // Rotation
-      se3.setPosition(delta); // Translation
-
-      boxGeometry.applyMatrix( se3 );
-      allBoxes.merge(boxGeometry);
-
-      if ((ii%10000)==0 || ii==(len-1)) {
-        // let mesh = new THREE.Mesh(allBoxes, new THREE.MeshBasicMaterial({color:0x00ff00}));
-        let mesh = new THREE.Mesh(new THREE.BufferGeometry().fromGeometry(allBoxes), material); // Buffergeometry
-        mesh.position.copy(firstCenter);
-        laneGeometries.push(mesh);
-        allBoxes = new THREE.Geometry();
-        firstCenter = center.clone();
-      }
-
-
-    }
-  }
-
-  return laneGeometries;
-}
-
-
 // async function in order to enable a real time loading bar (caller functions must also use async/await)
 // without it the javascript code will run and block the UI that needs to update the loading bar (remove at your own risk)
 async function createLaneGeometriesOld (lanes, supplierNum, annotationMode, volumes) {
@@ -279,7 +167,7 @@ async function createLaneGeometriesOld (lanes, supplierNum, annotationMode, volu
         if (volumes.length === 0) {
           laneLeft.addMarker(new THREE.Vector3(left.x(), left.y(), left.z()));
         } else {
-          isContains = updateSegments(leftLaneSegments, clonedBoxes, isContains, left, jj, numVertices);
+          isContains = leftLaneSegments.updateSegments(clonedBoxes, isContains, left, lane.leftPointValidity(jj), jj, numVertices);
         }
       } else {
         geometryLeft.vertices.push(new THREE.Vector3(left.x(), left.y(), left.z()));
@@ -298,7 +186,7 @@ async function createLaneGeometriesOld (lanes, supplierNum, annotationMode, volu
         if (volumes.length === 0) {
           laneRight.addMarker(new THREE.Vector3(right.x(), right.y(), right.z()));
         } else {
-          isContains = updateSegments(rightLaneSegments, clonedBoxes, isContains, right, jj, numVertices);
+          isContains = rightLaneSegments.updateSegments(clonedBoxes, isContains, right, lane.rightPointValidity(jj), jj, numVertices);
         }
       } else {
         geometryRight.vertices.push(new THREE.Vector3(right.x(), right.y(), right.z()));
@@ -426,37 +314,6 @@ async function createLaneGeometriesOld (lanes, supplierNum, annotationMode, volu
   };
   return output;
 }
-
-function updateSegments(laneSegments, clonedBoxes, prevIsContains, point, index, lengthArray) {
-
-  let newIsContains = false;
-  for (let bbi=0, bbLen=clonedBoxes.length; bbi<bbLen; bbi++) {
-    const isContains = clonedBoxes[bbi].containsPoint(new THREE.Vector3(point.x(), point.y(), point.z()));
-    if (isContains) {
-      newIsContains = isContains;
-    }
-  }
-  if (newIsContains && !prevIsContains) {
-    laneSegments.initializeSegment("Lane Segment "); // can pass as a parameter and differentiate between left and right, but not required for now
-  }
-  if (!newIsContains && prevIsContains) {
-    laneSegments.finalizeSegment();
-  }
-
-  if (newIsContains) {
-    laneSegments.addSegmentMarker(new THREE.Vector3(point.x(), point.y(), point.z()));
-  } else {
-    laneSegments.incrementOffset(new THREE.Vector3(point.x(), point.y(), point.z()));
-  }
-
-  // edge case if a segment exists at the end
-  if (newIsContains && index == lengthArray-1) {
-    laneSegments.finalizeSegment();
-  }
-
-  return newIsContains
-}
-
 
 // Adds anomaly annotations
 function addAnnotations (laneGeometries) {

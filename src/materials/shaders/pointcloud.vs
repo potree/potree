@@ -34,6 +34,8 @@ uniform vec3 rtk2VehicleRPYNew;
 uniform vec3 velo2RtkXYZNew;
 uniform vec3 velo2RtkRPYNew;
 
+uniform mat4 uCalMatrix;
+
 uniform mat4 modelMatrix;
 uniform mat4 modelViewMatrix;
 uniform mat4 projectionMatrix;
@@ -204,6 +206,17 @@ mat3 transpose(mat3 M) {
 	);
 
 	return MT;
+}
+
+mat4 inverse(mat4 M) {
+	mat3 R = mat3(M[0].xyz, M[1].xyz, M[2].xyz);
+	mat3 R_transpose = transpose(R);
+	vec3 T = M[3].xyz;
+
+	mat4 InverseTransform = mat4(R_transpose);
+	InverseTransform[3] = vec4(-R_transpose*T, 1.0);
+
+	return InverseTransform;
 }
 
 mat4 getSE3(vec3 dX, vec3 dTheta) {
@@ -935,30 +948,22 @@ void main() {
 	// Initialize Point Position:
 	vec3 p = position.xyz;
 	vec4 p_grid = vec4(p, 1.0); 	// Position of point in grid (octree node) frame
-	vec3 identityRotation = vec3(0.0, 0.0, 0.0);
-	vec4 origin = vec4(0.0, 0.0, 0.0, 1.0);
 
-	// Construct Transformation Matrices (Test):
-	mat4 T_grid_from_rtk = getSE3(originalRtkPosition, originalRtkOrientation);
-	mat4 T_rtk_from_velo = getSE3(velo2RtkXYZNew, velo2RtkRPYNew);
-	mat4 T_velo_from_rtk = getSE3Inverse(velo2RtkXYZOld, velo2RtkRPYOld);
-	mat4 T_rtk_from_grid = getSE3Inverse(originalRtkPosition, originalRtkOrientation);
+	// Construct Transforms relating Potree's Octree Grid (Node) Reference Frame and ISO 8855 Vehicle Frame:
+	mat4 T5_ISO_to_Grid  = getSE3(originalRtkPosition, originalRtkOrientation);	// Should be based on originalRtkPosition and originalRtkOrientation
+	mat4 T5_Grid_to_ISO  = inverse(T5_ISO_to_Grid);								// Should be based on originalRtkPosition and originalRtkOrientation (inverse of T_ISO_to_Grid)
+	
+	// Construct Full Calibration Transform Matrix:
 	mat4 T_full;
 	if (uDebug) {
-		T_full = getSE3(origin.xyz, identityRotation);
+		mat4 identityTransform = getSE3(vec3(0,0,0), vec3(0,0,0));
+		T_full = identityTransform;
 	} else {
-		// T_full = T_rtk_from_grid;
-		T_full = T_grid_from_rtk * T_rtk_from_velo * T_velo_from_rtk * T_rtk_from_grid;
+		T_full = T5_ISO_to_Grid * uCalMatrix * T5_Grid_to_ISO;
 	}
 
-
-	// Apply Transformation:
+	// Apply Full Transformation:
 	correctedPosition = T_full * p_grid; // Multiply the transformation matrix B by the origin to the get the position of the point in grid frame
-
-	// DEPRECATED
-	// correctedPosition = applyRtk2VehicleExtrinsics(correctedPosition); // Apply Rtk 2 Vehicle Mesh Extrinsics
-	// DEBUG
-	// correctedPosition = vec4(originalRtkPosition, 1.0);
 
 	// Camera Transforms:
 	mvPosition = modelViewMatrix * correctedPosition;

@@ -12,7 +12,7 @@ import { AnimationEngine } from "../demo/animationEngine.js"
 import { createPlaybar } from "../common/playbar.js"
 import { loadRtkCallback, rtkDownloads } from "../demo/rtkLoader.js"
 import { textureDownloads } from "../demo/textureLoader.js"
-import { loadCalibrationFile, loadRtk2Vehicle, storeCalibration, calDownloads, addCalibrationButton } from "../demo/calibrationManager.js"
+import { loadCalibrationFile, loadRtk2Vehicle, storeCalibration, calDownloads, addCalibrationButton, getAdjustedTransform, getCalibrationSettings } from "../demo/calibrationManager.js"
 import { loadLanesCallback, addReloadLanesButton, laneDownloads } from "../demo/laneLoader.js"
 import { loadTracksCallback, trackDownloads } from "../demo/trackLoader.js"
 import { loadRemCallback, remDownloads } from "../demo/remLoader.js"
@@ -58,13 +58,26 @@ function finishLoading({pointcloud}) {
     material.uniforms.velo2RtkRPYNew.value.set(velo2RtkNew.roll, velo2RtkNew.pitch, velo2RtkNew.yaw);
   }
 
-  if (window.canEnableCalibrationPanels) {
+
+  window.addEventListener('update-calibration-panel', (e) => {
+
+  	// Generate new calibration transform matrix:
+  	const calibrationPanelValues = getVelo2Rtk();
+  	const transform = getAdjustedTransform(window.extrinsics.velo2Rtk.old, window.extrinsics.nominal, window.extrinsics.vat, calibrationPanelValues, window.calibrationSettings);
+
+  	// Update pointcloud material uniform (pass to shader):
+  	material.uniforms.uCalMatrix.value = transform;
+
+  });
+
+  if (window.canEnableCalibrationPanels && cloudCanUseCalibrationPanels) {
     enablePanels();
 
   } else {
-    const reason = "Pointcloud was not serialized with the necessary point attributes"
-    disablePanels(reason);
-    console.error("Cannot use calibration panels: ", reason);
+  	if (!cloudCanUseCalibrationPanels) {
+    	window.disableReason = "Pointcloud was not serialized with the necessary point attributes"
+    } 
+  	disablePanels(window.disableReason);
   }
 }
 
@@ -137,14 +150,14 @@ async function loadDataIntoDocument(filesTable) {
 		    storeVelo2Rtk(window.extrinsics.velo2Rtk.new);
 		    window.velo2RtkExtrinsicsLoaded = true;
                   } else {
-		    disablePanels("Unable to load extrinsics file");
+		    window.canEnableCalibrationPanels = false;
+		    window.disableReason = "Unable to load extrinsics file";
                   }
 
 		  const rtk2Vehicle = await loadRtk2Vehicle(s3, bucket, name);
 		  console.log("Rtk2Vehicle Extrinsics Loaded!");
 		  window.extrinsics.rtk2Vehicle = { old: rtk2Vehicle, new: rtk2Vehicle };
 		  // storeRtk2Vehicle(window.extrinsics.rtk2Vehicle.new);
-
 
 		  // Try to load nominal calibration
 		  const nominalExtrinsics = await loadCalibrationFile(s3, bucket, name, 'nominal');
@@ -161,6 +174,12 @@ async function loadDataIntoDocument(filesTable) {
 		  }
 		} catch (e) {
 		  console.error("Could not load Calibrations: ", e);
+		}
+
+		window.calibrationSettings = getCalibrationSettings(window.extrinsics.velo2Rtk.old, window.extrinsics.nominal, window.extrinsics.vat);
+		if (!window.calibrationSettings.valid) {
+			window.canEnableCalibrationPanels = false;
+			window.disableReason = "Do not have necessary calibration files to use calibration panels";
 		}
 
 		// Load Lanes:

@@ -1097,10 +1097,6 @@ export class Renderer {
 			shader.setUniformMatrix4("uProjInv", projInv);
 
 			try {
-				// debugger; // try below
-				// const currentRtkPosition = octree.material.uniforms.currentRtkPosition.value.toArray();
-				// const currentRtkOrientation = octree.material.uniforms.currentRtkOrientation.value.toArray();
-
 				const rtk2VehicleXYZOld = octree.material.uniforms.rtk2VehicleXYZOld.value.toArray();
 				const rtk2VehicleRPYOld = octree.material.uniforms.rtk2VehicleRPYOld.value.toArray();
 				const velo2RtkXYZOld = octree.material.uniforms.velo2RtkXYZOld.value.toArray();
@@ -1111,8 +1107,8 @@ export class Renderer {
 				const velo2RtkXYZNew = octree.material.uniforms.velo2RtkXYZNew.value.toArray();
 				const velo2RtkRPYNew = octree.material.uniforms.velo2RtkRPYNew.value.toArray();
 
-				// shader.setUniform3f("currentRtkPosition", currentRtkPosition);
-				// shader.setUniform3f("currentRtkOrientation", currentRtkOrientation);
+				const calMatrix = octree.material.uniforms.uCalMatrix.value;
+
 				shader.setUniform3f("rtk2VehicleXYZOld", rtk2VehicleXYZOld);
 				shader.setUniform3f("rtk2VehicleRPYOld", rtk2VehicleRPYOld);
 				shader.setUniform3f("velo2RtkXYZOld", velo2RtkXYZOld);
@@ -1121,6 +1117,8 @@ export class Renderer {
 				shader.setUniform3f("rtk2VehicleRPYNew", rtk2VehicleRPYNew);
 				shader.setUniform3f("velo2RtkXYZNew", velo2RtkXYZNew);
 				shader.setUniform3f("velo2RtkRPYNew", velo2RtkRPYNew);
+
+				shader.setUniformMatrix4('uCalMatrix', calMatrix);
 
 			} catch(e) {
 				debugger; // currentRtkPosition/Orientation doesn't exist

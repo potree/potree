@@ -3,7 +3,15 @@ import { POCLoader } from '../loader/POCLoader'
 
 // Note: replaces PointCloudOctree.
 //
-export class PointCloudAsset extends AssetItem {
+/**
+ * The PointCloudAsset Class
+ *
+ * @extends {AssetItem}
+ */
+class PointCloudAsset extends AssetItem {
+  /**
+   * Creates an instance of PointCloudAsset.
+   */
   constructor() {
     super()
 
@@ -25,10 +33,22 @@ export class PointCloudAsset extends AssetItem {
     this.addParameter(new NumberParameter('Point Size Attenuation', 1.0))
   }
 
+  /**
+   * The getGlobalMat4 method
+   *
+   * @return {Mat4} - The global Mat4
+   */
   getGlobalMat4() {
     return this.getParameter('GlobalXfo').getValue().toMat4()
   }
 
+  /**
+   * The _cleanBoundingBox method
+   *
+   * @param {*} bbox - 
+   * @return {Box3} - The cleaned bounding box
+   * @private
+   */
   _cleanBoundingBox(bbox) {
     bbox = super._cleanBoundingBox(bbox)
     const mat4 = this.getGlobalMat4()
@@ -40,6 +60,11 @@ export class PointCloudAsset extends AssetItem {
     return bbox
   }
 
+  /**
+   * the setGeometry method
+   *
+   * @param {any} pcoGeometry - The pcoGeometry value
+   */
   setGeometry(pcoGeometry) {
     this.pcoGeometry = pcoGeometry
 
@@ -59,11 +84,23 @@ export class PointCloudAsset extends AssetItem {
     //   this.updateVisibility();
   }
 
+  /**
+   * The getGeometry method
+   *
+   * @return {any} - The pcoGeometry
+   */
   getGeometry() {
     return this.pcoGeometry
   }
 
   // // Load and add point cloud to scene
+  /**
+   * The loadPointCloud method
+   *
+   * @param {*} path - The path value
+   * @param {*} name - The name value
+   * @return {Promise} - The result
+   */
   loadPointCloud(path, name) {
     return new Promise((resolve, reject) => {
       POCLoader.load(path, (geometry) => {
@@ -79,3 +116,6 @@ export class PointCloudAsset extends AssetItem {
 }
 
 Registry.register('PointCloudAsset', PointCloudAsset)
+
+export default PointCloudAsset
+export { PointCloudAsset }

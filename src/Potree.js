@@ -59,7 +59,7 @@
 
 // export * from "./viewer/viewer.js";
 // export * from "./viewer/Scene.js";
-export * from "./zea/index.js";
+export * from "./Zea/index.js";
 
 // export {OrbitControls} from "./navigation/OrbitControls.js";
 // export {FirstPersonControls} from "./navigation/FirstPersonControls.js";

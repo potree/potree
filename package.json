@@ -18,7 +18,8 @@
     "prepare": "yarn build",
     "start": "rollup -c rollup.config.dev.js -w",
     "dist": "yarn publish --access=public",
-    "docs": "node node_modules/@zeainc/zea-engine/buildApiDocs.js",
+    "docs": "adg --config adg.config.json",
+    "docs-w": "adg -w --config=adg.config.json",
     "testing-server": "node testing-server/index.js",
     "test": "karma start --single-run --browsers ChromeHeadless karma.conf.js",
     "testBrowser": "karma start --single-run karma.conf.js"
@@ -37,6 +38,12 @@
   "author": "Philip Taylor",
   "license": "BSD-2-CLAUSE",
   "devDependencies": {
+    "@zeainc/jsdocs2md": "^0.0.3",
+    "eslint": "^7.7.0",
+    "eslint-config-google": "^0.14.0",
+    "eslint-config-prettier": "^6.11.0",
+    "eslint-plugin-prettier": "^3.1.4",
+    "prettier": "^2.0.5",
     "rollup": "^2.10.9",
     "rollup-plugin-terser": "^6.1.0",
     "rollup-plugin-web-worker-loader": "^1.3.0",

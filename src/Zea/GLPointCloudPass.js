@@ -6,7 +6,15 @@ import { BinaryHeap } from '../../libs/other/BinaryHeap.js'
 import { PotreePointsShader, PotreePointsGeomDataShader, PotreePointsHilighlightShader } from './PotreePointsShader.js'
 import { LRU } from '../LRU.js'
 
-export class GLPointCloudPass extends GLPass {
+/**
+ * The GLPointCloudPass Class
+ *
+ * @extends {GLPass}
+ */
+class GLPointCloudPass extends GLPass {
+  /**
+   * Creates an instance of GLPointCloudPass.
+   */
   constructor() {
     super()
 
@@ -39,6 +47,7 @@ export class GLPointCloudPass extends GLPass {
     visiblePointsTargetParam.setValue(2 * 1000 * 1000)
     // pointSizeParam.setValue(1.25)
   }
+  
   /**
    * The init method.
    * @param {any} renderer - The renderer param.
@@ -86,6 +95,11 @@ export class GLPointCloudPass extends GLPass {
     this.setViewport(renderer.getViewport())
   }
 
+  /**
+   * The addPotreeasset method
+   *
+   * @param {*} pointcloudAsset - The pointcloudAsset value
+   */
   addPotreeasset(pointcloudAsset) {
     const __bindAsset = (pointcloudAsset) => {
       const glpointcloudAsset = new GLPointCloudAsset(this.__gl, pointcloudAsset, this.glshader)
@@ -111,7 +125,11 @@ export class GLPointCloudPass extends GLPass {
 
   // ///////////////////////////////////
   // Visiblity
-
+  /**
+   * The setViewport method
+   *
+   * @param {*} viewport - The viewport value
+   */
   setViewport(viewport) {
     this.viewport = viewport
     this.viewport.on('viewChanged', () => {
@@ -123,6 +141,12 @@ export class GLPointCloudPass extends GLPass {
     this.visibleNodesNeedUpdating = true
   }
 
+  /**
+   * The updateVisibilityStructures method
+   *
+   * @param {*} priorityQueue - The priorityQueue value
+   * @return {array} - The result
+   */
   updateVisibilityStructures(priorityQueue) {
     const camera = this.viewport.getCamera()
     const view = camera.getParameter('GlobalXfo').getValue().toMat4()
@@ -160,6 +184,9 @@ export class GLPointCloudPass extends GLPass {
     return result
   }
 
+  /**
+   * The updateVisibility method
+   */
   updateVisibility() {
     const priorityQueue = new BinaryHeap(function (x) {
       return 1 / x.weight
@@ -281,6 +308,12 @@ export class GLPointCloudPass extends GLPass {
     // this.emit('updated');
   }
 
+  /**
+   * The computeVisibilityTextureData method
+   *
+   * @param {*} nodes - the nodes value
+   * @return {Map} - The result
+   */
   computeVisibilityTextureData(nodes) {
     const data = new Uint8Array(nodes.length * 4)
     const visibleNodeTextureOffsets = new Map()
@@ -436,3 +469,7 @@ export class GLPointCloudPass extends GLPass {
     }
   }
 }
+
+
+export default GLPointCloudPass
+export { GLPointCloudPass }

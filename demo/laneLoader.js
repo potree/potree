@@ -74,45 +74,13 @@ async function parseLanes(arrayBuffer, FlatbufferModule, supplierNum, annotation
     lanes.push(lane);
     segOffset += segSize;
   }
-  return await createLaneGeometriesOld(lanes, supplierNum, annotationMode, volumes);
+  return await createLaneGeometries(lanes, supplierNum, annotationMode, volumes);
 }
 
 // async function in order to enable a real time loading bar (caller functions must also use async/await)
 // without it the javascript code will run and block the UI that needs to update the loading bar (remove at your own risk)
-async function createLaneGeometriesOld (lanes, supplierNum, annotationMode, volumes) {
-
-  let materialLeft, materialSpine, materialRight;
-  switch (supplierNum) {
-
-    case -2:
-      materialLeft = new THREE.MeshBasicMaterial({color: 0x11870a});
-      materialSpine = new THREE.MeshBasicMaterial({color: 0x11870a});
-      materialRight = new THREE.MeshBasicMaterial({color: 0x11870a});
-      break;
-
-    case 1:
-      materialLeft = new THREE.MeshBasicMaterial({color: 0x3aaeb7});
-      materialSpine = new THREE.MeshBasicMaterial({color: 0x3aaeb7});
-      materialRight = new THREE.MeshBasicMaterial({color: 0x3aaeb7});
-      break;
-
-    case 2:
-      materialLeft = new THREE.MeshBasicMaterial({color: 0x3e3ab7});
-      materialSpine = new THREE.MeshBasicMaterial({color: 0x3e3ab7});
-      materialRight = new THREE.MeshBasicMaterial({color: 0x3e3ab7});
-      break;
-
-    case 3:
-      materialLeft = new THREE.MeshBasicMaterial({color: 0xa63ab7});
-      materialSpine = new THREE.MeshBasicMaterial({color: 0xa63ab7});
-      materialRight = new THREE.MeshBasicMaterial({color: 0xa63ab7});
-      break;
-
-    default:
-      materialLeft = new THREE.MeshBasicMaterial({color: 0xffffff});
-      materialSpine = new THREE.MeshBasicMaterial({color: 0x00ff00});
-      materialRight = new THREE.MeshBasicMaterial({color: 0xffffff});
-  }
+async function createLaneGeometries (lanes, supplierNum, annotationMode, volumes) {
+  const material = getLaneColors(supplierNum);
 
   const laneLeft = new Measure(); laneLeft.name = "Lane Left"; laneLeft.closed = false; laneLeft.showCoordinates = true; laneLeft.showAngles = true;
   // const laneSpine = new Measure(); laneSpine.name = "Lane Spine"; //laneRight.closed = false;
@@ -121,27 +89,17 @@ async function createLaneGeometriesOld (lanes, supplierNum, annotationMode, volu
   const leftLaneSegments = new LaneSegments(); leftLaneSegments.name = "Left Lane Segments";
   const rightLaneSegments = new LaneSegments(); rightLaneSegments.name = "Right Lane Segments";
 
-  const clonedBoxes = [];
-  for (let vi=0, vlen=volumes.length; vi<vlen; vi++) {
-    if (volumes[vi].clip) {
-      const clonedBbox = volumes[vi].boundingBox.clone();
-      clonedBbox.applyMatrix4(volumes[vi].matrixWorld);
-      clonedBoxes.push(clonedBbox);
-    }
-  }
+  const clonedBoxes = createClonedBoxes(volumes);
 
-  // let lefts = [];
-  // let rights = [];
-  // let spines = [];
   const all = [];
   const leftAnomalies = [];
   const rightAnomalies = [];
   let allBoxes = new THREE.Geometry();
 
   // have to load left, right, spine and creatingBoxes for each (split 100% evenly)
-  const numLaneTasks = 6*lanes.length // 6 for each iteration
-  const toLoad = 100/numLaneTasks
-  let stagesComplete = 0
+  // const numLaneTasks = 6*lanes.length // 6 for each iteration
+  // const toLoad = 100/numLaneTasks
+  // let stagesComplete = 0
 
   for (let ii = 0, len = lanes.length; ii < len; ii++) {
 
@@ -152,16 +110,18 @@ async function createLaneGeometriesOld (lanes, supplierNum, annotationMode, volu
     var geometryRight = new THREE.Geometry();
     let isContains = false;
 
-    const calcLoaded = async (prog, total) => {
-      // always update # stages compelete
-      if (prog == total-1) {
-        stagesComplete++
-      }
-    }
+    // const calcLoaded = async (prog, total) => {
+    //   // always update # stages compelete
+    //   if (prog == total-1) {
+    //     stagesComplete++
+    //   }
+    // }
 
     const anomalyMode = !!lane.leftPointValidity;
 
     for (let jj = 0, numVertices = lane.leftLength(); jj < numVertices; jj++) {
+      // await calcLoaded(jj, numVertices)
+
       const left = lane.left(jj);
       if (annotationMode) {
         if (volumes.length === 0) {
@@ -179,7 +139,7 @@ async function createLaneGeometriesOld (lanes, supplierNum, annotationMode, volu
 
     isContains = false;
     for (let jj = 0, numVertices = lane.rightLength(); jj < numVertices; jj++) {
-      await calcLoaded(jj, numVertices)
+      // await calcLoaded(jj, numVertices)
       const right = lane.right(jj);
 
       if (annotationMode) {
@@ -197,7 +157,7 @@ async function createLaneGeometriesOld (lanes, supplierNum, annotationMode, volu
     }
 
     for (let jj = 0, numVertices = lane.spineLength(); jj < numVertices; jj++) {
-      await calcLoaded(jj, numVertices)
+      // await calcLoaded(jj, numVertices)
       const spine = lane.spine(jj);
       if (annotationMode) {
         // laneSpine.addMarker(new THREE.Vector3(spine.x(), spine.y(), spine.z()));
@@ -210,38 +170,15 @@ async function createLaneGeometriesOld (lanes, supplierNum, annotationMode, volu
       continue;
     }
 
-    // // NOTE TRYING MESHLINE:
-    // var leftLine = new MeshLine();
-    // var spineLine = new MeshLine();
-    // var rightLine = new MeshLine();
-    //
-    // leftLine.setGeometry(geometryLeft);
-    // spineLine.setGeometry(geometrySpine);
-    // rightLine.setGeometry(geometryRight);
-    //
-    // let leftMeshLineMaterial = new MeshLineMaterial();
-    // // let spineMeshLineMaterial = new MeshLineMaterial();
-    // // let rightMeshLineMaterial = new MeshLineMaterial();
-    //
-    // let leftMesh = new THREE.Mesh( leftLine.geometry, leftMeshLineMaterial );
-    // // let spineMesh = new THREE.Mesh( spineLine.geometry, spineMeshLineMaterial );
-    // // let rightMesh = new THREE.Mesh( rightLine.geometry, rightMeshLineMaterial );
-    //
-    // lefts.push(leftMesh);
-    // // spines.push(spineMesh);
-    // // rights.push(rightMesh);
-
-    // NOTE TRYING BOXES:
     let firstCenter, center, lastCenter;
-    // const vertices = geometryLeft.vertices;
 
-    await createBoxes(geometryLeft.vertices, materialLeft);
-    await createBoxes(geometrySpine.vertices, materialSpine);
-    await createBoxes(geometryRight.vertices, materialRight);
+    await createBoxes(geometryLeft.vertices, material.left);
+    await createBoxes(geometrySpine.vertices, material.spine);
+    await createBoxes(geometryRight.vertices, material.right);
 
     async function createBoxes(vertices, material) {
       for (let ii=1, len=vertices.length; ii<len; ii++) {
-        await calcLoaded(ii, len)
+        // await calcLoaded(ii, len)
         const tmp1 = vertices[ii-1];
         const tmp2 = vertices[ii];
 
@@ -289,11 +226,6 @@ async function createLaneGeometriesOld (lanes, supplierNum, annotationMode, volu
         }
       }
     }
-
-    // NOTE ORIGINAL:
-    // lefts.push(new THREE.Line(geometryLeft, materialLeft) );
-    // spines.push(new THREE.Line(geometrySpine, materialSpine) );
-    // rights.push(new THREE.Line(geometryRight, materialRight) );
   }
 
   if (annotationMode) {
@@ -313,6 +245,56 @@ async function createLaneGeometriesOld (lanes, supplierNum, annotationMode, volu
     rightAnomalies: rightAnomalies
   };
   return output;
+}
+
+function getLaneColors (supplierNum) {
+  let materialLeft, materialSpine, materialRight;
+  switch (supplierNum) {
+    case -2:
+      materialLeft = new THREE.MeshBasicMaterial({color: 0x11870a});
+      materialSpine = new THREE.MeshBasicMaterial({color: 0x11870a});
+      materialRight = new THREE.MeshBasicMaterial({color: 0x11870a});
+      break;
+
+    case 1:
+      materialLeft = new THREE.MeshBasicMaterial({color: 0x3aaeb7});
+      materialSpine = new THREE.MeshBasicMaterial({color: 0x3aaeb7});
+      materialRight = new THREE.MeshBasicMaterial({color: 0x3aaeb7});
+      break;
+
+    case 2:
+      materialLeft = new THREE.MeshBasicMaterial({color: 0x3e3ab7});
+      materialSpine = new THREE.MeshBasicMaterial({color: 0x3e3ab7});
+      materialRight = new THREE.MeshBasicMaterial({color: 0x3e3ab7});
+      break;
+
+    case 3:
+      materialLeft = new THREE.MeshBasicMaterial({color: 0xa63ab7});
+      materialSpine = new THREE.MeshBasicMaterial({color: 0xa63ab7});
+      materialRight = new THREE.MeshBasicMaterial({color: 0xa63ab7});
+      break;
+
+    default:
+      materialLeft = new THREE.MeshBasicMaterial({color: 0xffffff});
+      materialSpine = new THREE.MeshBasicMaterial({color: 0x00ff00});
+      materialRight = new THREE.MeshBasicMaterial({color: 0xffffff});
+  }
+  return {
+    left: materialLeft,
+    right: materialRight,
+    spine: materialSpine
+  }
+}
+
+function createClonedBoxes (volumes) {
+  const clonedBoxes = [];
+  for (let vi=0, vlen=volumes.length; vi<vlen; vi++) {
+    if (volumes[vi].clip) {
+      const clonedBbox = volumes[vi].boundingBox.clone();
+      clonedBbox.applyMatrix4(volumes[vi].matrixWorld);
+      clonedBoxes.push(clonedBbox);
+    }
+  }
 }
 
 // Adds anomaly annotations
@@ -441,49 +423,40 @@ async function loadLanesHelper (layerName, filename, s) {
 export function addReloadLanesButton() {
   window.annotateLanesModeActive = false; // starts off false
 
-  $("#reload_lanes_button")[0].style.display = "block"
+  $("#reload_lanes_button")[0].style.display = "block";
   const reloadLanesButton = $("#reload_lanes_button")[0];
   reloadLanesButton.addEventListener("mousedown", () => {
     const proceed = window.annotateLanesModeActive ?
       confirm("Proceed? Lanes will be reloaded, so ensure that annotations have been saved if you want to keep them.") :
       true;
-
     if (proceed) {
       // REMOVE LANES
       let removeLanes = viewer.scene.scene.getChildByName("Lanes");
       while (removeLanes) {
-	viewer.scene.scene.remove(removeLanes);
-	removeLanes = viewer.scene.scene.getChildByName("Lanes");
+        viewer.scene.scene.remove(removeLanes);
+        removeLanes = viewer.scene.scene.getChildByName("Lanes");
+        // TODO remove "Lanes" from sidebar
       }
-
       // Pause animation:
       animationEngine.stop();
-
       // TOGGLE window.annotateLanesModeActive
       window.annotateLanesModeActive = !window.annotateLanesModeActive;
-
       // Disable Button:
       reloadLanesButton.disabled = true;
-
       // prepare for progress tracking (currently only triggered on button click)
       resetProgressBars(2) // have to download & process/load lanes
-
       loadLanesCallback(s3, bucket, name, () => {
-	// TOGGLE BUTTON TEXT
-	if (window.annotateLanesModeActive) {
-	  reload_lanes_button.innerText = "View Truth Lanes";
-	  document.getElementById("download_lanes_button").style.display = "block";
-    document.getElementById("save_lanes_button").style.display = "block";
-
-	} else {
-	  reload_lanes_button.innerText = "Annotate Truth Lanes";
-	  document.getElementById("download_lanes_button").style.display = "none";
-    document.getElementById("save_lanes_button").style.display = "none";
-
-	}
-
-	reloadLanesButton.disabled = false
-
+        // TOGGLE BUTTON TEXT
+        if (window.annotateLanesModeActive) {
+          reload_lanes_button.innerText = "View Truth Lanes";
+          document.getElementById("download_lanes_button").style.display = "block";
+          document.getElementById("save_lanes_button").style.display = "block";
+        } else {
+          reload_lanes_button.innerText = "Annotate Truth Lanes";
+          document.getElementById("download_lanes_button").style.display = "none";
+          document.getElementById("save_lanes_button").style.display = "none";
+        }
+        reloadLanesButton.disabled = false;
       });
     }
   });

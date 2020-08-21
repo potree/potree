@@ -2,7 +2,7 @@
 
 # Zea Point Clouds
 
-Potree is a free open-source WebGL based point cloud renderer for large point clouds.
+> Pointclouds Extension for the Zea Engine
 
 
 <ul style="display:inline-block">

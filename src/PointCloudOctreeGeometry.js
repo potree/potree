@@ -1,180 +1,170 @@
-import {PointAttributeNames} from "./loader/PointAttributes.js";
-import {PointCloudTreeNode} from "./PointCloudTree.js";
-import {XHRFactory} from "./XHRFactory.js";
-import {Utils} from "./utils.js";
+import { PointAttributeNames } from './loader/PointAttributes.js'
+import { PointCloudTreeNode } from './PointCloudTree.js'
+import { XHRFactory } from './XHRFactory.js'
+import { Utils } from './utils.js'
 
-import {
-	Points,
-	RGBA,
-	Vec3,
-	Box3,
-} from '@zeainc/zea-engine'
+import { Points, RGBA, Vec3, Box3 } from '@zeainc/zea-engine'
 
 // A global count of the number of nodes loading.
-let numNodesLoading = 0;
+let numNodesLoading = 0
 
-export class PointCloudOctreeGeometry{
-
-	constructor(){
-		this.url = null;
-		this.octreeDir = null;
-		this.spacing = 0;
-		this.boundingBox = null;
-		this.root = null;
-		this.nodes = null;
-		this.pointAttributes = null;
-		this.hierarchyStepSize = -1;
-		this.loader = null;
-	}
-	
+export class PointCloudOctreeGeometry {
+  constructor() {
+    this.url = null
+    this.octreeDir = null
+    this.spacing = 0
+    this.boundingBox = null
+    this.root = null
+    this.nodes = null
+    this.pointAttributes = null
+    this.hierarchyStepSize = -1
+    this.loader = null
+  }
 }
 
-export class PointCloudOctreeGeometryNode extends PointCloudTreeNode{
+export class PointCloudOctreeGeometryNode extends PointCloudTreeNode {
+  constructor(name, pcoGeometry, boundingBox) {
+    super()
 
-	constructor(name, pcoGeometry, boundingBox){
-		super();
+    this.id = PointCloudOctreeGeometryNode.IDCount++
+    this.name = name
+    this.index = parseInt(name.charAt(name.length - 1))
+    this.pcoGeometry = pcoGeometry
+    this.geometry = null
+    this.boundingBox = boundingBox
+    this.boundingSphere = boundingBox.getBoundingSphere()
+    this.children = {}
+    this.numPoints = 0
+    this.level = null
+    this.loaded = false
+    this.oneTimeDisposeHandlers = []
 
-		this.id = PointCloudOctreeGeometryNode.IDCount++;
-		this.name = name;
-		this.index = parseInt(name.charAt(name.length - 1));
-		this.pcoGeometry = pcoGeometry;
-		this.geometry = null;
-		this.boundingBox = boundingBox;
-		this.boundingSphere = boundingBox.getBoundingSphere();
-		this.children = {};
-		this.numPoints = 0;
-		this.level = null;
-		this.loaded = false;
-		this.oneTimeDisposeHandlers = [];
+    this.offset = this.boundingBox.min.clone()
+    // console.log("PointCloudOctreeGeometryNode:", this.name, this.offset);
+  }
 
-		this.offset = this.boundingBox.min.clone();
-		// console.log("PointCloudOctreeGeometryNode:", this.name, this.offset);
-	}
+  // isGeometryNode(){
+  // 	return true;
+  // }
 
-	// isGeometryNode(){
-	// 	return true;
-	// }
+  getLevel() {
+    return this.level
+  }
 
-	getLevel(){
-		return this.level;
-	}
+  // isTreeNode(){
+  // 	return false;
+  // }
 
-	// isTreeNode(){
-	// 	return false;
-	// }
+  isLoaded() {
+    return this.loaded
+  }
 
-	isLoaded(){
-		return this.loaded;
-	}
+  getBoundingSphere() {
+    return this.boundingSphere
+  }
 
-	getBoundingSphere(){
-		return this.boundingSphere;
-	}
+  getBoundingBox() {
+    return this.boundingBox
+  }
 
-	getBoundingBox(){
-		return this.boundingBox;
-	}
+  getChildren() {
+    let children = []
 
-	getChildren(){
-		let children = [];
+    for (let i = 0; i < 8; i++) {
+      if (this.children[i]) {
+        children.push(this.children[i])
+      }
+    }
 
-		for (let i = 0; i < 8; i++) {
-			if (this.children[i]) {
-				children.push(this.children[i]);
-			}
-		}
+    return children
+  }
 
-		return children;
-	}
+  getURL() {
+    let url = ''
 
-	getURL(){
-		let url = '';
+    let version = this.pcoGeometry.loader.version
 
-		let version = this.pcoGeometry.loader.version;
+    if (version.equalOrHigher('1.5')) {
+      url = this.pcoGeometry.octreeDir + '/' + this.getHierarchyPath() + '/' + this.name
+    } else if (version.equalOrHigher('1.4')) {
+      url = this.pcoGeometry.octreeDir + '/' + this.name
+    } else if (version.upTo('1.3')) {
+      url = this.pcoGeometry.octreeDir + '/' + this.name
+    }
 
-		if (version.equalOrHigher('1.5')) {
-			url = this.pcoGeometry.octreeDir + '/' + this.getHierarchyPath() + '/' + this.name;
-		} else if (version.equalOrHigher('1.4')) {
-			url = this.pcoGeometry.octreeDir + '/' + this.name;
-		} else if (version.upTo('1.3')) {
-			url = this.pcoGeometry.octreeDir + '/' + this.name;
-		}
+    return url
+  }
 
-		return url;
-	}
+  getHierarchyPath() {
+    let path = 'r/'
 
-	getHierarchyPath(){
-		let path = 'r/';
+    let hierarchyStepSize = this.pcoGeometry.hierarchyStepSize
+    let indices = this.name.substr(1)
 
-		let hierarchyStepSize = this.pcoGeometry.hierarchyStepSize;
-		let indices = this.name.substr(1);
+    let numParts = Math.floor(indices.length / hierarchyStepSize)
+    for (let i = 0; i < numParts; i++) {
+      path += indices.substr(i * hierarchyStepSize, hierarchyStepSize) + '/'
+    }
 
-		let numParts = Math.floor(indices.length / hierarchyStepSize);
-		for (let i = 0; i < numParts; i++) {
-			path += indices.substr(i * hierarchyStepSize, hierarchyStepSize) + '/';
-		}
+    path = path.slice(0, -1)
 
-		path = path.slice(0, -1);
+    return path
+  }
 
-		return path;
-	}
+  addChild(child) {
+    // console.log("PointCloudOctreeGeometryNode", this.name, ".addChild:", child.name);
+    this.children[child.index] = child
+    child.parent = this
+  }
 
-	addChild(child) {
-		// console.log("PointCloudOctreeGeometryNode", this.name, ".addChild:", child.name);
-		this.children[child.index] = child;
-		child.parent = this;
-	}
+  shouldLoad() {
+    return this.loading !== true && this.loaded !== true
+  }
 
-	shouldLoad() {
-		return this.loading !== true && this.loaded !== true;
-	}
+  load() {
+    this.loading = true
+    if (this.loadPromise) return this.loadPromise
+    this.loadPromise = new Promise((resolve, reject) => {
+      // if (this.loading === true || this.loaded === true || numNodesLoading >= Potree.maxNodesLoading) {
+      // 	return;
+      // }
 
-	load(){
-		this.loading = true;
-		if(this.loadPromise)
-			return this.loadPromise
-		this.loadPromise = new Promise((resolve, reject)=>{
-		// if (this.loading === true || this.loaded === true || Potree.numNodesLoading >= Potree.maxNodesLoading) {
-		// 	return;
-		// }
+      numNodesLoading++
 
+      if (this.pcoGeometry.loader.version.equalOrHigher('1.5')) {
+        if (this.level % this.pcoGeometry.hierarchyStepSize === 0 && this.hasChildren) {
+          this.loadHierachyThenPoints().then(resolve)
+        } else {
+          this.loadPoints().then(resolve)
+        }
+      } else {
+        this.loadPoints().then(resolve)
+      }
+    })
+    return this.loadPromise
+  }
 
-			numNodesLoading++;
+  loadPoints() {
+    return this.pcoGeometry.loader.load(this)
+  }
 
-			if (this.pcoGeometry.loader.version.equalOrHigher('1.5')) {
-				if ((this.level % this.pcoGeometry.hierarchyStepSize) === 0 && this.hasChildren) {
-					this.loadHierachyThenPoints().then(resolve);
-				} else {
-					this.loadPoints().then(resolve);
-				}
-			} else {
-				this.loadPoints().then(resolve);
-			}
-		});
-		return this.loadPromise;
-	}
+  parse(data, version) {
+    const buffers = data.attributeBuffers
 
-	loadPoints(){
-		return this.pcoGeometry.loader.load(this);
-	}
-
-	parse(data, version) {
-
-		const buffers = data.attributeBuffers;
-
-		const points = new Points();
-		for(let property in buffers){
-			const buffer = buffers[property].buffer;
-			const propertyId = parseInt(property);
-			if (propertyId === PointAttributeNames.POSITION_CARTESIAN) {
-				const attr = points.getVertexAttribute('positions');
-				attr.data = new Float32Array(buffer);
-			} else if (propertyId === PointAttributeNames.COLOR_PACKED) {
-    			points.addVertexAttribute('colors', RGBA, new Uint8Array(buffer))
-			}else if (propertyId === PointAttributeNames.INDICES) {
-    			// points.addVertexAttribute('indices', RGBA, new Uint8Array(buffer))
-			}
-			/* else if (propertyId === PointAttributeNames.INTENSITY) {
+    const points = new Points()
+    for (let property in buffers) {
+      const buffer = buffers[property].buffer
+      const propertyId = parseInt(property)
+      if (propertyId === PointAttributeNames.POSITION_CARTESIAN) {
+        const attr = points.getVertexAttribute('positions')
+        attr.data = new Float32Array(buffer)
+        points.setNumVertices(attr.getCount())
+      } else if (propertyId === PointAttributeNames.COLOR_PACKED) {
+        points.addVertexAttribute('colors', RGBA, new Uint8Array(buffer))
+      } else if (propertyId === PointAttributeNames.INDICES) {
+        // points.addVertexAttribute('indices', RGBA, new Uint8Array(buffer))
+      } else {
+        /* else if (propertyId === PointAttributeNames.INTENSITY) {
 				geometry.addAttribute('intensity', new THREE.BufferAttribute(new Float32Array(buffer), 1));
 			} else if (propertyId === PointAttributeNames.CLASSIFICATION) {
 				geometry.addAttribute('classification', new THREE.BufferAttribute(new Uint8Array(buffer), 1));
@@ -202,167 +192,173 @@ export class PointCloudOctreeGeometryNode extends PointCloudTreeNode{
 					range: buffers[property].range,
 				};
 			}*/
-			else {
-				let name;
-				for (let key in PointAttributeNames) {
-					if (PointAttributeNames[key] == propertyId) {
-						name = key;
-						break;
-					}
-				}
-				console.warn("Unandled Point Attribute:", name); 
-			}
-		}
-		this.points = points;
-		// const min = data.tightBoundingBox.min
-		// this.offset = new Vec3(min[0], min[1], min[2]);
-		// console.log(data.tightBoundingBox.min);
+        let name
+        for (let key in PointAttributeNames) {
+          if (PointAttributeNames[key] == propertyId) {
+            name = key
+            break
+          }
+        }
+        console.warn('Unandled Point Attribute:', name)
+      }
+    }
+    this.points = points
+    // const min = data.tightBoundingBox.min
+    // this.offset = new Vec3(min[0], min[1], min[2]);
+    // console.log(data.tightBoundingBox.min);
 
-		const tightBoundingBox = new Box3(
-			new Vec3(...data.tightBoundingBox.min),
-			new Vec3(...data.tightBoundingBox.max)
-		);
-		tightBoundingBox.max.subtract(tightBoundingBox.min);
-		tightBoundingBox.min.set(0, 0, 0);
+    const tightBoundingBox = new Box3(new Vec3(...data.tightBoundingBox.min), new Vec3(...data.tightBoundingBox.max))
+    tightBoundingBox.max.subtract(tightBoundingBox.min)
+    tightBoundingBox.min.set(0, 0, 0)
 
-		
-		let pointAttributes = this.pcoGeometry.pointAttributes;
-		const numPoints = data.buffer.byteLength / pointAttributes.byteSize;
-		
-		this.numPoints = numPoints;
-		this.mean = new Vec3(...data.mean);
-		this.tightBoundingBox = tightBoundingBox;
-		this.loaded = true;
-		this.loading = false;
-		this.estimatedSpacing = data.estimatedSpacing;
-		numNodesLoading--;
+    let pointAttributes = this.pcoGeometry.pointAttributes
+    const numPoints = data.buffer.byteLength / pointAttributes.byteSize
 
-		this.dispatchEvent('loaded', {
-			numPoints
-		});
-	}
+    this.numPoints = numPoints
+    this.mean = new Vec3(...data.mean)
+    this.tightBoundingBox = tightBoundingBox
+    this.loaded = true
+    this.loading = false
+    this.estimatedSpacing = data.estimatedSpacing
+    numNodesLoading--
 
-	loadHierachyThenPoints(){
-		return new Promise((resolve, reject)=>{
-		let node = this;
+    this.dispatchEvent('loaded', {
+      numPoints,
+    })
+  }
 
-		// load hierarchy
-		let callback = function (node, hbuffer) {
-			let view = new DataView(hbuffer);
+  loadHierachyThenPoints() {
+    return new Promise((resolve, reject) => {
+      let node = this
 
-			let stack = [];
-			let children = view.getUint8(0);
-			let numPoints = view.getUint32(1, true);
-			node.numPoints = numPoints;
-			stack.push({children: children, numPoints: numPoints, name: node.name});
+      // load hierarchy
+      let callback = function (node, hbuffer) {
+        let view = new DataView(hbuffer)
 
-			let decoded = [];
+        let stack = []
+        let children = view.getUint8(0)
+        let numPoints = view.getUint32(1, true)
+        node.numPoints = numPoints
+        stack.push({
+          children: children,
+          numPoints: numPoints,
+          name: node.name,
+        })
 
-			let offset = 5;
-			while (stack.length > 0) {
-				let snode = stack.shift();
-				let mask = 1;
-				for (let i = 0; i < 8; i++) {
-					if ((snode.children & mask) !== 0) {
-						let childName = snode.name + i;
+        let decoded = []
 
-						let childChildren = view.getUint8(offset);
-						let childNumPoints = view.getUint32(offset + 1, true);
+        let offset = 5
+        while (stack.length > 0) {
+          let snode = stack.shift()
+          let mask = 1
+          for (let i = 0; i < 8; i++) {
+            if ((snode.children & mask) !== 0) {
+              let childName = snode.name + i
 
-						stack.push({children: childChildren, numPoints: childNumPoints, name: childName});
+              let childChildren = view.getUint8(offset)
+              let childNumPoints = view.getUint32(offset + 1, true)
 
-						decoded.push({children: childChildren, numPoints: childNumPoints, name: childName});
+              stack.push({
+                children: childChildren,
+                numPoints: childNumPoints,
+                name: childName,
+              })
 
-						offset += 5;
-					}
+              decoded.push({
+                children: childChildren,
+                numPoints: childNumPoints,
+                name: childName,
+              })
 
-					mask = mask * 2;
-				}
+              offset += 5
+            }
 
-				if (offset === hbuffer.byteLength) {
-					break;
-				}
-			}
+            mask = mask * 2
+          }
 
-			// console.log(decoded);
+          if (offset === hbuffer.byteLength) {
+            break
+          }
+        }
 
-			let nodes = {};
-			nodes[node.name] = node;
-			let pco = node.pcoGeometry;
+        // console.log(decoded);
 
-			for (let i = 0; i < decoded.length; i++) {
-				let name = decoded[i].name;
-				let decodedNumPoints = decoded[i].numPoints;
-				let index = parseInt(name.charAt(name.length - 1));
-				let parentName = name.substring(0, name.length - 1);
-				let parentNode = nodes[parentName];
-				let level = name.length - 1;
-				let boundingBox = Utils.createChildAABB(parentNode.boundingBox, index);
+        let nodes = {}
+        nodes[node.name] = node
+        let pco = node.pcoGeometry
 
-				let currentNode = new PointCloudOctreeGeometryNode(name, pco, boundingBox);
-				currentNode.level = level;
-				currentNode.numPoints = decodedNumPoints;
-				currentNode.hasChildren = decoded[i].children > 0;
-				currentNode.spacing = pco.spacing / Math.pow(2, level);
-				parentNode.addChild(currentNode);
-				nodes[name] = currentNode;
-			}
+        for (let i = 0; i < decoded.length; i++) {
+          let name = decoded[i].name
+          let decodedNumPoints = decoded[i].numPoints
+          let index = parseInt(name.charAt(name.length - 1))
+          let parentName = name.substring(0, name.length - 1)
+          let parentNode = nodes[parentName]
+          let level = name.length - 1
+          let boundingBox = Utils.createChildAABB(parentNode.boundingBox, index)
 
-			node.loadPoints().then(()=>{
-				resolve();
-			});
-		};
-		if ((node.level % node.pcoGeometry.hierarchyStepSize) === 0) {
-			// let hurl = node.pcoGeometry.octreeDir + "/../hierarchy/" + node.name + ".hrc";
-			let hurl = node.pcoGeometry.octreeDir + '/' + node.getHierarchyPath() + '/' + node.name + '.hrc';
+          let currentNode = new PointCloudOctreeGeometryNode(name, pco, boundingBox)
+          currentNode.level = level
+          currentNode.numPoints = decodedNumPoints
+          currentNode.hasChildren = decoded[i].children > 0
+          currentNode.spacing = pco.spacing / Math.pow(2, level)
+          parentNode.addChild(currentNode)
+          nodes[name] = currentNode
+        }
 
-			let xhr = XHRFactory.createXMLHttpRequest();
-			xhr.open('GET', hurl, true);
-			xhr.responseType = 'arraybuffer';
-			xhr.overrideMimeType('text/plain; charset=x-user-defined');
-			xhr.onreadystatechange = () => {
-				if (xhr.readyState === 4) {
-					if (xhr.status === 200 || xhr.status === 0) {
-						let hbuffer = xhr.response;
-						callback(node, hbuffer);
-					} else {
-						const msg = 'Failed to load file! HTTP status: ' + xhr.status + ', file: ' + hurl;
-						console.log(msg);
-						Potree.numNodesLoading--;
-						reject(msg);
-					}
-				}
-			};
-			try {
-				xhr.send(null);
-			} catch (e) {
-				console.log('fehler beim laden der punktwolke: ' + e);
-				reject('fehler beim laden der punktwolke: ' + e);
-			}
-		}
-		});
-	}
+        node.loadPoints().then(() => {
+          resolve()
+        })
+      }
+      if (node.level % node.pcoGeometry.hierarchyStepSize === 0) {
+        // let hurl = node.pcoGeometry.octreeDir + "/../hierarchy/" + node.name + ".hrc";
+        let hurl = node.pcoGeometry.octreeDir + '/' + node.getHierarchyPath() + '/' + node.name + '.hrc'
 
-	getNumPoints(){
-		return this.numPoints;
-	}
+        let xhr = XHRFactory.createXMLHttpRequest()
+        xhr.open('GET', hurl, true)
+        xhr.responseType = 'arraybuffer'
+        xhr.overrideMimeType('text/plain; charset=x-user-defined')
+        xhr.onreadystatechange = () => {
+          if (xhr.readyState === 4) {
+            if (xhr.status === 200 || xhr.status === 0) {
+              let hbuffer = xhr.response
+              callback(node, hbuffer)
+            } else {
+              const msg = 'Failed to load file! HTTP status: ' + xhr.status + ', file: ' + hurl
+              console.log(msg)
+              numNodesLoading--
+              reject(msg)
+            }
+          }
+        }
+        try {
+          xhr.send(null)
+        } catch (e) {
+          console.log('fehler beim laden der punktwolke: ' + e)
+          reject('fehler beim laden der punktwolke: ' + e)
+        }
+      }
+    })
+  }
 
-	dispose(){
-		if (this.geometry && this.parent != null) {
-			this.geometry.dispose();
-			this.geometry = null;
-			this.loaded = false;
-			this.loadPromise = null;
+  getNumPoints() {
+    return this.numPoints
+  }
 
-			// this.dispatchEvent( { type: 'dispose' } );
-			for (let i = 0; i < this.oneTimeDisposeHandlers.length; i++) {
-				let handler = this.oneTimeDisposeHandlers[i];
-				handler();
-			}
-			this.oneTimeDisposeHandlers = [];
-		}
-	}
-	
+  dispose() {
+    if (this.geometry && this.parent != null) {
+      this.geometry.dispose()
+      this.geometry = null
+      this.loaded = false
+      this.loadPromise = null
+
+      // this.dispatchEvent( { type: 'dispose' } );
+      for (let i = 0; i < this.oneTimeDisposeHandlers.length; i++) {
+        let handler = this.oneTimeDisposeHandlers[i]
+        handler()
+      }
+      this.oneTimeDisposeHandlers = []
+    }
+  }
 }
 
-PointCloudOctreeGeometryNode.IDCount = 0;
+PointCloudOctreeGeometryNode.IDCount = 0

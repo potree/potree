@@ -1,19 +1,15 @@
+import { GLShader } from '@zeainc/zea-engine'
 
-import {
-	GLShader,
-	sgFactory,
-} from '@zeainc/zea-engine'
-
-import {Shaders} from "../../build/shaders/shaders.js";
+import { Shaders } from '../../build/shaders/shaders.js'
 
 // Note: shaders are registered to a global factory, so thier
-// names need to be globally unique. 
+// names need to be globally unique.
 export class Potree_PointCloudShader extends GLShader {
-  constructor (gl) {
-    super(gl);
-    this.__shaderStages['VERTEX_SHADER'] = Shaders['pointcloud.vs'];
-    this.__shaderStages['FRAGMENT_SHADER'] = Shaders['pointcloud.fs'];
-    
+  constructor(gl) {
+    super(gl)
+    this.__shaderStages['VERTEX_SHADER'] = Shaders['pointcloud.vs']
+    this.__shaderStages['FRAGMENT_SHADER'] = Shaders['pointcloud.fs']
+
     this.attributes = {
       position: { type: 'fv', value: [] },
       color: { type: 'fv', value: [] },
@@ -23,8 +19,8 @@ export class Potree_PointCloudShader extends GLShader {
       returnNumber: { type: 'f', value: [] },
       numberOfReturns: { type: 'f', value: [] },
       pointSourceID: { type: 'f', value: [] },
-      indices: { type: 'fv', value: [] }
-    };
+      indices: { type: 'fv', value: [] },
+    }
   }
 
   bind(renderstate) {
@@ -37,8 +33,8 @@ export class Potree_PointCloudShader extends GLShader {
 
   static getParamDeclarations() {
     const paramDescs = super.getParamDeclarations()
-    
-    paramDescs.push({ name: "level", type: "float", value: 0.0 })
+
+    paramDescs.push({ name: 'level', type: 'float', value: 0.0 })
     /*
     paramDescs.push({ name: "vnStart", type: "float", value: 0.0 })
     paramDescs.push({ name: "spacing", type: "float", value: 1.0 })
@@ -65,7 +61,7 @@ export class Potree_PointCloudShader extends GLShader {
     // paramDescs.push({ name: "clipPolygonVCount", type: "iv", value: [] })
     // paramDescs.push({ name: "clipPolygonVP", type: "mat4", value: [] })
 
-    paramDescs.push({ name: "visibleNodes", type: "float", texturable:true })
+    paramDescs.push({ name: 'visibleNodes', type: 'float', texturable: true })
     /*
     paramDescs.push({ name: "pcIndex", type: "float", value: 0 })
     paramDescs.push({ name: "gradient", type: "t", texturable:true, value: this.gradientTexture })
@@ -108,5 +104,3 @@ export class Potree_PointCloudShader extends GLShader {
     return paramDescs
   }
 }
-
-sgFactory.registerClass('Potree_PointCloudShader', Potree_PointCloudShader)

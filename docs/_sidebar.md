@@ -1,3 +1,6 @@
+- Tutorials
+* [load a point cloud](tutorials/load-a-point-cloud.md)
+
 - API Reference
 [//]: <> (API)
 * [zea](api/zea/README)

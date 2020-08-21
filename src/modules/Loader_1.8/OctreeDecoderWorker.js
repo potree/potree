@@ -65,9 +65,9 @@ onmessage = function (event) {
 				
 				let pointOffset = j * bytesPerPoint;
 
-				let x = (view.getUint32(pointOffset + attributeOffset + 0, true) * scale[0]) + offset[0] - min.x;
-				let y = (view.getUint32(pointOffset + attributeOffset + 4, true) * scale[1]) + offset[1] - min.y;
-				let z = (view.getUint32(pointOffset + attributeOffset + 8, true) * scale[2]) + offset[2] - min.z;
+				let x = (view.getInt32(pointOffset + attributeOffset + 0, true) * scale[0]) + offset[0] - min.x;
+				let y = (view.getInt32(pointOffset + attributeOffset + 4, true) * scale[1]) + offset[1] - min.y;
+				let z = (view.getInt32(pointOffset + attributeOffset + 8, true) * scale[2]) + offset[2] - min.z;
 
 				let index = toIndex(x, y, z);
 				let count = grid[index]++;

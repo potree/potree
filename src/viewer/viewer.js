@@ -141,7 +141,12 @@ export class Viewer extends EventDispatcher{
 
 		this.initThree();
 		this.prepareVR();
-		this.initDragAndDrop();
+
+		if(args.noDragAndDrop){
+			
+		}else{
+			this.initDragAndDrop();
+		}
 
 		if(typeof Stats !== "undefined"){
 			this.stats = new Stats();

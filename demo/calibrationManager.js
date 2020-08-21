@@ -102,7 +102,7 @@ function validateCalibrationSettings(settings, correctionsCal, nominalCal, vatCa
 
 /**
  * Get 4x4 transformation matrix
- * @param extrincics Object containing the fields [x, y, z, roll, pitch, yaw] (meters and radians)
+ * @param extrinsics Object containing the fields [x, y, z, roll, pitch, yaw] (meters and radians)
  * @param isPassiveTransform flag indicating whether to return active or passive form of transformation matrix 
  * @return 4x4 transformation matrix
  */

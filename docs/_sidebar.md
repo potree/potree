@@ -3,7 +3,7 @@
 
 - API Reference
 [//]: <> (API)
-* [zea](api/zea/README)
-  * [GLPointCloudPass](api/zea/GLPointCloudPass)
-  * [PointCloudAsset](api/zea/PointCloudAsset)
+* [Zea](api/Zea/README)
+  * [GLPointCloudPass](api/Zea/GLPointCloudPass)
+  * [PointCloudAsset](api/Zea/PointCloudAsset)
 [//]: <> (API)

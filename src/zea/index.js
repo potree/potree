@@ -6,10 +6,5 @@ export const version = {
 
 console.log('ZeaPotree ' + version.major + '.' + version.minor + version.suffix)
 
-<<<<<<< HEAD
-export * from "./GLPotreePass";
-export * from "./PotreeAsset";
-=======
 export * from './GLPointCloudPass.js'
 export * from './PointCloudAsset.js'
->>>>>>> master

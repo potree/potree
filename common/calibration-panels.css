@@ -1,5 +1,5 @@
 .draggable-overlay {
-    display: none;
+    /*display: none;*/
     position: absolute;
     z-index: 1002;
     background-color: #f1f1f1;
@@ -18,4 +18,16 @@
 .disable-calibration-panel {
     background-color: #ff0000;
     color: #ffffff;
+}
+
+.calibration-setpoint {
+    width: 50px;
+}
+
+.calibration-offset {
+    width: 50px;
+}
+
+.calibration-step {
+    width: 50px;
 }

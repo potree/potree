@@ -63,6 +63,7 @@ $(document).ready(function () {
         <p><span>
             X: <span class="calibration-value" id="velo2rtk-x">0.0000</span> m
             Setpoint: <input class="calibration-setpoint" id="velo2rtk-setpoint-x" type="number" placeholder="" step='any' value='0'/> m
+            Offset: <input class="calibration-offset" id="velo2rtk-offset-x" type="number" placeholder="" step='any' value='0'/> m
             <input class="calibration-slider" type="range" min="-1" max="1" value="0" step="any" />
             Range: <input class="calibration-step" type="number" value="1" step='any'/> m
             <button type="button" class="calibration-reset">Reset</button>
@@ -71,6 +72,7 @@ $(document).ready(function () {
         <p><span>
             Y: <span class="calibration-value" id="velo2rtk-y">0.0000</span> m
             Setpoint: <input class="calibration-setpoint" id="velo2rtk-setpoint-y" type="number" placeholder="" step='any' value='0'/> m
+            Offset: <input class="calibration-offset" id="velo2rtk-offset-y" type="number" placeholder="" step='any' value='0'/> m
             <input class="calibration-slider" type="range" min="-1" max="1" value="0" step="any" />
             Range: <input class="calibration-step" type="number" value="1" step='any'/> m
             <button type="button" class="calibration-reset">Reset</button>
@@ -79,6 +81,7 @@ $(document).ready(function () {
         <p><span>
             Z: <span class="calibration-value" id="velo2rtk-z">0.0000</span> m
             Setpoint: <input class="calibration-setpoint" id="velo2rtk-setpoint-z" type="number" placeholder="" step='any' value='0'/> m
+            Offset: <input class="calibration-offset" id="velo2rtk-offset-z" type="number" placeholder="" step='any' value='0'/> m
             <input class="calibration-slider" type="range" min="-1" max="1" value="0" step="any" />
             Range: <input class="calibration-step" type="number" value="1" step='any'/> m
             <button type="button" class="calibration-reset">Reset</button>
@@ -87,6 +90,7 @@ $(document).ready(function () {
         <p><span>
             Roll: <span class="calibration-value" id="velo2rtk-roll">0.0000</span> rad
             Setpoint: <input class="calibration-setpoint" id="velo2rtk-setpoint-roll" type="number" placeholder="" step='any' value='0'/> rad
+            Offset: <input class="calibration-offset" id="velo2rtk-offset-roll" type="number" placeholder="" step='any' value='0'/> rad
             <input class="calibration-slider" type="range" min="-1" max="1" value="0" step="any" />
             Range: <input class="calibration-step" type="number" value="1" step='any'/> rad
             <button type="button" class="calibration-reset">Reset</button>
@@ -95,6 +99,7 @@ $(document).ready(function () {
         <p><span>
             Pitch: <span class="calibration-value" id="velo2rtk-pitch">0.0000</span> rad
             Setpoint: <input class="calibration-setpoint" id="velo2rtk-setpoint-pitch" type="number" placeholder="" step='any' value='0'/> rad
+            Offset: <input class="calibration-offset" id="velo2rtk-offset-pitch" type="number" placeholder="" step='any' value='0'/> rad
             <input class="calibration-slider" type="range" min="-1" max="1" value="0" step="any" />
             Range: <input class="calibration-step" type="number" value="1" step='any'/> rad
             <button type="button" class="calibration-reset">Reset</button>
@@ -103,6 +108,7 @@ $(document).ready(function () {
         <p><span>
             Yaw: <span class="calibration-value" id="velo2rtk-yaw">0.0000</span> rad
             Setpoint: <input class="calibration-setpoint" id="velo2rtk-setpoint-yaw" type="number" placeholder="" step='any' value='0'/> rad
+            Offset: <input class="calibration-offset" id="velo2rtk-offset-yaw" type="number" placeholder="" step='any' value='0'/> rad
             <input class="calibration-slider" type="range" min="-1" max="1" value="0" step="any" />
             Range: <input class="calibration-step" type="number" value="1" step='any'/> rad
             <button type="button" class="calibration-reset">Reset</button>

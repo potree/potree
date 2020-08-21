@@ -6,5 +6,5 @@ export const version = {
 
 console.log('ZeaPotree ' + version.major + '.' + version.minor + version.suffix)
 
-export * from './GLPointCloudPass.js'
-export * from './PointCloudAsset.js'
+export * from './GLPointCloudPass'
+export * from './PointCloudAsset'

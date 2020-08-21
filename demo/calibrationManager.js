@@ -29,8 +29,8 @@ export const calDownloads = async (datasetFiles) => {
                                "extrinsics-nominal.txt",
                                "../cals/extrinsics-nominal.txt");
   const metadataCal = await getFileInfo(datasetFiles,
-                               "metadata.json",
-                               "../cals/metadata.json");
+                               "metadata_processing.json",
+                               "../cals/metadata_processing.json");
 
   if (extrinsicsCal || nominalCal || metadataCal) {
     calFiles = {

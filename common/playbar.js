@@ -435,13 +435,6 @@ function saveLaneChanges () {
   callUpdateLanesLambdaFunction(bucket, name, lane);
 }
 
-/**
- * @brief Function that calls the AWS Lambda function 'UpdateLanes' that generates a new lanes flatbuffer file and writes it to S3
- * @param { String } bucket The AWS S3 bucket used by this dataset
- * @param { String } name The AWS S3 dataset
- * @param { JSONObj } lane A JSON object that represents a lanes flatbuffer
- * @param { Array } right The right lane polyline
- */
 function callUpdateLanesLambdaFunction (bucket, name, lane) {
   const payload = {
     region: region,

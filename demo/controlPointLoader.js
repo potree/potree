@@ -152,7 +152,7 @@ async function createControlMeshes (controlPoints, controlPointShaderMaterial, F
       .timestamp(new FlatbufferModule.Flatbuffer.Primitives.ObjectTimestamp())
       .value() - animationEngine.tstart;
     const timestampArray = new Float64Array(64).fill(timestamp)
-    const sphereGeo = new THREE.SphereBufferGeometry(radius);
+    const sphereGeo = new THREE.BoxBufferGeometry(0.3,0.3,0.3);
 
     controlPointShaderMaterial.uniforms.color.value = getControlPointColor(controlPointType);
     const sphereMesh = new THREE.Mesh(sphereGeo, controlPointShaderMaterial);
@@ -170,6 +170,8 @@ function getControlPointColor (controlPointType) {
     return new THREE.Color(0xffff00);
   } else if (controlPointType.includes("right")) {
     return new THREE.Color(0x0000ff);
+  } else if (controlPointType.includes("SPP")) {
+    return new THREE.Color(0xff0000);
   }
   return new THREE.Color(0x0000ff);
 }
@@ -183,23 +185,12 @@ const controlPointNamesTable = {
   'viz_Spheres3D_LaneSense_cp1_0.7s_right.fb': '0.7s Right Control Points',
   'viz_Spheres3D_LaneSense_cp2_1.0s_right.fb': '1.0s Right Control Points',
   'viz_Spheres3D_LaneSense_cp3_1.3s_right.fb': '1.3s Right Control Points',
-  'viz_Spheres3D_LaneSense_cp4_2.0s_right.fb': '2.0s Right Control Points',
-  'viz_Spheres3D_SPP_cp1_5.0m_spp.fb': '5m SPP Control Points',
-  'viz_Spheres3D_SPP_cp2_10.0m_spp.fb': '10m SPP Control Points',
-  'viz_Spheres3D_SPP_cp3_15.0m_spp.fb': '15m SPP Control Points',
-  'viz_Spheres3D_SPP_cp4_20.0m_spp.fb': '20m SPP Control Points',
-  'viz_Spheres3D_SPP_cp5_25.0m_spp.fb': '25m SPP Control Points',
-  'viz_Spheres3D_SPP_cp6_30.0m_spp.fb': '30m SPP Control Points',
-  'viz_Spheres3D_SPP_cp7_35.0m_spp.fb': '35m SPP Control Points',
-  'viz_Spheres3D_SPP_cp8_40.0m_spp.fb': '40m SPP Control Points',
-  'viz_Spheres3D_SPP_cp9_45.0m_spp.fb': '45m SPP Control Points',
-  'viz_Spheres3D_SPP_cp10_50.0m_spp.fb': '50m SPP Control Points'
+  'viz_Spheres3D_LaneSense_cp4_2.0s_right.fb': '2.0s Right Control Points'
 };
 
 function getControlPointName (controlPointType) {
-  if (controlPointType.includes('viz_Spheres3D_')) {
-    return controlPointNamesTable[controlPointType];
-  } else if (controlPointType.includes("rtk_relative")) {
+  // Handle backwards compatibility
+  if (controlPointType.includes('LaneSense_cp') || controlPointType.includes("rtk_relative")) {
     return controlPointNamesTable[controlPointType];
   }
   // slice off file extension

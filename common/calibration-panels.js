@@ -18,7 +18,7 @@ $(document).ready(function () {
         <th>Setpoint</th>
         <th>Slider</th>
         <th>Slider Range</th>
-        <th>Reset to Loaded</th>
+        <th>Reset to Original</th>
       </tr>
 
       <tr>
@@ -95,7 +95,7 @@ $(document).ready(function () {
         <th>Setpoint</th>
         <th>Slider</th>
         <th>Slider Range</th>
-        <th>Reset to Loaded</th>
+        <th>Reset to Original</th>
       </tr>
 
       <tr>

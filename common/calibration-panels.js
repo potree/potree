@@ -40,7 +40,6 @@ $(document).ready(function () {
           <td><input class="calibration-step" type="number" value="1" step='any'/> <span class="translation-unit">m</span></td>
           <td><button type="button" class="calibration-reset">Reset</button></td>
       </tr>
-      
 
       <tr>
           <td>Z</td>
@@ -71,7 +70,6 @@ $(document).ready(function () {
           <td><input class="calibration-step" type="number" value="1" step='any'/> <span class="rotation-unit">rad</span></td>
           <td><button type="button" class="calibration-reset">Reset</button></td>
       </tr>
-
 
       <tr>
           <td>Yaw</td>
@@ -119,7 +117,6 @@ $(document).ready(function () {
           <td><input class="calibration-step" type="number" value="1" step='any'/> <span class="translation-unit">m</span></td>
           <td><button type="button" class="calibration-reset">Reset</button></td>
       </tr>
-      
 
       <tr>
           <td>Z</td>
@@ -150,7 +147,6 @@ $(document).ready(function () {
           <td><input class="calibration-step" type="number" value="1" step='any'/> <span class="rotation-unit">rad</span></td>
           <td><button type="button" class="calibration-reset">Reset</button></td>
       </tr>
-
 
       <tr>
           <td>Yaw</td>
@@ -515,4 +511,29 @@ const velo2rtk = convertToCorrectUnits(velo2RtkInput);
 let storedVelo2RtkUnit = 'deg';   
 let storedRtk2VehicleUnit = 'deg'; 
 
-  
+// Add functions to toggle calibration panel units from console:
+window.calibrationPanelDegrees = true;
+window.setCalibrationPanelsToDegrees = function () {
+  console.log("Resetting calibration panel values to loaded values");
+  window.calibrationPanelDegrees = true;
+  storeVelo2Rtk(window.extrinsics.velo2Rtk.old);
+  window.dispatchEvent( new CustomEvent("update-calibration-panel", {}));
+};
+window.setCalibrationPanelsToRadians = function () {
+  console.log("Resetting calibration panel values to loaded values");
+  window.calibrationPanelDegrees = false;
+  storeVelo2Rtk(window.extrinsics.velo2Rtk.old);
+  window.dispatchEvent( new CustomEvent("update-calibration-panel", {}));
+};
+
+// Add functions to enable/disable rtk2mesh calibration panel from console:
+window.hideRtk2VehicleCalibrationPanel = true;
+window.enableRtk2VehicleCalibrationPanel = function() {
+  window.hideRtk2VehicleCalibrationPanel = false;
+  $("#calibration-overlay-rtk2vehicle")[0].style.display = $("#calibration-overlay-velo2rtk")[0].style.display;
+}
+window.disableRtk2VehicleCalibrationPanel = function() {
+  window.hideRtk2VehicleCalibrationPanel = true;
+  $("#calibration-overlay-rtk2vehicle")[0].style.display = "none";
+}
+

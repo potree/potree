@@ -783,8 +783,8 @@ export class PropertiesPanel{
 
 				// currently only supporting scalar ranges.
 				// rgba, normals, positions, etc have vector ranges, however
-				let isValidRange = (typeof range[0] === "number") && (typeof range[1] !== "number");
-				if(isValidRange){
+				let isValidRange = (typeof range[0] === "number") && (typeof range[1] === "number");
+				if(!isValidRange){
 					return;
 				}
 

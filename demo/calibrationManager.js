@@ -2,6 +2,8 @@
 
 import { updateLoadingBar, incrementLoadingBarTotal } from "../common/overlay.js";
 import { getFileInfo } from "./loaderUtilities.js";
+import { getVelo2Rtk, getRtk2Vehicle, storeVelo2Rtk, storeRtk2Vehicle } from "../common/calibration-panels.js"
+
 
 export async function storeCalibration(s3, bucket, name, callback) {
   // TODO
@@ -106,8 +108,7 @@ function validateCalibrationSettings(settings, correctionsCal, nominalCal, vatCa
  * @param isPassiveTransform flag indicating whether to return active or passive form of transformation matrix 
  * @return 4x4 transformation matrix
  */
-function getTxMat(extrinsics, isPassiveTransform) {
-
+export function getTxMat(extrinsics, isPassiveTransform) {
 
   // Initialize Transform Matrix (as identity)
   const transform = new THREE.Matrix4();
@@ -123,16 +124,14 @@ function getTxMat(extrinsics, isPassiveTransform) {
   return isPassiveTransform ? new THREE.Matrix4().getInverse(transform) : transform; 
 }
 
-function getAdjustedTransformSimple(originalExtrinsics, newExtrinsics) {
+function getAdjustedTransformSimple(originalExtrinsics, newExtrinsics, settings) {
   console.log("Updating Adjusted Transform [simple]");
 
-  const isPassiveTransform = false;
-
   // Construct Reverse Transformation Matrices from newExtrinsics:
-  const T_ISO2Velo = new THREE.Matrix4().getInverse(getTxMat(originalExtrinsics, isPassiveTransform)); // Inverse 
+  const T_ISO2Velo = new THREE.Matrix4().getInverse(getTxMat(originalExtrinsics, settings.correctionsIsPassiveTransform)); // Inverse 
 
   // Construct Forward Transformation Matrices from originalExtrinsics:
-  const T_Velo2ISO = getTxMat(newExtrinsics, isPassiveTransform);
+  const T_Velo2ISO = getTxMat(newExtrinsics, settings.correctionsIsPassiveTransform);
 
   // Chain Reverse and Forward Transformations:
   const adjustedTransformSimple = new THREE.Matrix4().multiplyMatrices(T_ISO2Velo, T_Velo2ISO); // T_ISO2Velo x T_Velo2ISO
@@ -140,21 +139,19 @@ function getAdjustedTransformSimple(originalExtrinsics, newExtrinsics) {
   return adjustedTransformSimple;
 }
 
-function getAdjustedTransformFull(originalCorrections, nominalCal, vatCal, newCorrections) {
+function getAdjustedTransformFull(originalCorrections, nominalCal, vatCal, newCorrections, settings) {
   console.log("Updating Adjusted Transform [full]");
 
-  const isPassiveTransform = true;
-  
   // Helper Function to define inverse
   const inverse = (transform) => { 
     return new THREE.Matrix4().getInverse(transform) 
   };
 
   // Construct Forward Transformation Matrices:
-  const T1_Velo2Corr = getTxMat(newCorrections, isPassiveTransform);
-  const T2_Corr2IMU = getTxMat(nominalCal, isPassiveTransform);
-  const T3_IMU2Veh = getTxMat(vatCal, isPassiveTransform);
-  const T4_Veh2ISO = getTxMat({x:0, y:0, z:0, roll:Math.PI, pitch:0, yaw:0}, isPassiveTransform);
+  const T1_Velo2Corr = getTxMat(newCorrections, settings.correctionsIsPassiveTransform);
+  const T2_Corr2IMU = getTxMat(nominalCal, settings.nominalIsPassiveTransform);
+  const T3_IMU2Veh = getTxMat(vatCal, settings.vatIsPassiveTransform);
+  const T4_Veh2ISO = getTxMat({x:0, y:0, z:0, roll:Math.PI, pitch:0, yaw:0}, true); // Transform from OxTS Vehicle Frame to ISO 8855 Vehicle frame is defined as a roll of 180 degrees
 
   // Forward Chain:
   // T_forward = T4_Veh2ISO * T3_IMU2Veh * T2_Corr2IMU * T1_Velo2Corr 
@@ -167,7 +164,7 @@ function getAdjustedTransformFull(originalCorrections, nominalCal, vatCal, newCo
   const T5_ISO2Veh = inverse(T4_Veh2ISO);
   const T6_Veh2IMU = inverse(T3_IMU2Veh);
   const T7_IMU2Corr = inverse(T2_Corr2IMU);
-  const T8_Corr2Velo = inverse(getTxMat(originalCorrections, isPassiveTransform));
+  const T8_Corr2Velo = inverse(getTxMat(originalCorrections, settings.correctionsIsPassiveTransform));
 
   // Reverse Chain: 
   // T_reverse =  T8_Velo2Corr * T7_IMU2Corr * T6_Veh2IMU * T5_ISO2Veh 
@@ -192,11 +189,11 @@ export const getAdjustedTransform = (correctionsCal, nominalCal, vatCal, calibra
   if (settings.valid) {
     if (settings.useVatParameters) {
 
-      transform = getAdjustedTransformFull(correctionsCal, nominalCal, vatCal, calibrationPanelCorrections);
+      transform = getAdjustedTransformFull(correctionsCal, nominalCal, vatCal, calibrationPanelCorrections, settings);
 
     } else {
 
-      transform = getAdjustedTransformSimple(correctionsCal, calibrationPanelCorrections);
+      transform = getAdjustedTransformSimple(correctionsCal, calibrationPanelCorrections, settings);
 
     }
   }
@@ -227,9 +224,9 @@ export async function loadCalibrationFile(s3, bucket, name, calType) {
       let calibration;
       const calibrationText = new TextDecoder("utf-8").decode(data.Body);
       if (calType === 'metadata') {
-        calibration = parseMetadataFile(calibrationText);
+        calibration = parseMetadataFile(calibrationText, calType);
       } else if (calType === 'extrinsics' || calType === 'nominal') {
-        calibration = parseCalibrationFile(calibrationText);
+        calibration = parseCalibrationFile(calibrationText, calType);
       } else {
         console.error("Cannot parse unknown calibration file type: ", calType);
       }
@@ -247,9 +244,9 @@ export async function loadCalibrationFile(s3, bucket, name, calType) {
 
       let calibration;
       if (calType === 'metadata') {
-        calibration = parseMetadataFile(await response.text()); 
+        calibration = parseMetadataFile(await response.text(), calType); 
       } else if (calType === 'extrinsics' || calType === 'nominal') {
-        calibration = parseCalibrationFile(await response.text());
+        calibration = parseCalibrationFile(await response.text(), calType);
       } else {
         console.error("Cannot parse unknown calibration file type: ", calType);
       }
@@ -263,7 +260,7 @@ export async function loadCalibrationFile(s3, bucket, name, calType) {
   }
 }
 
-function parseMetadataFile(calibrationText) {
+function parseMetadataFile(calibrationText, calibrationType) {
 
   const calibration = JSON.parse(calibrationText);
 
@@ -281,7 +278,7 @@ function parseMetadataFile(calibrationText) {
   return calibration;
 }
 
-function parseCalibrationFile(calibrationText){
+function parseCalibrationFile(calibrationText, calibrationType){
 
   let velo2Rtk = {
     x: 0, y:0, z:0, roll:0, pitch:0, yaw:0, version:1.0

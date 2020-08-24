@@ -114,12 +114,17 @@ export function createPlaybar () {
     for (let ii = 0, len = panels.length; ii < len; ii++) {
       const panel = panels[ii];
 
-      // Check is visible and toggle:
-      if (panel.style.display === "none" || panel.style.display === "") {
-        panel.style.display = "block";
+      // Don't show rtk2vehicle mesh unless overridden:
+      if (panel.id.includes("rtk2vehicle") && window.hideRtk2VehicleCalibrationPanel) {
+          panel.style.display = "none";
       } else {
-        panel.style.display = "none";
-      }
+        // Check if visible and toggle:
+        if (panel.style.display === "none" || panel.style.display === "") {
+          panel.style.display = "block";
+        } else {
+          panel.style.display = "none";
+        }
+      }     
     }
   });
 

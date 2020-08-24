@@ -5,6 +5,15 @@
     background-color: #f1f1f1;
     border: 1px solid #d3d3d3;
     text-align: center;
+    opacity: 0.5;
+    transition-property: opacity;
+    transition-duration: 0.25s;
+}
+
+.draggable-overlay:hover {
+    opacity: 1.0;
+    transition-property: opacity;
+    transition-duration: 0.25s;
 }
 
 .draggable-overlay-header {
@@ -18,4 +27,26 @@
 .disable-calibration-panel {
     background-color: #ff0000;
     color: #ffffff;
+}
+
+.calibration-value {
+    font-weight: bold;
+}
+
+.calibration-original {
+    width: 50px;
+    background: none;
+    border: none;
+}
+
+.calibration-setpoint {
+    width: 50px;
+}
+
+.calibration-step {
+    width: 50px;
+}
+
+table, th, td {
+    border: 1px solid black
 }

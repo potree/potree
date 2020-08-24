@@ -1,139 +1,177 @@
 "use strict";
+
+import { getTxMat } from "../demo/calibrationManager.js";
+
 $(document).ready(function () {
 
   // Insert HTML for Playbar:
   const draggableOverlays = $(`
     <div class="draggable-overlay" id="calibration-overlay-rtk2vehicle">
       <div class="draggable-overlay-header" id="calibration-overlay-rtk2vehicle-header">RTK to Vehicle Mesh Extrinsics</div>
-        <span class='disable-calibration-panel'> CALIBRATION PANEL DISABLED: <br> <span class="disable-calibration-panel-reason"></span> </span>
-        <p><span>
-            X: <span class="calibration-value" id="rtk2vehicle-x">0.0000</span> m
-            Setpoint: <input class="calibration-setpoint" id="rtk2vehicle-setpoint-x" type="number" placeholder="" step='any' value='0'/> m
-            <input class="calibration-slider" type="range" min="-1" max="1" value="0" step="any" />
-            Range: <input class="calibration-step" type="number" value="1" step='any'/> m
-            <button type="button" class="calibration-reset">Reset</button>
-        </span></p>
+      <span class='disable-calibration-panel'> CALIBRATION PANEL DISABLED: <br> <span class="disable-calibration-panel-reason"></span> </span>
+      
+      <table>
+      <tr>
+        <th>Parameter</th>
+        <th>New Value</th>
+        <th>Original Value</th>
+        <th>Setpoint</th>
+        <th>Slider</th>
+        <th>Slider Range</th>
+        <th>Reset to Original</th>
+      </tr>
 
-        <p><span>
-            Y: <span class="calibration-value" id="rtk2vehicle-y">0.0000</span> m
-            Setpoint: <input class="calibration-setpoint" id="rtk2vehicle-setpoint-y" type="number" placeholder="" step='any' value='0'/> m
-            <input class="calibration-slider" type="range" min="-1" max="1" value="0" step="any" />
-            Range: <input class="calibration-step" type="number" value="1" step='any'/> m
-            <button type="button" class="calibration-reset">Reset</button>
-        </span></p>
+      <tr>
+          <td>X</td>
+          <td><span class="calibration-value" id="rtk2vehicle-x">0.0000</span> <span class="translation-unit">m</span></td>
+          <td><input class="calibration-original" id="rtk2vehicle-loaded-x" type="number" placeholder="" step='any' value='0'/> <span class="translation-unit">m</span></td>
+          <td><input class="calibration-setpoint" id="rtk2vehicle-setpoint-x" type="number" placeholder="" step='any' value='0'/> <span class="translation-unit">m</span></td>
+          <td><input class="calibration-slider" type="range" min="-1" max="1" value="0" step="any" /></td>
+          <td><input class="calibration-step" type="number" value="1" step='any'/> <span class="translation-unit">m</span></td>
+          <td><button type="button" class="calibration-reset">Reset</button></td>
+      </tr>
 
-        <p><span>
-            Z: <span class="calibration-value" id="rtk2vehicle-z">0.0000</span> m
-            Setpoint: <input class="calibration-setpoint" id="rtk2vehicle-setpoint-z" type="number" placeholder="" step='any' value='0'/> m
-            <input class="calibration-slider" type="range" min="-1" max="1" value="0" step="any" />
-            Range: <input class="calibration-step" type="number" value="1" step='any'/> m
-            <button type="button" class="calibration-reset">Reset</button>
-        </span></p>
+      <tr>
+          <td>Y</td>
+          <td><span class="calibration-value" id="rtk2vehicle-y">0.0000</span> <span class="translation-unit">m</span></td>
+          <td><input class="calibration-original" id="rtk2vehicle-loaded-y" type="number" placeholder="" step='any' value='0'/> <span class="translation-unit">m</span></td>
+          <td><input class="calibration-setpoint" id="rtk2vehicle-setpoint-y" type="number" placeholder="" step='any' value='0'/> <span class="translation-unit">m</span></td>
+          <td><input class="calibration-slider" type="range" min="-1" max="1" value="0" step="any" /></td>
+          <td><input class="calibration-step" type="number" value="1" step='any'/> <span class="translation-unit">m</span></td>
+          <td><button type="button" class="calibration-reset">Reset</button></td>
+      </tr>
 
-        <p><span>
-            Roll: <span class="calibration-value" id="rtk2vehicle-roll">0.0000</span> rad
-            Setpoint: <input class="calibration-setpoint" id="rtk2vehicle-setpoint-roll" type="number" placeholder="" step='any' value='0'/> rad
-            <input class="calibration-slider" type="range" min="-1" max="1" value="0" step="any" />
-            Range: <input class="calibration-step" type="number" value="1" step='any'/> rad
-            <button type="button" class="calibration-reset">Reset</button>
-        </span></p>
+      <tr>
+          <td>Z</td>
+          <td><span class="calibration-value" id="rtk2vehicle-z">0.0000</span> <span class="translation-unit">m</span></td>
+          <td><input class="calibration-original" id="rtk2vehicle-loaded-z" type="number" placeholder="" step='any' value='0'/> <span class="translation-unit">m</span></td>
+          <td><input class="calibration-setpoint" id="rtk2vehicle-setpoint-z" type="number" placeholder="" step='any' value='0'/> <span class="translation-unit">m</span></td>
+          <td><input class="calibration-slider" type="range" min="-1" max="1" value="0" step="any" /></td>
+          <td><input class="calibration-step" type="number" value="1" step='any'/> <span class="translation-unit">m</span></td>
+          <td><button type="button" class="calibration-reset">Reset</button></td>
+      </tr>
 
-        <p><span>
-            Pitch: <span class="calibration-value" id="rtk2vehicle-pitch">0.0000</span> rad
-            Setpoint: <input class="calibration-setpoint" id="rtk2vehicle-setpoint-pitch" type="number" placeholder="" step='any' value='0'/> rad
-            <input class="calibration-slider" type="range" min="-1" max="1" value="0" step="any" />
-            Range: <input class="calibration-step" type="number" value="1" step='any'/> rad
-            <button type="button" class="calibration-reset">Reset</button>
-        </span></p>
+      <tr>
+          <td>Roll</td>
+          <td><span class="calibration-value" id="rtk2vehicle-roll">0.0000</span> <span class="rotation-unit">rad</span></td>
+          <td><input class="calibration-original" id="rtk2vehicle-loaded-roll" type="number" placeholder="" step='any' value='0'/> <span class="rotation-unit">rad</span></td>
+          <td><input class="calibration-setpoint" id="rtk2vehicle-setpoint-roll" type="number" placeholder="" step='any' value='0'/> <span class="rotation-unit">rad</span></td>
+          <td><input class="calibration-slider" type="range" min="-1" max="1" value="0" step="any" /></td>
+          <td><input class="calibration-step" type="number" value="1" step='any'/> <span class="rotation-unit">rad</span></td>
+          <td><button type="button" class="calibration-reset">Reset</button></td>
+      </tr>
 
-        <p><span>
-            Yaw: <span class="calibration-value" id="rtk2vehicle-yaw">0.0000</span> rad
-            Setpoint: <input class="calibration-setpoint" id="rtk2vehicle-setpoint-yaw" type="number" placeholder="" step='any' value='0'/> rad
-            <input class="calibration-slider" type="range" min="-1" max="1" value="0" step="any" />
-            Range: <input class="calibration-step" type="number" value="1" step='any'/> rad
-            <button type="button" class="calibration-reset">Reset</button>
-        </span></p>
+      <tr>
+          <td>Pitch</td>
+          <td><span class="calibration-value" id="rtk2vehicle-pitch">0.0000</span> <span class="rotation-unit">rad</span></td>
+          <td><input class="calibration-original" id="rtk2vehicle-loaded-pitch" type="number" placeholder="" step='any' value='0'/> <span class="rotation-unit">rad</span></td>
+          <td><input class="calibration-setpoint" id="rtk2vehicle-setpoint-pitch" type="number" placeholder="" step='any' value='0'/> <span class="rotation-unit">rad</span></td>
+          <td><input class="calibration-slider" type="range" min="-1" max="1" value="0" step="any" /></td>
+          <td><input class="calibration-step" type="number" value="1" step='any'/> <span class="rotation-unit">rad</span></td>
+          <td><button type="button" class="calibration-reset">Reset</button></td>
+      </tr>
 
-        </div>
+      <tr>
+          <td>Yaw</td>
+          <td><span class="calibration-value" id="rtk2vehicle-yaw">0.0000</span> <span class="rotation-unit">rad</span></td>
+          <td><input class="calibration-original" id="rtk2vehicle-loaded-yaw" type="number" placeholder="" step='any' value='0'/> <span class="rotation-unit">rad</span></td>
+          <td><input class="calibration-setpoint" id="rtk2vehicle-setpoint-yaw" type="number" placeholder="" step='any' value='0'/> <span class="rotation-unit">rad</span></td>
+          <td><input class="calibration-slider" type="range" min="-1" max="1" value="0" step="any" /></td>
+          <td><input class="calibration-step" type="number" value="1" step='any'/> <span class="rotation-unit">rad</span></td>
+          <td><button type="button" class="calibration-reset">Reset</button></td>
+      </tr>
+      </table>
     </div>
 
     <div class="draggable-overlay" id="calibration-overlay-velo2rtk">
       <div class="draggable-overlay-header" id="calibration-overlay-velo2rtk-header">Velodyne to RTK Extrinsics</div>
-        <span class='disable-calibration-panel'> CALIBRATION PANEL DISABLED: <br> <span class="disable-calibration-panel-reason"></span> </span>
-        <p><span>
-            X: <span class="calibration-value" id="velo2rtk-x">0.0000</span> m
-            Setpoint: <input class="calibration-setpoint" id="velo2rtk-setpoint-x" type="number" placeholder="" step='any' value='0'/> m
-            <input class="calibration-slider" type="range" min="-1" max="1" value="0" step="any" />
-            Range: <input class="calibration-step" type="number" value="1" step='any'/> m
-            <button type="button" class="calibration-reset">Reset</button>
-        </span></p>
+      <span class='disable-calibration-panel'> CALIBRATION PANEL DISABLED: <br> <span class="disable-calibration-panel-reason"></span> </span>
+      
+      <table>
+      <tr>
+        <th>Parameter</th>
+        <th>New Value</th>
+        <th>Original Value</th>
+        <th>Setpoint</th>
+        <th>Slider</th>
+        <th>Slider Range</th>
+        <th>Reset to Original</th>
+      </tr>
 
-        <p><span>
-            Y: <span class="calibration-value" id="velo2rtk-y">0.0000</span> m
-            Setpoint: <input class="calibration-setpoint" id="velo2rtk-setpoint-y" type="number" placeholder="" step='any' value='0'/> m
-            <input class="calibration-slider" type="range" min="-1" max="1" value="0" step="any" />
-            Range: <input class="calibration-step" type="number" value="1" step='any'/> m
-            <button type="button" class="calibration-reset">Reset</button>
-        </span></p>
+      <tr>
+          <td>X</td>
+          <td><span class="calibration-value" id="velo2rtk-x">0.0000</span> <span class="translation-unit">m</span></td>
+          <td><input class="calibration-original" id="velo2rtk-loaded-x" type="number" placeholder="" step='any' value='0'/> <span class="translation-unit">m</span></td>
+          <td><input class="calibration-setpoint" id="velo2rtk-setpoint-x" type="number" placeholder="" step='any' value='0'/> <span class="translation-unit">m</span></td>
+          <td><input class="calibration-slider" type="range" min="-1" max="1" value="0" step="any" /></td>
+          <td><input class="calibration-step" type="number" value="1" step='any'/> <span class="translation-unit">m</span></td>
+          <td><button type="button" class="calibration-reset">Reset</button></td>
+      </tr>
 
-        <p><span>
-            Z: <span class="calibration-value" id="velo2rtk-z">0.0000</span> m
-            Setpoint: <input class="calibration-setpoint" id="velo2rtk-setpoint-z" type="number" placeholder="" step='any' value='0'/> m
-            <input class="calibration-slider" type="range" min="-1" max="1" value="0" step="any" />
-            Range: <input class="calibration-step" type="number" value="1" step='any'/> m
-            <button type="button" class="calibration-reset">Reset</button>
-        </span></p>
+      <tr>
+          <td>Y</td>
+          <td><span class="calibration-value" id="velo2rtk-y">0.0000</span> <span class="translation-unit">m</span></td>
+          <td><input class="calibration-original" id="velo2rtk-loaded-y" type="number" placeholder="" step='any' value='0'/> <span class="translation-unit">m</span></td>
+          <td><input class="calibration-setpoint" id="velo2rtk-setpoint-y" type="number" placeholder="" step='any' value='0'/> <span class="translation-unit">m</span></td>
+          <td><input class="calibration-slider" type="range" min="-1" max="1" value="0" step="any" /></td>
+          <td><input class="calibration-step" type="number" value="1" step='any'/> <span class="translation-unit">m</span></td>
+          <td><button type="button" class="calibration-reset">Reset</button></td>
+      </tr>
 
-        <p><span>
-            Roll: <span class="calibration-value" id="velo2rtk-roll">0.0000</span> rad
-            Setpoint: <input class="calibration-setpoint" id="velo2rtk-setpoint-roll" type="number" placeholder="" step='any' value='0'/> rad
-            <input class="calibration-slider" type="range" min="-1" max="1" value="0" step="any" />
-            Range: <input class="calibration-step" type="number" value="1" step='any'/> rad
-            <button type="button" class="calibration-reset">Reset</button>
-        </span></p>
+      <tr>
+          <td>Z</td>
+          <td><span class="calibration-value" id="velo2rtk-z">0.0000</span> <span class="translation-unit">m</span></td>
+          <td><input class="calibration-original" id="velo2rtk-loaded-z" type="number" placeholder="" step='any' value='0'/> <span class="translation-unit">m</span></td>
+          <td><input class="calibration-setpoint" id="velo2rtk-setpoint-z" type="number" placeholder="" step='any' value='0'/> <span class="translation-unit">m</span></td>
+          <td><input class="calibration-slider" type="range" min="-1" max="1" value="0" step="any" /></td>
+          <td><input class="calibration-step" type="number" value="1" step='any'/> <span class="translation-unit">m</span></td>
+          <td><button type="button" class="calibration-reset">Reset</button></td>
+      </tr>
 
-        <p><span>
-            Pitch: <span class="calibration-value" id="velo2rtk-pitch">0.0000</span> rad
-            Setpoint: <input class="calibration-setpoint" id="velo2rtk-setpoint-pitch" type="number" placeholder="" step='any' value='0'/> rad
-            <input class="calibration-slider" type="range" min="-1" max="1" value="0" step="any" />
-            Range: <input class="calibration-step" type="number" value="1" step='any'/> rad
-            <button type="button" class="calibration-reset">Reset</button>
-        </span></p>
+      <tr>
+          <td>Roll</td>
+          <td><span class="calibration-value" id="velo2rtk-roll">0.0000</span> <span class="rotation-unit">rad</span></td>
+          <td><input class="calibration-original" id="velo2rtk-loaded-roll" type="number" placeholder="" step='any' value='0'/> <span class="rotation-unit">rad</span></td>
+          <td><input class="calibration-setpoint" id="velo2rtk-setpoint-roll" type="number" placeholder="" step='any' value='0'/> <span class="rotation-unit">rad</span></td>
+          <td><input class="calibration-slider" type="range" min="-1" max="1" value="0" step="any" /></td>
+          <td><input class="calibration-step" type="number" value="1" step='any'/> <span class="rotation-unit">rad</span></td>
+          <td><button type="button" class="calibration-reset">Reset</button></td>
+      </tr>
 
-        <p><span>
-            Yaw: <span class="calibration-value" id="velo2rtk-yaw">0.0000</span> rad
-            Setpoint: <input class="calibration-setpoint" id="velo2rtk-setpoint-yaw" type="number" placeholder="" step='any' value='0'/> rad
-            <input class="calibration-slider" type="range" min="-1" max="1" value="0" step="any" />
-            Range: <input class="calibration-step" type="number" value="1" step='any'/> rad
-            <button type="button" class="calibration-reset">Reset</button>
-        </span></p>
-        <button type="button" id="download_cals_button" class="download-cals" onclick="downloadCals();">Download</button>
-      </div>
+      <tr>
+          <td>Pitch</td>
+          <td><span class="calibration-value" id="velo2rtk-pitch">0.0000</span> <span class="rotation-unit">rad</span></td>
+          <td><input class="calibration-original" id="velo2rtk-loaded-pitch" type="number" placeholder="" step='any' value='0'/> <span class="rotation-unit">rad</span></td>
+          <td><input class="calibration-setpoint" id="velo2rtk-setpoint-pitch" type="number" placeholder="" step='any' value='0'/> <span class="rotation-unit">rad</span></td>
+          <td><input class="calibration-slider" type="range" min="-1" max="1" value="0" step="any" /></td>
+          <td><input class="calibration-step" type="number" value="1" step='any'/> <span class="rotation-unit">rad</span></td>
+          <td><button type="button" class="calibration-reset">Reset</button></td>
+      </tr>
+
+      <tr>
+          <td>Yaw</td>
+          <td><span class="calibration-value" id="velo2rtk-yaw">0.0000</span> <span class="rotation-unit">rad</span></td>
+          <td><input class="calibration-original" id="velo2rtk-loaded-yaw" type="number" placeholder="" step='any' value='0'/> <span class="rotation-unit">rad</span></td>
+          <td><input class="calibration-setpoint" id="velo2rtk-setpoint-yaw" type="number" placeholder="" step='any' value='0'/> <span class="rotation-unit">rad</span></td>
+          <td><input class="calibration-slider" type="range" min="-1" max="1" value="0" step="any" /></td>
+          <td><input class="calibration-step" type="number" value="1" step='any'/> <span class="rotation-unit">rad</span></td>
+          <td><button type="button" class="calibration-reset">Reset</button></td>
+      </tr>
+      </table>
+      <button type="button" id="download_cals_button" class="download-cals" >Download</button>
+    </div>
     `);
-
-
-              //
-              // <p>
-              //   <span>
-              //     X: <span class="value" id="rtk2vehicle-x"></span>
-              //     Setpoint: <input type="number" placeholder="" step='any' value='0'/> m
-              //     <input type="range" min="0" max="10" step="any" />
-              //     Range: <input type="number" step='any'/> m
-              //     <button type="button">update</button>
-              //   </span>
-              // </p>
-
-
 
   // Add to DOM:
   $('body').prepend(draggableOverlays);
 
   // Make the DIV element draggable:
-  // dragElement($(".draggable-overlay"));
   dragElement(document.getElementById("calibration-overlay-velo2rtk"));
   dragElement(document.getElementById("calibration-overlay-rtk2vehicle"));
-  $("#download_cals_button").click = function() {downloadCals();};
+  $(document).on('click', '#download_cals_button', function() { downloadCals(); } );
 
+  // Disable inputs where original calibration values are stored:
+  $(".calibration-original").each( (i, elem) => {elem.disabled = true; });
 
   function dragElement(elmnt) {
     let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
@@ -181,17 +219,18 @@ $(document).ready(function () {
   for (let ii = 0, len=calibrationPanels.length; ii < len; ii++) {
     const calibrationPanel = calibrationPanels[ii];
 
-    const pElements = calibrationPanel.getElementsByTagName("p");
-    for (let jj = 0, len2=pElements.length; jj < len2; jj++) {
-      const span = pElements[jj].children[0];
+    const trElements = calibrationPanel.getElementsByTagName("tr");
+    for (let jj = 1, len2=trElements.length; jj < len2; jj++) {
+      const row = trElements[jj];
 
-      const value = span.querySelector(".calibration-value");
-      const setpoint = span.querySelector(".calibration-setpoint");
-      const stepsize = span.querySelector(".calibration-step");
-      const slider = span.querySelector(".calibration-slider");
-      const reset = span.querySelector(".calibration-reset");
+      const value = row.querySelector(".calibration-value");
+      const loaded = row.querySelector(".calibration-original");
+      const setpoint = row.querySelector(".calibration-setpoint");
+      const stepsize = row.querySelector(".calibration-step");
+      const slider = row.querySelector(".calibration-slider");
+      const reset = row.querySelector(".calibration-reset");
 
-      slider.oninput = function() {
+      let updateValue = function() {
         // TODO Validate output of Number() below
         const sliderVal = Number(slider.value);
         const setpointVal = Number(setpoint.value);
@@ -208,8 +247,11 @@ $(document).ready(function () {
         window.dispatchEvent(event);
       }
 
+      slider.oninput = updateValue;
+      setpoint.oninput = updateValue;
+
       reset.onmouseup = function() {
-        // setpoint.value = 0;
+        setpoint.value = loaded.value;
         stepsize.value = 1;
         slider.value = 0;
         const val = Number(setpoint.value)+stepsize.value*slider.value;
@@ -229,7 +271,43 @@ $(document).ready(function () {
   $(".draggable-overlay")[0].children[1].children[0].children; // Gives each span
 });
 
-function getRtk2Vehicle() {
+function rad2Deg(objectRad) {
+  let output = {...objectRad};
+
+  output.roll = objectRad.roll / Math.PI * 180.0; 
+  output.pitch = objectRad.pitch / Math.PI * 180.0; 
+  output.yaw = objectRad.yaw/ Math.PI * 180.0; 
+  output.isDegrees = false;
+
+  return output;
+}
+
+function deg2Rad(objectDeg) {
+  let output = {...objectDeg};
+
+  output.roll = objectDeg.roll / 180.0 * Math.PI;
+  output.pitch = objectDeg.pitch / 180.0 * Math.PI;
+  output.yaw = objectDeg.yaw / 180.0 * Math.PI;
+  output.isDegrees = true;
+
+  return output;
+}
+
+function convertToCorrectUnits(object) {
+  if (window.calibrationPanelDegrees && object.isDegrees) {
+    return object;
+  } else if (window.calibrationPanelDegrees && !object.isDegrees) {
+    return rad2Deg(object);
+  } else if (!window.calibrationPanelDegrees && !object.isDegrees) {
+    return object;
+  } else if (!window.calibrationPanelDegrees && object.isDegrees) {
+    return deg2Rad(object);
+  } else {
+    console.error("Should not be here");
+  }
+}
+
+export function getRtk2Vehicle() {
   const rtk2vehicle = {
     x: Number($("#rtk2vehicle-x").text()),
     y: Number($("#rtk2vehicle-y").text()),
@@ -238,11 +316,16 @@ function getRtk2Vehicle() {
     pitch: Number($("#rtk2vehicle-pitch").text()),
     yaw: Number($("#rtk2vehicle-yaw").text())
   }
-  // debugger; // return
-  return rtk2vehicle;
+
+  // Always return values in radians:
+  if (storedRtk2VehicleUnit === 'deg') {
+    return deg2Rad(rtk2vehicle);
+  } else {
+    return rtk2vehicle;
+  }
 }
 
-function getVelo2Rtk() {
+export function getVelo2Rtk() {
   const velo2rtk = {
     x: Number($("#velo2rtk-x").text()),
     y: Number($("#velo2rtk-y").text()),
@@ -251,11 +334,16 @@ function getVelo2Rtk() {
     pitch: Number($("#velo2rtk-pitch").text()),
     yaw: Number($("#velo2rtk-yaw").text())
   }
-  // debugger; // return
-  return velo2rtk;
+
+  // Always return values in radians:
+  if (storedVelo2RtkUnit === 'deg') {
+    return deg2Rad(velo2rtk);
+  } else {
+    return velo2rtk;
+  }
 }
 
-function disablePanels(reason) {
+export function disablePanels(reason) {
   console.error("Calibration Panels DISABLED - ", reason);
 
   $("#calibration-overlay-velo2rtk :input").attr("disabled", true);
@@ -265,10 +353,13 @@ function disablePanels(reason) {
   $('.disable-calibration-panel-reason').each((i, obj) => obj.innerHTML = reason || "");
 }
 
-function enablePanels() {
+export function enablePanels() {
   console.log("Calibration Panels ENABLED");
   $("#calibration-overlay-velo2rtk :input").attr("disabled", false);
   $("#calibration-overlay-rtk2vehicle :input").attr("disabled", false);
+
+  // Leave the "original" input disabled (this is where the original cals are displayed):
+  $(".calibration-original").each( (i, elem) => {elem.disabled = true} );
 
   $('.disable-calibration-panel').each((i, obj) => obj.style.display = "none");
   $('.disable-calibration-panel-reason').each((i, obj) => obj.innerHTML = "");
@@ -286,16 +377,42 @@ function download(filename, text) {
 }
 
 function downloadCals() {
-  const x =  $("#velo2rtk-x").text()
-  const y =  $("#velo2rtk-y").text()
-  const z =  $("#velo2rtk-z").text()
-  const roll =  $("#velo2rtk-roll").text()
-  const pitch =  $("#velo2rtk-pitch").text()
-  const yaw =  $("#velo2rtk-yaw").text()
 
-  const version = window.usingAdjustedHeading ? '2.0' : '1.0';
+  // Get final values from calibration panels:
+  let calPanelValues = {
+    x :  Number($("#velo2rtk-x").text()),
+    y :  Number($("#velo2rtk-y").text()),
+    z :  Number($("#velo2rtk-z").text()),
+    roll :  Number($("#velo2rtk-roll").text()),
+    pitch :  Number($("#velo2rtk-pitch").text()),
+    yaw :  Number($("#velo2rtk-yaw").text()),
+  };
 
-  const text = `${x}, ${y}, ${z}\n${roll}, ${pitch}, ${yaw}\nversion: ${version}`;
+  // Convert to radians if in degrees: 
+  if (storedVelo2RtkUnit === 'deg') {
+    calPanelValues = deg2Rad(calPanelValues);
+  }
+
+  const version = Number(window.extrinsics.velo2Rtk.old.version).toFixed(1);
+
+  const velo2Rtk = getVelo2Rtk();
+  const txMat = getTxMat(velo2Rtk, window.calibrationSettings.correctionsIsPassiveTransform);
+  const transformString = txMat.elements.join(", ");
+
+  let description="";
+  if (version <= 2.0) {
+    description += "\n\tLine 1: X, Y, Z in meters - representing the position of the RT origin from the Velodyne’s reference frame.";
+    description += "\n\tLine 2: Roll, Pitch, Yaw in radians - representing the relative rotation needed to transform the Velodyne Coordinate Frame to the RT Coordinate Frame. The rotation can be constructed from these euler angles using the ZYX intrinsic convention."
+    description += "\n\tLine 3: Version 2.0 - The calibration parameters in this file represent the full Velodyne to ISO 8855 Vehicle Frame transform (and using the adjusted UTM heading). In version 2.0, these parameters define an active transformation.";
+    description += "\n\tLine 4: Transform matrix generated from parameters as specified in lines 1-3 in column-major order."; 
+  } else if (version > 2.0) {
+    description += "\n\tLine 1: X, Y, Z in meters - representing the position of the RT origin from the Velodyne’s reference frame.";
+    description += "\n\tLine 2: Roll, Pitch, Yaw in radians - representing the relative rotation needed to transform the Velodyne Coordinate Frame to the RT Coordinate Frame. The rotation can be constructed from these euler angles using the ZYX intrinsic convention.";
+    description += "\n\tLine 3: Version 3.0 - The calibration parameters in this file represent the correction needed on top of the nominal SLED extrinsics (physically this correction represents the difference the physical hardware mounting and the SLED CAD model). In version 3.0, these parameters define a passive transformation.";
+    description += "\n\tLine 4: Transform matrix generated from parameters as specified in lines 1-3 in column-major order."; 
+  }
+
+  const text = `${calPanelValues.x}, ${calPanelValues.y}, ${calPanelValues.z}\n${calPanelValues.roll}, ${calPanelValues.pitch}, ${calPanelValues.yaw}\nVersion: ${version}\nTransform Matrix (column-major): ${transformString}\nDescription: ${description}`;
 
   const date = new Date();
   const year = `${date.getYear() + 1900}`.padStart(4, '0')
@@ -305,26 +422,41 @@ function downloadCals() {
 }
 
 
-function storeRtk2Vehicle(rtk2vehicle) {
+export function storeRtk2Vehicle(rtk2VehicleInput) {
+
+  const rtk2vehicle = convertToCorrectUnits(rtk2VehicleInput);
+
   try {
-    $("#rtk2vehicle-setpoint-x").val(rtk2vehicle.x);
+    $("#rtk2vehicle-loaded-x").val(Number(rtk2vehicle.x).toFixed(4));
+    $("#rtk2vehicle-setpoint-x").val(Number(rtk2vehicle.x).toFixed(4));
     $("#rtk2vehicle-x").text(rtk2vehicle.x.toFixed(4));
     $("#rtk2vehicle-x").trigger("input");
-    $("#rtk2vehicle-setpoint-y").val(rtk2vehicle.y);
+    $("#rtk2vehicle-loaded-y").val(Number(rtk2vehicle.y).toFixed(4));
+    $("#rtk2vehicle-setpoint-y").val(Number(rtk2vehicle.y).toFixed(4));
     $("#rtk2vehicle-y").text(rtk2vehicle.y.toFixed(4));
     $("#rtk2vehicle-y").trigger("input");
-    $("#rtk2vehicle-setpoint-z").val(rtk2vehicle.z);
+    $("#rtk2vehicle-loaded-z").val(Number(rtk2vehicle.z).toFixed(4));
+    $("#rtk2vehicle-setpoint-z").val(Number(rtk2vehicle.z).toFixed(4));
     $("#rtk2vehicle-z").text(rtk2vehicle.z.toFixed(4));
     $("#rtk2vehicle-z").trigger("input");
-    $("#rtk2vehicle-setpoint-roll").val(rtk2vehicle.roll);
+    $("#rtk2vehicle-loaded-roll").val(Number(rtk2vehicle.roll).toFixed(4));
+    $("#rtk2vehicle-setpoint-roll").val(Number(rtk2vehicle.roll).toFixed(4));
     $("#rtk2vehicle-roll").text(rtk2vehicle.roll.toFixed(4));
     $("#rtk2vehicle-roll").trigger("input");
-    $("#rtk2vehicle-setpoint-pitch").val(rtk2vehicle.pitch);
+    $("#rtk2vehicle-loaded-pitch").val(Number(rtk2vehicle.pitch).toFixed(4));
+    $("#rtk2vehicle-setpoint-pitch").val(Number(rtk2vehicle.pitch).toFixed(4));
     $("#rtk2vehicle-pitch").text(rtk2vehicle.pitch.toFixed(4));
     $("#rtk2vehicle-pitch").trigger("input");
-    $("#rtk2vehicle-setpoint-yaw").val(rtk2vehicle.yaw);
+    $("#rtk2vehicle-loaded-yaw").val(Number(rtk2vehicle.yaw).toFixed(4));
+    $("#rtk2vehicle-setpoint-yaw").val(Number(rtk2vehicle.yaw).toFixed(4));
     $("#rtk2vehicle-yaw").text(rtk2vehicle.yaw.toFixed(4));
     $("#rtk2vehicle-yaw").trigger("input");
+
+    // Update units:
+    const unit = window.calibrationPanelDegrees ? "deg" : "rad";
+    $('.rotation-unit').each((i, elem) => { elem.innerHTML = unit });
+    storedRtk2VehicleUnit = 'deg';
+
     console.log("Stored Rtk to Vehicle Extrinsics");
 
   } catch (e) {
@@ -332,29 +464,75 @@ function storeRtk2Vehicle(rtk2vehicle) {
   }
 }
 
-function storeVelo2Rtk(velo2rtk) {
+export function storeVelo2Rtk(velo2RtkInput) {
+
+const velo2rtk = convertToCorrectUnits(velo2RtkInput);
+
   try {
-    $("#velo2rtk-setpoint-x").val(velo2rtk.x);
+    $("#velo2rtk-loaded-x").val(Number(velo2rtk.x).toFixed(4));
+    $("#velo2rtk-setpoint-x").val(Number(velo2rtk.x).toFixed(4));
     $("#velo2rtk-x").text(velo2rtk.x.toFixed(4));
     $("#velo2rtk-x").trigger('input');
-    $("#velo2rtk-setpoint-y").val(velo2rtk.y);
+    $("#velo2rtk-loaded-y").val(Number(velo2rtk.y).toFixed(4));
+    $("#velo2rtk-setpoint-y").val(Number(velo2rtk.y).toFixed(4));
     $("#velo2rtk-y").text(velo2rtk.y.toFixed(4));
     $("#velo2rtk-y").trigger('input');
-    $("#velo2rtk-setpoint-z").val(velo2rtk.z);
+    $("#velo2rtk-loaded-z").val(Number(velo2rtk.z).toFixed(4));
+    $("#velo2rtk-setpoint-z").val(Number(velo2rtk.z).toFixed(4));
     $("#velo2rtk-z").text(velo2rtk.z.toFixed(4));
     $("#velo2rtk-z").trigger('input');
-    $("#velo2rtk-setpoint-roll").val(velo2rtk.roll);
+    $("#velo2rtk-loaded-roll").val(Number(velo2rtk.roll).toFixed(4));
+    $("#velo2rtk-setpoint-roll").val(Number(velo2rtk.roll).toFixed(4));
     $("#velo2rtk-roll").text(velo2rtk.roll.toFixed(4));
     $("#velo2rtk-roll").trigger('input');
-    $("#velo2rtk-setpoint-pitch").val(velo2rtk.pitch);
+    $("#velo2rtk-loaded-pitch").val(Number(velo2rtk.pitch).toFixed(4));
+    $("#velo2rtk-setpoint-pitch").val(Number(velo2rtk.pitch).toFixed(4));
     $("#velo2rtk-pitch").text(velo2rtk.pitch.toFixed(4));
     $("#velo2rtk-pitch").trigger('input');
-    $("#velo2rtk-setpoint-yaw").val(velo2rtk.yaw);
+    $("#velo2rtk-loaded-yaw").val(Number(velo2rtk.yaw).toFixed(4));
+    $("#velo2rtk-setpoint-yaw").val(Number(velo2rtk.yaw).toFixed(4));
     $("#velo2rtk-yaw").text(velo2rtk.yaw.toFixed(4));
     $("#velo2rtk-yaw").trigger('input');
+
+    // Update units:
+    const unit = window.calibrationPanelDegrees ? "deg" : "rad";
+    $('.rotation-unit').each((i, elem) => { elem.innerHTML = unit });
+    storedVelo2RtkUnit = unit;
+
     console.log("Stored Rtk to Vehicle Extrinsics");
 
   } catch (e) {
     console.error("Could not store Velodyne to RTK Calibration Extrinsics", e);
   }
 }
+
+// Units stored in the calibration panel are degrees by default:
+let storedVelo2RtkUnit = 'deg';   
+let storedRtk2VehicleUnit = 'deg'; 
+
+// Add functions to toggle calibration panel units from console:
+window.calibrationPanelDegrees = true;
+window.setCalibrationPanelsToDegrees = function () {
+  console.log("Resetting calibration panel values to loaded values");
+  window.calibrationPanelDegrees = true;
+  storeVelo2Rtk(window.extrinsics.velo2Rtk.old);
+  window.dispatchEvent( new CustomEvent("update-calibration-panel", {}));
+};
+window.setCalibrationPanelsToRadians = function () {
+  console.log("Resetting calibration panel values to loaded values");
+  window.calibrationPanelDegrees = false;
+  storeVelo2Rtk(window.extrinsics.velo2Rtk.old);
+  window.dispatchEvent( new CustomEvent("update-calibration-panel", {}));
+};
+
+// Add functions to enable/disable rtk2mesh calibration panel from console:
+window.hideRtk2VehicleCalibrationPanel = true;
+window.enableRtk2VehicleCalibrationPanel = function() {
+  window.hideRtk2VehicleCalibrationPanel = false;
+  $("#calibration-overlay-rtk2vehicle")[0].style.display = $("#calibration-overlay-velo2rtk")[0].style.display;
+}
+window.disableRtk2VehicleCalibrationPanel = function() {
+  window.hideRtk2VehicleCalibrationPanel = true;
+  $("#calibration-overlay-rtk2vehicle")[0].style.display = "none";
+}
+

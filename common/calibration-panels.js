@@ -174,6 +174,8 @@ $(document).ready(function () {
   dragElement(document.getElementById("calibration-overlay-rtk2vehicle"));
   $(document).on('click', '#download_cals_button', function() { downloadCals(); } );
 
+  // Disable inputs where loaded calibration values are stored:
+  $(".calibration-loaded").each( (i, elem) => {debugger; elem.disabled = true; });
 
   function dragElement(elmnt) {
     let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
@@ -359,6 +361,10 @@ export function enablePanels() {
   console.log("Calibration Panels ENABLED");
   $("#calibration-overlay-velo2rtk :input").attr("disabled", false);
   $("#calibration-overlay-rtk2vehicle :input").attr("disabled", false);
+
+  // Leave the "loaded" input disabled (this is where the original cals are displayed):
+  $(".calibration-loaded").each( (i, elem) => {elem.disabled = true} );
+
 
   $('.disable-calibration-panel').each((i, obj) => obj.style.display = "none");
   $('.disable-calibration-panel-reason').each((i, obj) => obj.innerHTML = "");

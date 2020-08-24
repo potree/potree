@@ -2,7 +2,7 @@
 
 import { updateLoadingBar, incrementLoadingBarTotal } from "../common/overlay.js";
 import { getFileInfo } from "./loaderUtilities.js";
-import { getVelo2Rtk, getRtk2Vehicle } from "../common/calibration-panels.js"
+import { getVelo2Rtk, getRtk2Vehicle, storeVelo2Rtk, storeRtk2Vehicle } from "../common/calibration-panels.js"
 
 
 export async function storeCalibration(s3, bucket, name, callback) {
@@ -127,16 +127,11 @@ export function getTxMat(extrinsics, isPassiveTransform) {
 function getAdjustedTransformSimple(originalExtrinsics, newExtrinsics, settings) {
   console.log("Updating Adjusted Transform [simple]");
 
-  // const isPassiveTransform = false;
-  debugger; //  assert settings.correctionsIsPassiveTransform is false
-  console.assert(!settings.correctionsIsPassiveTransform);
-
   // Construct Reverse Transformation Matrices from newExtrinsics:
   const T_ISO2Velo = new THREE.Matrix4().getInverse(getTxMat(originalExtrinsics, settings.correctionsIsPassiveTransform)); // Inverse 
 
   // Construct Forward Transformation Matrices from originalExtrinsics:
   const T_Velo2ISO = getTxMat(newExtrinsics, settings.correctionsIsPassiveTransform);
-  console.log(T_Velo2ISO.elements.join(", "));
 
   // Chain Reverse and Forward Transformations:
   const adjustedTransformSimple = new THREE.Matrix4().multiplyMatrices(T_ISO2Velo, T_Velo2ISO); // T_ISO2Velo x T_Velo2ISO
@@ -146,12 +141,6 @@ function getAdjustedTransformSimple(originalExtrinsics, newExtrinsics, settings)
 
 function getAdjustedTransformFull(originalCorrections, nominalCal, vatCal, newCorrections, settings) {
   console.log("Updating Adjusted Transform [full]");
-
-  // const isPassiveTransform = true;
-  debugger; // assert settings.*isPassiveTransform is true
-  console.assert(settings.correctionsIsPassiveTransform);
-  console.assert(settings.nominalIsPassiveTransform);
-  console.assert(settings.vatIsPassiveTransform);
 
   // Helper Function to define inverse
   const inverse = (transform) => { 
@@ -286,8 +275,6 @@ function parseMetadataFile(calibrationText, calibrationType) {
   calibration.vat.y = 0.0;
   calibration.vat.z = 0.0;
 
-  calibration.vat.isPassiveTransform = true; // VAT parameters always specify a passive transform
-
   return calibration;
 }
 
@@ -321,12 +308,6 @@ function parseCalibrationFile(calibrationText, calibrationType){
   if (lines.length > 2) {
     const versionStr = lines[2].split("version: ")[1];
     velo2Rtk.version = Number(versionStr);
-  }
-
-  if (velo2Rtk.version <= 2.0) {
-    velo2Rtk.isPassiveTransform = false;
-  } else if (velo2Rtk.version > 2.0) {
-    velo2Rtk.isPassiveTransform = true;
   }
 
   return velo2Rtk;
@@ -370,5 +351,13 @@ export function addCalibrationButton() {
 
   window.canEnableCalibrationPanels = true;
   window.disableReason = "";
-  window.calibrationPanelDegrees = false;
+  window.calibrationPanelDegrees = true;
+  window.setCalibrationPanelsToDegrees = function () {
+    window.calibrationPanelDegrees = true;
+    storeVelo2Rtk(window.extrinsics.velo2Rtk.old);
+  };
+  window.setCalibrationPanelsToRadians = function () {
+    window.calibrationPanelDegrees = false;
+    storeVelo2Rtk(window.extrinsics.velo2Rtk.old);
+  };
 }

@@ -20,14 +20,24 @@
     color: #ffffff;
 }
 
-.calibration-setpoint {
-    width: 50px;
+.calibration-value {
+    font-weight: bold;
 }
 
-.calibration-offset {
+.calibration-loaded {
+    width: 50px;
+    background: none;
+    border: none;
+}
+
+.calibration-setpoint {
     width: 50px;
 }
 
 .calibration-step {
     width: 50px;
+}
+
+table, th, td {
+    border: 1px solid black
 }

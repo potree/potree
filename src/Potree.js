@@ -91,7 +91,7 @@ export const workerPool = new WorkerPool();
 export const version = {
 	major: 1,
 	minor: 7,
-	suffix: 'beta'
+	suffix: '.1'
 };
 
 export let lru = new LRU();

@@ -777,14 +777,15 @@ export class PropertiesPanel{
 				
 				let range = material.getRange(attributeName);
 
-				// currently only supporting scalar ranges.
-				// rgba, normals, positions, etc have vector ranges, however
-				if(typeof range !== "number"){
-					return;
-				}
-
 				if(range == null){
 					range = attribute.range;
+				}
+
+				// currently only supporting scalar ranges.
+				// rgba, normals, positions, etc have vector ranges, however
+				let isValidRange = (typeof range[0] === "number") && (typeof range[1] !== "number");
+				if(isValidRange){
+					return;
 				}
 
 				if(range){

@@ -164,14 +164,15 @@ async function createControlMeshes (controlPoints, controlPointShaderMaterial, F
 }
 
 function getControlPointColor (controlPointType) {
-  if (controlPointType.includes("rtk")) {
+  const lowerCaseControlPoint = controlPointType.toLowerCase();
+  if (lowerCaseControlPoint.includes("rtk")) {
     return new THREE.Color(0x00ffff);
-  } else if (controlPointType.includes("left")) {
+  } else if (lowerCaseControlPoint.includes("left")) {
     return new THREE.Color(0xffff00);
-  } else if (controlPointType.includes("right")) {
+  } else if (lowerCaseControlPoint.includes("right")) {
     return new THREE.Color(0x0000ff);
-  } else if (controlPointType.includes("SPP")) {
-    return new THREE.Color(0xff0000);
+  } else if (lowerCaseControlPoint.includes("spp")) {
+    return new THREE.Color(0xff66ff);
   }
   return new THREE.Color(0x0000ff);
 }

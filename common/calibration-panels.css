@@ -5,6 +5,15 @@
     background-color: #f1f1f1;
     border: 1px solid #d3d3d3;
     text-align: center;
+    opacity: 0.5;
+    transition-property: opacity;
+    transition-duration: 0.25s;
+}
+
+.draggable-overlay:hover {
+    opacity: 1.0;
+    transition-property: opacity;
+    transition-duration: 0.25s;
 }
 
 .draggable-overlay-header {
@@ -24,7 +33,7 @@
     font-weight: bold;
 }
 
-.calibration-loaded {
+.calibration-original {
     width: 50px;
     background: none;
     border: none;

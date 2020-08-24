@@ -13,8 +13,8 @@ $(document).ready(function () {
       <table>
       <tr>
         <th>Parameter</th>
-        <th>Final Value</th>
-        <th>Loaded Value</th>
+        <th>New Value</th>
+        <th>Original Value</th>
         <th>Setpoint</th>
         <th>Slider</th>
         <th>Slider Range</th>
@@ -24,7 +24,7 @@ $(document).ready(function () {
       <tr>
           <td>X</td>
           <td><span class="calibration-value" id="rtk2vehicle-x">0.0000</span> <span class="translation-unit">m</span></td>
-          <td><input class="calibration-loaded" id="rtk2vehicle-loaded-x" type="number" placeholder="" step='any' value='0'/> <span class="translation-unit">m</span></td>
+          <td><input class="calibration-original" id="rtk2vehicle-loaded-x" type="number" placeholder="" step='any' value='0'/> <span class="translation-unit">m</span></td>
           <td><input class="calibration-setpoint" id="rtk2vehicle-setpoint-x" type="number" placeholder="" step='any' value='0'/> <span class="translation-unit">m</span></td>
           <td><input class="calibration-slider" type="range" min="-1" max="1" value="0" step="any" /></td>
           <td><input class="calibration-step" type="number" value="1" step='any'/> <span class="translation-unit">m</span></td>
@@ -34,7 +34,7 @@ $(document).ready(function () {
       <tr>
           <td>Y</td>
           <td><span class="calibration-value" id="rtk2vehicle-y">0.0000</span> <span class="translation-unit">m</span></td>
-          <td><input class="calibration-loaded" id="rtk2vehicle-loaded-y" type="number" placeholder="" step='any' value='0'/> <span class="translation-unit">m</span></td>
+          <td><input class="calibration-original" id="rtk2vehicle-loaded-y" type="number" placeholder="" step='any' value='0'/> <span class="translation-unit">m</span></td>
           <td><input class="calibration-setpoint" id="rtk2vehicle-setpoint-y" type="number" placeholder="" step='any' value='0'/> <span class="translation-unit">m</span></td>
           <td><input class="calibration-slider" type="range" min="-1" max="1" value="0" step="any" /></td>
           <td><input class="calibration-step" type="number" value="1" step='any'/> <span class="translation-unit">m</span></td>
@@ -45,7 +45,7 @@ $(document).ready(function () {
       <tr>
           <td>Z</td>
           <td><span class="calibration-value" id="rtk2vehicle-z">0.0000</span> <span class="translation-unit">m</span></td>
-          <td><input class="calibration-loaded" id="rtk2vehicle-loaded-z" type="number" placeholder="" step='any' value='0'/> <span class="translation-unit">m</span></td>
+          <td><input class="calibration-original" id="rtk2vehicle-loaded-z" type="number" placeholder="" step='any' value='0'/> <span class="translation-unit">m</span></td>
           <td><input class="calibration-setpoint" id="rtk2vehicle-setpoint-z" type="number" placeholder="" step='any' value='0'/> <span class="translation-unit">m</span></td>
           <td><input class="calibration-slider" type="range" min="-1" max="1" value="0" step="any" /></td>
           <td><input class="calibration-step" type="number" value="1" step='any'/> <span class="translation-unit">m</span></td>
@@ -55,7 +55,7 @@ $(document).ready(function () {
       <tr>
           <td>Roll</td>
           <td><span class="calibration-value" id="rtk2vehicle-roll">0.0000</span> <span class="rotation-unit">rad</span></td>
-          <td><input class="calibration-loaded" id="rtk2vehicle-loaded-roll" type="number" placeholder="" step='any' value='0'/> <span class="rotation-unit">rad</span></td>
+          <td><input class="calibration-original" id="rtk2vehicle-loaded-roll" type="number" placeholder="" step='any' value='0'/> <span class="rotation-unit">rad</span></td>
           <td><input class="calibration-setpoint" id="rtk2vehicle-setpoint-roll" type="number" placeholder="" step='any' value='0'/> <span class="rotation-unit">rad</span></td>
           <td><input class="calibration-slider" type="range" min="-1" max="1" value="0" step="any" /></td>
           <td><input class="calibration-step" type="number" value="1" step='any'/> <span class="rotation-unit">rad</span></td>
@@ -65,7 +65,7 @@ $(document).ready(function () {
       <tr>
           <td>Pitch</td>
           <td><span class="calibration-value" id="rtk2vehicle-pitch">0.0000</span> <span class="rotation-unit">rad</span></td>
-          <td><input class="calibration-loaded" id="rtk2vehicle-loaded-pitch" type="number" placeholder="" step='any' value='0'/> <span class="rotation-unit">rad</span></td>
+          <td><input class="calibration-original" id="rtk2vehicle-loaded-pitch" type="number" placeholder="" step='any' value='0'/> <span class="rotation-unit">rad</span></td>
           <td><input class="calibration-setpoint" id="rtk2vehicle-setpoint-pitch" type="number" placeholder="" step='any' value='0'/> <span class="rotation-unit">rad</span></td>
           <td><input class="calibration-slider" type="range" min="-1" max="1" value="0" step="any" /></td>
           <td><input class="calibration-step" type="number" value="1" step='any'/> <span class="rotation-unit">rad</span></td>
@@ -76,7 +76,7 @@ $(document).ready(function () {
       <tr>
           <td>Yaw</td>
           <td><span class="calibration-value" id="rtk2vehicle-yaw">0.0000</span> <span class="rotation-unit">rad</span></td>
-          <td><input class="calibration-loaded" id="rtk2vehicle-loaded-yaw" type="number" placeholder="" step='any' value='0'/> <span class="rotation-unit">rad</span></td>
+          <td><input class="calibration-original" id="rtk2vehicle-loaded-yaw" type="number" placeholder="" step='any' value='0'/> <span class="rotation-unit">rad</span></td>
           <td><input class="calibration-setpoint" id="rtk2vehicle-setpoint-yaw" type="number" placeholder="" step='any' value='0'/> <span class="rotation-unit">rad</span></td>
           <td><input class="calibration-slider" type="range" min="-1" max="1" value="0" step="any" /></td>
           <td><input class="calibration-step" type="number" value="1" step='any'/> <span class="rotation-unit">rad</span></td>
@@ -92,8 +92,8 @@ $(document).ready(function () {
       <table>
       <tr>
         <th>Parameter</th>
-        <th>Final Value</th>
-        <th>Loaded Value</th>
+        <th>New Value</th>
+        <th>Original Value</th>
         <th>Setpoint</th>
         <th>Slider</th>
         <th>Slider Range</th>
@@ -103,7 +103,7 @@ $(document).ready(function () {
       <tr>
           <td>X</td>
           <td><span class="calibration-value" id="velo2rtk-x">0.0000</span> <span class="translation-unit">m</span></td>
-          <td><input class="calibration-loaded" id="velo2rtk-loaded-x" type="number" placeholder="" step='any' value='0'/> <span class="translation-unit">m</span></td>
+          <td><input class="calibration-original" id="velo2rtk-loaded-x" type="number" placeholder="" step='any' value='0'/> <span class="translation-unit">m</span></td>
           <td><input class="calibration-setpoint" id="velo2rtk-setpoint-x" type="number" placeholder="" step='any' value='0'/> <span class="translation-unit">m</span></td>
           <td><input class="calibration-slider" type="range" min="-1" max="1" value="0" step="any" /></td>
           <td><input class="calibration-step" type="number" value="1" step='any'/> <span class="translation-unit">m</span></td>
@@ -113,7 +113,7 @@ $(document).ready(function () {
       <tr>
           <td>Y</td>
           <td><span class="calibration-value" id="velo2rtk-y">0.0000</span> <span class="translation-unit">m</span></td>
-          <td><input class="calibration-loaded" id="velo2rtk-loaded-y" type="number" placeholder="" step='any' value='0'/> <span class="translation-unit">m</span></td>
+          <td><input class="calibration-original" id="velo2rtk-loaded-y" type="number" placeholder="" step='any' value='0'/> <span class="translation-unit">m</span></td>
           <td><input class="calibration-setpoint" id="velo2rtk-setpoint-y" type="number" placeholder="" step='any' value='0'/> <span class="translation-unit">m</span></td>
           <td><input class="calibration-slider" type="range" min="-1" max="1" value="0" step="any" /></td>
           <td><input class="calibration-step" type="number" value="1" step='any'/> <span class="translation-unit">m</span></td>
@@ -124,7 +124,7 @@ $(document).ready(function () {
       <tr>
           <td>Z</td>
           <td><span class="calibration-value" id="velo2rtk-z">0.0000</span> <span class="translation-unit">m</span></td>
-          <td><input class="calibration-loaded" id="velo2rtk-loaded-z" type="number" placeholder="" step='any' value='0'/> <span class="translation-unit">m</span></td>
+          <td><input class="calibration-original" id="velo2rtk-loaded-z" type="number" placeholder="" step='any' value='0'/> <span class="translation-unit">m</span></td>
           <td><input class="calibration-setpoint" id="velo2rtk-setpoint-z" type="number" placeholder="" step='any' value='0'/> <span class="translation-unit">m</span></td>
           <td><input class="calibration-slider" type="range" min="-1" max="1" value="0" step="any" /></td>
           <td><input class="calibration-step" type="number" value="1" step='any'/> <span class="translation-unit">m</span></td>
@@ -134,7 +134,7 @@ $(document).ready(function () {
       <tr>
           <td>Roll</td>
           <td><span class="calibration-value" id="velo2rtk-roll">0.0000</span> <span class="rotation-unit">rad</span></td>
-          <td><input class="calibration-loaded" id="velo2rtk-loaded-roll" type="number" placeholder="" step='any' value='0'/> <span class="rotation-unit">rad</span></td>
+          <td><input class="calibration-original" id="velo2rtk-loaded-roll" type="number" placeholder="" step='any' value='0'/> <span class="rotation-unit">rad</span></td>
           <td><input class="calibration-setpoint" id="velo2rtk-setpoint-roll" type="number" placeholder="" step='any' value='0'/> <span class="rotation-unit">rad</span></td>
           <td><input class="calibration-slider" type="range" min="-1" max="1" value="0" step="any" /></td>
           <td><input class="calibration-step" type="number" value="1" step='any'/> <span class="rotation-unit">rad</span></td>
@@ -144,7 +144,7 @@ $(document).ready(function () {
       <tr>
           <td>Pitch</td>
           <td><span class="calibration-value" id="velo2rtk-pitch">0.0000</span> <span class="rotation-unit">rad</span></td>
-          <td><input class="calibration-loaded" id="velo2rtk-loaded-pitch" type="number" placeholder="" step='any' value='0'/> <span class="rotation-unit">rad</span></td>
+          <td><input class="calibration-original" id="velo2rtk-loaded-pitch" type="number" placeholder="" step='any' value='0'/> <span class="rotation-unit">rad</span></td>
           <td><input class="calibration-setpoint" id="velo2rtk-setpoint-pitch" type="number" placeholder="" step='any' value='0'/> <span class="rotation-unit">rad</span></td>
           <td><input class="calibration-slider" type="range" min="-1" max="1" value="0" step="any" /></td>
           <td><input class="calibration-step" type="number" value="1" step='any'/> <span class="rotation-unit">rad</span></td>
@@ -155,7 +155,7 @@ $(document).ready(function () {
       <tr>
           <td>Yaw</td>
           <td><span class="calibration-value" id="velo2rtk-yaw">0.0000</span> <span class="rotation-unit">rad</span></td>
-          <td><input class="calibration-loaded" id="velo2rtk-loaded-yaw" type="number" placeholder="" step='any' value='0'/> <span class="rotation-unit">rad</span></td>
+          <td><input class="calibration-original" id="velo2rtk-loaded-yaw" type="number" placeholder="" step='any' value='0'/> <span class="rotation-unit">rad</span></td>
           <td><input class="calibration-setpoint" id="velo2rtk-setpoint-yaw" type="number" placeholder="" step='any' value='0'/> <span class="rotation-unit">rad</span></td>
           <td><input class="calibration-slider" type="range" min="-1" max="1" value="0" step="any" /></td>
           <td><input class="calibration-step" type="number" value="1" step='any'/> <span class="rotation-unit">rad</span></td>
@@ -175,7 +175,7 @@ $(document).ready(function () {
   $(document).on('click', '#download_cals_button', function() { downloadCals(); } );
 
   // Disable inputs where loaded calibration values are stored:
-  $(".calibration-loaded").each( (i, elem) => {debugger; elem.disabled = true; });
+  $(".calibration-original").each( (i, elem) => {elem.disabled = true; });
 
   function dragElement(elmnt) {
     let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
@@ -228,7 +228,7 @@ $(document).ready(function () {
       const row = trElements[jj];
 
       const value = row.querySelector(".calibration-value");
-      const loaded = row.querySelector(".calibration-loaded");
+      const loaded = row.querySelector(".calibration-original");
       const setpoint = row.querySelector(".calibration-setpoint");
       const stepsize = row.querySelector(".calibration-step");
       const slider = row.querySelector(".calibration-slider");
@@ -363,7 +363,7 @@ export function enablePanels() {
   $("#calibration-overlay-rtk2vehicle :input").attr("disabled", false);
 
   // Leave the "loaded" input disabled (this is where the original cals are displayed):
-  $(".calibration-loaded").each( (i, elem) => {elem.disabled = true} );
+  $(".calibration-original").each( (i, elem) => {elem.disabled = true} );
 
 
   $('.disable-calibration-panel').each((i, obj) => obj.style.display = "none");

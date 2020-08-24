@@ -350,5 +350,5 @@ export function addCalibrationButton() {
   });
 
   window.canEnableCalibrationPanels = true;
-  window.disableReason = "";  
+  window.disableReason = "";
 }

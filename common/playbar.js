@@ -114,7 +114,7 @@ export function createPlaybar () {
     for (let ii = 0, len = panels.length; ii < len; ii++) {
       const panel = panels[ii];
 
-      // Don't show rtk2vehicle mesh if it's hidden on purpose:
+      // Don't show rtk2vehicle mesh unless overridden:
       if (panel.id.includes("rtk2vehicle") && window.hideRtk2VehicleCalibrationPanel) {
           panel.style.display = "none";
       } else {
@@ -126,7 +126,6 @@ export function createPlaybar () {
         }
       }     
     }
-
   });
 
   playbarhtml.find("#download_lanes_button").click(function () {

@@ -104,8 +104,8 @@ export async function loadPotree() {
 
   // get files from s3
   const filesArray = await getS3Files(s3, bucket, name)
-  const datasetFiles = null; //filesArray[0];
-  const filesTable = null; //filesArray[1];
+  const datasetFiles = filesArray[0];
+  const filesTable = filesArray[1];
 
   // TODO get local files
 
@@ -123,13 +123,12 @@ export async function loadPotree() {
   addCalibrationButton();
   addDetectionButton();
   // load in actual data & configure playbar along the way
-  await loadDataIntoDocument();
+  await loadDataIntoDocument(filesTable);
 
   // Load Pointclouds
   if (runLocalPointCloud) {
-    Potree.loadPointCloud("../data/test1/WorldFrameCloud.fb_converted/cloud.js", "full-cloud", finishLoading);
-    // Potree.loadPointCloud("../pointclouds/test/cloud.js", "full-cloud", finishLoading);
-    // Potree.loadPointCloud("../pointclouds/test_2/cloud.js", "full-cloud-2", finishLoading);
+    Potree.loadPointCloud("../pointclouds/test/cloud.js", "full-cloud", finishLoading);
+    Potree.loadPointCloud("../pointclouds/test_2/cloud.js", "full-cloud-2", finishLoading);
   } else {
     Potree.loadPointCloud({ s3, bucket, name }, name.substring(5), e => {
       finishLoading(e);

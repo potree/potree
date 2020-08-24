@@ -353,11 +353,15 @@ export function addCalibrationButton() {
   window.disableReason = "";
   window.calibrationPanelDegrees = true;
   window.setCalibrationPanelsToDegrees = function () {
+    console.log("Resetting calibration panel values to loaded values");
     window.calibrationPanelDegrees = true;
     storeVelo2Rtk(window.extrinsics.velo2Rtk.old);
+    window.dispatchEvent( new CustomEvent("update-calibration-panel", {}));
   };
   window.setCalibrationPanelsToRadians = function () {
+    console.log("Resetting calibration panel values to loaded values");
     window.calibrationPanelDegrees = false;
     storeVelo2Rtk(window.extrinsics.velo2Rtk.old);
+    window.dispatchEvent( new CustomEvent("update-calibration-panel", {}));
   };
 }

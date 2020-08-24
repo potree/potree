@@ -1,4 +1,7 @@
 "use strict";
+
+import { getTxMat } from "../demo/calibrationManager.js";
+
 $(document).ready(function () {
 
   // Insert HTML for Playbar:
@@ -113,23 +116,9 @@ $(document).ready(function () {
             Range: <input class="calibration-step" type="number" value="1" step='any'/> rad
             <button type="button" class="calibration-reset">Reset</button>
         </span></p>
-        <button type="button" id="download_cals_button" class="download-cals" onclick="downloadCals();">Download</button>
+        <button type="button" id="download_cals_button" class="download-cals" >Download</button>
       </div>
     `);
-
-
-              //
-              // <p>
-              //   <span>
-              //     X: <span class="value" id="rtk2vehicle-x"></span>
-              //     Setpoint: <input type="number" placeholder="" step='any' value='0'/> m
-              //     <input type="range" min="0" max="10" step="any" />
-              //     Range: <input type="number" step='any'/> m
-              //     <button type="button">update</button>
-              //   </span>
-              // </p>
-
-
 
   // Add to DOM:
   $('body').prepend(draggableOverlays);
@@ -138,7 +127,7 @@ $(document).ready(function () {
   // dragElement($(".draggable-overlay"));
   dragElement(document.getElementById("calibration-overlay-velo2rtk"));
   dragElement(document.getElementById("calibration-overlay-rtk2vehicle"));
-  $("#download_cals_button").click = function() {downloadCals();};
+  $(document).on('click', '#download_cals_button', function() { downloadCals(); } );
 
 
   function dragElement(elmnt) {
@@ -235,7 +224,7 @@ $(document).ready(function () {
   $(".draggable-overlay")[0].children[1].children[0].children; // Gives each span
 });
 
-function getRtk2Vehicle() {
+export function getRtk2Vehicle() {
   const rtk2vehicle = {
     x: Number($("#rtk2vehicle-x").text()),
     y: Number($("#rtk2vehicle-y").text()),
@@ -248,7 +237,7 @@ function getRtk2Vehicle() {
   return rtk2vehicle;
 }
 
-function getVelo2Rtk() {
+export function getVelo2Rtk() {
   const velo2rtk = {
     x: Number($("#velo2rtk-x").text()),
     y: Number($("#velo2rtk-y").text()),
@@ -261,7 +250,7 @@ function getVelo2Rtk() {
   return velo2rtk;
 }
 
-function disablePanels(reason) {
+export function disablePanels(reason) {
   console.error("Calibration Panels DISABLED - ", reason);
 
   $("#calibration-overlay-velo2rtk :input").attr("disabled", true);
@@ -271,7 +260,7 @@ function disablePanels(reason) {
   $('.disable-calibration-panel-reason').each((i, obj) => obj.innerHTML = reason || "");
 }
 
-function enablePanels() {
+export function enablePanels() {
   console.log("Calibration Panels ENABLED");
   $("#calibration-overlay-velo2rtk :input").attr("disabled", false);
   $("#calibration-overlay-rtk2vehicle :input").attr("disabled", false);
@@ -299,9 +288,26 @@ function downloadCals() {
   const pitch =  $("#velo2rtk-pitch").text()
   const yaw =  $("#velo2rtk-yaw").text()
 
-  const version = window.usingAdjustedHeading ? '2.0' : '1.0';
+  const version = Number(window.extrinsics.velo2Rtk.old.version).toFixed(1);
 
-  const text = `${x}, ${y}, ${z}\n${roll}, ${pitch}, ${yaw}\nversion: ${version}`;
+  const velo2Rtk = getVelo2Rtk();
+  const txMat = getTxMat(velo2Rtk, window.calibrationSettings.correctionsIsPassiveTransform);
+  const transformString = txMat.elements.join(", ");
+
+  let description="";
+  if (version <= 2.0) {
+    description += "\n\tLine 1: X, Y, Z in meters - representing the position of the RT origin from the Velodyne’s reference frame.";
+    description += "\n\tLine 2: Roll, Pitch, Yaw in radians - representing the relative rotation needed to transform the Velodyne Coordinate Frame to the RT Coordinate Frame. The rotation can be constructed from these euler angles using the ZYX intrinsic convention."
+    description += "\n\tLine 3: Version 2.0 - The calibration parameters in this file represent the full Velodyne to ISO 8855 Vehicle Frame transform (and using the adjusted UTM heading). In version 2.0, these parameters define an active transformation.";
+    description += "\n\tLine 4: Transform matrix generated from parameters as specified in lines 1-3 in column-major order."; 
+  } else if (version > 2.0) {
+    description += "\n\tLine 1: X, Y, Z in meters - representing the position of the RT origin from the Velodyne’s reference frame.";
+    description += "\n\tLine 2: Roll, Pitch, Yaw in radians - representing the relative rotation needed to transform the Velodyne Coordinate Frame to the RT Coordinate Frame. The rotation can be constructed from these euler angles using the ZYX intrinsic convention.";
+    description += "\n\tLine 3: Version 3.0 - The calibration parameters in this file represent the correction needed on top of the nominal SLED extrinsics (physically this correction represents the difference the physical hardware mounting and the SLED CAD model). In version 3.0, these parameters define a passive transformation.";
+    description += "\n\tLine 4: Transform matrix generated from parameters as specified in lines 1-3 in column-major order."; 
+  }
+
+  const text = `${x}, ${y}, ${z}\n${roll}, ${pitch}, ${yaw}\nVersion: ${version}\nTransform Matrix (column-major): ${transformString}\nDescription: ${description}`;
 
   const date = new Date();
   const year = `${date.getYear() + 1900}`.padStart(4, '0')
@@ -311,7 +317,7 @@ function downloadCals() {
 }
 
 
-function storeRtk2Vehicle(rtk2vehicle) {
+export function storeRtk2Vehicle(rtk2vehicle) {
   try {
     $("#rtk2vehicle-setpoint-x").val(rtk2vehicle.x);
     $("#rtk2vehicle-x").text(rtk2vehicle.x.toFixed(4));
@@ -338,7 +344,7 @@ function storeRtk2Vehicle(rtk2vehicle) {
   }
 }
 
-function storeVelo2Rtk(velo2rtk) {
+export function storeVelo2Rtk(velo2rtk) {
   try {
     $("#velo2rtk-setpoint-x").val(velo2rtk.x);
     $("#velo2rtk-x").text(velo2rtk.x.toFixed(4));

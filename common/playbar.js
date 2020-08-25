@@ -124,7 +124,7 @@ export function createPlaybar () {
         } else {
           panel.style.display = "none";
         }
-      }     
+      }
     }
   });
 
@@ -452,7 +452,7 @@ function callUpdateLanesLambdaFunction (bucket, name, lane) {
   };
   const lambda = getLambda();
   lambda.invoke({
-    FunctionName: 'UpdateLanes:5',
+    FunctionName: 'UpdateLanes:7',
     LogType: 'None',
     Payload: JSON.stringify(payload)
   }, function (err, data) {

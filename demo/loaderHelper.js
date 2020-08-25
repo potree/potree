@@ -77,7 +77,7 @@ function finishLoading({pointcloud}) {
   } else {
   	if (!cloudCanUseCalibrationPanels) {
     	window.disableReason = "Pointcloud was not serialized with the necessary point attributes"
-    } 
+    }
   	disablePanels(window.disableReason);
   }
 }
@@ -193,9 +193,9 @@ async function loadDataIntoDocument(filesTable) {
 		// Load Tracks:
 		try {
 			// TODO shaderMaterial
-			let shaderMaterial = getShaderMaterial();
-			let trackShaderMaterial = shaderMaterial.clone();
-			loadTracksCallback(s3, bucket, name, trackShaderMaterial, animationEngine);
+			const shaderMaterial = getShaderMaterial();
+			const trackShaderMaterial = shaderMaterial.clone();
+			loadTracksCallback(s3, bucket, name, trackShaderMaterial, animationEngine, filesTable['2_Truth']);
 		} catch (e) {
 			console.error("Could not load Tracks: ", e);
 		}

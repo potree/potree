@@ -2,7 +2,7 @@
 // import { Flatbuffer } from "../schemas/GroundTruth_generated.js";
 // import { Flatbuffer } from "http://localhost:1234/schemas/GroundTruth_generated.js";
 import { updateLoadingBar, incrementLoadingBarTotal } from "../common/overlay.js";
-import { getFbFileInfo } from "./loaderUtilities.js";
+import { getFbFileInfo, removeFileExtension } from "./loaderUtilities.js";
 
 
 // sets local variable and returns so # files can be counted
@@ -330,7 +330,9 @@ export async function loadTracksCallback(s3, bucket, name, trackShaderMaterial, 
       } else if (file === 'tracks.fb') {
         loadTracksCallbackHelper(s3, bucket, name, trackShaderMaterial, animationEngine, file, 'Tracked Objects');
       } else {
-        loadTracksCallbackHelper(s3, bucket, name, trackShaderMaterial, animationEngine, file, getTrackDisplayName(file));
+        const newTrackShaderMaterial = trackShaderMaterial.clone();
+        newTrackShaderMaterial.uniforms.color.value = new THREE.Color(0xdf00fe);
+        loadTracksCallbackHelper(s3, bucket, name, newTrackShaderMaterial, animationEngine, file, removeFileExtension(file));
       }
     }
   } else {
@@ -361,7 +363,3 @@ async function loadTracksCallbackHelper (s3, bucket, name, trackShaderMaterial, 
 		});
 	});
 }  // end of loadTracksCallback
-
-function getTrackDisplayName (filename) {
-  return filename.split('.').slice(0, -1).join('.');
-}

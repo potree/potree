@@ -229,3 +229,7 @@ export async function getS3Files (s3, bucket, name) {
   }
   return [filePaths, table];
 }
+
+export function removeFileExtension (filename) {
+  return filename.split('.').slice(0, -1).join('.');
+}

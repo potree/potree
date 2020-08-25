@@ -16,11 +16,15 @@ export const trackDownloads = async (datasetFiles) => {
   return trackFiles;
 }
 
-export async function loadTracks(s3, bucket, name, shaderMaterial, animationEngine, callback) {
+export async function loadTracks(s3, bucket, name, trackFileName, shaderMaterial, animationEngine, callback) {
   const tstart = performance.now();
   if (!trackFiles) {
     console.log("No track files present")
     return
+  }
+
+  if (trackFileName) {
+    trackFiles.objectName = `${name}/2_Truth/${trackFileName}`;
   }
 
   if (s3 && bucket && name) {
@@ -316,18 +320,34 @@ async function createTrackGeometries(shaderMaterial, tracks, animationEngine) {
   return output;
 }
 
-export async function loadTracksCallback(s3, bucket, name, trackShaderMaterial, animationEngine) {
+export async function loadTracksCallback(s3, bucket, name, trackShaderMaterial, animationEngine, files) {
 
+  if (files) {
+    for (let file of files) {
+      file = file.split(/.*[\/|\\]/)[1];
+      if (!file.endsWith('tracks.fb')) {
+        continue;
+      } else if (file === 'tracks.fb') {
+        loadTracksCallbackHelper(s3, bucket, name, trackShaderMaterial, animationEngine, file, 'Tracked Objects');
+      } else {
+        loadTracksCallbackHelper(s3, bucket, name, trackShaderMaterial, animationEngine, file, getTrackDisplayName(file));
+      }
+    }
+  } else {
+    loadTracksCallbackHelper(s3, bucket, name, trackShaderMaterial, animationEngine, 'tracks.fb', 'Tracked Objects');
+  }
+}
+
+async function loadTracksCallbackHelper (s3, bucket, name, trackShaderMaterial, animationEngine, trackFileName, trackName) {
 	await loadTracks(s3, bucket, name, trackShaderMaterial, animationEngine, (trackGeometries) => {
-		let trackLayer = new THREE.Group();
-		trackLayer.name = "Tracked Objects";
+		const trackLayer = new THREE.Group();
+		trackLayer.name = trackName;
 		for (let ii = 0, len = trackGeometries.bbox.length; ii < len; ii++) {
 			trackLayer.add(trackGeometries.bbox[ii]);
 			// viewer.scene.scene.add(trackGeometries.bbox[ii]); // Original
 		}
-
 		viewer.scene.scene.add(trackLayer);
-		let e = new CustomEvent("truth_layer_added", { detail: trackLayer, writable: true });
+		const e = new CustomEvent("truth_layer_added", { detail: trackLayer, writable: true });
 		viewer.scene.dispatchEvent({
 			"type": "truth_layer_added",
 			"truthLayer": trackLayer
@@ -335,9 +355,13 @@ export async function loadTracksCallback(s3, bucket, name, trackShaderMaterial, 
 
 		// TODO check if group works as expected, then trigger "truth_layer_added" event
 		animationEngine.tweenTargets.push((gpsTime) => {
-			let currentTime = gpsTime - animationEngine.tstart;
+			const currentTime = gpsTime - animationEngine.tstart;
 			trackShaderMaterial.uniforms.minGpsTime.value = currentTime + animationEngine.activeWindow.backward;
 			trackShaderMaterial.uniforms.maxGpsTime.value = currentTime + animationEngine.activeWindow.forward;
 		});
 	});
 }  // end of loadTracksCallback
+
+function getTrackDisplayName (filename) {
+  return filename.split('.').slice(0, -1).join('.');
+}

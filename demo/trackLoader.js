@@ -26,7 +26,8 @@ export async function loadTracks(s3, bucket, name, trackFileName, shaderMaterial
   if (trackFileName) {
     trackFiles.objectName = `${name}/2_Truth/${trackFileName}`;
   }
-
+  console.log("tracks", trackFileName);
+  console.log("tracks load", trackFiles.objectName);
   if (s3 && bucket && name) {
     (async () => {
       const schemaUrl = s3.getSignedUrl('getObject', {
@@ -321,7 +322,6 @@ async function createTrackGeometries(shaderMaterial, tracks, animationEngine) {
 }
 
 export async function loadTracksCallback(s3, bucket, name, trackShaderMaterial, animationEngine, files) {
-
   if (files) {
     for (let file of files) {
       file = file.split(/.*[\/|\\]/)[1];
@@ -339,7 +339,7 @@ export async function loadTracksCallback(s3, bucket, name, trackShaderMaterial, 
 }
 
 async function loadTracksCallbackHelper (s3, bucket, name, trackShaderMaterial, animationEngine, trackFileName, trackName) {
-	await loadTracks(s3, bucket, name, trackShaderMaterial, animationEngine, (trackGeometries) => {
+	await loadTracks(s3, bucket, name, trackFileName, trackShaderMaterial, animationEngine, (trackGeometries) => {
 		const trackLayer = new THREE.Group();
 		trackLayer.name = trackName;
 		for (let ii = 0, len = trackGeometries.bbox.length; ii < len; ii++) {

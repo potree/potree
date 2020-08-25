@@ -7,18 +7,21 @@
   <meta name="description" content="CAD Extension for Zea Engine.">
   <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
   <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/docsify/lib/themes/vue.css">
-	<link rel="icon" type="image/png" sizes="16x16" href="/_media/favicon-16x16.png">
-  <link rel="icon" type="image/png" sizes="32x32" href="/_media/favicon-32x32.png">
+	<link rel="icon" type="image/png" sizes="16x16" href="_media/favicon-16x16.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="_media/favicon-32x32.png">
 
   <style>
     .cover-main {
       color: #E0E0E0;
     }
 
+    .download-section {
+      display: flex;
+    }
+
     .download-btn {
-      color: #222323;
-      position: relative;
       cursor: pointer;
+      margin-left: auto;
     }
 
     section.cover .cover-main>p:last-child a:last-child {
@@ -123,5 +126,9 @@
         console.log('Fetch Error :-S', err);
       });
   </script>
+
+  <script src="https://unpkg.com/jszip@3.1.5/dist/jszip.min.js"></script>
+  <script src="https://unpkg.com/file-saver@2.0.0-rc.2/dist/FileSaver.min.js"></script>
+  <script src="downloadTutorial.js"></script>
 </body>
 </html>

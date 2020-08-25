@@ -295,6 +295,7 @@ function createClonedBoxes (volumes) {
       clonedBoxes.push(clonedBbox);
     }
   }
+  return clonedBoxes;
 }
 
 // Adds anomaly annotations

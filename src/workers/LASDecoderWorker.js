@@ -15,11 +15,6 @@ function readUsingTempArrays(event) {
 	let tempUint16 = new Uint16Array(temp);
 	let tempInt32 = new Int32Array(temp);
 	let sourceUint8 = new Uint8Array(buffer);
-	let sourceView = new DataView(buffer);
-
-	let targetPointSize = 20;
-	let targetBuffer = new ArrayBuffer(numPoints * targetPointSize);
-	let targetView = new DataView(targetBuffer);
 
 	let tightBoundingBox = {
 		min: [ Number.POSITIVE_INFINITY, Number.POSITIVE_INFINITY, Number.POSITIVE_INFINITY ],
@@ -190,12 +185,7 @@ function readUsingDataView(event) {
 	let scale = event.data.scale;
 	let offset = event.data.offset;
 
-	let sourceUint8 = new Uint8Array(buffer);
 	let sourceView = new DataView(buffer);
-
-	let targetPointSize = 40;
-	let targetBuffer = new ArrayBuffer(numPoints * targetPointSize);
-	let targetView = new DataView(targetBuffer);
 
 	let tightBoundingBox = {
 		min: [Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE],

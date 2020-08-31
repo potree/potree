@@ -127,7 +127,7 @@ async function createLaneGeometries (lanes, supplierNum, annotationMode, volumes
         if (volumes.length === 0) {
           laneLeft.addMarker(new THREE.Vector3(left.x(), left.y(), left.z()));
         } else {
-          isContains = leftLaneSegments.updateSegments(clonedBoxes, isContains, left, lane.leftPointValidity(jj), jj, numVertices);
+          isContains = leftLaneSegments.updateSegments(clonedBoxes, isContains, left, lane.leftPointValidity(jj), lane.leftPointAnnotationStatus(jj), jj, numVertices);
         }
       } else {
         geometryLeft.vertices.push(new THREE.Vector3(left.x(), left.y(), left.z()));
@@ -146,7 +146,7 @@ async function createLaneGeometries (lanes, supplierNum, annotationMode, volumes
         if (volumes.length === 0) {
           laneRight.addMarker(new THREE.Vector3(right.x(), right.y(), right.z()));
         } else {
-          isContains = rightLaneSegments.updateSegments(clonedBoxes, isContains, right, lane.rightPointValidity(jj), jj, numVertices);
+          isContains = rightLaneSegments.updateSegments(clonedBoxes, isContains, right, lane.rightPointValidity(jj), lane.rightPointAnnotationStatus(jj), jj, numVertices);
         }
       } else {
         geometryRight.vertices.push(new THREE.Vector3(right.x(), right.y(), right.z()));

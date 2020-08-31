@@ -155,19 +155,22 @@ export function createPlaybar () {
         const laneLeft = window.viewer.scene.scene.getChildByName("Lane Left");
         download(JSON.stringify(laneLeft.points, null, 2), "lane-left.json");
       } else {
-        download(JSON.stringify(laneLeftSegments.getFinalPoints(), null, 2), "lane-left.json");
+        const polyline = laneLeftSegments.getFinalPoints();
+        download(JSON.stringify(polyline.points, null, 2), "lane-left.json");
+        download(JSON.stringify(polyline.pointValidities, null, 2), "lane-left-validities.json");
+        download(JSON.stringify(polyline.pointAnnotations, null, 2), "lane-left-annotations.json");
       }
     } catch (e) {
       console.error("Couldn't download left lane vertices: ", e);
     }
 
     // Download Lane Spine Vertices:
-    try {
-      const laneSpine = window.viewer.scene.scene.getChildByName("Lane Spine");
-      download(JSON.stringify(laneSpine.points, null, 2), "lane-spine.json", "text/plain");
-    } catch (e) {
-      console.error("Couldn't download lane spine vertices: ", e);
-    }
+    // try {
+    //   const laneSpine = window.viewer.scene.scene.getChildByName("Lane Spine");
+    //   download(JSON.stringify(laneSpine.points, null, 2), "lane-spine.json", "text/plain");
+    // } catch (e) {
+    //   console.error("Couldn't download lane spine vertices: ", e);
+    // }
 
     // Download Right Lane Vertices:
     try {
@@ -176,7 +179,10 @@ export function createPlaybar () {
         const laneRight = window.viewer.scene.scene.getChildByName("Lane Right");
         download(JSON.stringify(laneRight.points, null, 2), "lane-right.json", "text/plain");
       } else {
-        download(JSON.stringify(laneRightSegments.getFinalPoints(), null, 2), "lane-right.json", "text/plain");
+        const polyline = laneRightSegments.getFinalPoints();
+        download(JSON.stringify(polyline.points, null, 2), "lane-right.json");
+        download(JSON.stringify(polyline.pointValidities, null, 2), "lane-right-validities.json");
+        download(JSON.stringify(polyline.pointAnnotations, null, 2), "lane-right-annotations.json");
       }
     } catch (e) {
       console.error("Couldn't download right lane vertices: ", e);
@@ -423,8 +429,8 @@ function saveLaneChanges () {
     lane.left = laneLeft.points;
   } else {
     const leftPointsAndValidities = laneLeftSegments.getFinalPoints();
-    lane.left = leftPointsAndValidities.finalPoints;
-    lane.leftPointValidity = leftPointsAndValidities.finalPointValidities;
+    lane.left = leftPointsAndValidities.points;
+    lane.leftPointValidity = leftPointsAndValidities.pointValidities;
   }
 
   // Right Lane Vertices:
@@ -434,8 +440,8 @@ function saveLaneChanges () {
     lane.right = laneRight.points;
   } else {
     const rightPointsAndValidities = laneRightSegments.getFinalPoints();
-    lane.right = rightPointsAndValidities.finalPoints;
-    lane.rightPointValidity = rightPointsAndValidities.finalPointValidities;
+    lane.right = rightPointsAndValidities.points;
+    lane.rightPointValidity = rightPointsAndValidities.pointValidities;
   }
   callUpdateLanesLambdaFunction(bucket, name, lane);
 }

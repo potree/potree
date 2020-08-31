@@ -50,22 +50,28 @@ def create_vector(builder, nparray, flag):
         return vec3VectorBuilderHelper(builder, numVals, nparray)
     elif flag == 'create_left_point_validities':
         Lane.LaneStartLeftPointValidityVector(builder, numVals)
-        return enumVectorBuilderHelper(builder, numVals)
+        return enumByte2VectorBuilderHelper(builder, numVals)
     elif flag == 'create_right_point_validities':
         Lane.LaneStartRightPointValidityVector(builder, numVals)
-        return enumVectorBuilderHelper(builder, numVals)
+        return enumByte2VectorBuilderHelper(builder, numVals)
     elif flag == 'left_point_validities':
         Lane.LaneStartLeftPointValidityVector(builder, numVals)
-        return pointValidityBuilderHelper(builder, numVals, nparray)
+        return enumVector2VectorBuilderHelper(builder, numVals, nparray)
     elif flag == 'right_point_validities':
         Lane.LaneStartRightPointValidityVector(builder, numVals)
-        return pointValidityBuilderHelper(builder, numVals, nparray)
-    elif flag == 'left_point_annotation_statuses':
+        return enumVector2VectorBuilderHelper(builder, numVals, nparray)
+    elif flag == 'create_left_point_annotation_statuses':
         Lane.LaneStartLeftPointAnnotationStatusVector(builder, numVals)
-        return enumVectorBuilderHelper(builder, numVals, byte=1)
-    elif flag == 'right_point_annotation_statuses':
+        return enumByte2VectorBuilderHelper(builder, numVals, byte=1)
+    elif flag == 'create_right_point_annotation_statuses':
         Lane.LaneStartRightPointAnnotationStatusVector(builder, numVals)
-        return enumVectorBuilderHelper(builder, numVals, byte=1)
+        return enumByte2VectorBuilderHelper(builder, numVals, byte=1)
+    elif flag == 'left_point_annotations':
+        Lane.LaneStartLeftPointAnnotationStatusVector(builder, numVals)
+        return enumVector2VectorBuilderHelper(builder, numVals, nparray)
+    elif flag == 'right_point_annotations':
+        Lane.LaneStartRightPointAnnotationStatusVector(builder, numVals)
+        return enumVector2VectorBuilderHelper(builder, numVals, nparray)
 
 def vec3VectorBuilderHelper(builder, numVals, nparray):
     for i in range(numVals)[::-1]:
@@ -73,20 +79,20 @@ def vec3VectorBuilderHelper(builder, numVals, nparray):
     vals = builder.EndVector(numVals)
     return vals
 
-def enumVectorBuilderHelper(builder, numVals, byte=0):
+def enumByte2VectorBuilderHelper(builder, numVals, byte=0):
     for i in range(numVals)[::-1]:
         builder.PrependByte(byte)
     vals = builder.EndVector(numVals)
     return vals
 
-def pointValidityBuilderHelper(builder, numVals, nparray):
+def enumVector2VectorBuilderHelper(builder, numVals, nparray):
     for i in range(numVals)[::-1]:
         builder.PrependByte(nparray[i])
     vals = builder.EndVector(numVals)
     return vals
 
 
-def outputFlatbuffer(laneSegments, leftPointValidity, rightPointValidity):
+def outputFlatbuffer(laneSegments, outputFile, leftPointValidity, rightPointValidity, leftPointAnnotationStatus, rightPointAnnotationStatus):
     createNew = True
     temp_lanes = []
 
@@ -100,13 +106,26 @@ def outputFlatbuffer(laneSegments, leftPointValidity, rightPointValidity):
         lefts = create_vector(builder, laneSegment['left'], 'left')
         rights = create_vector(builder, laneSegment['right'], 'right')
         spines = create_vector(builder, laneSegment['spine'], 'spine')
-        left_point_annotation_statuses = create_vector(builder, laneSegment['left'], 'left_point_annotation_statuses')
-        right_point_annotation_statuses = create_vector(builder, laneSegment['right'], 'right_point_annotation_statuses')
 
+        # left point annotation status
+        if len(leftPointAnnotationStatus) == 0:
+            left_point_annotation_statuses = create_vector(builder, laneSegment['left'], 'create_left_point_annotation_statuses')
+        else:
+            left_point_annotation_statuses = create_vector(builder, np.array(leftPointAnnotationStatus), 'left_point_annotations')
+
+        # right point annotation status
+        if len(rightPointAnnotationStatus) == 0:
+            right_point_annotation_statuses = create_vector(builder, laneSegment['right'], 'create_right_point_annotation_statuses')
+        else:
+            right_point_annotation_statuses = create_vector(builder, np.array(rightPointAnnotationStatus), 'right_point_annotations')
+
+        # left point validity
         if len(leftPointValidity) == 0:
             left_point_validities = create_vector(builder, laneSegment['left'], 'create_left_point_validities')
         else:
             left_point_validities = create_vector(builder, np.array(leftPointValidity), 'left_point_validities')
+
+        # right point validity
         if len(rightPointValidity) == 0:
             right_point_validities = create_vector(builder, laneSegment['right'], 'create_right_point_validities')
         else:
@@ -141,23 +160,6 @@ def outputFlatbuffer(laneSegments, leftPointValidity, rightPointValidity):
 
         write_buffer(builder, outputFile, createNew)
         createNew = False
-
-
-def create_vector(builder, nparray, flag):
-    numVals = nparray.shape[0]
-
-    if flag == 'left':
-        Lane.LaneStartLeftVector(builder, numVals)
-    elif flag == 'right':
-        Lane.LaneStartRightVector(builder, numVals)
-    else:
-        Lane.LaneStartSpineVector(builder, numVals)
-
-    for i in range(numVals)[::-1]:
-        val = Vec3.CreateVec3(builder, nparray[i, 0], nparray[i, 1], nparray[i, 2])
-    vals = builder.EndVector(numVals)
-
-    return vals
 
 def getXYZ(data):
     x = data['position']['x']
@@ -476,7 +478,12 @@ def check_lane_spine(laneSegments):
     plt.show()
 
 
-
+def getDataFromJson(inputFile):
+    data = []
+    raw_data = json.loads(open(inputFile, 'r').read())
+    for i in range(len(raw_data)):
+        data.append(raw_data[i])
+    return data
 
 if __name__ == "__main__":
 
@@ -503,7 +510,13 @@ if __name__ == "__main__":
     outputFile = os.path.join(outputDir, "lanes.fb")
 
     laneSegments = getLinesFromJson(inputFileLeft, inputFileRight, args.upsample, args.verbose)
-    outputFlatbuffer(laneSegments, outputFile, inputFileLeftValidities, inputFileRightValidities, inputFileLeftAnnotations, inputFileRightAnnotations)
+
+    left_validities = getDataFromJson(inputFileLeftValidities)
+    left_annotations = getDataFromJson(inputFileLeftAnnotations)
+    right_validities = getDataFromJson(inputFileRightValidities)
+    right_annotations = getDataFromJson(inputFileRightAnnotations)
+
+    outputFlatbuffer(laneSegments, outputFile, left_validities, right_validities, left_annotations, right_annotations)
 
     if (args.checkSpine):
         check_lane_spine(laneSegments)

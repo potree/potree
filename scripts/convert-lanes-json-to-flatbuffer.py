@@ -35,6 +35,114 @@ def write_buffer(builder, filename, createNew):
     file.write(size)
     file.write(output_data)
 
+
+def create_vector(builder, nparray, flag):
+    numVals = nparray.shape[0]
+
+    if flag == 'left':
+        Lane.LaneStartLeftVector(builder, numVals)
+        return vec3VectorBuilderHelper(builder, numVals, nparray)
+    elif flag == 'right':
+        Lane.LaneStartRightVector(builder, numVals)
+        return vec3VectorBuilderHelper(builder, numVals, nparray)
+    elif flag == 'spine':
+        Lane.LaneStartSpineVector(builder, numVals)
+        return vec3VectorBuilderHelper(builder, numVals, nparray)
+    elif flag == 'create_left_point_validities':
+        Lane.LaneStartLeftPointValidityVector(builder, numVals)
+        return enumVectorBuilderHelper(builder, numVals)
+    elif flag == 'create_right_point_validities':
+        Lane.LaneStartRightPointValidityVector(builder, numVals)
+        return enumVectorBuilderHelper(builder, numVals)
+    elif flag == 'left_point_validities':
+        Lane.LaneStartLeftPointValidityVector(builder, numVals)
+        return pointValidityBuilderHelper(builder, numVals, nparray)
+    elif flag == 'right_point_validities':
+        Lane.LaneStartRightPointValidityVector(builder, numVals)
+        return pointValidityBuilderHelper(builder, numVals, nparray)
+    elif flag == 'left_point_annotation_statuses':
+        Lane.LaneStartLeftPointAnnotationStatusVector(builder, numVals)
+        return enumVectorBuilderHelper(builder, numVals, byte=1)
+    elif flag == 'right_point_annotation_statuses':
+        Lane.LaneStartRightPointAnnotationStatusVector(builder, numVals)
+        return enumVectorBuilderHelper(builder, numVals, byte=1)
+
+def vec3VectorBuilderHelper(builder, numVals, nparray):
+    for i in range(numVals)[::-1]:
+        val = Vec3.CreateVec3(builder, nparray[i, 0], nparray[i, 1], nparray[i, 2])
+    vals = builder.EndVector(numVals)
+    return vals
+
+def enumVectorBuilderHelper(builder, numVals, byte=0):
+    for i in range(numVals)[::-1]:
+        builder.PrependByte(byte)
+    vals = builder.EndVector(numVals)
+    return vals
+
+def pointValidityBuilderHelper(builder, numVals, nparray):
+    for i in range(numVals)[::-1]:
+        builder.PrependByte(nparray[i])
+    vals = builder.EndVector(numVals)
+    return vals
+
+
+def outputFlatbuffer(laneSegments, leftPointValidity, rightPointValidity):
+    createNew = True
+    temp_lanes = []
+
+    i = 0
+    for laneSegment in laneSegments:
+        print(i)
+        i += 1
+
+        builder = flatbuffers.Builder(1024)
+
+        lefts = create_vector(builder, laneSegment['left'], 'left')
+        rights = create_vector(builder, laneSegment['right'], 'right')
+        spines = create_vector(builder, laneSegment['spine'], 'spine')
+        left_point_annotation_statuses = create_vector(builder, laneSegment['left'], 'left_point_annotation_statuses')
+        right_point_annotation_statuses = create_vector(builder, laneSegment['right'], 'right_point_annotation_statuses')
+
+        if len(leftPointValidity) == 0:
+            left_point_validities = create_vector(builder, laneSegment['left'], 'create_left_point_validities')
+        else:
+            left_point_validities = create_vector(builder, np.array(leftPointValidity), 'left_point_validities')
+        if len(rightPointValidity) == 0:
+            right_point_validities = create_vector(builder, laneSegment['right'], 'create_right_point_validities')
+        else:
+            right_point_validities = create_vector(builder, np.array(rightPointValidity), 'right_point_validities')
+
+        # Start Lane:
+        Lane.LaneStart(builder)
+
+        # Set ID:
+        Lane.LaneAddId(builder, 0)
+
+        # Add Lefts:
+        Lane.LaneAddLeft(builder, lefts)
+
+        # Add Rights:
+        Lane.LaneAddRight(builder, rights)
+
+        # Add Spine:
+        Lane.LaneAddSpine(builder, spines)
+
+        # Add PointValidity
+        Lane.LaneAddLeftPointValidity(builder, left_point_validities)
+        Lane.LaneAddRightPointValidity(builder, right_point_validities)
+
+        # Add PointAnnotationStatus
+        Lane.LaneAddLeftPointAnnotationStatus(builder, left_point_annotation_statuses)
+        Lane.LaneAddRightPointAnnotationStatus(builder, right_point_annotation_statuses)
+
+        lane = Lane.LaneEnd(builder)
+        builder.Finish(lane)
+        temp_lanes.append(lane)
+
+        write_buffer(builder, outputFile, createNew)
+        createNew = False
+
+
 def create_vector(builder, nparray, flag):
     numVals = nparray.shape[0]
 
@@ -145,7 +253,7 @@ def getLinesFromJson(inputFileLeft, inputFileRight, upsampleValue, verbose):
                 filterer = dists_nn <= laneChangeNNRange
                 dists_nn = dists_nn[filterer]
                 idxs_nn = idxs_nn[filterer]
-                
+
                 if len(idxs_nn) == 0:
                     continue
 
@@ -287,44 +395,6 @@ def plotLines(laneSegments, verbose):
     plt.show()
     plt.savefig('lanes.pdf')
 
-
-def outputFlatbuffer(laneSegments, outputFile):
-    createNew = True
-    temp_lanes = []
-
-    i = 0
-    for laneSegment in laneSegments:
-        print(i)
-        i += 1
-
-        builder = flatbuffers.Builder(1024)
-
-        lefts = create_vector(builder, laneSegment['left'], 'left')
-        rights = create_vector(builder, laneSegment['right'], 'right')
-        spines = create_vector(builder, laneSegment['spine'], 'spine')
-
-        # Start Lane:
-        Lane.LaneStart(builder)
-
-        # Set ID:
-        Lane.LaneAddId(builder, 0)
-
-        # Add Lefts:
-        Lane.LaneAddLeft(builder, lefts)
-
-        # Add Rights:
-        Lane.LaneAddRight(builder, rights)
-
-        # Add Spine:
-        Lane.LaneAddSpine(builder, spines)
-
-        lane = Lane.LaneEnd(builder)
-        builder.Finish(lane)
-        temp_lanes.append(lane)
-
-        write_buffer(builder, outputFile, createNew)
-        createNew = False
-
 def multipoint_index(multipoint, point):
     for i in range(len(multipoint)):
         if (point.x == multipoint[i].x and point.y == multipoint[i].y):
@@ -426,10 +496,14 @@ if __name__ == "__main__":
 
     inputFileLeft = os.path.join(inputDir, "lane-left.json")
     inputFileRight = os.path.join(inputDir, "lane-right.json")
+    inputFileLeftValidities = os.path.join(inputDir, "lane-left-validities.json")
+    inputFileRightValidities = os.path.join(inputDir, "lane-right-validities.json")
+    inputFileLeftAnnotations = os.path.join(inputDir, "lane-left-annotations.json")
+    inputFileRightAnnotations = os.path.join(inputDir, "lane-right-annotations.json")
     outputFile = os.path.join(outputDir, "lanes.fb")
 
     laneSegments = getLinesFromJson(inputFileLeft, inputFileRight, args.upsample, args.verbose)
-    outputFlatbuffer(laneSegments, outputFile)
+    outputFlatbuffer(laneSegments, outputFile, inputFileLeftValidities, inputFileRightValidities, inputFileLeftAnnotations, inputFileRightAnnotations)
 
     if (args.checkSpine):
         check_lane_spine(laneSegments)

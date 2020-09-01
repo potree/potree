@@ -24,7 +24,14 @@ async function loadControlPointsCallbackHelper (s3, bucket, name, animationEngin
   await loadControlPoints(s3, bucket, name, controlPointShaderMaterial, animationEngine, (sphereMeshes) => {
     const controlPointLayer = new THREE.Group();
     controlPointLayer.name = getControlPointName(controlPointType);
-    sphereMeshes.forEach(mesh => controlPointLayer.add(mesh));
+    sphereMeshes.length > 0 && controlPointLayer.add(sphereMeshes[0]);
+
+    const sphereMeshPositions = sphereMeshes.map(mesh => ({
+      minGpsTime: Math.min(...mesh.geometry.attributes.gpsTime.array),
+      maxGpsTime: Math.max(...mesh.geometry.attributes.gpsTime.array),
+      gpsTimeArray: mesh.geometry.attributes.gpsTime,
+      position: mesh.position
+    }));
 
     viewer.scene.scene.add(controlPointLayer);
     const e = new CustomEvent('truth_layer_added', {detail: controlPointLayer, writable: true});
@@ -37,6 +44,15 @@ async function loadControlPointsCallbackHelper (s3, bucket, name, animationEngin
       const currentTime = gpsTime - animationEngine.tstart;
       controlPointShaderMaterial.uniforms.minGpsTime.value = currentTime + animationEngine.activeWindow.backward;
       controlPointShaderMaterial.uniforms.maxGpsTime.value = currentTime + animationEngine.activeWindow.forward;
+
+      const currentMesh = sphereMeshPositions.find(({minGpsTime, maxGpsTime}) => currentTime >= minGpsTime + animationEngine.activeWindow.backward && currentTime <= maxGpsTime + animationEngine.activeWindow.forward);
+
+      if (currentMesh) {
+        viewer.scene.scene.remove(controlPointLayer)
+        controlPointLayer.getObjectByName("ControlPoint").position.set(currentMesh.position.x, currentMesh.position.y, currentMesh.position.z);
+        controlPointLayer.getObjectByName("ControlPoint").geometry.attributes.gpsTime = currentMesh.gpsTimeArray;
+        viewer.scene.scene.add(controlPointLayer)
+      }
     });
   }, controlPointType);
 }
@@ -156,6 +172,7 @@ async function createControlMeshes (controlPoints, controlPointShaderMaterial, F
 
     controlPointShaderMaterial.uniforms.color.value = getControlPointColor(controlPointType);
     const sphereMesh = new THREE.Mesh(sphereGeo, controlPointShaderMaterial);
+    sphereMesh.name = "ControlPoint"
     sphereMesh.position.set(vertex.x, vertex.y, vertex.z);
     sphereMesh.geometry.addAttribute('gpsTime', new THREE.Float32BufferAttribute(timestampArray, 1));
     allSpheres.push(sphereMesh);

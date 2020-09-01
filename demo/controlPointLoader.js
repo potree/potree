@@ -48,10 +48,8 @@ async function loadControlPointsCallbackHelper (s3, bucket, name, animationEngin
       const currentMesh = sphereMeshPositions.find(({minGpsTime, maxGpsTime}) => currentTime >= minGpsTime + animationEngine.activeWindow.backward && currentTime <= maxGpsTime + animationEngine.activeWindow.forward);
 
       if (currentMesh) {
-        viewer.scene.scene.remove(controlPointLayer)
         controlPointLayer.getObjectByName("ControlPoint").position.set(currentMesh.position.x, currentMesh.position.y, currentMesh.position.z);
         controlPointLayer.getObjectByName("ControlPoint").geometry.attributes.gpsTime = currentMesh.gpsTimeArray;
-        viewer.scene.scene.add(controlPointLayer)
       }
     });
   }, controlPointType);

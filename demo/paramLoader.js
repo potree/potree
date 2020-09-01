@@ -64,6 +64,15 @@ export function getLambda () {
   });
 }
 
+export function getAWSCredentials () {
+  return {
+    region: region,
+    accessKeyId: accessKeyId,
+    secretAccessKey: secretAccessKey,
+    sessionToken: sessionToken
+  };
+}
+
 if (!(s3 || window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) {
     window.history.back()
 };

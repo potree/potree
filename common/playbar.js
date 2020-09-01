@@ -1,6 +1,6 @@
 'use strict';
 
-import { bucket, name, getLambda, region } from "../demo/paramLoader.js";
+import { bucket, name, getLambda, getAWSCredentials } from "../demo/paramLoader.js";
 import { resetProgressBars, incrementLoadingBarTotal } from "../common/overlay.js";
 
 const numberOrZero = (string) => {
@@ -428,9 +428,10 @@ function saveLaneChanges () {
     const laneLeft = window.viewer.scene.scene.getChildByName("Lane Left");
     lane.left = laneLeft.points;
   } else {
-    const leftPointsAndValidities = laneLeftSegments.getFinalPoints();
-    lane.left = leftPointsAndValidities.points;
-    lane.leftPointValidity = leftPointsAndValidities.pointValidities;
+    const polyline = laneLeftSegments.getFinalPoints();
+    lane.left = polyline.points;
+    lane.leftPointValidity = polyline.pointValidities;
+    lane.leftPointAnnotationStatus = polyline.pointAnnotations;
   }
 
   // Right Lane Vertices:
@@ -439,22 +440,29 @@ function saveLaneChanges () {
     const laneRight = window.viewer.scene.scene.getChildByName("Lane Right");
     lane.right = laneRight.points;
   } else {
-    const rightPointsAndValidities = laneRightSegments.getFinalPoints();
-    lane.right = rightPointsAndValidities.points;
-    lane.rightPointValidity = rightPointsAndValidities.pointValidities;
+    const polyline = laneRightSegments.getFinalPoints();
+    lane.right = polyline.points;
+    lane.rightPointValidity = polyline.pointValidities;
+    lane.rightPointAnnotationStatus = polyline.pointAnnotations;
   }
   callUpdateLanesLambdaFunction(bucket, name, lane);
 }
 
 function callUpdateLanesLambdaFunction (bucket, name, lane) {
+  const credentials = getAWSCredentials();
   const payload = {
-    region: region,
+    region: credentials.region,
+    accessKeyId: credentials.accessKeyId,
+    secretAccessKey: credentials.secretAccessKey,
+    sessionToken: credentials.sessionToken,
     bucket: bucket,
     name: name,
     left: lane.left,
     leftPointValidity: lane.leftPointValidity,
+    leftPointAnnotationStatus: lane.leftPointAnnotationStatus,
     right: lane.right,
-    rightPointValidity: lane.rightPointValidity
+    rightPointValidity: lane.rightPointValidity,
+    rightPointAnnotationStatus: lane.rightPointAnnotationStatus
   };
   const lambda = getLambda();
   lambda.invoke({

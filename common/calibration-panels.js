@@ -412,7 +412,7 @@ function downloadCals() {
     description += "\n\tLine 4: Transform matrix generated from parameters as specified in lines 1-3 in column-major order."; 
   }
 
-  const text = `${calPanelValues.x}, ${calPanelValues.y}, ${calPanelValues.z}\n${calPanelValues.roll}, ${calPanelValues.pitch}, ${calPanelValues.yaw}\nVersion: ${version}\nTransform Matrix (column-major): ${transformString}\nDescription: ${description}`;
+  const text = `${calPanelValues.x}, ${calPanelValues.y}, ${calPanelValues.z}\n${calPanelValues.roll}, ${calPanelValues.pitch}, ${calPanelValues.yaw}\nversion: ${version}\nTransform Matrix (column-major): ${transformString}\nDescription: ${description}`;
 
   const date = new Date();
   const year = `${date.getYear() + 1900}`.padStart(4, '0')

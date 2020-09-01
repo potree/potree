@@ -54,10 +54,10 @@ export const getCalibrationSettings = (correctionsCal, nominalCal, vatCal) => {
   let settings = {
 
     // Calibration File version 2+ uses adjusted UTM heading, while versions earlier do not
-    useAdjustedUTMHeading: correctionsCalVersion >= 2.0, 
+    useAdjustedUTMHeading: correctionsCalVersion >= 2.0,
 
     // Calibration File version 3+ separates out VAT file from extrinsics
-    // Meaning VAT parameters must be provided as input, and VAT transform must be used explicitly in reconstruction chain 
+    // Meaning VAT parameters must be provided as input, and VAT transform must be used explicitly in reconstruction chain
     // Nominal base calibration should also be specified, but can use default values (which may lead to incorrect reconstruction)
     useVatParameters: correctionsCalVersion >= 3.0,
 
@@ -75,7 +75,7 @@ export const getCalibrationSettings = (correctionsCal, nominalCal, vatCal) => {
 }
 
 function validateCalibrationSettings(settings, correctionsCal, nominalCal, vatCal) {
-  
+
   let valid = true;
 
   // Check if corrections cal is present:
@@ -95,7 +95,7 @@ function validateCalibrationSettings(settings, correctionsCal, nominalCal, vatCa
     console.error(`Calibration Settings INVALID - calibration using VAT parameters specified however missing required calibration files [missing: ${missingFiles}]`);
 
     return false;
-  } 
+  }
 
   // Other checks?
 
@@ -105,14 +105,14 @@ function validateCalibrationSettings(settings, correctionsCal, nominalCal, vatCa
 /**
  * Get 4x4 transformation matrix
  * @param extrinsics Object containing the fields [x, y, z, roll, pitch, yaw] (meters and radians)
- * @param isPassiveTransform flag indicating whether to return active or passive form of transformation matrix 
+ * @param isPassiveTransform flag indicating whether to return active or passive form of transformation matrix
  * @return 4x4 transformation matrix
  */
 export function getTxMat(extrinsics, isPassiveTransform) {
 
   // Initialize Transform Matrix (as identity)
   const transform = new THREE.Matrix4();
-  
+
   // Generate Rotation from Euler Angles:
   const euler = new THREE.Euler(extrinsics.roll, extrinsics.pitch, extrinsics.yaw, 'ZYX');
 
@@ -121,14 +121,14 @@ export function getTxMat(extrinsics, isPassiveTransform) {
   transform.setPosition(new THREE.Vector3(extrinsics.x, extrinsics.y, extrinsics.z));
 
   // Return inverse of transform if passive transform:
-  return isPassiveTransform ? new THREE.Matrix4().getInverse(transform) : transform; 
+  return isPassiveTransform ? new THREE.Matrix4().getInverse(transform) : transform;
 }
 
 function getAdjustedTransformSimple(originalExtrinsics, newExtrinsics, settings) {
   console.log("Updating Adjusted Transform [simple]");
 
   // Construct Reverse Transformation Matrices from newExtrinsics:
-  const T_ISO2Velo = new THREE.Matrix4().getInverse(getTxMat(originalExtrinsics, settings.correctionsIsPassiveTransform)); // Inverse 
+  const T_ISO2Velo = new THREE.Matrix4().getInverse(getTxMat(originalExtrinsics, settings.correctionsIsPassiveTransform)); // Inverse
 
   // Construct Forward Transformation Matrices from originalExtrinsics:
   const T_Velo2ISO = getTxMat(newExtrinsics, settings.correctionsIsPassiveTransform);
@@ -143,8 +143,8 @@ function getAdjustedTransformFull(originalCorrections, nominalCal, vatCal, newCo
   console.log("Updating Adjusted Transform [full]");
 
   // Helper Function to define inverse
-  const inverse = (transform) => { 
-    return new THREE.Matrix4().getInverse(transform) 
+  const inverse = (transform) => {
+    return new THREE.Matrix4().getInverse(transform)
   };
 
   // Construct Forward Transformation Matrices:
@@ -154,7 +154,7 @@ function getAdjustedTransformFull(originalCorrections, nominalCal, vatCal, newCo
   const T4_Veh2ISO = getTxMat({x:0, y:0, z:0, roll:Math.PI, pitch:0, yaw:0}, true); // Transform from OxTS Vehicle Frame to ISO 8855 Vehicle frame is defined as a roll of 180 degrees
 
   // Forward Chain:
-  // T_forward = T4_Veh2ISO * T3_IMU2Veh * T2_Corr2IMU * T1_Velo2Corr 
+  // T_forward = T4_Veh2ISO * T3_IMU2Veh * T2_Corr2IMU * T1_Velo2Corr
   const T_forward = new THREE.Matrix4().premultiply(T1_Velo2Corr)
                                        .premultiply(T2_Corr2IMU)
                                        .premultiply(T3_IMU2Veh)
@@ -166,17 +166,17 @@ function getAdjustedTransformFull(originalCorrections, nominalCal, vatCal, newCo
   const T7_IMU2Corr = inverse(T2_Corr2IMU);
   const T8_Corr2Velo = inverse(getTxMat(originalCorrections, settings.correctionsIsPassiveTransform));
 
-  // Reverse Chain: 
-  // T_reverse =  T8_Velo2Corr * T7_IMU2Corr * T6_Veh2IMU * T5_ISO2Veh 
+  // Reverse Chain:
+  // T_reverse =  T8_Velo2Corr * T7_IMU2Corr * T6_Veh2IMU * T5_ISO2Veh
   const T_reverse = new THREE.Matrix4().premultiply(T5_ISO2Veh)
                                        .premultiply(T6_Veh2IMU)
                                        .premultiply(T7_IMU2Corr)
                                        .premultiply(T8_Corr2Velo);
 
-  // Full Chain: 
+  // Full Chain:
   // T_full = T_forward * T_reverse
-  // Explanation: This transform takes a point from ISO 8855 Vehicle Frame to Velodyne Frame (using the reverse transform based on original extrinsics), 
-  //              and then from Velodyne Frame to the new ISO Vehicle Frame (using the forward transform based on new extrinsics) 
+  // Explanation: This transform takes a point from ISO 8855 Vehicle Frame to Velodyne Frame (using the reverse transform based on original extrinsics),
+  //              and then from Velodyne Frame to the new ISO Vehicle Frame (using the forward transform based on new extrinsics)
   const adjustedTransformFull = new THREE.Matrix4().multiplyMatrices(T_forward, T_reverse);
 
   return adjustedTransformFull;
@@ -199,7 +199,7 @@ export const getAdjustedTransform = (correctionsCal, nominalCal, vatCal, calibra
   }
 
   return transform;
-} 
+}
 
 // NOTE: calType is one of the following: ["extrinsics", "nominal", "metadata"]
 export async function loadCalibrationFile(s3, bucket, name, calType) {
@@ -233,7 +233,8 @@ export async function loadCalibrationFile(s3, bucket, name, calType) {
       incrementLoadingBarTotal("cals loaded");
       return calibration;
     } catch (err) {
-      console.error(`Error loading calibration file: ${calType}`, err, err.stack);
+      // console.error(`Error loading calibration file: ${calType}`, err, err.stack);
+      console.log(`Note: missing ${calType} file`);
       incrementLoadingBarTotal("cals loaded");
       return null;
     }
@@ -244,7 +245,7 @@ export async function loadCalibrationFile(s3, bucket, name, calType) {
 
       let calibration;
       if (calType === 'metadata') {
-        calibration = parseMetadataFile(await response.text(), calType); 
+        calibration = parseMetadataFile(await response.text(), calType);
       } else if (calType === 'extrinsics' || calType === 'nominal') {
         calibration = parseCalibrationFile(await response.text(), calType);
       } else {
@@ -265,9 +266,9 @@ function parseMetadataFile(calibrationText, calibrationType) {
   const calibration = JSON.parse(calibrationText);
 
   // Convert vat params from degrees to radians:
-  calibration.vat["roll"] = Math.PI * calibration.vat["roll"] / 180.0; 
-  calibration.vat["pitch"] = Math.PI * calibration.vat["pitch"] / 180.0; 
-  calibration.vat["yaw"] = Math.PI * calibration.vat["yaw"] / 180.0; 
+  calibration.vat["roll"] = Math.PI * calibration.vat["roll"] / 180.0;
+  calibration.vat["pitch"] = Math.PI * calibration.vat["pitch"] / 180.0;
+  calibration.vat["yaw"] = Math.PI * calibration.vat["yaw"] / 180.0;
 
   // Add translational components:
   // Note: VAT parameters by definition specify only the rotational component, so translational offsets are zero

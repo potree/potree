@@ -140,6 +140,7 @@ export async function loadPotree() {
 // loads all necessary data (car obj/texture, rtk, radar, tracks, etc...)
 async function loadDataIntoDocument(filesTable) {
 	        // Load Data Sources in loadRtkCallback:
+
                 await loadRtkCallback(s3, bucket, name, async () => {
 		// Load Extrinsics:
 		window.extrinsics = { rtk2Vehicle: null, velo2Rtk: {}, nominal: null, vat: null };

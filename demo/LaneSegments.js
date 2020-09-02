@@ -112,19 +112,11 @@ export class LaneSegments extends THREE.Object3D {
   };
 
   outValiditiesHelper(index) {
-    const outPointValidities = []
-    for (const validity of this.outValidities[index]) {
-      outPointValidities.push(validity.pointValidity);
-    }
-    return outPointValidities;
+    return this.outValidities[index].map(validity => validity.pointValidity);
   };
 
   outAnnotationsHelper(index) {
-    const outPointAnnotations = []
-    for (const annotation of this.outAnnotations[index]) {
-      outPointAnnotations.push(annotation.pointAnnotation);
-    }
-    return outPointAnnotations;
+    return this.outAnnotations[index].map(annotation => annotation.pointAnnotation);
   };
 
 };

@@ -76,31 +76,24 @@ def create_vector(builder, nparray, flag):
 def vec3VectorBuilderHelper(builder, numVals, nparray):
     for i in range(numVals)[::-1]:
         val = Vec3.CreateVec3(builder, nparray[i, 0], nparray[i, 1], nparray[i, 2])
-    vals = builder.EndVector(numVals)
-    return vals
+    return builder.EndVector(numVals)
 
 def enumByte2VectorBuilderHelper(builder, numVals, byte=0):
     for i in range(numVals)[::-1]:
         builder.PrependByte(byte)
-    vals = builder.EndVector(numVals)
-    return vals
+    return builder.EndVector(numVals)
 
 def enumVector2VectorBuilderHelper(builder, numVals, nparray):
     for i in range(numVals)[::-1]:
         builder.PrependByte(nparray[i])
-    vals = builder.EndVector(numVals)
-    return vals
-
+    return builder.EndVector(numVals)
 
 def outputFlatbuffer(laneSegments, outputFile, leftPointValidity, rightPointValidity, leftPointAnnotationStatus, rightPointAnnotationStatus):
     createNew = True
     temp_lanes = []
 
-    i = 0
-    for laneSegment in laneSegments:
-        print(i)
-        i += 1
-
+    for i in range(len(laneSegments)):
+        laneSegment = laneSegments[i]
         builder = flatbuffers.Builder(1024)
 
         lefts = create_vector(builder, laneSegment['left'], 'left')
@@ -477,13 +470,8 @@ def check_lane_spine(laneSegments):
     plt.legend()
     plt.show()
 
-
 def getDataFromJson(inputFile):
-    data = []
-    raw_data = json.loads(open(inputFile, 'r').read())
-    for i in range(len(raw_data)):
-        data.append(raw_data[i])
-    return data
+    return json.loads(open(inputFile, 'r').read())
 
 if __name__ == "__main__":
 

@@ -2,9 +2,9 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <title>Zea PointClouds - PointClouds Extension for Zea Engine.</title>
+    <title>Zea PointClouds - PointClouds Plug-in for Zea Engine.</title>
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
-    <meta name="description" content="CAD Extension for Zea Engine." />
+    <meta name="description" content="CAD Plug-in for Zea Engine." />
     <meta
       name="viewport"
       content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"
@@ -22,6 +22,9 @@
         color: #222323;
         position: relative;
         cursor: pointer;
+      }
+      .download-section {
+        display: flex;
       }
 
       section.cover .cover-main > p:last-child a:last-child {
@@ -115,14 +118,19 @@
                 },
               ],
             }
+            
+            loadScript("//cdn.jsdelivr.net/npm/docsify@4")
+            loadScript("//cdn.jsdelivr.net/npm/docsify@4/lib/plugins/search.min.js")
+          });
+        }
+      )
+      .catch(function(err) {
+        console.log('Fetch Error :-S', err);
+      });
+  </script>
 
-            loadScript('//cdn.jsdelivr.net/npm/docsify@4')
-            loadScript('//cdn.jsdelivr.net/npm/docsify@4/lib/plugins/search.min.js')
-          })
-        })
-        .catch(function (err) {
-          console.log('Fetch Error :-S', err)
-        })
-    </script>
-  </body>
+  <script src="https://unpkg.com/jszip@3.1.5/dist/jszip.min.js"></script>
+  <script src="https://unpkg.com/file-saver@2.0.0-rc.2/dist/FileSaver.min.js"></script>
+  <script src="downloadTutorial.js"></script>
+</body>
 </html>

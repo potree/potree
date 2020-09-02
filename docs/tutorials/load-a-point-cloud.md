@@ -34,5 +34,10 @@ scene.getRoot().addChild(pointcloudAsset);
 
 [Labels](./load-a-point-cloud.html ':include :type=iframe width=100% height=800px')
 
-Click here to download the file to your computer to try it for yourself: 
-<a id="raw-url" onClick="downloadTutorial('load-a-point-cloud.zip', ['./tutorials/load-a-point-cloud.html', './tutorials/assets/Dead_eye_bearing.zcad', './tutorials/libs/zea-engine/dist/index.esm.js', './tutorials/libs/zea-pointclouds/dist/index.rawimport.js', './tutorials/libs/socket.io.js'])" download>Download</a>
+<div class="download-section">
+  <a class="download-btn" title="Download"
+    onClick="downloadTutorial('load-a-point-cloud.zip', ['tutorials/load-a-point-cloud.html'])" download>
+    Download
+  </a>
+</div>
+<br>

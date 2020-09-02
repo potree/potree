@@ -66,10 +66,10 @@ export function getLambda () {
 
 export function getAWSCredentials () {
   return {
-    region: region,
-    accessKeyId: accessKeyId,
-    secretAccessKey: secretAccessKey,
-    sessionToken: sessionToken
+    region,
+    accessKeyId,
+    secretAccessKey,
+    sessionToken
   };
 }
 

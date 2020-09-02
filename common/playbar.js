@@ -466,7 +466,7 @@ function callUpdateLanesLambdaFunction (bucket, name, lane) {
   };
   const lambda = getLambda();
   lambda.invoke({
-    FunctionName: 'UpdateLanes:7',
+    FunctionName: 'UpdateLanes:$LATEST',
     LogType: 'None',
     Payload: JSON.stringify(payload)
   }, function (err, data) {

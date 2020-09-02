@@ -18,19 +18,19 @@ export async function loadControlPointsCallback (s3, bucket, name, animationEngi
   }
 }
 
+window.controlPointBudget = 100;
 async function loadControlPointsCallbackHelper (s3, bucket, name, animationEngine, controlPointType) {
   const shaderMaterial = getShaderMaterial();
   const controlPointShaderMaterial = shaderMaterial.clone();
   await loadControlPoints(s3, bucket, name, controlPointShaderMaterial, animationEngine, (sphereMeshes) => {
     const controlPointLayer = new THREE.Group();
     controlPointLayer.name = getControlPointName(controlPointType);
-    sphereMeshes.length > 0 && controlPointLayer.add(sphereMeshes[0]);
+    controlPointLayer.add(...sphereMeshes.filter((mesh, i) => i < window.controlPointBudget));
 
-    const sphereMeshPositions = sphereMeshes.map(mesh => ({
+    const sphereMeshTimestamps = sphereMeshes.map((mesh, i) => ({
       minGpsTime: Math.min(...mesh.geometry.attributes.gpsTime.array),
       maxGpsTime: Math.max(...mesh.geometry.attributes.gpsTime.array),
-      gpsTimeArray: mesh.geometry.attributes.gpsTime,
-      position: mesh.position
+      index: i
     }));
 
     viewer.scene.scene.add(controlPointLayer);
@@ -42,14 +42,24 @@ async function loadControlPointsCallbackHelper (s3, bucket, name, animationEngin
     // TODO check if group works as expected, then trigger "truth_layer_added" event
     animationEngine.tweenTargets.push((gpsTime) => {
       const currentTime = gpsTime - animationEngine.tstart;
+      const minActiveWindow = currentTime + animationEngine.activeWindow.backward;
+      const maxActiveWindow = currentTime + animationEngine.activeWindow.forward;
+
+      if (controlPointLayer.children.length !== window.controlPointBudget) {
+        controlPointLayer.remove(...controlPointLayer.children);
+        controlPointLayer.add(...sphereMeshes.filter((mesh, i) => i < window.controlPointBudget));
+      }
+
       controlPointShaderMaterial.uniforms.minGpsTime.value = currentTime + animationEngine.activeWindow.backward;
       controlPointShaderMaterial.uniforms.maxGpsTime.value = currentTime + animationEngine.activeWindow.forward;
 
-      const currentMesh = sphereMeshPositions.find(({minGpsTime, maxGpsTime}) => currentTime >= minGpsTime + animationEngine.activeWindow.backward && currentTime <= maxGpsTime + animationEngine.activeWindow.forward);
+      const currentMeshes = sphereMeshTimestamps
+        .filter(({minGpsTime, maxGpsTime}) => minGpsTime >= minActiveWindow && maxGpsTime <= maxActiveWindow)
+        .sort((a, b) => Math.abs(currentTime - a.minGpsTime) - Math.abs(currentTime - b.minGpsTime))
+        .slice(0, window.controlPointBudget);
 
-      if (currentMesh) {
-        controlPointLayer.getObjectByName("ControlPoint").position.set(currentMesh.position.x, currentMesh.position.y, currentMesh.position.z);
-        controlPointLayer.getObjectByName("ControlPoint").geometry.attributes.gpsTime = currentMesh.gpsTimeArray;
+      for (let i = 0; i < currentMeshes.length; i++) {
+        controlPointLayer.children[i] = sphereMeshes[currentMeshes[i].index];
       }
     });
   }, controlPointType);

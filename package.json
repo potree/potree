@@ -39,7 +39,7 @@
   "license": "BSD-2-CLAUSE",
   "devDependencies": {
     "@percy/cypress": "^2.3.1",
-    "@zeainc/jsdocs2md": "^0.0.3",
+    "@zeainc/jsdocs2md": "^0.0.7",
     "cypress": "^5.0.0",
     "docsify-cli": "^4.4.1",
     "eslint": "^7.7.0",

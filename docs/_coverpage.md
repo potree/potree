@@ -2,8 +2,7 @@
 
 # Zea Point Clouds
 
-> Pointclouds Extension for the Zea Engine
-
+> Point Clouds plug-in for Zea Engine
 
 <ul style="display:inline-block">
 

@@ -11,7 +11,7 @@ export async function loadControlPointsCallback (s3, bucket, name, animationEngi
       // Remove prefix filepath
       file = file.split(/.*[\/|\\]/)[1];
       // Handle old naming and new naming schemas
-      if (file.includes('rtk_relative') || file.includes('viz_Spheres3D_')) {
+      if (file.includes('control_point_3_rtk_relative.fb') || file.includes('viz_Spheres3D_')) {
         await loadControlPointsCallbackHelper(s3, bucket, name, animationEngine, file);
       }
     }
@@ -190,7 +190,7 @@ async function createControlMeshes (controlPoints, controlPointShaderMaterial, F
 
 function getControlPointColor (controlPointType) {
   const lowerCaseControlPoint = controlPointType.toLowerCase();
-  if (lowerCaseControlPoint.includes("rtk")) {
+  if (lowerCaseControlPoint.includes("control_point_3_rtk_relative.fb")) {
     return new THREE.Color(0x00ffff);
   } else if (lowerCaseControlPoint.includes("left")) {
     return new THREE.Color(0xffff00);

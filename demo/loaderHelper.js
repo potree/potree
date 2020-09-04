@@ -17,6 +17,7 @@ import { storeVelo2Rtk, storeRtk2Vehicle, getVelo2Rtk, enablePanels, disablePane
 import { loadLanesCallback, addReloadLanesButton, laneDownloads } from "../demo/laneLoader.js"
 import { loadTracksCallback, trackDownloads } from "../demo/trackLoader.js"
 import { loadRemCallback, remDownloads } from "../demo/remLoader.js"
+import { loadMRRCallback, mrrDownloads } from "../demo/mrrLoader.js"
 import { addLoadGapsButton, gapDownloads } from "../demo/gapsLoader.js"
 import { addLoadRadarButton, radarDownloads } from "../demo/radarLoader.js"
 import { addDetectionButton, detectionDownloads } from "../demo/detectionLoader.js"
@@ -204,12 +205,19 @@ async function loadDataIntoDocument(filesTable) {
 			console.error("No control points: ", e);
 		}
 
-		// Load Radar:
+		// Load front and side MRR
 		try {
-			// await loadRadarCallback(s3, bucket, name);
+			loadMRRCallback(s3, bucket, name, animationEngine, filesTable['3_Assessments']);
 		} catch (e) {
-			console.error("Could not load Radar Detections: ", e);
+			console.error("Could not load radar data");
 		}
+
+		// Load Radar:
+		// try {
+		// 	// await loadRadarCallback(s3, bucket, name);
+		// } catch (e) {
+		// 	console.error("Could not load Radar Detections: ", e);
+		// }
 
 		// Load Detections:
 		// TODO

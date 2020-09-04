@@ -6,13 +6,19 @@
 * Newest information and work in progress is usually available on [twitter](https://twitter.com/m_schuetz)
 * Contact: Markus Schütz (mschuetz@potree.org)
 * Reference: [Potree: Rendering Large Point Clouds in Web Browsers](https://www.cg.tuwien.ac.at/research/publications/2016/SCHUETZ-2016-POT/SCHUETZ-2016-POT-thesis.pdf)
-<a href="http://potree.org/wp/demo/" target="_blank"> ![](./docs/images/potree_screens.png) </a>
+
+<a href="http://potree.org/potree/examples/load_project.html" target="_blank"> ![](./docs/images/potree_screens.png) </a>
 
 # Getting Started
 
 ### Install
 
-Install [node.js](http://nodejs.org/)
+Install [Node.js](http://nodejs.org/) or update to a compatible version
+
+* Minimum version: 10
+* Recommended version: 14 (Stable) or 12 (LTS)
+
+**Some Linux distributions like Ubuntu will not install the correct version of Node via default package managers.** To find more information on installing a recent version of Node, visit the [NodeSource information page](https://github.com/nodesource/distributions/blob/master/README.md).
 
 Install dependencies, as specified in package.json, and create a build in ./build/potree.
 

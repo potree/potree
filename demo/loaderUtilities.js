@@ -192,7 +192,7 @@ export async function createLanesFlatbuffer (lane, FlatbufferModule) {
  * (1_Viz has >1000 raw .bin that take up all the space so do multiple requests -- not all 1_Viz's .bin are included)
  * @returns {Promise<Array<String> | null>} List of files located within s3 for the dataset (null if running local point cloud)
  */
-export async function getS3Files (s3, bucket, name) {
+export async function getFiles (s3, bucket, name) {
   if (bucket == null) {
     return {
       filePaths: null,

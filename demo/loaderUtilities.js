@@ -193,7 +193,12 @@ export async function createLanesFlatbuffer (lane, FlatbufferModule) {
  * @returns {Promise<Array<String> | null>} List of files located within s3 for the dataset (null if running local point cloud)
  */
 export async function getS3Files (s3, bucket, name) {
-  if (bucket == null) return null; // local point cloud
+  if (bucket == null) {
+    return {
+      filePaths: null,
+      table: getLocalFiles()
+    };
+  }
   const removePrefix = (str) => str.split(name + "/")[1];
 
   const topLevel = await s3.listObjectsV2({
@@ -227,9 +232,26 @@ export async function getS3Files (s3, bucket, name) {
     const key = dir.split("/");
     table[key[2]] = list;
   }
-  return [filePaths, table];
+  return {
+    filePaths,
+    table
+  };
 }
 
 export function removeFileExtension (filename) {
   return filename.split('.').slice(0, -1).join('.');
+}
+
+function getLocalFiles () {
+  const dirs = {
+    '0_Preprocessed': [],
+    '1_Viz': [],
+    '2_Truth': [],
+    '3_Assessments': [],
+    '5_Schemas': [],
+    '6_Logs': [],
+    '7_Cals': []
+  };
+  // TODO get local files
+  return dirs;
 }

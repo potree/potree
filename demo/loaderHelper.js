@@ -23,7 +23,7 @@ import { addDetectionButton, detectionDownloads } from "../demo/detectionLoader.
 import { PointAttributeNames } from "../src/loader/PointAttributes.js";
 import { setNumTasks } from "../common/overlay.js"
 import { loadControlPointsCallback } from "../demo/controlPointLoader.js"
-import { getS3Files } from "../demo/loaderUtilities.js"
+import { getFiles } from "../demo/loaderUtilities.js"
 
 
 function canUseCalibrationPanels(attributes) {
@@ -102,18 +102,14 @@ export async function loadPotree() {
   // now that animation engine has been created, can add event listeners
   createPlaybar();
 
-  // get files from s3
-  const filesArray = await getS3Files(s3, bucket, name)
-  const datasetFiles = filesArray[0];
-  const filesTable = filesArray[1];
+  // get files
+  const files = await getFiles(s3, bucket, name)
 
-  // TODO get local files
-
-  const numTasks = await determineNumTasks(datasetFiles)
+  const numTasks = await determineNumTasks(files.filePaths)
   setNumTasks(numTasks)
 
   const otherDownloads = [detectionDownloads, gapDownloads, radarDownloads]
-  otherDownloads.forEach(async (getRelevantFiles) => await getRelevantFiles(datasetFiles))
+  otherDownloads.forEach(async (getRelevantFiles) => await getRelevantFiles(files.filePaths))
 
   if (annotateLanesAvailable) {
     addReloadLanesButton();
@@ -123,7 +119,7 @@ export async function loadPotree() {
   addCalibrationButton();
   addDetectionButton();
   // load in actual data & configure playbar along the way
-  await loadDataIntoDocument(filesTable);
+  await loadDataIntoDocument(files.table);
 
   // Load Pointclouds
   if (runLocalPointCloud) {

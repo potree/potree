@@ -1,0 +1,11 @@
+session_name: Zea Pointclouds
+suppress_history: false
+windows:
+  - layout: main-vertical
+    panes:
+      - yarn run start
+      - ${EDITOR} -S
+  - panes:
+      - shell_command:
+          - git fetch
+          - git status

@@ -513,10 +513,10 @@
     meow "^7.0.1"
     rimraf "^3.0.2"
 
-"@zeainc/zea-engine@^1.0.7":
-  version "1.0.7"
-  resolved "https://registry.yarnpkg.com/@zeainc/zea-engine/-/zea-engine-1.0.7.tgz#d6ddbcc058de84aa19de99d91f8a4dae7fd8b413"
-  integrity sha512-t5s1RN795aiCAwoe+7f/FliYIkkgzT3mB5nOR4euEG3M+Sey8WnHnn2+FgIJ931LmvzRb8N2l0RMSBJJVWbgGg==
+"@zeainc/zea-engine@^2.0.0":
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/@zeainc/zea-engine/-/zea-engine-2.0.0.tgz#a25a9bf72aae92279afd17b25a596f92fbab5bc4"
+  integrity sha512-NpaNvQEiY+ASNo2wpR0BU5fIrXW61dNE5+hizzG5cJhH9V0DJIkiqCtMm0/wLlGBEc59nZ3WRca0wxPK1qAvpg==
 
 abbrev@1:
   version "1.1.1"

@@ -7,16 +7,19 @@
   "description": "Large point cloud rendering extension for Zea Engine",
   "main": "dist/index.cjs.js",
   "module": "dist/index.esm.js",
-  "rawimport": "dist/index.rawimport.js",
+  "browser": "dist/index.umd.js",
   "files": [
-    "/dist/index.cjs.js",
-    "/dist/index.esm.js",
-    "/dist/index.rawimport.js"
+    "dist/"
+  ],
+  "keywords": [
+    "Zea",
+    "Point clouds"
   ],
   "scripts": {
     "build": "rollup -c",
+    "build:watch": "rollup -w -c",
     "prepare": "yarn build",
-    "start": "rollup -c rollup.config.dev.js -w",
+    "start": "yarn run build:watch",
     "dist": "yarn publish --access=public",
     "docs": "adg --config adg.config.json",
     "docs-w": "adg -w --config=adg.config.json",
@@ -25,7 +28,7 @@
     "testBrowser": "karma start --single-run karma.conf.js"
   },
   "dependencies": {
-    "@zeainc/zea-engine": "^1.0.7",
+    "@zeainc/zea-engine": "^2.0.0",
     "binaryheap": "^0.0.3",
     "gulp": "^4.0.2",
     "gulp-concat": "^2.6.1",

@@ -1,14 +1,12 @@
 #!/bin/python3
 import os
 import sys
-sys.path.append(os.path.join(sys.path[0], '..', '..', 'build', 'DataSchemas', 'include', 'DataSchemas'))
 import parser
 import argparse
 import json
 import numpy as np
 import matplotlib.pyplot as plt
 import flatbuffers
-from Flatbuffer.GroundTruth import Lanes, Lane, Vec3
 from shapely.geometry import LineString, Point, MultiPoint, box
 from shapely.ops import nearest_points
 from scipy.spatial import cKDTree
@@ -478,6 +476,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Perform assessment on data serialized by the Veritas LidarPerception module.')
 
     parser.add_argument('--inputDir', type=str, help='Directory containing serialized data')
+    parser.add_argument('--veritasDir', type=str, help='Directory containing Veritas build directory')
     parser.add_argument('--outputDir', type=str, help='Directory containing serialized data')
     parser.add_argument('--plotLanes', help='Flag to plot lane segments', action='store_true')
     parser.add_argument('--checkSpine', help='Flag to plot lane spine distances', action='store_true')
@@ -485,6 +484,9 @@ if __name__ == "__main__":
     parser.add_argument('--upsample', help='The upsamle threshold. If this flag is not set, no upsample will be performed', required=False, type=float)
 
     args = parser.parse_args()
+
+    sys.path.append(os.path.join(sys.path[0], args.veritasDir, 'build', 'DataSchemas', 'include', 'DataSchemas'))
+    from Flatbuffer.GroundTruth import Lanes, Lane, Vec3
 
     inputDir = args.inputDir
     outputDir = args.outputDir if args.outputDir else args.inputDir

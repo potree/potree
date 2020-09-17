@@ -17,7 +17,7 @@ import { storeVelo2Rtk, storeRtk2Vehicle, getVelo2Rtk, enablePanels, disablePane
 import { loadLanesCallback, addReloadLanesButton, laneDownloads } from "../demo/laneLoader.js"
 import { loadTracksCallback, trackDownloads } from "../demo/trackLoader.js"
 import { loadRemCallback, remDownloads } from "../demo/remLoader.js"
-import { loadMRRCallback, mrrDownloads } from "../demo/mrrLoader.js"
+import { loadRadarDetectionsCallback, radarDetectionDownloads } from "../demo/radarDetectionLoader.js"
 import { addLoadGapsButton, gapDownloads } from "../demo/gapsLoader.js"
 import { addLoadRadarButton, radarDownloads } from "../demo/radarLoader.js"
 import { addDetectionButton, detectionDownloads } from "../demo/detectionLoader.js"
@@ -109,7 +109,7 @@ export async function loadPotree() {
   const numTasks = await determineNumTasks(files.filePaths)
   setNumTasks(numTasks)
 
-  const otherDownloads = [detectionDownloads, gapDownloads, radarDownloads]
+  const otherDownloads = [detectionDownloads, radarDetectionDownloads, gapDownloads, radarDownloads]
   otherDownloads.forEach(async (getRelevantFiles) => await getRelevantFiles(files.filePaths))
 
   if (annotateLanesAvailable) {
@@ -207,9 +207,9 @@ async function loadDataIntoDocument(filesTable) {
 
 		// Load front and side MRR
 		try {
-			loadMRRCallback(s3, bucket, name, animationEngine, filesTable['3_Assessments']);
+			loadRadarDetectionsCallback();
 		} catch (e) {
-			console.error("Could not load radar data");
+			console.error("Could not load radar detection data");
 		}
 
 		// Load Radar:

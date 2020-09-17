@@ -4,30 +4,30 @@ import { s3, bucket, name, getShaderMaterial } from "../demo/paramLoader.js"
 import { getFbFileInfo } from "./loaderUtilities.js";
 
 
-let detectionFiles = null;
-export const detectionDownloads = async (datasetFiles) => {
-  detectionFiles = await getFbFileInfo(datasetFiles,
-                                       "radarDetections.fb", // 2_Truth
+let radarDetectionFiles = null;
+export const radarDetectionDownloads = async (datasetFiles) => {
+  radarDetectionFiles = await getFbFileInfo(datasetFiles,
+                                       "detections.fb", // 2_Truth
                                        "GroundTruth_generated.js", // 5_Schemas
-                                       "../data/radarDetections.fb",
+                                       "../data/detections.fb",
                                        "../schemas/GroundTruth_generated.js");
-  return detectionFiles;
+  return radarDetectionFiles;
 }
 
 async function loadDetections(s3, bucket, name, shaderMaterial, animationEngine) {
 
-  if (!detectionFiles) {
+  if (!radarDetectionFiles) {
     console.log("No detection files present")
     return null
   } else {
     // prepare for progress tracking (currently only triggered on button click)
-    resetProgressBars(2) // have to download & process/load detections
+    resetProgressBars(2); // have to download & process/load detections
   }
 
   if (s3 && bucket && name) {
     const request = s3.getObject({
       Bucket: bucket,
-      Key: detectionFiles.objectName
+      Key: radarDetectionFiles.objectName
     });
     request.on("httpDownloadProgress", async (e) => {
       await updateLoadingBar(e.loaded / e.total * 100);
@@ -36,16 +36,16 @@ async function loadDetections(s3, bucket, name, shaderMaterial, animationEngine)
     incrementLoadingBarTotal("detections downloaded");
     const schemaUrl = s3.getSignedUrl('getObject', {
       Bucket: bucket,
-      Key: detectionFiles.schemaFile
+      Key: radarDetectionFiles.schemaFile
     });
     const FlatbufferModule = await import(schemaUrl);
     const detectionGeometries = await parseDetections(data.Body, shaderMaterial, FlatbufferModule, animationEngine);
     incrementLoadingBarTotal("detections loaded");
     return detectionGeometries;
   } else {
-    const response = await fetch(detectionFiles.objectName);
+    const response = await fetch(radarDetectionFiles.objectName);
     incrementLoadingBarTotal("detections downloaded");
-    const FlatbufferModule = await import(detectionFiles.schemaFile);
+    const FlatbufferModule = await import(radarDetectionFiles.schemaFile);
     const detectionGeometries = await parseDetections(await response.arrayBuffer(), shaderMaterial, FlatbufferModule, animationEngine);
     incrementLoadingBarTotal("detections loaded");
     return detectionGeometries;
@@ -183,7 +183,7 @@ async function createDetectionGeometries(shaderMaterial, detections, animationEn
   return output;
 }
 
-export function radarDetectionLoaderCallback() {
+export async function loadRadarDetectionsCallback() {
   const shaderMaterial = getShaderMaterial();
   const detectionShaderMaterial = shaderMaterial.clone();
   detectionShaderMaterial.uniforms.color.value = new THREE.Color(0xFF0033); // NEON BLUE

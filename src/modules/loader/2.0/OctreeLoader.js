@@ -1,5 +1,5 @@
 
-import {PointAttribute, PointAttributes, PointAttributeTypes} from "../../loader/PointAttributes.js";
+import {PointAttribute, PointAttributes, PointAttributeTypes} from "../../../loader/PointAttributes.js";
 import {OctreeGeometry, OctreeGeometryNode} from "./OctreeGeometry.js";
 
 export class NodeLoader{
@@ -17,13 +17,13 @@ export class NodeLoader{
 		node.loading = true;
 		Potree.numNodesLoading++;
 
-		if(node.nodeType === 2){
-			await this.loadHierarchy(node);
-		}
-
-		let {byteOffset, byteSize} = node;
-
 		try{
+			if(node.nodeType === 2){
+				await this.loadHierarchy(node);
+			}
+
+			let {byteOffset, byteSize} = node;
+
 
 			let urlOctree = `${this.url}/../octree.bin`;
 
@@ -39,7 +39,13 @@ export class NodeLoader{
 
 			let buffer = await response.arrayBuffer();
 
-			let workerPath = Potree.scriptPath + '/workers/OctreeDecoderWorker.js';
+			let workerPath;
+			if(this.metadata.encoding === "BROTLI"){
+				workerPath = Potree.scriptPath + '/workers/2.0/DecoderWorker_brotli.js';
+			}else{
+				workerPath = Potree.scriptPath + '/workers/2.0/DecoderWorker.js';
+			}
+
 			let worker = Potree.workerPool.getWorker(workerPath);
 
 			worker.onmessage = function (e) {
@@ -97,6 +103,7 @@ export class NodeLoader{
 			let min = node.octreeGeometry.offset.clone().add(box.min);
 			let size = box.max.clone().sub(box.min);
 			let max = min.clone().add(size);
+			let numPoints = node.numPoints;
 
 			let offset = node.octreeGeometry.loader.offset;
 
@@ -109,6 +116,7 @@ export class NodeLoader{
 				max: max,
 				size: size,
 				offset: offset,
+				numPoints: numPoints
 			};
 
 			worker.postMessage(message, [message.buffer]);
@@ -293,7 +301,7 @@ let typenameTypeattributeMap = {
 	"uint64": PointAttributeTypes.DATA_TYPE_UINT64,
 }
 
-export class OctreeLoader_1_8{
+export class OctreeLoader{
 
 	static parseAttributes(jsonAttributes){
 
@@ -347,7 +355,7 @@ export class OctreeLoader_1_8{
 		let response = await fetch(url);
 		let metadata = await response.json();
 
-		let attributes = OctreeLoader_1_8.parseAttributes(metadata.attributes);
+		let attributes = OctreeLoader.parseAttributes(metadata.attributes);
 
 		let loader = new NodeLoader(url);
 		loader.metadata = metadata;
@@ -377,7 +385,7 @@ export class OctreeLoader_1_8{
 		octree.boundingSphere = boundingBox.getBoundingSphere(new THREE.Sphere());
 		octree.tightBoundingSphere = boundingBox.getBoundingSphere(new THREE.Sphere());
 		octree.offset = offset;
-		octree.pointAttributes = OctreeLoader_1_8.parseAttributes(metadata.attributes);
+		octree.pointAttributes = OctreeLoader.parseAttributes(metadata.attributes);
 		octree.loader = loader;
 
 		let root = new OctreeGeometryNode("r", octree, boundingBox);
@@ -391,7 +399,6 @@ export class OctreeLoader_1_8{
 
 		octree.root = root;
 
-		//await OctreeLoader_1_8.loadHierarchy(url, root);
 		await loader.load(root);
 
 		let result = {

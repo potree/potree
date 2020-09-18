@@ -14,7 +14,7 @@ export const radarDetectionDownloads = async (datasetFiles) => {
   return radarDetectionFiles;
 }
 
-async function loadDetections(s3, bucket, name, shaderMaterial, animationEngine) {
+async function loadDetections(s3, bucket, name, file, shaderMaterial, animationEngine) {
 
   if (!radarDetectionFiles) {
     console.log("No detection files present")
@@ -23,6 +23,8 @@ async function loadDetections(s3, bucket, name, shaderMaterial, animationEngine)
     // prepare for progress tracking (currently only triggered on button click)
     resetProgressBars(2); // have to download & process/load detections
   }
+
+  if (file) { radarDetectionFiles.objectName = `${name}/2_Truth/${file}`; }
 
   if (s3 && bucket && name) {
     const request = s3.getObject({
@@ -183,11 +185,24 @@ async function createDetectionGeometries(shaderMaterial, detections, animationEn
   return output;
 }
 
-export async function loadRadarDetectionsCallback() {
+export async function loadRadarDetectionsCallback(files) {
+
+    // Handle s3 files
+    for (let file of files) {
+      // Remove prefix filepath
+      file = file.split(/.*[\/|\\]/)[1];
+      // Handle old naming and new naming schemas
+      if (file.includes('srr_detections.fb') || file.includes('mrr_detections.fb')) {
+        await loadRadarDetectionsCallbackHelper(file);
+      }
+    }
+}
+
+async function loadRadarDetectionsCallbackHelper(file) {
   const shaderMaterial = getShaderMaterial();
   const detectionShaderMaterial = shaderMaterial.clone();
   detectionShaderMaterial.uniforms.color.value = new THREE.Color(0xFF0033); // NEON BLUE
-  const detectionGeometries = await loadDetections(s3, bucket, name, detectionShaderMaterial, animationEngine);
+  const detectionGeometries = await loadDetections(s3, bucket, name, file, detectionShaderMaterial, animationEngine);
 
   if (detectionGeometries != null) {
     const detectionLayer = new THREE.Group();

@@ -207,7 +207,7 @@ async function loadDataIntoDocument(filesTable) {
 
 		// Load front and side MRR
 		try {
-			loadRadarDetectionsCallback();
+			loadRadarDetectionsCallback(filesTable['2_Truth']);
 		} catch (e) {
 			console.error("Could not load radar detection data");
 		}

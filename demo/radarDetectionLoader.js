@@ -178,7 +178,7 @@ export async function loadRadarDetectionsCallback(files) {
   for (let file of files) {
     // Remove prefix filepath
     file = file.split(/.*[\/|\\]/)[1];
-    if (file.includes('srr_detections.fb') || file.includes('mrr_detections.fb')) {
+    if (file.toLowerCase().includes('srr_detections.fb') || file.toLowerCase().includes('mrr_detections.fb')) {
       await loadRadarDetectionsCallbackHelper(file);
     }
   }

@@ -81,28 +81,17 @@ async function parseDetections(bytesArray, shaderMaterial, FlatbufferModule, ani
 }
 
 async function createDetectionGeometries(shaderMaterial, detections, animationEngine) {
-  // const lineMaterial = new THREE.LineBasicMaterial({
-  //   color: 0x00ff00,
-  //   transparent: true
-  // });
-
-  // const boxMaterial = new THREE.MeshNormalMaterial();
-
   const material = shaderMaterial;
 
-  let detect;
-  // let bbox;
+  let detect, firstCentroid, delta, boxGeometry2;
   const bboxs = [];
-  // let detectionPoints = [];
   const x0 = [];
   const y0 = [];
   const z0 = [];
-  // let firstTimestamp = true;
-  let firstCentroid, delta;
-  let allBoxes = new THREE.Geometry();
-  let boxGeometry2;
   let detectTimes = [];
-  // const all = [];
+
+  let allBoxes = new THREE.Geometry();
+
   for (let ss=0, numDetections=detections.length; ss<numDetections; ss++) {
     await updateLoadingBar(ss/numDetections*100)
     const detection = detections[ss];
@@ -189,7 +178,6 @@ export async function loadRadarDetectionsCallback(files) {
   for (let file of files) {
     // Remove prefix filepath
     file = file.split(/.*[\/|\\]/)[1];
-    // Handle old naming and new naming schemas
     if (file.includes('srr_detections.fb') || file.includes('mrr_detections.fb')) {
       await loadRadarDetectionsCallbackHelper(file);
     }
@@ -199,7 +187,7 @@ export async function loadRadarDetectionsCallback(files) {
 async function loadRadarDetectionsCallbackHelper(file) {
   const shaderMaterial = getShaderMaterial();
   const detectionShaderMaterial = shaderMaterial.clone();
-  detectionShaderMaterial.uniforms.color.value = new THREE.Color(0xFF0033); // NEON BLUE
+  detectionShaderMaterial.uniforms.color.value = getRadarDetectionColor(file);
   const detectionGeometries = await loadDetections(s3, bucket, name, file, detectionShaderMaterial, animationEngine);
 
   if (detectionGeometries != null) {
@@ -221,10 +209,20 @@ async function loadRadarDetectionsCallbackHelper(file) {
   }
 }
 
-function getRadarDetectionName (file) {
+function getRadarDetectionName(file) {
   // slice off file extension
   let words = file.slice(0, -3);
   // split on '_', join into display name
   words = words.split("_");
   return words.join(" ");
+}
+
+function getRadarDetectionColor(file) {
+  if (file.toLowerCase().includes("mrr_detections.fb")) {
+    return new THREE.Color(0x00FFFF)
+  } else if (file.includes("srr_detections.fb")) {
+    return new THREE.Color(0x0000FF)
+  } else {
+    return new THREE.Color(0xFFFF00)
+  }
 }

@@ -56,11 +56,11 @@ async function loadDetections(s3, bucket, name, file, shaderMaterial, animationE
 
 async function parseDetections(bytesArray, shaderMaterial, FlatbufferModule, animationEngine) {
 
-  let numBytes = bytesArray.length;
-  let detections = [];
+  const numBytes = bytesArray.length;
+  const detections = [];
 
   let segOffset = 0;
-  let segSize, viewSize, viewData;
+  let segSize, viewSize;
   while (segOffset < numBytes) {
 
     // Read SegmentSize:
@@ -69,9 +69,9 @@ async function parseDetections(bytesArray, shaderMaterial, FlatbufferModule, ani
 
     // Get Flatbuffer Detection Object:
     segOffset += 4;
-    let buf = new Uint8Array(bytesArray.buffer.slice(segOffset, segOffset+segSize));
-    let fbuffer = new flatbuffers.ByteBuffer(buf);
-    let detection = FlatbufferModule.Flatbuffer.GroundTruth.Detections.getRootAsDetections(fbuffer);
+    const buf = new Uint8Array(bytesArray.buffer.slice(segOffset, segOffset+segSize));
+    const fbuffer = new flatbuffers.ByteBuffer(buf);
+    const detection = FlatbufferModule.Flatbuffer.GroundTruth.Detections.getRootAsDetections(fbuffer);
 
     detections.push(detection);
     segOffset += segSize;
@@ -81,31 +81,31 @@ async function parseDetections(bytesArray, shaderMaterial, FlatbufferModule, ani
 }
 
 async function createDetectionGeometries(shaderMaterial, detections, animationEngine) {
-  let lineMaterial = new THREE.LineBasicMaterial({
-    color: 0x00ff00,
-    transparent: true
-  });
+  // const lineMaterial = new THREE.LineBasicMaterial({
+  //   color: 0x00ff00,
+  //   transparent: true
+  // });
 
-  let boxMaterial = new THREE.MeshNormalMaterial();
+  // const boxMaterial = new THREE.MeshNormalMaterial();
 
-  let material = shaderMaterial;
+  const material = shaderMaterial;
 
   let detect;
-  let bbox;
-  let bboxs = [];
-  let detectionPoints = [];
-  let x0 = [];
-  let y0 = [];
-  let z0 = [];
-  let firstTimestamp = true;
+  // let bbox;
+  const bboxs = [];
+  // let detectionPoints = [];
+  const x0 = [];
+  const y0 = [];
+  const z0 = [];
+  // let firstTimestamp = true;
   let firstCentroid, delta;
   let allBoxes = new THREE.Geometry();
   let boxGeometry2;
   let detectTimes = [];
-  let all = [];
+  // const all = [];
   for (let ss=0, numDetections=detections.length; ss<numDetections; ss++) {
     await updateLoadingBar(ss/numDetections*100)
-    let detection = detections[ss];
+    const detection = detections[ss];
 
     for (let ii=0, len=detection.detectionsLength(); ii<len; ii++) {
 
@@ -113,18 +113,18 @@ async function createDetectionGeometries(shaderMaterial, detections, animationEn
       detect = detection.detections(ii);
 
       // Initializations:
-      let centroidLocation = new THREE.Vector3( detect.centroid().x(), detect.centroid().y(), detect.centroid().z() );
+      const centroidLocation = new THREE.Vector3( detect.centroid().x(), detect.centroid().y(), detect.centroid().z() );
       if (firstCentroid == undefined) {
         firstCentroid = centroidLocation;
       }
 
       delta = centroidLocation.clone().sub(firstCentroid);
 
-      let length = detect.majorAxis();
-      let width = detect.minorAxis();
-      let height = detect.height();
+      const length = detect.majorAxis();
+      const width = detect.minorAxis();
+      const height = detect.height();
 
-      let boxGeometry = new THREE.BoxGeometry(length, width, height);
+      const boxGeometry = new THREE.BoxGeometry(length, width, height);
       boxGeometry2 = boxGeometry.clone();
 
       var edges = new THREE.EdgesGeometry( boxGeometry ); // or WireframeGeometry( geometry )
@@ -134,8 +134,8 @@ async function createDetectionGeometries(shaderMaterial, detections, animationEn
       boxMesh.position.copy(centroidLocation);
 
       // Rotate BoxGeometry:
-      let yaw = detect.heading();
-      let zAxis = new THREE.Vector3(0, 0, 1); // TODO Hack until fb data gets fixed
+      const yaw = detect.heading();
+      const zAxis = new THREE.Vector3(0, 0, 1); // TODO Hack until fb data gets fixed
       // let zAxis = p4.sub(p0);
       // zAxis.normalize();
       boxMesh.rotateOnAxis(zAxis, yaw);
@@ -144,8 +144,8 @@ async function createDetectionGeometries(shaderMaterial, detections, animationEn
       detectTimes.push(detect.timestamp()-animationEngine.tstart);
 
 
-      let se3 = new THREE.Matrix4();
-      let quaternion = new THREE.Quaternion().setFromAxisAngle(zAxis,yaw);
+      const se3 = new THREE.Matrix4();
+      const quaternion = new THREE.Quaternion().setFromAxisAngle(zAxis,yaw);
       se3.makeRotationFromQuaternion(quaternion); // Rotation
       se3.setPosition(delta); // Translation
       // debugger; // se3
@@ -155,9 +155,9 @@ async function createDetectionGeometries(shaderMaterial, detections, animationEn
       allBoxes.merge(boxGeometry2);
 
       if ((ss%1000)==0 || ss==(numDetections-1)) {
-        let bufferBoxGeometry = new THREE.BufferGeometry().fromGeometry(allBoxes);
-        let edges = new THREE.EdgesGeometry( bufferBoxGeometry ); // or WireframeGeometry( geometry )
-        let timestamps = [];
+        const bufferBoxGeometry = new THREE.BufferGeometry().fromGeometry(allBoxes);
+        const edges = new THREE.EdgesGeometry( bufferBoxGeometry ); // or WireframeGeometry( geometry )
+        const timestamps = [];
         for (let tt=0, numTimes=detectTimes.length; tt<numTimes; tt++) {
           for (let kk=0, numVerticesPerBox=24; kk<numVerticesPerBox; kk++) {  // NOTE: 24 vertices per edgesBox
             timestamps.push(detectTimes[tt]);
@@ -166,8 +166,8 @@ async function createDetectionGeometries(shaderMaterial, detections, animationEn
         edges.addAttribute('gpsTime', new THREE.Float32BufferAttribute(timestamps, 1));
 
         // let bufferBoxGeometry = allBoxes;
-        let wireframe = new THREE.LineSegments( edges, material ); // NOTE don't clone material to assign to multiple meshes
-        let mesh = wireframe;
+        const wireframe = new THREE.LineSegments( edges, material ); // NOTE don't clone material to assign to multiple meshes
+        const mesh = wireframe;
         mesh.position.copy(firstCentroid);
         bboxs.push( mesh );
         allBoxes = new THREE.Geometry();
@@ -181,21 +181,19 @@ async function createDetectionGeometries(shaderMaterial, detections, animationEn
     x0: x0,
     y0: y0,
     z0: z0
-  }
+  };
   return output;
 }
 
 export async function loadRadarDetectionsCallback(files) {
-
-    // Handle s3 files
-    for (let file of files) {
-      // Remove prefix filepath
-      file = file.split(/.*[\/|\\]/)[1];
-      // Handle old naming and new naming schemas
-      if (file.includes('srr_detections.fb') || file.includes('mrr_detections.fb')) {
-        await loadRadarDetectionsCallbackHelper(file);
-      }
+  for (let file of files) {
+    // Remove prefix filepath
+    file = file.split(/.*[\/|\\]/)[1];
+    // Handle old naming and new naming schemas
+    if (file.includes('srr_detections.fb') || file.includes('mrr_detections.fb')) {
+      await loadRadarDetectionsCallbackHelper(file);
     }
+  }
 }
 
 async function loadRadarDetectionsCallbackHelper(file) {
@@ -206,14 +204,14 @@ async function loadRadarDetectionsCallbackHelper(file) {
 
   if (detectionGeometries != null) {
     const detectionLayer = new THREE.Group();
-    detectionLayer.name = "Detections";
+    detectionLayer.name = getRadarDetectionName(file);
     for (let ii = 0, len = detectionGeometries.bbox.length; ii < len; ii++) {
       detectionLayer.add(detectionGeometries.bbox[ii]);
     }
     viewer.scene.scene.add(detectionLayer);
     viewer.scene.dispatchEvent({
-      "type": "truth_layer_added",
-      "truthLayer": detectionLayer
+      type: "truth_layer_added",
+      truthLayer: detectionLayer
     });
     animationEngine.tweenTargets.push((gpsTime) => {
       const currentTime = gpsTime - animationEngine.tstart;
@@ -221,4 +219,12 @@ async function loadRadarDetectionsCallbackHelper(file) {
       detectionShaderMaterial.uniforms.maxGpsTime.value = currentTime + animationEngine.activeWindow.forward;
     });
   }
+}
+
+function getRadarDetectionName (file) {
+  // slice off file extension
+  let words = file.slice(0, -3);
+  // split on '_', join into display name
+  words = words.split("_");
+  return words.join(" ");
 }

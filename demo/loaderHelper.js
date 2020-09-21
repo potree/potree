@@ -2,10 +2,8 @@
 
 // this file is intended to call every other function in order to get potree to load
 import {
-	runLocalPointCloud, isLocalDevelopment, params, bucket, region, names, name, visualizationMode,
-	annotateLanesAvailable, downloadLanesAvailable, calibrationModeAvailable, accessKeyId,
-	secretAccessKey, sessionToken, fonts, theme, comparisonDatasets, s3, getShaderMaterial,
-	defaultTimeRange
+	runLocalPointCloud, bucket, name, annotateLanesAvailable, s3,
+	getShaderMaterial, defaultTimeRange
 } from "../demo/paramLoader.js"
 import { createViewer } from "../demo/viewer.js"
 import { AnimationEngine } from "../demo/animationEngine.js"
@@ -16,8 +14,7 @@ import { loadCalibrationFile, loadRtk2Vehicle, storeCalibration, calDownloads, a
 import { storeVelo2Rtk, storeRtk2Vehicle, getVelo2Rtk, enablePanels, disablePanels } from "../common/calibration-panels.js"
 import { loadLanesCallback, addReloadLanesButton, laneDownloads } from "../demo/laneLoader.js"
 import { loadTracksCallback, trackDownloads } from "../demo/trackLoader.js"
-import { loadRemCallback, remDownloads } from "../demo/remLoader.js"
-import { loadRadarDetectionsCallback, radarDetectionDownloads } from "../demo/radarDetectionLoader.js"
+import { loadRadarVisualizationCallback, radarVisualizationDownloads } from "../demo/radarVisualizationLoader.js"
 import { addLoadGapsButton, gapDownloads } from "../demo/gapsLoader.js"
 import { addLoadRadarButton, radarDownloads } from "../demo/radarLoader.js"
 import { addDetectionButton, detectionDownloads } from "../demo/detectionLoader.js"
@@ -109,7 +106,7 @@ export async function loadPotree() {
   const numTasks = await determineNumTasks(files.filePaths)
   setNumTasks(numTasks)
 
-  const otherDownloads = [detectionDownloads, radarDetectionDownloads, gapDownloads, radarDownloads]
+  const otherDownloads = [detectionDownloads, gapDownloads, radarDownloads]
   otherDownloads.forEach(async (getRelevantFiles) => await getRelevantFiles(files.filePaths))
 
   if (annotateLanesAvailable) {
@@ -205,11 +202,11 @@ async function loadDataIntoDocument(filesTable) {
 			console.error("No control points: ", e);
 		}
 
-		// Load front and side MRR
+		// Load front and side radar visualizations
 		try {
-			loadRadarDetectionsCallback(filesTable['3_Assessments']);
+			loadRadarVisualizationCallback(filesTable['3_Assessments']);
 		} catch (e) {
-			console.error("Could not load radar detection data");
+			console.error("Could not load radar radar visualization data");
 		}
 
 		// Load Radar:
@@ -241,10 +238,9 @@ async function loadDataIntoDocument(filesTable) {
  */
 async function determineNumTasks(datasetFiles) {
 	// list of functions which determine which (if any) files from s3 need to be downloaded on page load
-	const downloadList = [
-		rtkDownloads, calDownloads, remDownloads,
-		textureDownloads, laneDownloads, trackDownloads
-	]
+	const downloadList = [rtkDownloads, calDownloads, textureDownloads,
+		laneDownloads, trackDownloads, radarVisualizationDownloads
+	];
 
 	// downloads & loads that happen on page load and need to be tracked
 	let numDownloads = 0 // generally incremented by if objectName is present in the returned dictionary

@@ -175,13 +175,21 @@ async function createDetectionGeometries(shaderMaterial, detections, animationEn
 }
 
 export async function loadRadarDetectionsCallback(files) {
-  for (let file of files) {
-    // Remove prefix filepath and make lower case
-    const formattedFilename = file.split(/.*[\/|\\]/)[1].toLowerCase();
-    if (formattedFilename.includes('srr_detections.fb') || formattedFilename.includes('mrr_detections.fb') || formattedFilename.includes("mrr_tracks.fb")) {
-      await loadRadarDetectionsCallbackHelper(file);
-    }
+//   for (let file of files) {
+//     // Remove prefix filepath and make lower case
+//     const formattedFilename = file.split(/.*[\/|\\]/)[1].toLowerCase();
+//     if (formattedFilename.includes('srr_detections.fb') || formattedFilename.includes('mrr_detections.fb') || formattedFilename.includes("mrr_tracks.fb")) {
+//       await loadRadarDetectionsCallbackHelper(file);
+//     }
+//   }
+// }
+for (let file of files) {
+  // Remove prefix filepath
+  file = file.split(/.*[\/|\\]/)[1].toLowerCase();
+  if (file.includes('srr_detections.fb') || file.includes('mrr_detections.fb') || file.includes("mrr_tracks.fb")) {
+    await loadRadarDetectionsCallbackHelper(file);
   }
+}
 }
 
 async function loadRadarDetectionsCallbackHelper(file) {

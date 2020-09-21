@@ -24,7 +24,7 @@ async function loadDetections(s3, bucket, name, file, shaderMaterial, animationE
     resetProgressBars(2); // have to download & process/load detections
   }
 
-  if (file) { radarDetectionFiles.objectName = `${name}/2_Truth/${file}`; }
+  if (file) { radarDetectionFiles.objectName = `${name}/3_Assessments/${file}`; }
 
   if (s3 && bucket && name) {
     const request = s3.getObject({
@@ -176,9 +176,9 @@ async function createDetectionGeometries(shaderMaterial, detections, animationEn
 
 export async function loadRadarDetectionsCallback(files) {
   for (let file of files) {
-    // Remove prefix filepath
-    file = file.split(/.*[\/|\\]/)[1];
-    if (file.toLowerCase().includes('srr_detections.fb') || file.toLowerCase().includes('mrr_detections.fb')) {
+    // Remove prefix filepath and make lower case
+    const formattedFilename = file.split(/.*[\/|\\]/)[1].toLowerCase();
+    if (formattedFilename.includes('srr_detections.fb') || formattedFilename.includes('mrr_detections.fb') || formattedFilename.includes("mrr_tracks.fb")) {
       await loadRadarDetectionsCallbackHelper(file);
     }
   }
@@ -219,10 +219,12 @@ function getRadarDetectionName(file) {
 
 function getRadarDetectionColor(file) {
   if (file.toLowerCase().includes("mrr_detections.fb")) {
-    return new THREE.Color(0x00FFFF)
+    return new THREE.Color(0x00FFFF);
   } else if (file.includes("srr_detections.fb")) {
-    return new THREE.Color(0x0000FF)
+    return new THREE.Color(0x0000FF);
+  } else if (file.includes("mrr_tracks.fb")) {
+    return new THREE.Color(0xFFFF00);
   } else {
-    return new THREE.Color(0xFFFF00)
+    return new THREE.Color(0xFFFF00);
   }
 }

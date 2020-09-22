@@ -54,6 +54,22 @@ export const s3 = bucket && region && name && accessKeyId && secretAccessKey &&
         sessionToken: sessionToken,
     });
 
+export function getS3 () {
+  return bucket && region && name && accessKeyId && secretAccessKey && new AWS.S3({
+    region: region,
+    accessKeyId: accessKeyId,
+    secretAccessKey: secretAccessKey,
+    sessionToken: sessionToken
+  });
+}
+
+export function getAWSObjectVariables () {
+  return {
+    bucket,
+    name
+  };
+}
+
 export function getLambda () {
   return new AWS.Lambda({
     region: region,

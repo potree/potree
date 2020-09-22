@@ -32,7 +32,7 @@ export class NodeLoader{
 
 			let response = await fetch(urlOctree, {
 				headers: {
-					'content-type': 'multipart/byteranges',
+					'content-type': 'multipart/byteranges;boundary=gc0p4Jq0M2Yt08jU534c0p',
 					'Range': `bytes=${first}-${last}`,
 				},
 			});
@@ -216,7 +216,7 @@ export class NodeLoader{
 
 		let response = await fetch(hierarchyPath, {
 			headers: {
-				'content-type': 'multipart/byteranges',
+				'content-type': 'multipart/byteranges;boundary=gc0p4Jq0M2Yt08jU534c0p',
 				'Range': `bytes=${first}-${last}`,
 			},
 		});

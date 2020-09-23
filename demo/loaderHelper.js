@@ -15,6 +15,7 @@ import { storeVelo2Rtk, storeRtk2Vehicle, getVelo2Rtk, enablePanels, disablePane
 import { loadLanesCallback, addReloadLanesButton, laneDownloads } from "../demo/laneLoader.js"
 import { loadTracksCallback, trackDownloads } from "../demo/trackLoader.js"
 import { loadRadarVisualizationCallback, radarVisualizationDownloads } from "../demo/radarVisualizationLoader.js"
+import { loadSensorFusionCallback, sensorFusionDownloads } from "../demo/sensorFusionLoader.js"
 import { addLoadGapsButton, gapDownloads } from "../demo/gapsLoader.js"
 import { addLoadRadarButton, radarDownloads } from "../demo/radarLoader.js"
 import { addDetectionButton, detectionDownloads } from "../demo/detectionLoader.js"
@@ -206,7 +207,13 @@ async function loadDataIntoDocument(filesTable) {
 		try {
 			loadRadarVisualizationCallback(filesTable['3_Assessments']);
 		} catch (e) {
-			console.error("Could not load radar radar visualization data");
+			console.error("Could not load radar visualization data");
+		}
+
+		try {
+			loadSensorFusionCallback(filesTable['3_Assessments']);
+		} catch (e) {
+			console.error("Could not load sensor fusion data")
 		}
 
 		// Load Radar:
@@ -239,7 +246,7 @@ async function loadDataIntoDocument(filesTable) {
 async function determineNumTasks(datasetFiles) {
 	// list of functions which determine which (if any) files from s3 need to be downloaded on page load
 	const downloadList = [rtkDownloads, calDownloads, textureDownloads,
-		laneDownloads, trackDownloads, radarVisualizationDownloads
+		laneDownloads, trackDownloads, radarVisualizationDownloads, sensorFusionDownloads
 	];
 
 	// downloads & loads that happen on page load and need to be tracked

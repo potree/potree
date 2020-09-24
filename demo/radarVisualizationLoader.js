@@ -174,6 +174,7 @@ async function createRadarVisualizationMeshes (radarVisualizationData, radarVisu
 }
 
 function getRadarVisualizationName(file) {
+  if (file in radarVisualizationNameTable) { return radarVisualizationNameTable[file]; }
   // slice off file extension
   let words = file.slice(0, -3);
   // split on '_', join into display name
@@ -182,41 +183,36 @@ function getRadarVisualizationName(file) {
 }
 
 const radarVisualizationColorTable = {
-  'mrr_detections_visualization.fb': new THREE.Color(0x0000FF),
-  'mrr_tracks_visualization.fb': new THREE.Color(0xA6D864),
-  'srr_detections_1_visualization.fb': new THREE.Color(0xABDCFF),
-  'srr_detections_2_visualization.fb': new THREE.Color(0x81CAFF),
-  'srr_detections_3_visualization.fb': new THREE.Color(0x57B9FF),
-  'srr_detections_4_visualization.fb': new THREE.Color(0x2DA7FF),
+  'mrr_detections_visualization.fb': new THREE.Color(0xC1FFC8), // LG
+  'mrr_tracks_visualization.fb': new THREE.Color(0x66FF80), // G
+  'srr_detections_1_visualization.fb': new THREE.Color(0x0099FF), // LB
+  'srr_detections_2_visualization.fb': new THREE.Color(0xDCB3FF), // LP
+  'srr_detections_3_visualization.fb': new THREE.Color(0xFF9A00), // LO
+  'srr_detections_4_visualization.fb': new THREE.Color(0xFFF7B2), // LY
   'srr_detections_5_visualization.fb': new THREE.Color(0x0396FF),
-  'srr_tracks_1_visualization.fb': new THREE.Color(0xFFFDD0),
-  'srr_tracks_2_visualization.fb': new THREE.Color(0xFFFCBA),
-  'srr_tracks_3_visualization.fb': new THREE.Color(0xFFFB98),
-  'srr_tracks_4_visualization.fb': new THREE.Color(0xFFF85D),
+  'srr_tracks_1_visualization.fb': new THREE.Color(0x0000FF), // B
+  'srr_tracks_2_visualization.fb': new THREE.Color(0xB967FF), // P
+  'srr_tracks_3_visualization.fb': new THREE.Color(0xFF7400), // O
+  'srr_tracks_4_visualization.fb': new THREE.Color(0xFFE700), // Y
   'srr_tracks_5_visualization.fb': new THREE.Color(0xFFEE42)
 };
 
-function getRadarVisualizationColor(file) {
-  if (file in radarVisualizationColorTable) {
-    return radarVisualizationColorTable[file]
-  } else {
-    return new THREE.Color(0xFFFF00);
-  }
-}
+const radarVisualizationNameTable = {
+  'mrr_detections_visualization.fb': "MRR Detections",
+  'mrr_tracks_visualization.fb': "MRR Tracks",
+  'srr_detections_1_visualization.fb': "SRR FR Detections",
+  'srr_detections_2_visualization.fb': "SRR FL Detections",
+  'srr_detections_3_visualization.fb': "SRR BR Detections",
+  'srr_detections_4_visualization.fb': "SRR BL Detections",
+  'srr_detections_5_visualization.fb': "SRR Unknown Detections",
+  'srr_tracks_1_visualization.fb': new "SRR FR Tracks",
+  'srr_tracks_2_visualization.fb': new "SRR FL Tracks",
+  'srr_tracks_3_visualization.fb': "SRR BR Tracks",
+  'srr_tracks_4_visualization.fb': "SRR BL Tracks",
+  'srr_tracks_5_visualization.fb': "SRR Unknown Tracks"
+};
 
-// function getRadarVisualizationShape(radarVisualizationType) {
-//   if (radarVisualizationType.includes("_1_")) {
-//         return new THREE.BoxBufferGeometry(0.15, 0.15, 0.15);
-//   } else if (radarVisualizationType.includes("_2_")) {
-//     return new THREE.SphereBufferGeometry(0.15);
-//
-//   } else if (radarVisualizationType.includes("_3_")) {
-//     return new THREE.ConeBufferGeometry(0.15, 0.15);
-//   } else if (radarVisualizationType.includes("_4_")) {
-//     return new THREE.OctahedronBufferGeometry(0.15)
-//   } else if (radarVisualizationType.includes("_5_")) {
-//     return new THREE.CylinderBufferGeometry( 0.15, 0.15, 0.15);
-//   } else {
-//     return new THREE.SphereBufferGeometry(0.15);
-//   }
-// }
+function getRadarVisualizationColor(file) {
+  if (file in radarVisualizationColorTable) { return radarVisualizationColorTable[file]; }
+  return new THREE.Color(0xFFFF00);
+}

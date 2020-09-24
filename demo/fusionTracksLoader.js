@@ -4,19 +4,19 @@ import { s3, bucket, name, getShaderMaterial } from "../demo/paramLoader.js"
 import { getFbFileInfo } from "./loaderUtilities.js";
 
 
-let sensorFusionFiles = null;
-export const sensorFusionDownloads = async (datasetFiles) => {
-  sensorFusionFiles = await getFbFileInfo(datasetFiles,
+let fusionTracksFiles = null;
+export const fusionTracksDownloads = async (datasetFiles) => {
+  fusionTracksFiles = await getFbFileInfo(datasetFiles,
                                        "sf_bounding_boxes.fb", // 2_Truth
                                        "GroundTruth_generated.js", // 5_Schemas
                                        "../data/sf_bounding_boxes.fb",
                                        "../schemas/GroundTruth_generated.js");
-  return sensorFusionFiles;
+  return fusionTracksFiles;
 }
 
 async function loadDetections(s3, bucket, name, file, shaderMaterial, animationEngine) {
 
-  if (!sensorFusionFiles) {
+  if (!fusionTracksFiles) {
     console.log("No detection files present")
     return null
   } else {
@@ -24,12 +24,12 @@ async function loadDetections(s3, bucket, name, file, shaderMaterial, animationE
     resetProgressBars(2); // have to download & process/load detections
   }
 
-  if (file) { sensorFusionFiles.objectName = `${name}/3_Assessments/${file}`; }
+  if (file) { fusionTracksFiles.objectName = `${name}/3_Assessments/${file}`; }
 
   if (s3 && bucket && name) {
     const request = s3.getObject({
       Bucket: bucket,
-      Key: sensorFusionFiles.objectName
+      Key: fusionTracksFiles.objectName
     });
     request.on("httpDownloadProgress", async (e) => {
       await updateLoadingBar(e.loaded / e.total * 100);
@@ -38,16 +38,16 @@ async function loadDetections(s3, bucket, name, file, shaderMaterial, animationE
     incrementLoadingBarTotal("detections downloaded");
     const schemaUrl = s3.getSignedUrl('getObject', {
       Bucket: bucket,
-      Key: sensorFusionFiles.schemaFile
+      Key: fusionTracksFiles.schemaFile
     });
     const FlatbufferModule = await import(schemaUrl);
     const detectionGeometries = await parseDetections(data.Body, shaderMaterial, FlatbufferModule, animationEngine);
     incrementLoadingBarTotal("detections loaded");
     return detectionGeometries;
   } else {
-    const response = await fetch(sensorFusionFiles.objectName);
+    const response = await fetch(fusionTracksFiles.objectName);
     incrementLoadingBarTotal("detections downloaded");
-    const FlatbufferModule = await import(sensorFusionFiles.schemaFile);
+    const FlatbufferModule = await import(fusionTracksFiles.schemaFile);
     const detectionGeometries = await parseDetections(await response.arrayBuffer(), shaderMaterial, FlatbufferModule, animationEngine);
     incrementLoadingBarTotal("detections loaded");
     return detectionGeometries;
@@ -174,17 +174,17 @@ async function createDetectionGeometries(shaderMaterial, detections, animationEn
   return output;
 }
 
-export async function loadSensorFusionCallback(files) {
+export async function loadFusionTracksCallback(files) {
   for (let file of files) {
     // Remove prefix filepath
     file = file.split(/.*[\/|\\]/)[1].toLowerCase();
     if (file.includes('sf_bounding_boxes.fb')) {
-      await loadSensorFusionCallbackHelper(file);
+      await loadFusionTracksCallbackHelper(file);
     }
   }
 }
 
-async function loadSensorFusionCallbackHelper(file) {
+async function loadFusionTracksCallbackHelper(file) {
   const shaderMaterial = getShaderMaterial();
   const detectionShaderMaterial = shaderMaterial.clone();
   detectionShaderMaterial.uniforms.color.value = new THREE.Color(0x00FFFF);
@@ -192,7 +192,7 @@ async function loadSensorFusionCallbackHelper(file) {
 
   if (detectionGeometries != null) {
     const detectionLayer = new THREE.Group();
-    detectionLayer.name = 'Sensor Fusion Tracks';
+    detectionLayer.name = 'Fusion Tracks';
     for (let ii = 0, len = detectionGeometries.bbox.length; ii < len; ii++) {
       detectionLayer.add(detectionGeometries.bbox[ii]);
     }

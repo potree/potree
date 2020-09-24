@@ -213,7 +213,7 @@ async function loadDataIntoDocument(filesTable) {
 		try {
 			loadSensorFusionCallback(filesTable['3_Assessments']);
 		} catch (e) {
-			console.error("Could not load sensor fusion data")
+			console.error("Could not load fusion tracks data")
 		}
 
 		// Load Radar:

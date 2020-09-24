@@ -178,7 +178,7 @@ export async function loadFusionTracksCallback(files) {
   for (let file of files) {
     // Remove prefix filepath
     file = file.split(/.*[\/|\\]/)[1].toLowerCase();
-    if (file.includes('sf_bounding_boxes.fb')) {
+    if (file.includes('fusion_tracks_bounding_boxes.fb')) {
       await loadFusionTracksCallbackHelper(file);
     }
   }

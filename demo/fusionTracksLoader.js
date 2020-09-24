@@ -192,7 +192,7 @@ async function loadFusionTracksCallbackHelper(file) {
 
   if (detectionGeometries != null) {
     const detectionLayer = new THREE.Group();
-    detectionLayer.name = 'Fusion Tracks';
+    detectionLayer.name = 'Fusion Tracks Bounding Boxes';
     for (let ii = 0, len = detectionGeometries.bbox.length; ii < len; ii++) {
       detectionLayer.add(detectionGeometries.bbox[ii]);
     }

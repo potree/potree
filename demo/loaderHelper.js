@@ -15,7 +15,7 @@ import { storeVelo2Rtk, storeRtk2Vehicle, getVelo2Rtk, enablePanels, disablePane
 import { loadLanesCallback, addReloadLanesButton, laneDownloads } from "../demo/laneLoader.js"
 import { loadTracksCallback, trackDownloads } from "../demo/trackLoader.js"
 import { loadRadarVisualizationCallback, radarVisualizationDownloads } from "../demo/radarVisualizationLoader.js"
-import { loadFusionTracksCallback, fusionTracksDownloads } from "../demo/fusionTracksLoader.js"
+import { loadObjectFusionTracksCallback, objectFusionTracksDownloads } from "../demo/objectFusionTracksLoader.js"
 import { addLoadGapsButton, gapDownloads } from "../demo/gapsLoader.js"
 import { addLoadRadarButton, radarDownloads } from "../demo/radarLoader.js"
 import { addDetectionButton, detectionDownloads } from "../demo/detectionLoader.js"
@@ -211,9 +211,9 @@ async function loadDataIntoDocument(filesTable) {
 		}
 
 		try {
-			loadFusionTracksCallback(filesTable['3_Assessments']);
+			loadObjectFusionTracksCallback(filesTable['3_Assessments']);
 		} catch (e) {
-			console.error("Could not load fusion tracks data")
+			console.error("Could not load object fusion tracks data")
 		}
 
 		// Load Radar:
@@ -246,7 +246,7 @@ async function loadDataIntoDocument(filesTable) {
 async function determineNumTasks(datasetFiles) {
 	// list of functions which determine which (if any) files from s3 need to be downloaded on page load
 	const downloadList = [rtkDownloads, calDownloads, textureDownloads,
-		laneDownloads, trackDownloads, radarVisualizationDownloads, fusionTracksDownloads
+		laneDownloads, trackDownloads, radarVisualizationDownloads, objectFusionTracksDownloads
 	];
 
 	// downloads & loads that happen on page load and need to be tracked

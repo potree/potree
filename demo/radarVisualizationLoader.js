@@ -186,8 +186,8 @@ function getRadarVisualizationColor (file) {
 }
 
 const radarVisualizationColorTable = {
-  'mrr_detects_visualization.fb': new THREE.Color(0xC1FFC8), // LG
-  'mrr_tracks_visualization.fb': new THREE.Color(0x66FF80), // G
+  'mrr_detects_visualization.fb': new THREE.Color(0x689F38), // LG
+  'mrr_tracks_visualization.fb': new THREE.Color(0x006400), // G
   'srr_detects_fr_visualization.fb': new THREE.Color(0x0099FF), // LB
   'srr_detects_fl_visualization.fb': new THREE.Color(0xDCB3FF), // LP
   'srr_detects_br_visualization.fb': new THREE.Color(0xFFF7B2), // LY
@@ -196,7 +196,7 @@ const radarVisualizationColorTable = {
   'srr_tracks_fl_visualization.fb': new THREE.Color(0xB967FF), // P
   'srr_tracks_br_visualization.fb': new THREE.Color(0xFFE700), // Y
   'srr_tracks_bl_visualization.fb': new THREE.Color(0xFF7400), // O
-  'object_fusion_tracks_visualization.fb': new THREE.Color(0x7FFFD4)
+  'object_fusion_tracks_visualization.fb': new THREE.Color(0x00FFFF)
 };
 
 const radarVisualizationNameTable = {

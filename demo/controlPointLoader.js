@@ -18,7 +18,7 @@ export async function loadControlPointsCallback (s3, bucket, name, animationEngi
   }
 }
 
-window.controlPointBudget = 100;
+window.controlPointBudget = 30;
 async function loadControlPointsCallbackHelper (s3, bucket, name, animationEngine, controlPointType) {
   const shaderMaterial = getShaderMaterial();
   const controlPointShaderMaterial = shaderMaterial.clone();
@@ -59,7 +59,9 @@ async function loadControlPointsCallbackHelper (s3, bucket, name, animationEngin
         .slice(0, window.controlPointBudget);
 
       for (let i = 0; i < currentMeshes.length; i++) {
-        controlPointLayer.children[i] = sphereMeshes[currentMeshes[i].index];
+        controlPointLayer.children[i].geometry.dispose();
+        controlPointLayer.children[i].position.copy(sphereMeshes[currentMeshes[i].index].position);
+        controlPointLayer.children[i].geometry = sphereMeshes[currentMeshes[i].index].geometry;
       }
     });
   }, controlPointType);

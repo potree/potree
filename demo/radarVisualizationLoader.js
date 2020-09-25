@@ -23,7 +23,7 @@ export async function loadRadarVisualizationCallback(files) {
   }
 }
 
-window.radarVisualizationBudget = 1000;
+window.radarVisualizationBudget = 130;
 async function loadRadarVisualizationCallbackHelper (radarVisualizationType) {
   const shaderMaterial = getShaderMaterial();
   const radarVisualizationShaderMaterial = shaderMaterial.clone();
@@ -64,7 +64,9 @@ async function loadRadarVisualizationCallbackHelper (radarVisualizationType) {
         .slice(0, window.radarVisualizationBudget);
 
       for (let i = 0; i < currentMeshes.length; i++) {
-        radarVisualizationLayer.children[i] = sphereMeshes[currentMeshes[i].index];
+        radarVisualizationLayer.children[i].geometry.dispose();
+        radarVisualizationLayer.children[i].position.copy(sphereMeshes[currentMeshes[i].index].position);
+        radarVisualizationLayer.children[i].geometry = sphereMeshes[currentMeshes[i].index].geometry;
       }
     });
   }, radarVisualizationType);

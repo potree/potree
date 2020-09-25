@@ -13,7 +13,7 @@ export const radarVisualizationDownloads = async (datasetFiles) => {
   return radarVisualizationFiles;
 };
 
-export async function loadRadarVisualizationCallback(files) {
+export async function loadRadarVisualizationCallback (files) {
   for (let file of files) {
     // Remove prefix filepath
     file = file.split(/.*[\/|\\]/)[1].toLowerCase();
@@ -177,11 +177,7 @@ async function createRadarVisualizationMeshes (radarVisualizationData, radarVisu
 
 function getRadarVisualizationName(file) {
   if (file in radarVisualizationNameTable) { return radarVisualizationNameTable[file]; }
-  // slice off file extension
-  let words = file.slice(0, -3);
-  // split on '_', join into display name
-  words = words.split("_");
-  return words.join(" ");
+  return "Unknown Radar Data"
 }
 
 function getRadarVisualizationColor (file) {
@@ -190,33 +186,29 @@ function getRadarVisualizationColor (file) {
 }
 
 const radarVisualizationColorTable = {
-  'front_radar_detections_visualization.fb': new THREE.Color(0xC1FFC8), // LG
-  'front_radar_tracks_visualization.fb': new THREE.Color(0x66FF80), // G
-  'side_radar_detections_fr_visualization.fb': new THREE.Color(0x0099FF), // LB
-  'side_radar_detections_fl_visualization.fb': new THREE.Color(0xDCB3FF), // LP
-  'side_radar_detections_br_visualization.fb': new THREE.Color(0xFFF7B2), // LY
-  'side_radar_detections_bl_visualization.fb': new THREE.Color(0xFF9A00), // LO
-  'side_radar_detections_u_visualization.fb': new THREE.Color(0x0396FF),
-  'side_radar_tracks_fr_visualization.fb': new THREE.Color(0x0000FF), // B
-  'side_radar_tracks_fl_visualization.fb': new THREE.Color(0xB967FF), // P
-  'side_radar_tracks_br_visualization.fb': new THREE.Color(0xFFE700), // Y
-  'side_radar_tracks_bl_visualization.fb': new THREE.Color(0xFF7400), // O
-  'side_radar_tracks_u_visualization.fb': new THREE.Color(0xFFEE42),
-  'fusion_tracks_visualization.fb': new THREE.Color(0x7FFFD4)
+  'mrr_detects_visualization.fb': new THREE.Color(0x689F38), // LG
+  'mrr_tracks_visualization.fb': new THREE.Color(0x006400), // G
+  'srr_detects_fr_visualization.fb': new THREE.Color(0x0099FF), // LB
+  'srr_detects_fl_visualization.fb': new THREE.Color(0xDCB3FF), // LP
+  'srr_detects_br_visualization.fb': new THREE.Color(0xFFF7B2), // LY
+  'srr_detects_bl_visualization.fb': new THREE.Color(0xFF9A00), // LO
+  'srr_tracks_fr_visualization.fb': new THREE.Color(0x0000FF), // B
+  'srr_tracks_fl_visualization.fb': new THREE.Color(0xB967FF), // P
+  'srr_tracks_br_visualization.fb': new THREE.Color(0xFFE700), // Y
+  'srr_tracks_bl_visualization.fb': new THREE.Color(0xFF7400), // O
+  'object_fusion_tracks_visualization.fb': new THREE.Color(0x00FFFF)
 };
 
 const radarVisualizationNameTable = {
-  'front_radar_detections_visualization.fb': 'Front Radar Detections',
-  'front_radar_tracks_visualization.fb': 'Front Radar Tracks',
-  'side_radar_detections_fr_visualization.fb': 'Side Radar FR Detections',
-  'side_radar_detections_fl_visualization.fb': 'Side Radar FL Detections',
-  'side_radar_detections_br_visualization.fb': 'Side Radar BR Detections',
-  'side_radar_detections_bl_visualization.fb': 'Side Radar BL Detections',
-  'side_radar_detections_u_visualization.fb': 'Side Radar Unknown Detections',
-  'side_radar_tracks_fr_visualization.fb': 'Side Radar FR Tracks',
-  'side_radar_tracks_fl_visualization.fb': 'Side Radar FL Tracks',
-  'side_radar_tracks_br_visualization.fb': 'Side Radar BR Tracks',
-  'side_radar_tracks_bl_visualization.fb': 'Side Radar BL Tracks',
-  'side_radar_tracks_u_visualization.fb': 'Side Radar Unknown Tracks',
-  'fusion_tracks_visualization.fb': 'Fusion Tracks'
+  'mrr_detects_visualization.fb': 'MRR Detects',
+  'mrr_tracks_visualization.fb': 'MRR Tracks',
+  'srr_detects_fr_visualization.fb': 'SRR FR Detects',
+  'srr_detects_fl_visualization.fb': 'SRR FL Detects',
+  'srr_detects_br_visualization.fb': 'SRR BR Detects',
+  'srr_detects_bl_visualization.fb': 'SRR BL Detects',
+  'srr_tracks_fr_visualization.fb': 'SRR FR Tracks',
+  'srr_tracks_fl_visualization.fb': 'SRR FL Tracks',
+  'srr_tracks_br_visualization.fb': 'SRR BR Tracks',
+  'srr_tracks_bl_visualization.fb': 'SRR BL Tracks',
+  'object_fusion_tracks_visualization.fb': 'Object Fusion Tracks'
 };

@@ -1,6 +1,6 @@
 'use strict';
 import { incrementLoadingBarTotal, resetProgressBars, updateLoadingBar } from "../common/overlay.js";
-import { s3, bucket, name, getShaderMaterial } from "../demo/paramLoader.js"
+import { getS3, getAWSObjectVariables, getShaderMaterial } from "../demo/paramLoader.js"
 import { getFbFileInfo } from "./loaderUtilities.js";
 
 
@@ -14,7 +14,7 @@ export const objectFusionTracksDownloads = async (datasetFiles) => {
   return objectFusionTracksFiles;
 }
 
-async function loadDetections(s3, bucket, name, file, shaderMaterial, animationEngine) {
+async function loadDetections(file, shaderMaterial, animationEngine) {
 
   if (!objectFusionTracksFiles) {
     console.log("No detection files present")
@@ -24,9 +24,13 @@ async function loadDetections(s3, bucket, name, file, shaderMaterial, animationE
     resetProgressBars(2); // have to download & process/load detections
   }
 
-  if (file) { objectFusionTracksFiles.objectName = `${name}/3_Assessments/${file}`; }
+  const s3 = getS3();
+  const awsVariables = getAWSObjectVariables();
+  const bucket = awsVariables.bucket;
+  const name = awsVariables.name;
 
   if (s3 && bucket && name) {
+    if (file) { objectFusionTracksFiles.objectName = `${name}/3_Assessments/${file}`; }
     const request = s3.getObject({
       Bucket: bucket,
       Key: objectFusionTracksFiles.objectName
@@ -174,7 +178,7 @@ async function createDetectionGeometries(shaderMaterial, detections, animationEn
   return output;
 }
 
-export async function loadObjectFusionTracksCallback(files) {
+export async function loadObjectFusionTracksCallback (files) {
   for (let file of files) {
     // Remove prefix filepath
     file = file.split(/.*[\/|\\]/)[1].toLowerCase();
@@ -184,11 +188,11 @@ export async function loadObjectFusionTracksCallback(files) {
   }
 }
 
-async function loadObjectFusionTracksCallbackHelper(file) {
+async function loadObjectFusionTracksCallbackHelper (file) {
   const shaderMaterial = getShaderMaterial();
   const detectionShaderMaterial = shaderMaterial.clone();
   detectionShaderMaterial.uniforms.color.value = new THREE.Color(0x00FFFF);
-  const detectionGeometries = await loadDetections(s3, bucket, name, file, detectionShaderMaterial, animationEngine);
+  const detectionGeometries = await loadDetections(file, detectionShaderMaterial, animationEngine);
 
   if (detectionGeometries != null) {
     const detectionLayer = new THREE.Group();

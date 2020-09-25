@@ -13,7 +13,7 @@ export const radarVisualizationDownloads = async (datasetFiles) => {
   return radarVisualizationFiles;
 };
 
-export async function loadRadarVisualizationCallback(files) {
+export async function loadRadarVisualizationCallback (files) {
   for (let file of files) {
     // Remove prefix filepath
     file = file.split(/.*[\/|\\]/)[1].toLowerCase();

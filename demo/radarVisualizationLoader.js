@@ -177,11 +177,7 @@ async function createRadarVisualizationMeshes (radarVisualizationData, radarVisu
 
 function getRadarVisualizationName(file) {
   if (file in radarVisualizationNameTable) { return radarVisualizationNameTable[file]; }
-  // slice off file extension
-  let words = file.slice(0, -3);
-  // split on '_', join into display name
-  words = words.split("_");
-  return words.join(" ");
+  return "Unknown Radar Data"
 }
 
 function getRadarVisualizationColor (file) {
@@ -196,12 +192,10 @@ const radarVisualizationColorTable = {
   'srr_detects_fl_visualization.fb': new THREE.Color(0xDCB3FF), // LP
   'srr_detects_br_visualization.fb': new THREE.Color(0xFFF7B2), // LY
   'srr_detects_bl_visualization.fb': new THREE.Color(0xFF9A00), // LO
-  'srr_detects_u_visualization.fb': new THREE.Color(0x0396FF),
   'srr_tracks_fr_visualization.fb': new THREE.Color(0x0000FF), // B
   'srr_tracks_fl_visualization.fb': new THREE.Color(0xB967FF), // P
   'srr_tracks_br_visualization.fb': new THREE.Color(0xFFE700), // Y
   'srr_tracks_bl_visualization.fb': new THREE.Color(0xFF7400), // O
-  'srr_tracks_u_visualization.fb': new THREE.Color(0xFFEE42),
   'object_fusion_tracks_visualization.fb': new THREE.Color(0x7FFFD4)
 };
 
@@ -212,11 +206,9 @@ const radarVisualizationNameTable = {
   'srr_detects_fl_visualization.fb': 'SRR FL Detects',
   'srr_detects_br_visualization.fb': 'SRR BR Detects',
   'srr_detects_bl_visualization.fb': 'SRR BL Detects',
-  'srr_detects_u_visualization.fb': 'SRR Unknown Detects',
   'srr_tracks_fr_visualization.fb': 'SRR FR Tracks',
   'srr_tracks_fl_visualization.fb': 'SRR FL Tracks',
   'srr_tracks_br_visualization.fb': 'SRR BR Tracks',
   'srr_tracks_bl_visualization.fb': 'SRR BL Tracks',
-  'srr_tracks_u_visualization.fb': 'SRR Unknown Tracks',
   'object_fusion_tracks_visualization.fb': 'Object Fusion Tracks'
 };

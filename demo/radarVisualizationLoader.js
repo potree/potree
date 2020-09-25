@@ -141,36 +141,26 @@ async function parseRadarVisualizationData (dataBuffer, radarVisualizationShader
   const buffer = new Uint8Array(dataBuffer.slice(4, segmentSize));
   const byteBuffer = new flatbuffers.ByteBuffer(buffer);
   const spheresBuffer = FlatbufferModule.Flatbuffer.Primitives.Spheres3D.getRootAsSpheres3D(byteBuffer);
-  const spheresArray = [];
-  const length = spheresBuffer.pointsLength();
-  for (let ii = 0; ii < length; ii++) {
-    spheresArray.push(spheresBuffer.points(ii));
-  }
-  return await createRadarVisualizationMeshes(spheresArray, radarVisualizationShaderMaterial, FlatbufferModule, animationEngine, radarVisualizationType);
+  return await createRadarVisualizationMeshes(spheresBuffer, radarVisualizationShaderMaterial, FlatbufferModule, animationEngine, radarVisualizationType);
 }
 
 async function createRadarVisualizationMeshes (radarVisualizationData, radarVisualizationShaderMaterial, FlatbufferModule, animationEngine, radarVisualizationType) {
+  const length = radarVisualizationData.pointsLength();
   const allSpheres = [];
-  const length = radarVisualizationData.length;
+  allSpheres.length = length;
+  radarVisualizationShaderMaterial.uniforms.color.value = getRadarVisualizationColor(radarVisualizationType);
   for (let ii = 0; ii < length; ii++) {
-    if (ii % 1000 === 0) {
-      await updateLoadingBar(ii / length * 100); // update individual task progress
-    }
-    const point = radarVisualizationData[ii];
-
+    const point = radarVisualizationData.points(ii)
     const vertex = { x: point.pos().x(), y: point.pos().y(), z: point.pos().z() };
     const timestamp = point.viz(new FlatbufferModule.Flatbuffer.Primitives.HideAndShowAnimation())
       .timestamp(new FlatbufferModule.Flatbuffer.Primitives.ObjectTimestamp())
       .value() - animationEngine.tstart;
-    const timestampArray = new Float64Array(64).fill(timestamp)
-    const sphereGeo = new THREE.SphereBufferGeometry(0.15);
-;
-    radarVisualizationShaderMaterial.uniforms.color.value = getRadarVisualizationColor(radarVisualizationType);
-    const sphereMesh = new THREE.Mesh(sphereGeo, radarVisualizationShaderMaterial);
+    const timestampArray = new Float64Array(64).fill(timestamp);
+    const sphereMesh = new THREE.Mesh(new THREE.SphereBufferGeometry(0.15), radarVisualizationShaderMaterial);
     sphereMesh.name = "RadarVisualization"
     sphereMesh.position.set(vertex.x, vertex.y, vertex.z);
     sphereMesh.geometry.addAttribute('gpsTime', new THREE.Float32BufferAttribute(timestampArray, 1));
-    allSpheres.push(sphereMesh);
+    allSpheres[ii] = sphereMesh;
   }
   return allSpheres;
 }

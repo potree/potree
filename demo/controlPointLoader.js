@@ -146,7 +146,7 @@ async function parseControlPoints (bytesArray, controlPointShaderMaterial, Flatb
       controlPoint.push(point);
       segOffset += segSize;
     }
-    return await createControlMeshes(controlPoint, controlPointShaderMaterial, FlatbufferModule, animationEngine, controlPointType);
+    return await createREMControlMeshes(controlPoint, controlPointShaderMaterial, FlatbufferModule, animationEngine, controlPointType);
   } else {
     const dataBuffer = bytesArray.buffer;
     const dataView = new DataView(dataBuffer);
@@ -154,16 +154,33 @@ async function parseControlPoints (bytesArray, controlPointShaderMaterial, Flatb
     const buffer = new Uint8Array(dataBuffer.slice(4, segmentSize));
     const byteBuffer = new flatbuffers.ByteBuffer(buffer);
     const spheresBuffer = FlatbufferModule.Flatbuffer.Primitives.Spheres3D.getRootAsSpheres3D(byteBuffer);
-    const spheresArray = [];
-    const length = spheresBuffer.pointsLength();
-    for (let ii = 0; ii < length; ii++) {
-      spheresArray.push(spheresBuffer.points(ii));
-    }
-    return await createControlMeshes(spheresArray, controlPointShaderMaterial, FlatbufferModule, animationEngine, controlPointType);
+
+    return await createControlMeshes(spheresBuffer, controlPointShaderMaterial, FlatbufferModule, animationEngine, controlPointType);
   }
 }
 
 async function createControlMeshes (controlPoints, controlPointShaderMaterial, FlatbufferModule, animationEngine, controlPointType) {
+  const length = controlPoints.pointsLength();
+  const allSpheres = [];
+  allSpheres.length = length;
+  controlPointShaderMaterial.uniforms.color.value = getControlPointColor(controlPointType);
+  for (let ii = 0; ii < length; ii++) {
+    const point = controlPoints.points(ii)
+    const vertex = { x: point.pos().x(), y: point.pos().y(), z: point.pos().z() };
+    const timestamp = point.viz(new FlatbufferModule.Flatbuffer.Primitives.HideAndShowAnimation())
+      .timestamp(new FlatbufferModule.Flatbuffer.Primitives.ObjectTimestamp())
+      .value() - animationEngine.tstart;
+    const timestampArray = new Float64Array(64).fill(timestamp)
+    const sphereMesh = new THREE.Mesh(new THREE.BoxBufferGeometry(0.3,0.3,0.3), controlPointShaderMaterial);
+    sphereMesh.name = "ControlPoint"
+    sphereMesh.position.set(vertex.x, vertex.y, vertex.z);
+    sphereMesh.geometry.addAttribute('gpsTime', new THREE.Float32BufferAttribute(timestampArray, 1));
+    allSpheres.push(sphereMesh);
+  }
+  return allSpheres;
+}
+
+async function createREMControlMeshes (controlPoints, controlPointShaderMaterial, FlatbufferModule, animationEngine, controlPointType) {
   const allSpheres = [];
   const length = controlPoints.length;
   for (let ii = 0; ii < length; ii++) {

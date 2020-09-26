@@ -18,18 +18,19 @@ export async function loadControlPointsCallback (s3, bucket, name, animationEngi
   }
 }
 
-window.controlPointBudget = 30;
+window.controlPointBudget = 100;
 async function loadControlPointsCallbackHelper (s3, bucket, name, animationEngine, controlPointType) {
   const shaderMaterial = getShaderMaterial();
   const controlPointShaderMaterial = shaderMaterial.clone();
-  await loadControlPoints(s3, bucket, name, controlPointShaderMaterial, animationEngine, (sphereMeshes) => {
+  await loadControlPoints(s3, bucket, name, controlPointShaderMaterial, animationEngine, (meshData) => {
+    const {meshes, controlPointData} = meshData;
+
     const controlPointLayer = new THREE.Group();
     controlPointLayer.name = getControlPointName(controlPointType);
-    controlPointLayer.add(...sphereMeshes.filter((mesh, i) => i < window.controlPointBudget));
+    controlPointLayer.add(...meshes);
 
-    const sphereMeshTimestamps = sphereMeshes.map((mesh, i) => ({
-      minGpsTime: Math.min(...mesh.geometry.attributes.gpsTime.array),
-      maxGpsTime: Math.max(...mesh.geometry.attributes.gpsTime.array),
+    const controlPointTimestamps = controlPointData.map((data, i) => ({
+      timestamp: data.timestamp,
       index: i
     }));
 
@@ -47,21 +48,35 @@ async function loadControlPointsCallbackHelper (s3, bucket, name, animationEngin
 
       if (controlPointLayer.children.length !== window.controlPointBudget) {
         controlPointLayer.remove(...controlPointLayer.children);
-        controlPointLayer.add(...sphereMeshes.filter((mesh, i) => i < window.controlPointBudget));
+
+        controlPointData.filter((data, i) => i < window.controlPointBudget).forEach((data) => {
+          const newMeshGeo = new THREE.SphereBufferGeometry(0.15);
+          const newMesh = new THREE.Mesh(newMeshGeo, controlPointShaderMaterial);
+          newMesh.name = "ControlPoint"
+          newMesh.position.set(data.position.x, data.position.y, data.position.z);
+          newMesh.geometry.addAttribute('gpsTime', new THREE.Float32BufferAttribute(new Float64Array(64).fill(data.timestamp), 1));
+          controlPointLayer.add(newMesh);
+        });
       }
 
       controlPointShaderMaterial.uniforms.minGpsTime.value = currentTime + animationEngine.activeWindow.backward;
       controlPointShaderMaterial.uniforms.maxGpsTime.value = currentTime + animationEngine.activeWindow.forward;
 
-      const currentMeshes = sphereMeshTimestamps
-        .filter(({minGpsTime, maxGpsTime}) => minGpsTime >= minActiveWindow && maxGpsTime <= maxActiveWindow)
-        .sort((a, b) => Math.abs(currentTime - a.minGpsTime) - Math.abs(currentTime - b.minGpsTime))
+      const currentData = controlPointTimestamps
+        .filter(({timestamp}) => timestamp >= minActiveWindow && timestamp <= maxActiveWindow)
+        .sort((a, b) => Math.abs(currentTime - a.timestamp) - Math.abs(currentTime - b.timestamp))
         .slice(0, window.controlPointBudget);
 
-      for (let i = 0; i < currentMeshes.length; i++) {
+      for (let i = 0; i < currentData.length; i++) {
+        const newMeshGeo = new THREE.SphereBufferGeometry(0.15);
+        const newMesh = new THREE.Mesh(newMeshGeo, controlPointShaderMaterial);
+        newMesh.name = "ControlPoint"
+        newMesh.position.set(controlPointData[currentData[i].index].position.x, controlPointData[currentData[i].index].position.y, controlPointData[currentData[i].index].position.z);
+        newMesh.geometry.addAttribute('gpsTime', new THREE.Float32BufferAttribute(new Float64Array(64).fill(controlPointData[currentData[i].index].timestamp), 1));
+
         controlPointLayer.children[i].geometry.dispose();
-        controlPointLayer.children[i].position.copy(sphereMeshes[currentMeshes[i].index].position);
-        controlPointLayer.children[i].geometry = sphereMeshes[currentMeshes[i].index].geometry;
+        controlPointLayer.children[i].material.dispose();
+        controlPointLayer.children[i] = newMesh;
       }
     });
   }, controlPointType);
@@ -160,29 +175,44 @@ async function parseControlPoints (bytesArray, controlPointShaderMaterial, Flatb
 }
 
 async function createControlMeshes (controlPoints, controlPointShaderMaterial, FlatbufferModule, animationEngine, controlPointType) {
-  const length = controlPoints.pointsLength();
-  const allSpheres = [];
-  allSpheres.length = length;
   controlPointShaderMaterial.uniforms.color.value = getControlPointColor(controlPointType);
+
+  const length = controlPoints.pointsLength();
+  const allSpheres = new Array(window.controlPointBudget);
+  const controlPointData = new Array(length);
+
   for (let ii = 0; ii < length; ii++) {
     const point = controlPoints.points(ii)
     const vertex = { x: point.pos().x(), y: point.pos().y(), z: point.pos().z() };
     const timestamp = point.viz(new FlatbufferModule.Flatbuffer.Primitives.HideAndShowAnimation())
       .timestamp(new FlatbufferModule.Flatbuffer.Primitives.ObjectTimestamp())
       .value() - animationEngine.tstart;
-    const timestampArray = new Float64Array(64).fill(timestamp)
-    const sphereMesh = new THREE.Mesh(new THREE.BoxBufferGeometry(0.3,0.3,0.3), controlPointShaderMaterial);
-    sphereMesh.name = "ControlPoint"
-    sphereMesh.position.set(vertex.x, vertex.y, vertex.z);
-    sphereMesh.geometry.addAttribute('gpsTime', new THREE.Float32BufferAttribute(timestampArray, 1));
-    allSpheres.push(sphereMesh);
+
+    const data = {
+      position: vertex,
+      timestamp: timestamp
+    };
+    controlPointData[ii] = data;
+
+    if (ii < window.controlPointBudget) {
+      const sphereGeo = new THREE.SphereBufferGeometry(0.15);
+      const sphereMesh = new THREE.Mesh(sphereGeo, controlPointShaderMaterial);
+      sphereMesh.name = "ControlPoint"
+      sphereMesh.position.set(vertex.x, vertex.y, vertex.z);
+      sphereMesh.geometry.addAttribute('gpsTime', new THREE.Float32BufferAttribute(new Float64Array(64).fill(timestamp), 1));
+      allSpheres[ii] = sphereMesh;
+    }
   }
-  return allSpheres;
+  return {meshes: allSpheres, controlPointData: controlPointData};
 }
 
 async function createREMControlMeshes (controlPoints, controlPointShaderMaterial, FlatbufferModule, animationEngine, controlPointType) {
-  const allSpheres = [];
-  const length = controlPoints.length;
+  controlPointShaderMaterial.uniforms.color.value = getControlPointColor(controlPointType);
+
+  const length = controlPoints.pointsLength();
+  const allSpheres = new Array(window.controlPointBudget);
+  const controlPointData = new Array(length);
+
   for (let ii = 0; ii < length; ii++) {
     if (ii % 1000 === 0) {
       await updateLoadingBar(ii / length * 100); // update individual task progress
@@ -194,17 +224,23 @@ async function createREMControlMeshes (controlPoints, controlPointShaderMaterial
     const timestamp = point.viz(new FlatbufferModule.Flatbuffer.Primitives.HideAndShowAnimation())
       .timestamp(new FlatbufferModule.Flatbuffer.Primitives.ObjectTimestamp())
       .value() - animationEngine.tstart;
-    const timestampArray = new Float64Array(64).fill(timestamp)
-    const sphereGeo = new THREE.BoxBufferGeometry(0.3,0.3,0.3);
 
-    controlPointShaderMaterial.uniforms.color.value = getControlPointColor(controlPointType);
-    const sphereMesh = new THREE.Mesh(sphereGeo, controlPointShaderMaterial);
-    sphereMesh.name = "ControlPoint"
-    sphereMesh.position.set(vertex.x, vertex.y, vertex.z);
-    sphereMesh.geometry.addAttribute('gpsTime', new THREE.Float32BufferAttribute(timestampArray, 1));
-    allSpheres.push(sphereMesh);
+    const data = {
+      position: vertex,
+      timestamp: timestamp
+    };
+    controlPointData[ii] = data;
+
+    if (ii < window.controlPointBudget) {
+      const sphereGeo = new THREE.SphereBufferGeometry(0.15);
+      const sphereMesh = new THREE.Mesh(sphereGeo, controlPointShaderMaterial);
+      sphereMesh.name = "ControlPoint"
+      sphereMesh.position.set(vertex.x, vertex.y, vertex.z);
+      sphereMesh.geometry.addAttribute('gpsTime', new THREE.Float32BufferAttribute(new Float64Array(64).fill(timestamp), 1));
+      allSpheres[ii] = sphereMesh;
+    }
   }
-  return allSpheres;
+  return {meshes: allSpheres, controlPointData: controlPointData};
 }
 
 function getControlPointColor (controlPointType) {

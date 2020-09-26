@@ -27,14 +27,15 @@ window.radarVisualizationBudget = 130;
 async function loadRadarVisualizationCallbackHelper (radarVisualizationType) {
   const shaderMaterial = getShaderMaterial();
   const radarVisualizationShaderMaterial = shaderMaterial.clone();
-  await loadRadarVisualization(radarVisualizationShaderMaterial, animationEngine, (sphereMeshes) => {
+  await loadRadarVisualization(radarVisualizationShaderMaterial, animationEngine, (meshData) => {
+    const {meshes, radarData} = meshData;
+
     const radarVisualizationLayer = new THREE.Group();
     radarVisualizationLayer.name = getRadarVisualizationName(radarVisualizationType);
-    radarVisualizationLayer.add(...sphereMeshes.filter((mesh, i) => i < window.radarVisualizationBudget));
+    radarVisualizationLayer.add(...meshes);
 
-    const sphereMeshTimestamps = sphereMeshes.map((mesh, i) => ({
-      minGpsTime: Math.min(...mesh.geometry.attributes.gpsTime.array),
-      maxGpsTime: Math.max(...mesh.geometry.attributes.gpsTime.array),
+    const radarDataTimestamps = radarData.map((data, i) => ({
+      timestamp: data.timestamp,
       index: i
     }));
 
@@ -52,21 +53,35 @@ async function loadRadarVisualizationCallbackHelper (radarVisualizationType) {
 
       if (radarVisualizationLayer.children.length !== window.radarVisualizationBudget) {
         radarVisualizationLayer.remove(...radarVisualizationLayer.children);
-        radarVisualizationLayer.add(...sphereMeshes.filter((mesh, i) => i < window.radarVisualizationBudget));
+
+        radarData.filter((data, i) => i < window.radarVisualizationBudget).forEach((data) => {
+          const newMeshGeo = new THREE.SphereBufferGeometry(0.15);
+          const newMesh = new THREE.Mesh(newMeshGeo, radarVisualizationShaderMaterial);
+          newMesh.name = "RadarVisualization"
+          newMesh.position.set(data.position.x, data.position.y, data.position.z);
+          newMesh.geometry.addAttribute('gpsTime', new THREE.Float32BufferAttribute(new Float64Array(64).fill(data.timestamp), 1));
+          radarVisualizationLayer.add(newMesh);
+        });
       }
 
       radarVisualizationShaderMaterial.uniforms.minGpsTime.value = currentTime + animationEngine.activeWindow.backward;
       radarVisualizationShaderMaterial.uniforms.maxGpsTime.value = currentTime + animationEngine.activeWindow.forward;
 
-      const currentMeshes = sphereMeshTimestamps
-        .filter(({minGpsTime, maxGpsTime}) => minGpsTime >= minActiveWindow && maxGpsTime <= maxActiveWindow)
-        .sort((a, b) => Math.abs(currentTime - a.minGpsTime) - Math.abs(currentTime - b.minGpsTime))
+      const currentData = radarDataTimestamps
+        .filter(({timestamp}) => timestamp >= minActiveWindow && timestamp <= maxActiveWindow)
+        .sort((a, b) => Math.abs(currentTime - a.timestamp) - Math.abs(currentTime - b.timestamp))
         .slice(0, window.radarVisualizationBudget);
 
-      for (let i = 0; i < currentMeshes.length; i++) {
+      for (let i = 0; i < currentData.length; i++) {
+        const newMeshGeo = new THREE.SphereBufferGeometry(0.15);
+        const newMesh = new THREE.Mesh(newMeshGeo, radarVisualizationShaderMaterial);
+        newMesh.name = "RadarVisualization"
+        newMesh.position.set(radarData[currentData[i].index].position.x, radarData[currentData[i].index].position.y, radarData[currentData[i].index].position.z);
+        newMesh.geometry.addAttribute('gpsTime', new THREE.Float32BufferAttribute(new Float64Array(64).fill(radarData[currentData[i].index].timestamp), 1));
+
         radarVisualizationLayer.children[i].geometry.dispose();
-        radarVisualizationLayer.children[i].position.copy(sphereMeshes[currentMeshes[i].index].position);
-        radarVisualizationLayer.children[i].geometry = sphereMeshes[currentMeshes[i].index].geometry;
+        radarVisualizationLayer.children[i].material.dispose();
+        radarVisualizationLayer.children[i] = newMesh;
       }
     });
   }, radarVisualizationType);
@@ -145,24 +160,35 @@ async function parseRadarVisualizationData (dataBuffer, radarVisualizationShader
 }
 
 async function createRadarVisualizationMeshes (radarVisualizationData, radarVisualizationShaderMaterial, FlatbufferModule, animationEngine, radarVisualizationType) {
-  const length = radarVisualizationData.pointsLength();
-  const allSpheres = [];
-  allSpheres.length = length;
   radarVisualizationShaderMaterial.uniforms.color.value = getRadarVisualizationColor(radarVisualizationType);
+
+  const length = radarVisualizationData.pointsLength();
+  const allSpheres = new Array(window.radarVisualizationBudget);
+  const radarData = new Array(length);
+
   for (let ii = 0; ii < length; ii++) {
     const point = radarVisualizationData.points(ii)
     const vertex = { x: point.pos().x(), y: point.pos().y(), z: point.pos().z() };
     const timestamp = point.viz(new FlatbufferModule.Flatbuffer.Primitives.HideAndShowAnimation())
       .timestamp(new FlatbufferModule.Flatbuffer.Primitives.ObjectTimestamp())
       .value() - animationEngine.tstart;
-    const timestampArray = new Float64Array(64).fill(timestamp);
-    const sphereMesh = new THREE.Mesh(new THREE.SphereBufferGeometry(0.15), radarVisualizationShaderMaterial);
-    sphereMesh.name = "RadarVisualization"
-    sphereMesh.position.set(vertex.x, vertex.y, vertex.z);
-    sphereMesh.geometry.addAttribute('gpsTime', new THREE.Float32BufferAttribute(timestampArray, 1));
-    allSpheres[ii] = sphereMesh;
+
+    const data = {
+      position: vertex,
+      timestamp: timestamp
+    };
+    radarData[ii] = data;
+
+    if (ii < window.radarVisualizationBudget) {
+      const sphereGeo = new THREE.SphereBufferGeometry(0.15);
+      const sphereMesh = new THREE.Mesh(sphereGeo, radarVisualizationShaderMaterial);
+      sphereMesh.name = "RadarVisualization"
+      sphereMesh.position.set(vertex.x, vertex.y, vertex.z);
+      sphereMesh.geometry.addAttribute('gpsTime', new THREE.Float32BufferAttribute(new Float64Array(64).fill(timestamp), 1));
+      allSpheres[ii] = sphereMesh;
+    }
   }
-  return allSpheres;
+  return {meshes: allSpheres, radarData: radarData};
 }
 
 function getRadarVisualizationName(file) {

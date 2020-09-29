@@ -52,6 +52,7 @@ export const s3 = bucket && region && name && accessKeyId && secretAccessKey &&
         accessKeyId: accessKeyId,
         secretAccessKey: secretAccessKey,
         sessionToken: sessionToken,
+        httpOptions: {timeout: 10 * 60 * 1000}  // 10 min timeout
     });
 
 export function getS3 () {

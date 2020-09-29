@@ -430,6 +430,10 @@ We would like to thank our sponsors for their financial contributions that keep 
 			€ 1,000+
 		</th>
 		<td>
+			<a href="https://www.sogelink.fr/">
+				<img src="docs/sponsors/SOGELINK_SO-EASY.png" height="40"/> &nbsp;
+			</a>
+			<b>Data-viewer</b>
 			<a href="https://biology.anu.edu.au/research/facilities/australian-plant-phenomics-facility-anu">
 				<img src="docs/sponsors/APPF full logo.png" height="60"/> &nbsp;
 			</a>

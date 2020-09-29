@@ -56,79 +56,98 @@
 			$("#menu_tools").next().show();
 			viewer.toggleSidebar();
 		});
-		
-		// Sigeom
-		Potree.loadPointCloud("../pointclouds/vol_total/cloud.js", "sigeom.sa", e => {
-			viewer.scene.addPointCloud(e.pointcloud);
-			
-			let material = e.pointcloud.material;
-			material.size = 1;
-			material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
-			
-			viewer.scene.view.position.set(589974.341, 231698.397, 986.146);
-			viewer.scene.view.lookAt(new THREE.Vector3(589851.587, 231428.213, 715.634));
-			// viewer.fitToScreen();
-		});
-		
-		Potree.loadPointCloud("../pointclouds/lion_takanawa/cloud.js", "lion 1", e => {
-			viewer.scene.addPointCloud(e.pointcloud);
-			
-			let material = e.pointcloud.material;
-			material.size = 1;
-			material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
-			
-			e.pointcloud.position.set(589927.44, 231479.04, 726.87);
-			e.pointcloud.scale.set(10, 10, 10);
-			e.pointcloud.rotation.set(0, 0, 0.8 * Math.PI);
-			//e.pointcloud.visible = false;
-			// viewer.fitToScreen();
-		});
-		
-		Potree.loadPointCloud("../pointclouds/lion_takanawa/cloud.js", "lion 2", e => {
-			viewer.scene.addPointCloud(e.pointcloud);
-			
-			let material = e.pointcloud.material;
-			material.size = 1;
-			material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
-			material.activeAttributeName = "elevation";
-			material.heightMin = 720;
-			material.heightMax = 780;
-			
-			e.pointcloud.position.set(589997.44, 231479.04, 726.87);
-			e.pointcloud.scale.set(10, 10, 10);
-			e.pointcloud.rotation.set(0, 0, 0.8 * Math.PI);
-			//e.pointcloud.visible = true;
-			// viewer.fitToScreen();
-		});
-		
-		Potree.loadPointCloud("../pointclouds/lion_takanawa/cloud.js", "lion 3", e => {
-			viewer.scene.addPointCloud(e.pointcloud);
-			
-			let material = e.pointcloud.material;
-			material.size = 1;
-			material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
-			material.activeAttributeName = "rgba";
-			material.color = new THREE.Color().setRGB(0.4, 0.6, 0.7);
-			
-			e.pointcloud.position.set(589927.44 -70, 231479.04, 726.87);
-			e.pointcloud.scale.set(10, 10, 10);
-			e.pointcloud.rotation.set(0, 0, 0.8 * Math.PI);
-			e.pointcloud.visible = true;
-			// viewer.fitToScreen();
-		});
 
-		Potree.loadPointCloud("http://5.9.65.151/mschuetz/potree/resources/pointclouds/archpro/heidentor/cloud.js", "Heidentor", function(e){
-			viewer.scene.addPointCloud(e.pointcloud);
+
+		// wrap load code into an async function so that we can use "await"
+		async function load(){
+
+			// specify point clouds that are to be loaded and callbacks to invoke 
+			let pointclouds = [
+				{
+					url: "../pointclouds/vol_total/cloud.js", 
+					callback: (pointcloud) => {
+						pointcloud.name = "sorvilier";
+
+						let material = pointcloud.material;
+						material.size = 1;
+						material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
+					},
+				},{
+					url: "../pointclouds/lion_takanawa/cloud.js", 
+					callback: (pointcloud) => {
+						pointcloud.name = "lion 1";
+
+						let material = pointcloud.material;
+						material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
+
+						pointcloud.position.set(589927.44, 231479.04, 726.87);
+						pointcloud.scale.set(10, 10, 10);
+						pointcloud.rotation.set(0, 0, 0.8 * Math.PI);
+					},
+				},{
+					url: "../pointclouds/lion_takanawa/cloud.js", 
+					callback: (pointcloud) => {
+						pointcloud.name = "lion 2";
+
+						let material = pointcloud.material;
+
+						material.size = 1;
+						material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
+						material.activeAttributeName = "elevation";
+						material.heightMin = 720;
+						material.heightMax = 780;
+						
+						pointcloud.position.set(589997.44, 231479.04, 726.87);
+						pointcloud.scale.set(10, 10, 10);
+						pointcloud.rotation.set(0, 0, 0.8 * Math.PI);
+					},
+				},{
+					url: "../pointclouds/lion_takanawa/cloud.js", 
+					callback: (pointcloud) => {
+						pointcloud.name = "lion 3";
+
+						let material = pointcloud.material;
+						material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
+
+						material.color = new THREE.Color().setRGB(0.4, 0.6, 0.7);
+						
+						pointcloud.position.set(589927.44 -70, 231479.04, 726.87);
+						pointcloud.scale.set(10, 10, 10);
+						pointcloud.rotation.set(0, 0, 0.8 * Math.PI);
+					},
+				},{
+					url: "http://5.9.65.151/mschuetz/potree/resources/pointclouds/archpro/heidentor/cloud.js", 
+					callback: (pointcloud) => {
+						pointcloud.name = "Heidentor";
+						
+						pointcloud.position.set(589817.920, 231358.010, 744.865);
+						pointcloud.scale.set(6, 6, 6);
+						pointcloud.rotation.z = -1.9;
+					},
+				}
+			];
+
+			// start loading all point clouds asynchronously, get a promise for each one that resolves when it's loaded
+			let promises = pointclouds.map(p => Potree.loadPointCloud(p.url));
 			
-			e.pointcloud.position.set(589817.920, 231358.010, 744.865);
-			e.pointcloud.scale.set(6, 6, 6);
-			e.pointcloud.rotation.z = -1.9;
+			// now iterate over all promises in order
+			for(let i = 0; i < promises.length; i++){
 
-			let material = e.pointcloud.material;
-			material.size = 1;
-			material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
-		});
+				// wait until this point cloud is loaded before processing the next one
+				let pointcloud = (await promises[i]).pointcloud;
 
+				viewer.scene.addPointCloud(pointcloud);
+				pointclouds[i].callback(pointcloud);
+			}
+
+			
+			viewer.scene.view.setView(
+				[589974.341, 231698.397, 986.146],
+				[589851.587, 231428.213, 715.634],
+			);
+		}
+
+		load();
 	</script>
 	
 	

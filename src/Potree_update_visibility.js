@@ -335,6 +335,12 @@ export function updateVisibility(pointclouds, camera, renderer){
 			} else if (!pointcloud.showBoundingBox && node.boundingBoxNode) {
 				node.boundingBoxNode.visible = false;
 			}
+
+			// if(node.boundingBoxNode !== undefined && exports.debug.allowedNodes !== undefined){
+			// 	if(!exports.debug.allowedNodes.includes(node.name)){
+			// 		node.boundingBoxNode.visible = false;
+			// 	}
+			// }
 		}
 
 		// add child nodes to priorityQueue

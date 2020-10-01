@@ -17,9 +17,17 @@ export default [
 			sourcemap: false
 		}
 	},{
-		input: 'src/modules/Loader_1.8/OctreeDecoderWorker.js',
+		input: 'src/modules/loader/2.0/DecoderWorker.js',
 		output: {
-			file: 'build/potree/workers/OctreeDecoderWorker.js',
+			file: 'build/potree/workers/2.0/DecoderWorker.js',
+			format: 'es',
+			name: 'Potree',
+			sourcemap: false
+		}
+	},{
+		input: 'src/modules/loader/2.0/DecoderWorker_brotli.js',
+		output: {
+			file: 'build/potree/workers/2.0/DecoderWorker_brotli.js',
 			format: 'es',
 			name: 'Potree',
 			sourcemap: false

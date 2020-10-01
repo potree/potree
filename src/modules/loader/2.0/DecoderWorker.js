@@ -20,11 +20,10 @@ Potree = {};
 
 onmessage = function (event) {
 
-	let {buffer, pointAttributes, scale, name, min, max, size, offset} = event.data;
+	let {buffer, pointAttributes, scale, name, min, max, size, offset, numPoints} = event.data;
 
 	let tStart = performance.now();
 
-	let numPoints = buffer.byteLength / pointAttributes.byteSize;
 	let view = new DataView(buffer);
 	
 	let attributeBuffers = {};
@@ -205,9 +204,9 @@ onmessage = function (event) {
 
 	}
 
-	let duration = performance.now() - tStart;
-	let pointsPerMs = numPoints / duration;
-	console.log(`duration: ${duration.toFixed(1)}ms, #points: ${numPoints}, points/ms: ${pointsPerMs.toFixed(1)}`);
+	// let duration = performance.now() - tStart;
+	// let pointsPerMs = numPoints / duration;
+	// console.log(`duration: ${duration.toFixed(1)}ms, #points: ${numPoints}, points/ms: ${pointsPerMs.toFixed(1)}`);
 
 	let message = {
 		buffer: buffer,

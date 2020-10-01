@@ -2,6 +2,8 @@
 import {PointAttribute, PointAttributes, PointAttributeTypes} from "../../../loader/PointAttributes.js";
 import {OctreeGeometry, OctreeGeometryNode} from "./OctreeGeometry.js";
 
+// let loadedNodes = new Set();
+
 export class NodeLoader{
 
 	constructor(url){
@@ -17,6 +19,13 @@ export class NodeLoader{
 		node.loading = true;
 		Potree.numNodesLoading++;
 
+		// console.log(node.name, node.numPoints);
+
+		// if(loadedNodes.has(node.name)){
+		// 	// debugger;
+		// }
+		// loadedNodes.add(node.name);
+
 		try{
 			if(node.nodeType === 2){
 				await this.loadHierarchy(node);
@@ -30,14 +39,21 @@ export class NodeLoader{
 			let first = byteOffset;
 			let last = byteOffset + byteSize - 1n;
 
-			let response = await fetch(urlOctree, {
-				headers: {
-					'content-type': 'multipart/byteranges',
-					'Range': `bytes=${first}-${last}`,
-				},
-			});
+			let buffer;
 
-			let buffer = await response.arrayBuffer();
+			if(byteSize === 0n){
+				buffer = new ArrayBuffer(0);
+				console.warn(`loaded node with 0 bytes: ${node.name}`);
+			}else{
+				let response = await fetch(urlOctree, {
+					headers: {
+						'content-type': 'multipart/byteranges',
+						'Range': `bytes=${first}-${last}`,
+					},
+				});
+
+				buffer = await response.arrayBuffer();
+			}
 
 			let workerPath;
 			if(this.metadata.encoding === "BROTLI"){
@@ -154,6 +170,10 @@ export class NodeLoader{
 			let byteOffset = view.getBigInt64(i * bytesPerNode + 6, true);
 			let byteSize = view.getBigInt64(i * bytesPerNode + 14, true);
 
+			// if(byteSize === 0n){
+			// 	// debugger;
+			// }
+
 
 			if(current.nodeType === 2){
 				// replace proxy with real node
@@ -208,10 +228,10 @@ export class NodeLoader{
 
 		let duration = (performance.now() - tStart);
 
-		if(duration > 20){
-			let msg = `duration: ${duration}ms, numNodes: ${numNodes}`;
-			console.log(msg);
-		}
+		// if(duration > 20){
+		// 	let msg = `duration: ${duration}ms, numNodes: ${numNodes}`;
+		// 	console.log(msg);
+		// }
 	}
 
 	async loadHierarchy(node){

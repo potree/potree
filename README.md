@@ -419,6 +419,9 @@ We would like to thank our sponsors for their financial contributions that keep 
 			€ 5,000+
 		</th>
 		<td>
+			<a href="https://www.limit-addict.fr/">
+				<img src="docs/sponsors/limitaddict.png" height="45"/>
+			</a>
 			<a href="http://georepublic.info">
 				<img src="docs/sponsors/georepublic.png" height="45"/>
 			</a>
@@ -430,6 +433,9 @@ We would like to thank our sponsors for their financial contributions that keep 
 			€ 1,000+
 		</th>
 		<td>
+			<a href="https://www.geodelta.com/">
+				<img src="docs/sponsors/geodelta.png" height="40"/> &nbsp;
+			</a>
 			<a href="https://www.sogelink.fr/">
 				<img src="docs/sponsors/SOGELINK_SO-EASY.png" height="40"/> &nbsp;
 			</a>

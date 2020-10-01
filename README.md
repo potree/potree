@@ -439,7 +439,7 @@ We would like to thank our sponsors for their financial contributions that keep 
 		</th>
 		<td>
 			<a href="https://www.geodelta.com/">
-				<img src="docs/sponsors/geodelta.png" height="40"/> &nbsp;
+				<img src="docs/sponsors/geodelta.png" height="35"/> &nbsp;
 			</a>
 			<a href="https://www.sogelink.fr/">
 				<img src="docs/sponsors/SOGELINK_SO-EASY.png" height="40"/> &nbsp;

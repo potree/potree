@@ -419,7 +419,7 @@ export class OctreeLoader{
 
 		octree.root = root;
 
-		await loader.load(root);
+		loader.load(root);
 
 		let result = {
 			geometry: octree,

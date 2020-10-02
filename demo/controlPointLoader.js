@@ -184,10 +184,7 @@ async function createControlMeshes (controlPoints, controlPointShaderMaterial, F
   for (let ii = 0; ii < length; ii++) {
     const point = controlPoints.points(ii)
     const vertex = { x: point.pos().x(), y: point.pos().y(), z: point.pos().z() };
-    const timestamp = point.viz(new FlatbufferModule.Flatbuffer.Primitives.HideAndShowAnimation())
-      .timestamp(new FlatbufferModule.Flatbuffer.Primitives.ObjectTimestamp())
-      .value() - animationEngine.tstart;
-
+    const timestamp = point.timestamp - animationEngine.tstart;
     const data = {
       position: vertex,
       timestamp: timestamp

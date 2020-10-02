@@ -1,6 +1,6 @@
 'use strict';
 import { incrementLoadingBarTotal, resetProgressBars, updateLoadingBar } from "../common/overlay.js";
-import { getS3, getAWSObjectVariables, getShaderMaterial } from "../demo/paramLoader.js"
+import { getS3, getAWSObjectVariables, getInstancedShaderMaterial } from "../demo/paramLoader.js"
 import { getFbFileInfo } from "./loaderUtilities.js";
 
 let radarVisualizationFiles = null;
@@ -23,16 +23,16 @@ export async function loadRadarVisualizationCallback (files) {
   }
 }
 
-window.radarVisualizationBudget = 130;
+window.radarVisualizationBudget = 1000;
 async function loadRadarVisualizationCallbackHelper (radarVisualizationType) {
-  const shaderMaterial = getShaderMaterial();
+  const shaderMaterial = getInstancedShaderMaterial();
   const radarVisualizationShaderMaterial = shaderMaterial.clone();
   await loadRadarVisualization(radarVisualizationShaderMaterial, animationEngine, (meshData) => {
-    const {meshes, radarData} = meshData;
+    const {mesh, radarData} = meshData;
 
     const radarVisualizationLayer = new THREE.Group();
     radarVisualizationLayer.name = getRadarVisualizationName(radarVisualizationType);
-    radarVisualizationLayer.add(...meshes);
+    radarVisualizationLayer.add(mesh);
 
     const radarDataTimestamps = radarData.map((data, i) => ({
       timestamp: data.timestamp,
@@ -51,7 +51,7 @@ async function loadRadarVisualizationCallbackHelper (radarVisualizationType) {
       const minActiveWindow = currentTime + animationEngine.activeWindow.backward;
       const maxActiveWindow = currentTime + animationEngine.activeWindow.forward;
 
-      if (radarVisualizationLayer.children.length !== window.radarVisualizationBudget) {
+      /*if (radarVisualizationLayer.children.length !== window.radarVisualizationBudget) {
         radarVisualizationLayer.remove(...radarVisualizationLayer.children);
 
         radarData.filter((data, i) => i < window.radarVisualizationBudget).forEach((data) => {
@@ -62,7 +62,7 @@ async function loadRadarVisualizationCallbackHelper (radarVisualizationType) {
           newMesh.geometry.addAttribute('gpsTime', new THREE.Float32BufferAttribute(new Float64Array(64).fill(data.timestamp), 1));
           radarVisualizationLayer.add(newMesh);
         });
-      }
+      }*/
 
       radarVisualizationShaderMaterial.uniforms.minGpsTime.value = currentTime + animationEngine.activeWindow.backward;
       radarVisualizationShaderMaterial.uniforms.maxGpsTime.value = currentTime + animationEngine.activeWindow.forward;
@@ -72,17 +72,19 @@ async function loadRadarVisualizationCallbackHelper (radarVisualizationType) {
         .sort((a, b) => Math.abs(currentTime - a.timestamp) - Math.abs(currentTime - b.timestamp))
         .slice(0, window.radarVisualizationBudget);
 
+      const timestamps = new Float32Array(window.radarVisualizationBudget).fill(undefined);
       for (let i = 0; i < currentData.length; i++) {
-        const newMeshGeo = new THREE.SphereBufferGeometry(0.15);
-        const newMesh = new THREE.Mesh(newMeshGeo, radarVisualizationShaderMaterial);
-        newMesh.name = "RadarVisualization"
-        newMesh.position.set(radarData[currentData[i].index].position.x, radarData[currentData[i].index].position.y, radarData[currentData[i].index].position.z);
-        newMesh.geometry.addAttribute('gpsTime', new THREE.Float32BufferAttribute(new Float64Array(64).fill(radarData[currentData[i].index].timestamp), 1));
+        timestamps[i] = currentData[i].timestamp;
 
-        radarVisualizationLayer.children[i].geometry.dispose();
-        radarVisualizationLayer.children[i].material.dispose();
-        radarVisualizationLayer.children[i] = newMesh;
+        const currentPosition = radarData[currentData[i].index].position;
+        const newTransform = new THREE.Matrix4();
+        newTransform.setPosition(currentPosition.x, currentPosition.y, currentPosition.z);
+
+        mesh.setMatrixAt(i, newTransform);
       }
+
+      mesh.geometry.setAttribute('gpsTime', new THREE.InstancedBufferAttribute(timestamps, 1));
+      mesh.instanceMatrix.needsUpdate = true;
     });
   }, radarVisualizationType);
 }
@@ -163,8 +165,13 @@ async function createRadarVisualizationMeshes (radarVisualizationData, radarVisu
   radarVisualizationShaderMaterial.uniforms.color.value = getRadarVisualizationColor(radarVisualizationType);
 
   const length = radarVisualizationData.pointsLength();
-  const allSpheres = new Array(window.radarVisualizationBudget);
   const radarData = new Array(length);
+  const timestamps = new Float32Array(window.radarVisualizationBudget);
+
+  const sphereGeo = new THREE.InstancedBufferGeometry().copy(new THREE.SphereBufferGeometry(0.15));
+  const mesh = new THREE.InstancedMesh(sphereGeo, radarVisualizationShaderMaterial, window.radarVisualizationBudget);
+  mesh.name = "RadarVisualization"
+  mesh.frustumCulled = false;
 
   for (let ii = 0; ii < length; ii++) {
     const point = radarVisualizationData.points(ii)
@@ -180,15 +187,18 @@ async function createRadarVisualizationMeshes (radarVisualizationData, radarVisu
     radarData[ii] = data;
 
     if (ii < window.radarVisualizationBudget) {
-      const sphereGeo = new THREE.SphereBufferGeometry(0.15);
-      const sphereMesh = new THREE.Mesh(sphereGeo, radarVisualizationShaderMaterial);
-      sphereMesh.name = "RadarVisualization"
-      sphereMesh.position.set(vertex.x, vertex.y, vertex.z);
-      sphereMesh.geometry.addAttribute('gpsTime', new THREE.Float32BufferAttribute(new Float64Array(64).fill(timestamp), 1));
-      allSpheres[ii] = sphereMesh;
+      timestamps[ii] = timestamp;
+
+      const transform = new THREE.Object3D();
+      transform.position.set(vertex.x, vertex.y, vertex.z);
+      mesh.setMatrixAt(ii, transform.matrix);
+      mesh.instanceMatrix.needsUpdate = true;
     }
   }
-  return {meshes: allSpheres, radarData: radarData};
+
+  mesh.geometry.setAttribute('gpsTime', new THREE.InstancedBufferAttribute(timestamps, 1));
+
+  return {mesh: mesh, radarData: radarData};
 }
 
 function getRadarVisualizationName(file) {

@@ -72,7 +72,8 @@ export class ProfileTool extends EventDispatcher {
 				if(profile.points.length <= 1){
 					let camera = this.viewer.scene.getActiveCamera();
 					let distance = camera.position.distanceTo(profile.points[0]);
-					let clientSize = this.viewer.renderer.getSize();
+					let clientSize = new THREE.Vector2();
+					this.viewer.renderer.getSize(clientSize);
 					let pr = Utils.projectedRadius(1, camera, distance, clientSize.width, clientSize.height);
 					let width = (10 / pr);
 
@@ -105,18 +106,22 @@ export class ProfileTool extends EventDispatcher {
 
 		return profile;
 	}
-	
+
 	update(){
 		let camera = this.viewer.scene.getActiveCamera();
 		let profiles = this.viewer.scene.profiles;
-		let clientWidth = this.renderer.getSize().width;
-		let clientHeight = this.renderer.getSize().height;
+
+		let clientArea = new THREE.Vector2();
+		this.renderer.getSize(clientArea);
+
+		let clientWidth = clientArea.width;
+		let clientHeight = clientArea.height;
 
 		this.light.position.copy(camera.position);
 
 		// make size independant of distance
 		for(let profile of profiles){
-			for(let sphere of profile.spheres){				
+			for(let sphere of profile.spheres){
 				let distance = camera.position.distanceTo(sphere.getWorldPosition(new THREE.Vector3()));
 				let pr = Utils.projectedRadius(1, camera, distance, clientWidth, clientHeight);
 				let scale = (15 / pr);

@@ -9,7 +9,7 @@ import {Utils} from "../utils.js";
 
 
 export class HQSplatRenderer{
-	
+
 	constructor(viewer){
 		this.viewer = viewer;
 
@@ -19,7 +19,7 @@ export class HQSplatRenderer{
 
 		this.rtDepth = null;
 		this.rtAttribute = null;
-		this.gl = viewer.renderer.context;
+		this.gl = viewer.renderer.getContext();
 
 		this.initialized = false;
 	}
@@ -55,7 +55,7 @@ export class HQSplatRenderer{
 			depthTexture: this.rtDepth.depthTexture,
 			//depthTexture: new THREE.DepthTexture(undefined, undefined, THREE.UnsignedIntType)
 		});
-		
+
 		//{
 		//	let geometry = new THREE.PlaneBufferGeometry( 1, 1, 32, 32);
 		//	let material = new THREE.MeshBasicMaterial( {side: THREE.DoubleSide, map: this.rtDepth.texture} );
@@ -72,8 +72,13 @@ export class HQSplatRenderer{
 		const viewer = this.viewer;
 
 		let pixelRatio = viewer.renderer.getPixelRatio();
-		let width = viewer.renderer.getSize().width;
-		let height = viewer.renderer.getSize().height;
+
+		let dim = new THREE.Vector2();
+		viewer.renderer.getSize(dim);
+
+		let width = dim.width;
+		let height = dim.height;
+
 		this.rtDepth.setSize(width * pixelRatio , height * pixelRatio);
 		this.rtAttribute.setSize(width * pixelRatio , height * pixelRatio);
 	}
@@ -87,13 +92,16 @@ export class HQSplatRenderer{
 		this.resize();
 
 		let camera = viewer.scene.getActiveCamera();
-		
+
 		viewer.renderer.setClearColor(0x000000, 0);
 		viewer.renderer.clearTarget( this.rtDepth, true, true, true );
 		viewer.renderer.clearTarget( this.rtAttribute, true, true, true );
 
-		let width = viewer.renderer.getSize().width;
-		let height = viewer.renderer.getSize().height;
+		let dim = new THREE.Vector2();
+		viewer.renderer.getSize(dim);
+
+		let width = dim.width;
+		let height = dim.height;
 
 		let visiblePointClouds = viewer.scene.pointclouds.filter(pc => pc.visible);
 		let originalMaterials = new Map();
@@ -152,7 +160,7 @@ export class HQSplatRenderer{
 
 				pointcloud.material = depthMaterial;
 			}
-			
+
 			viewer.pRenderer.render(viewer.scene.scenePointCloud, camera, this.rtDepth, {
 				clipSpheres: viewer.scene.volumes.filter(v => (v instanceof SphereVolume)),
 				//material: this.depthMaterial
@@ -218,7 +226,7 @@ export class HQSplatRenderer{
 
 				pointcloud.material = attributeMaterial;
 			}
-			
+
 			let gl = this.gl;
 
 			viewer.renderer.setRenderTarget(null);
@@ -272,7 +280,7 @@ export class HQSplatRenderer{
 
 			normalizationMaterial.uniforms.uWeightMap.value = this.rtAttribute.texture;
 			normalizationMaterial.uniforms.uDepthMap.value = this.rtAttribute.depthTexture;
-			
+
 			Utils.screenPass.render(viewer.renderer, normalizationMaterial);
 		}
 
@@ -290,15 +298,14 @@ export class HQSplatRenderer{
 		viewer.renderer.render(viewer.clippingTool.sceneVolume, camera);
 		viewer.renderer.render(viewer.transformationTool.scene, camera);
 
-		viewer.renderer.setViewport(width - viewer.navigationCube.width, 
-									height - viewer.navigationCube.width, 
+		viewer.renderer.setViewport(width - viewer.navigationCube.width,
+									height - viewer.navigationCube.width,
 									viewer.navigationCube.width, viewer.navigationCube.width);
-		viewer.renderer.render(viewer.navigationCube, viewer.navigationCube.camera);		
+		viewer.renderer.render(viewer.navigationCube, viewer.navigationCube.camera);
 		viewer.renderer.setViewport(0, 0, width, height);
-		
+
 		viewer.dispatchEvent({type: "render.pass.end",viewer: viewer});
 
 	}
 
 }
-

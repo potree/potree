@@ -136,7 +136,7 @@ export class Annotation extends EventDispatcher {
 				</svg>
 			</div>
 		`);
-		
+
 		let svg = domElement.find("svg")[0];
 		let elLine = domElement.find("line")[0];
 		let elStart = domElement.find("circle")[0];
@@ -192,17 +192,17 @@ export class Annotation extends EventDispatcher {
 				$(this.domElement).find(".annotation-titlebar").css("pointer-events", "");
 			},
 			drag: (event, ui ) => {
-				let renderAreaWidth = viewer.renderer.getSize().width;
-				let renderAreaHeight = viewer.renderer.getSize().height;
+				let renderArea = new THREE.Vector2();
+				viewer.renderer.getSize(rendererArea);
 
 				let diff = {
-					x: ui.originalPosition.left - ui.position.left, 
+					x: ui.originalPosition.left - ui.position.left,
 					y: ui.originalPosition.top - ui.position.top
 				};
 
 				let nDiff = {
-					x: -(diff.x / renderAreaWidth) * 2,
-					y: (diff.y / renderAreaWidth) * 2
+					x: -(diff.x / renderArea.width) * 2,
+					y: (diff.y / renderArea.width) * 2
 				};
 
 				let camera = viewer.scene.getActiveCamera();
@@ -226,8 +226,8 @@ export class Annotation extends EventDispatcher {
 			let position = this.position;
 			let scene = viewer.scene;
 
-			let renderAreaWidth = viewer.renderer.getSize().width;
-			let renderAreaHeight = viewer.renderer.getSize().height;
+			let renderArea = new THREE.Vector2();
+			viewer.renderer.getSize(rendererArea);
 
 			let start = this.position.clone();
 			let end = new THREE.Vector3().addVectors(this.position, this.offset);
@@ -243,12 +243,12 @@ export class Annotation extends EventDispatcher {
 				ndc.divideScalar(ndc.w);
 
 				screenPos.copy(ndc);
-				screenPos.x = renderAreaWidth * (screenPos.x + 1) / 2;
-				screenPos.y = renderAreaHeight * (1 - (screenPos.y + 1) / 2);
+				screenPos.x = renderArea.width * (screenPos.x + 1) / 2;
+				screenPos.y = renderArea.height * (1 - (screenPos.y + 1) / 2);
 
 				return screenPos;
 			};
-			
+
 			start = toScreen(start);
 			end = toScreen(end);
 

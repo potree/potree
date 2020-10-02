@@ -132,8 +132,12 @@ export class VolumeTool extends EventDispatcher{
 		}
 
 		let camera = this.viewer.scene.getActiveCamera();
-		let clientWidth = this.viewer.renderer.getSize().width;
-		let clientHeight = this.viewer.renderer.getSize().height;
+
+		let clientArea = new THREE.Vector2();
+		this.viewer.renderer.getSize(clientArea);
+
+		let clientWidth = clientArea.width;
+		let clientHeight = clientArea.height;
 
 		let volumes = this.viewer.scene.volumes;
 		for (let volume of volumes) {

@@ -107,8 +107,8 @@ export const defaultTimeRange = {
 export function getShaderMaterial() {
     let uniforms = {
         color: { value: new THREE.Color(0x00ff00) },
-        //minGpsTime: { value: defaultTimeRange.min },
-        //maxGpsTime: { value: defaultTimeRange.max },
+        minGpsTime: { value: defaultTimeRange.min },
+        maxGpsTime: { value: defaultTimeRange.max },
         initialTime: { value: defaultTimeRange.initial }, // TODO not used
         // offset: {value: new THREE.Vector3(0,0,0)},
     };

@@ -140,7 +140,7 @@
   <script type="x-shader/x-vertex" id="vertexshader">
 
       attribute float alpha;
-      //attribute float gpsTime;
+      attribute float gpsTime;
 
       uniform float minGpsTime;
       uniform float maxGpsTime;
@@ -151,11 +151,11 @@
 
       void main() {
 
-        //if (minGpsTime <= gpsTime && gpsTime <= maxGpsTime) {
+        if (minGpsTime <= gpsTime && gpsTime <= maxGpsTime) {
           vAlpha = 1.0;
-        //} else {
-          //vAlpha = 0.0;
-        //}
+        } else {
+          vAlpha = 0.0;
+        }
 
 
         // if (gpsTime > 30.0) {

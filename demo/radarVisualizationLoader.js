@@ -28,10 +28,11 @@ async function loadRadarVisualizationCallbackHelper (radarVisualizationType) {
   const shaderMaterial = getInstancedShaderMaterial();
   const radarVisualizationShaderMaterial = shaderMaterial.clone();
   await loadRadarVisualization(radarVisualizationShaderMaterial, animationEngine, (meshData) => {
-    const {mesh, radarData} = meshData;
+    let {mesh, offset, radarData} = meshData;
 
     const radarVisualizationLayer = new THREE.Group();
     radarVisualizationLayer.name = getRadarVisualizationName(radarVisualizationType);
+    mesh.position.copy(offset);
     radarVisualizationLayer.add(mesh);
 
     const radarDataTimestamps = radarData.map((data, i) => ({
@@ -51,18 +52,19 @@ async function loadRadarVisualizationCallbackHelper (radarVisualizationType) {
       const minActiveWindow = currentTime + animationEngine.activeWindow.backward;
       const maxActiveWindow = currentTime + animationEngine.activeWindow.forward;
 
-      /*if (radarVisualizationLayer.children.length !== window.radarVisualizationBudget) {
-        radarVisualizationLayer.remove(...radarVisualizationLayer.children);
+      if (mesh.count !== window.radarVisualizationBudget) {
+        radarVisualizationLayer.remove(mesh);
+        mesh.geometry.dispose();
+        mesh.material.dispose();
 
-        radarData.filter((data, i) => i < window.radarVisualizationBudget).forEach((data) => {
-          const newMeshGeo = new THREE.SphereBufferGeometry(0.15);
-          const newMesh = new THREE.Mesh(newMeshGeo, radarVisualizationShaderMaterial);
-          newMesh.name = "RadarVisualization"
-          newMesh.position.set(data.position.x, data.position.y, data.position.z);
-          newMesh.geometry.addAttribute('gpsTime', new THREE.Float32BufferAttribute(new Float64Array(64).fill(data.timestamp), 1));
-          radarVisualizationLayer.add(newMesh);
-        });
-      }*/
+        const sphereGeo = new THREE.InstancedBufferGeometry().copy(new THREE.SphereBufferGeometry(0.15));
+        mesh = new THREE.InstancedMesh(sphereGeo, radarVisualizationShaderMaterial, window.radarVisualizationBudget);
+        mesh.name = "RadarVisualization"
+        mesh.frustumCulled = false;
+        mesh.position.copy(offset);
+
+        radarVisualizationLayer.add(mesh);
+      }
 
       radarVisualizationShaderMaterial.uniforms.minGpsTime.value = currentTime + animationEngine.activeWindow.backward;
       radarVisualizationShaderMaterial.uniforms.maxGpsTime.value = currentTime + animationEngine.activeWindow.forward;
@@ -168,6 +170,9 @@ async function createRadarVisualizationMeshes (radarVisualizationData, radarVisu
   const radarData = new Array(length);
   const timestamps = new Float32Array(window.radarVisualizationBudget);
 
+  const initialPosition = radarVisualizationData.points(0).pos();
+  const offset = new THREE.Vector3(initialPosition.x(), initialPosition.y(), initialPosition.z());
+
   const sphereGeo = new THREE.InstancedBufferGeometry().copy(new THREE.SphereBufferGeometry(0.15));
   const mesh = new THREE.InstancedMesh(sphereGeo, radarVisualizationShaderMaterial, window.radarVisualizationBudget);
   mesh.name = "RadarVisualization"
@@ -175,7 +180,7 @@ async function createRadarVisualizationMeshes (radarVisualizationData, radarVisu
 
   for (let ii = 0; ii < length; ii++) {
     const point = radarVisualizationData.points(ii)
-    const vertex = { x: point.pos().x(), y: point.pos().y(), z: point.pos().z() };
+    const vertex = { x: point.pos().x() - offset.x, y: point.pos().y() - offset.y, z: point.pos().z() - offset.z };
     const timestamp = point.viz(new FlatbufferModule.Flatbuffer.Primitives.HideAndShowAnimation())
       .timestamp(new FlatbufferModule.Flatbuffer.Primitives.ObjectTimestamp())
       .value() - animationEngine.tstart;
@@ -192,13 +197,13 @@ async function createRadarVisualizationMeshes (radarVisualizationData, radarVisu
       const transform = new THREE.Object3D();
       transform.position.set(vertex.x, vertex.y, vertex.z);
       mesh.setMatrixAt(ii, transform.matrix);
-      mesh.instanceMatrix.needsUpdate = true;
     }
   }
 
+  mesh.instanceMatrix.needsUpdate = true;
   mesh.geometry.setAttribute('gpsTime', new THREE.InstancedBufferAttribute(timestamps, 1));
 
-  return {mesh: mesh, radarData: radarData};
+  return {mesh, offset, radarData};
 }
 
 function getRadarVisualizationName(file) {

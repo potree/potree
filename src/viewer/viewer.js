@@ -1104,7 +1104,7 @@ export class Viewer extends EventDispatcher{
 		//this.renderer.domElement.focus();
 
 		// enable frag_depth extension for the interpolation shader, if available
-		let gl = this.renderer.context;
+		let gl = this.renderer.getContext();
 		gl.getExtension('EXT_frag_depth');
 		gl.getExtension('WEBGL_depth_texture');
 
@@ -1135,8 +1135,11 @@ export class Viewer extends EventDispatcher{
 
 		let distances = [];
 
-		let renderAreaWidth = this.renderer.getSize().width;
-		let renderAreaHeight = this.renderer.getSize().height;
+		let renderArea = new THREE.Vector2();
+		this.renderer.getSize(renderArea);
+
+		let renderAreaWidth = renderArea.width;
+		let renderAreaHeight = renderArea.height;
 
 		let viewer = this;
 

@@ -111,14 +111,17 @@ export class MeasuringTool extends EventDispatcher{
 
 		return measure;
 	}
-	
+
 	update(){
 		let camera = this.viewer.scene.getActiveCamera();
 		let domElement = this.renderer.domElement;
 		let measurements = this.viewer.scene.measurements;
 
-		let clientWidth = this.renderer.getSize().width;
-		let clientHeight = this.renderer.getSize().height;
+		let clientArea = new THREE.Vector2();
+		this.renderer.getSize(clientArea);
+
+		let clientWidth = clientArea.width;
+		let clientHeight = clientArea.height;
 
 		this.light.position.copy(camera.position);
 
@@ -129,7 +132,7 @@ export class MeasuringTool extends EventDispatcher{
 			measure.update();
 
 			// spheres
-			for(let sphere of measure.spheres){			
+			for(let sphere of measure.spheres){
 				let distance = camera.position.distanceTo(sphere.getWorldPosition(new THREE.Vector3()));
 				let pr = Utils.projectedRadius(1, camera, distance, clientWidth, clientHeight);
 				let scale = (15 / pr);
@@ -159,9 +162,9 @@ export class MeasuringTool extends EventDispatcher{
 				screenPos.z = 0;
 				screenPos.y -= 30;
 
-				let labelPos = new THREE.Vector3( 
-					(screenPos.x / clientWidth) * 2 - 1, 
-					-(screenPos.y / clientHeight) * 2 + 1, 
+				let labelPos = new THREE.Vector3(
+					(screenPos.x / clientWidth) * 2 - 1,
+					-(screenPos.y / clientHeight) * 2 + 1,
 					0.5 );
 				labelPos.unproject(camera);
 				if(this.viewer.scene.cameraMode == CameraMode.PERSPECTIVE) {

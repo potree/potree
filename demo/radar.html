@@ -190,4 +190,41 @@
       }
 
   </script>
+
+
+  <script type="x-shader/x-vertex" id="instanced-vertexshader">
+
+      attribute float gpsTime;
+
+      uniform float minGpsTime;
+      uniform float maxGpsTime;
+
+      varying float vAlpha;
+
+      void main() {
+
+        if (minGpsTime <= gpsTime && gpsTime <= maxGpsTime) {
+          vAlpha = 1.0;
+        } else {
+          vAlpha = 0.0;
+        }
+
+		gl_Position = projectionMatrix * modelViewMatrix * instanceMatrix * vec4(position, 1.0);
+    }
+
+  </script>
+
+  <script type="x-shader/x-fragment" id="instanced-fragmentshader">
+
+      uniform vec3 color;
+
+      varying float vAlpha;
+
+      void main() {
+
+          gl_FragColor = vec4( color, vAlpha );
+
+      }
+
+  </script>
 </html>

@@ -110,7 +110,7 @@ export function getShaderMaterial() {
         minGpsTime: { value: defaultTimeRange.min },
         maxGpsTime: { value: defaultTimeRange.max },
         initialTime: { value: defaultTimeRange.initial }, // TODO not used
-        // offset: {value: new THREE.Vector3(0,0,0)}
+        // offset: {value: new THREE.Vector3(0,0,0)},
     };
     let shaderMaterial = new THREE.ShaderMaterial({
 
@@ -118,8 +118,24 @@ export function getShaderMaterial() {
         vertexShader: document.getElementById('vertexshader').textContent,
         fragmentShader: document.getElementById('fragmentshader').textContent,
         transparent: true,
-        depthWrite: false
-
+        depthWrite: false,
     });
     return shaderMaterial
+}
+
+// returns a THREE.ShaderMaterial object that should be used as standard for instanced meshes
+export function getInstancedShaderMaterial() {
+  let uniforms = {
+      color: { value: new THREE.Color(0x00ff00) },
+      minGpsTime: { value: defaultTimeRange.min },
+      maxGpsTime: { value: defaultTimeRange.max },
+  };
+  let shaderMaterial = new THREE.ShaderMaterial({
+      uniforms: uniforms,
+      vertexShader: document.getElementById('instanced-vertexshader').textContent,
+      fragmentShader: document.getElementById('instanced-fragmentshader').textContent,
+      transparent: true,
+      depthWrite: false,
+  });
+  return shaderMaterial
 }

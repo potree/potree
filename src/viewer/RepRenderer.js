@@ -16,7 +16,7 @@ class RepRenderer {
 		this.attributeMaterials = [];
 
 		this.rtColor = null;
-		this.gl = viewer.renderer.context;
+		this.gl = viewer.renderer.getContext();
 
 		this.initEDL = this.initEDL.bind(this);
 		this.resize = this.resize.bind(this);
@@ -24,10 +24,10 @@ class RepRenderer {
 
 		this.snapshotRequested = false;
 		this.disableSnapshots = false;
-		
+
 		this.snap = {
 			target: null,
-			matrix: null	
+			matrix: null
 		};
 
 		this.history = {
@@ -35,7 +35,7 @@ class RepRenderer {
 			snapshots: [],
 			version: 0
 		};
-		
+
 	}
 
 	initEDL () {
@@ -55,8 +55,8 @@ class RepRenderer {
 		});
 		this.rtColor.depthTexture = new THREE.DepthTexture();
 		this.rtColor.depthTexture.type = THREE.UnsignedIntType;
-		
-		
+
+
 		this.rtShadow = new THREE.WebGLRenderTarget(1024, 1024, {
 			minFilter: THREE.NearestFilter,
 			magFilter: THREE.NearestFilter,
@@ -89,21 +89,21 @@ class RepRenderer {
 		if (needsResize) {
 			this.rtColor.dispose();
 		}
-		
+
 		viewer.scene.cameraP.aspect = aspect;
 		viewer.scene.cameraP.updateProjectionMatrix();
 
 		let frustumScale = viewer.moveSpeed * 2.0;
 		viewer.scene.cameraO.left = -frustumScale;
-		viewer.scene.cameraO.right = frustumScale;		
+		viewer.scene.cameraO.right = frustumScale;
 		viewer.scene.cameraO.top = frustumScale * 1/aspect;
-		viewer.scene.cameraO.bottom = -frustumScale * 1/aspect;		
+		viewer.scene.cameraO.bottom = -frustumScale * 1/aspect;
 		viewer.scene.cameraO.updateProjectionMatrix();
 
 		viewer.scene.cameraScreenSpace.top = 1/aspect;
 		viewer.scene.cameraScreenSpace.bottom = -1/aspect;
 		viewer.scene.cameraScreenSpace.updateProjectionMatrix();
-		
+
 		viewer.renderer.setSize(width, height);
 		this.rtColor.setSize(width, height);
 	}
@@ -117,11 +117,11 @@ class RepRenderer {
 		const viewer = this.viewer;
 
 		this.resize();
-		
+
 		let camera = viewer.scene.getActiveCamera();
 
 		let query = Potree.startQuery('stuff', viewer.renderer.getContext());
-		
+
 		if(viewer.background === "skybox"){
 			viewer.renderer.setClearColor(0x000000, 0);
 			viewer.renderer.clear();
@@ -143,12 +143,12 @@ class RepRenderer {
 		}
 
 		viewer.transformationTool.update();
-		
+
 		viewer.renderer.render(viewer.scene.scene, camera);
-		
+
 		viewer.renderer.clearTarget( this.rtShadow, true, true, true );
 		viewer.renderer.clearTarget( this.rtColor, true, true, true );
-		
+
 		let width = viewer.renderArea.clientWidth;
 		let height = viewer.renderArea.clientHeight;
 
@@ -171,7 +171,7 @@ class RepRenderer {
 		viewer.shadowTestCam.updateMatrixWorld();
 		viewer.shadowTestCam.matrixWorldInverse.getInverse(viewer.shadowTestCam.matrixWorld);
 		viewer.shadowTestCam.updateProjectionMatrix();
-		
+
 
 		Potree.endQuery(query, viewer.renderer.getContext());
 
@@ -201,7 +201,7 @@ class RepRenderer {
 				let width = viewer.scaleFactor * viewer.renderArea.clientWidth;
 				let height = viewer.scaleFactor * viewer.renderArea.clientHeight;
 				let aspect = width / height;
-		
+
 				let needsResize = (snap.target.width !== width || snap.target.height !== height);
 
 				if (needsResize) {
@@ -221,15 +221,15 @@ class RepRenderer {
 				octree.material.needsUpdate = true;
 
 
-			
+
 				let from = this.history.version * (octree.visibleNodes.length / this.history.maxSnapshots);
 				let to = (this.history.version + 1) * (octree.visibleNodes.length / this.history.maxSnapshots);
-				
+
 				// DEBUG!!!
 				//let from = 0;
 				//let to = 20;
 				let nodes = octree.visibleNodes.slice(from, to);
-				
+
 				viewer.pRenderer.renderOctree(octree, nodes, camera, snap.target, {vnTextureNodes: nodes});
 			}
 
@@ -272,7 +272,7 @@ class RepRenderer {
 					octree.material.snapEnabled = false;
 					octree.material.needsUpdate = true;
 				}
-			
+
 				let nodes = octree.visibleNodes.slice(0, 50);
 				//let nodes = octree.visibleNodes;
 				viewer.pRenderer.renderOctree(octree, nodes, camera, this.rtColor, {vnTextureNodes: nodes});
@@ -285,16 +285,16 @@ class RepRenderer {
 
 			Potree.endQuery(query, viewer.renderer.getContext());
 		}
-		
-		
+
+
 		//viewer.pRenderer.render(viewer.scene.scenePointCloud, camera, this.rtColor, {
 		//	shadowMaps: [{map: this.rtShadow, camera: viewer.shadowTestCam}]
 		//});
-		
-		//viewer.renderer.render(viewer.scene.scene, camera, this.rtColor);
-		
 
-		
+		//viewer.renderer.render(viewer.scene.scene, camera, this.rtColor);
+
+
+
 
 		{ // EDL OCCLUSION PASS
 
@@ -314,22 +314,21 @@ class RepRenderer {
 			Potree.endQuery(query, viewer.renderer.getContext());
 		}
 
-		
+
 
 		viewer.renderer.clearDepth();
 		viewer.renderer.render(viewer.controls.sceneControls, camera);
-		
+
 		viewer.renderer.render(viewer.clippingTool.sceneVolume, camera);
 		viewer.renderer.render(viewer.transformationTool.scene, camera);
-		
-		viewer.renderer.setViewport(viewer.renderer.domElement.clientWidth - viewer.navigationCube.width, 
-									viewer.renderer.domElement.clientHeight - viewer.navigationCube.width, 
+
+		viewer.renderer.setViewport(viewer.renderer.domElement.clientWidth - viewer.navigationCube.width,
+									viewer.renderer.domElement.clientHeight - viewer.navigationCube.width,
 									viewer.navigationCube.width, viewer.navigationCube.width);
-		viewer.renderer.render(viewer.navigationCube, viewer.navigationCube.camera);		
+		viewer.renderer.render(viewer.navigationCube, viewer.navigationCube.camera);
 		viewer.renderer.setViewport(0, 0, viewer.renderer.domElement.clientWidth, viewer.renderer.domElement.clientHeight);
 
 		//
 
 	}
 };
-

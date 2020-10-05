@@ -52,7 +52,7 @@ class ProfilePointCloudEntry{
 			child.geometry.dispose();
 		}
 
-		this.sceneNode.children = [];		
+		this.sceneNode.children = [];
 	}
 
 	addPoints(data){
@@ -100,7 +100,7 @@ class ProfilePointCloudEntry{
 		if(!this.currentBatch){
 			createNewBatch();
 		}
-		
+
 		{ // REBUILD MODEL
 
 			let pointsProcessed = 0;
@@ -110,7 +110,7 @@ class ProfilePointCloudEntry{
 			};
 
 			let projectedBox = new THREE.Box3();
-			
+
 			for(let i = 0; i < data.numPoints; i++){
 
 				if(updateRange.start + updateRange.count >= batchSize){
@@ -195,7 +195,7 @@ class ProfilePointCloudEntry{
 			}
 
 			data.projectedBox = projectedBox;
-			
+
 			this.projectedBox = this.points.reduce( (a, i) => a.union(i.projectedBox), new THREE.Box3());
 		}
 
@@ -300,14 +300,14 @@ export class ProfileWindow extends EventDispatcher {
 					this.pickSphere.position.set(point.mileage, 0, point.position[2]);
 
 					this.viewerPickSphere.position.set(...point.position);
-					
+
 					if(!this.viewer.scene.scene.children.includes(this.viewerPickSphere)){
 						this.viewer.scene.scene.add(this.viewerPickSphere);
 						if(!this.viewer.hasEventListener("update", viewerPickSphereSizeHandler)){
 							this.viewer.addEventListener("update", viewerPickSphereSizeHandler);
 						}
 					}
-					
+
 
 					let info = this.elRoot.find('#profileSelectionProperties');
 					let html = '<table>';
@@ -365,7 +365,7 @@ export class ProfileWindow extends EventDispatcher {
 						this.viewer.scene.scene.children.splice(index, 1);
 					}
 					this.viewer.removeEventListener("update", viewerPickSphereSizeHandler);
-					
+
 
 				}
 				this.render();
@@ -413,7 +413,7 @@ export class ProfileWindow extends EventDispatcher {
 
 		$('#potree_download_csv_icon').click(() => {
 			let points = new Points();
-			
+
 			for(let [pointcloud, entry] of this.pointclouds){
 				for(let pointSet of entry.points){
 					points.add(pointSet);
@@ -563,7 +563,7 @@ export class ProfileWindow extends EventDispatcher {
 		this.renderer.autoClear = true;
 		this.renderArea.append($(this.renderer.domElement));
 		this.renderer.domElement.tabIndex = '2222';
-		this.renderer.context.getExtension('EXT_frag_depth');
+		this.renderer.getContext().getExtension('EXT_frag_depth');
 		$(this.renderer.domElement).css('width', '100%');
 		$(this.renderer.domElement).css('height', '100%');
 
@@ -571,7 +571,7 @@ export class ProfileWindow extends EventDispatcher {
 		this.camera.up.set(0, 0, 1);
 		this.camera.rotation.order = "ZXY";
 		this.camera.rotation.x = Math.PI / 2.0;
-		
+
 
 
 		this.scene = new THREE.Scene();
@@ -655,7 +655,7 @@ export class ProfileWindow extends EventDispatcher {
 		//console.log(this.projectedBox.min.toArray().map(v => v.toFixed(2)).join(", "));
 		//console.log(this.projectedBox.getSize().toArray().map(v => v.toFixed(2)).join(", "));
 
-		if (this.autoFit) { 
+		if (this.autoFit) {
 			let width = this.renderArea[0].clientWidth;
 			let height = this.renderArea[0].clientHeight;
 
@@ -767,7 +767,7 @@ export class ProfileWindow extends EventDispatcher {
 	requestScaleUpdate(){
 
 		let threshold = 100;
-		let allowUpdate = ((this.lastReset === undefined) || (this.lastScaleUpdate === undefined)) 
+		let allowUpdate = ((this.lastReset === undefined) || (this.lastScaleUpdate === undefined))
 			|| ((new Date().getTime() - this.lastReset) > threshold && (new Date().getTime() - this.lastScaleUpdate) > threshold);
 
 		if(allowUpdate){
@@ -776,14 +776,14 @@ export class ProfileWindow extends EventDispatcher {
 
 			this.lastScaleUpdate = new Date().getTime();
 
-			
+
 
 			this.scaleUpdatePending = false;
 		}else if(!this.scaleUpdatePending) {
 			setTimeout(this.requestScaleUpdate.bind(this), 100);
 			this.scaleUpdatePending = true;
 		}
-		
+
 	}
 
 	render () {
@@ -800,7 +800,7 @@ export class ProfileWindow extends EventDispatcher {
 
 			for (let [pointcloud, entry] of this.pointclouds) {
 				let material = entry.material;
-			
+
 				material.pointColorType = pointcloud.material.pointColorType;
 				material.uniforms.uColor = pointcloud.material.uniforms.uColor;
 				material.uniforms.intensityRange.value = pointcloud.material.uniforms.intensityRange.value;

@@ -14,7 +14,7 @@ export class EDLRenderer{
 		this.rtRegular;
 		this.rtEDL;
 
-		this.gl = viewer.renderer.context;
+		this.gl = viewer.renderer.getContext();
 
 		this.shadowMap = new PointCloudSM(this.viewer.pRenderer);
 	}
@@ -43,7 +43,7 @@ export class EDLRenderer{
 			format: THREE.RGBAFormat,
 			depthTexture: new THREE.DepthTexture(undefined, undefined, THREE.UnsignedIntType)
 		});
-		
+
 		//{
 		//	let geometry = new THREE.PlaneBufferGeometry( 1, 1, 32, 32);
 		//	let material = new THREE.MeshBasicMaterial( {side: THREE.DoubleSide, map: this.shadowMap.target.texture} );
@@ -58,7 +58,10 @@ export class EDLRenderer{
 		const viewer = this.viewer;
 
 		let pixelRatio = viewer.renderer.getPixelRatio();
-		let {width, height} = viewer.renderer.getSize();
+
+		let dim = new THREE.Vector2();
+		viewer.renderer.getSize(dim);
+		let {width, height} = dim;
 
 		if(this.screenshot){
 			width = this.screenshot.target.width;
@@ -76,13 +79,14 @@ export class EDLRenderer{
 		}
 
 		if(size === undefined || size === null){
-			size = this.viewer.renderer.getSize();
+			size = new THREE.Vector2();
+			this.viewer.renderer.getSize(size);
 		}
 
 		let {width, height} = size;
 
 		//let maxTextureSize = viewer.renderer.capabilities.maxTextureSize;
-		//if(width * 4 < 
+		//if(width * 4 <
 		width = 2 * width;
 		height = 2 * height;
 
@@ -136,8 +140,8 @@ export class EDLRenderer{
 			let oldBudget = Potree.pointBudget;
 			Potree.pointBudget = Math.max(10 * 1000 * 1000, 2 * oldBudget);
 			let result = Potree.updatePointClouds(
-				viewer.scene.pointclouds, 
-				viewer.scene.getActiveCamera(), 
+				viewer.scene.pointclouds,
+				viewer.scene.getActiveCamera(),
 				viewer.renderer);
 			Potree.pointBudget = oldBudget;
 		}
@@ -202,13 +206,16 @@ export class EDLRenderer{
 		}
 
 		//viewer.renderer.render(viewer.scene.scene, camera);
-		
+
 		//viewer.renderer.clearTarget( this.rtColor, true, true, true );
 		viewer.renderer.clearTarget(this.rtEDL, true, true, true);
 		viewer.renderer.clearTarget(this.rtRegular, true, true, false);
 
-		let width = viewer.renderer.getSize().width;
-		let height = viewer.renderer.getSize().height;
+		let dim = new THREE.Vector2();
+		viewer.renderer.getSize(dim);
+
+		let width = dim.width;
+		let height = dim.height;
 
 		// COLOR & DEPTH PASS
 		for (let pointcloud of viewer.scene.pointclouds) {
@@ -225,7 +232,7 @@ export class EDLRenderer{
 			material.uniforms.octreeSize.value = octreeSize;
 			material.spacing = pointcloud.pcoGeometry.spacing * Math.max(pointcloud.scale.x, pointcloud.scale.y, pointcloud.scale.z);
 		}
-		
+
 		// TODO adapt to multiple lights
 		if(lights.length > 0){
 			viewer.pRenderer.render(viewer.scene.scenePointCloud, camera, this.rtEDL, {
@@ -267,7 +274,7 @@ export class EDLRenderer{
 			this.edlMaterial.uniforms.edlStrength.value = viewer.edlStrength;
 			this.edlMaterial.uniforms.radius.value = viewer.edlRadius;
 			this.edlMaterial.uniforms.opacity.value = 1;
-			
+
 			Utils.screenPass.render(viewer.renderer, this.edlMaterial);
 
 			if(this.screenshot){
@@ -285,15 +292,14 @@ export class EDLRenderer{
 		viewer.renderer.render(viewer.controls.sceneControls, camera);
 		viewer.renderer.render(viewer.clippingTool.sceneVolume, camera);
 		viewer.renderer.render(viewer.transformationTool.scene, camera);
-		
-		viewer.renderer.setViewport(width - viewer.navigationCube.width, 
-									height - viewer.navigationCube.width, 
+
+		viewer.renderer.setViewport(width - viewer.navigationCube.width,
+									height - viewer.navigationCube.width,
 									viewer.navigationCube.width, viewer.navigationCube.width);
-		viewer.renderer.render(viewer.navigationCube, viewer.navigationCube.camera);		
+		viewer.renderer.render(viewer.navigationCube, viewer.navigationCube.camera);
 		viewer.renderer.setViewport(0, 0, width, height);
 
 		viewer.dispatchEvent({type: "render.pass.end",viewer: viewer});
 
 	}
 }
-

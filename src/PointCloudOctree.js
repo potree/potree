@@ -617,7 +617,8 @@ export class PointCloudOctree extends PointCloudTree {
 
 		pickWindowSize = 65;
 
-		let size = renderer.getSize();
+		let size = new THREE.Vector2();
+		renderer.getSize(size);
 
 		let width = Math.ceil(getVal(params.width, size.width));
 		let height = Math.ceil(getVal(params.height, size.height));
@@ -1009,13 +1010,3 @@ export class PointCloudOctree extends PointCloudTree {
 	}
 
 }
-
-
-
-
-
-
-
-
-
-

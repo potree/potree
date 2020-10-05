@@ -161,34 +161,30 @@ async function parseRadarVisualizationData (dataBuffer, radarVisualizationShader
 
 async function createRadarVisualizationMeshes (radarVisualizationData, radarVisualizationShaderMaterial, FlatbufferModule, animationEngine, radarVisualizationType) {
   radarVisualizationShaderMaterial.uniforms.color.value = getRadarVisualizationColor(radarVisualizationType);
-
   const length = radarVisualizationData.pointsLength();
-  const allSpheres = new Array(window.radarVisualizationBudget);
+  const meshes = new Array(window.radarVisualizationBudget);
   const radarData = new Array(length);
+  const newSchemaFlag = (length > 0) && !!radarVisualizationData.points(0).timestamp;
 
   for (let ii = 0; ii < length; ii++) {
     const point = radarVisualizationData.points(ii)
-    const vertex = { x: point.pos().x(), y: point.pos().y(), z: point.pos().z() };
-    const timestamp = point.viz(new FlatbufferModule.Flatbuffer.Primitives.HideAndShowAnimation())
-      .timestamp(new FlatbufferModule.Flatbuffer.Primitives.ObjectTimestamp())
-      .value() - animationEngine.tstart;
-
-    const data = {
-      position: vertex,
-      timestamp: timestamp
-    };
-    radarData[ii] = data;
+    const position = { x: point.pos().x(), y: point.pos().y(), z: point.pos().z() };
+    const timestamp = newSchemaFlag ? (point.timestamp() - animationEngine.tstart) :
+      point.viz(new FlatbufferModule.Flatbuffer.Primitives.HideAndShowAnimation())
+        .timestamp(new FlatbufferModule.Flatbuffer.Primitives.ObjectTimestamp())
+        .value() - animationEngine.tstart;
+    radarData[ii] = { position, timestamp };
 
     if (ii < window.radarVisualizationBudget) {
       const sphereGeo = new THREE.SphereBufferGeometry(0.15);
       const sphereMesh = new THREE.Mesh(sphereGeo, radarVisualizationShaderMaterial);
       sphereMesh.name = "RadarVisualization"
-      sphereMesh.position.set(vertex.x, vertex.y, vertex.z);
+      sphereMesh.position.set(position.x, position.y, position.z);
       sphereMesh.geometry.addAttribute('gpsTime', new THREE.Float32BufferAttribute(new Float64Array(64).fill(timestamp), 1));
-      allSpheres[ii] = sphereMesh;
+      meshes[ii] = sphereMesh;
     }
   }
-  return {meshes: allSpheres, radarData: radarData};
+  return { meshes, radarData };
 }
 
 function getRadarVisualizationName(file) {

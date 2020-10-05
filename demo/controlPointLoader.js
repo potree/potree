@@ -175,16 +175,28 @@ async function parseControlPoints (bytesArray, controlPointShaderMaterial, Flatb
 }
 
 async function createControlMeshes (controlPoints, controlPointShaderMaterial, FlatbufferModule, animationEngine, controlPointType) {
+  let timestamp;
+  let newSchemaFlag;
+
   controlPointShaderMaterial.uniforms.color.value = getControlPointColor(controlPointType);
 
   const length = controlPoints.pointsLength();
   const allSpheres = new Array(window.controlPointBudget);
   const controlPointData = new Array(length);
 
+  if (length > 0) { newSchemaFlag = !!controlPoints.points(0).timestamp; }
+
   for (let ii = 0; ii < length; ii++) {
     const point = controlPoints.points(ii)
     const vertex = { x: point.pos().x(), y: point.pos().y(), z: point.pos().z() };
-    const timestamp = point.timestamp - animationEngine.tstart;
+
+    if (newSchemaFlag) {
+      timestamp = point.timestamp() - animationEngine.tstart;
+    } else {
+      timestamp = point.viz(new FlatbufferModule.Flatbuffer.Primitives.HideAndShowAnimation())
+        .timestamp(new FlatbufferModule.Flatbuffer.Primitives.ObjectTimestamp())
+        .value() - animationEngine.tstart;
+    }
     const data = {
       position: vertex,
       timestamp: timestamp
@@ -192,7 +204,7 @@ async function createControlMeshes (controlPoints, controlPointShaderMaterial, F
     controlPointData[ii] = data;
 
     if (ii < window.controlPointBudget) {
-      const sphereGeo = new THREE.SphereBufferGeometry(0.15);
+      const sphereGeo = new THREE.SphereBufferGeometry(0.25);
       const sphereMesh = new THREE.Mesh(sphereGeo, controlPointShaderMaterial);
       sphereMesh.name = "ControlPoint"
       sphereMesh.position.set(vertex.x, vertex.y, vertex.z);
@@ -204,6 +216,9 @@ async function createControlMeshes (controlPoints, controlPointShaderMaterial, F
 }
 
 async function createREMControlMeshes (controlPoints, controlPointShaderMaterial, FlatbufferModule, animationEngine, controlPointType) {
+  let timestamp;
+  let newSchemaFlag;
+
   controlPointShaderMaterial.uniforms.color.value = getControlPointColor(controlPointType);
 
   const length = controlPoints.pointsLength();
@@ -217,11 +232,13 @@ async function createREMControlMeshes (controlPoints, controlPointShaderMaterial
     const point = controlPoints[ii];
 
     const vertex = { x: point.pos().x(), y: point.pos().y(), z: point.pos().z() };
-    const radius = 0.25;// point.radius();
-    const timestamp = point.viz(new FlatbufferModule.Flatbuffer.Primitives.HideAndShowAnimation())
-      .timestamp(new FlatbufferModule.Flatbuffer.Primitives.ObjectTimestamp())
-      .value() - animationEngine.tstart;
-
+    if (newSchemaFlag) {
+      timestamp = point.timestamp() - animationEngine.tstart;
+    } else {
+      timestamp = point.viz(new FlatbufferModule.Flatbuffer.Primitives.HideAndShowAnimation())
+        .timestamp(new FlatbufferModule.Flatbuffer.Primitives.ObjectTimestamp())
+        .value() - animationEngine.tstart;
+    }
     const data = {
       position: vertex,
       timestamp: timestamp
@@ -229,7 +246,7 @@ async function createREMControlMeshes (controlPoints, controlPointShaderMaterial
     controlPointData[ii] = data;
 
     if (ii < window.controlPointBudget) {
-      const sphereGeo = new THREE.SphereBufferGeometry(0.15);
+      const sphereGeo = new THREE.SphereBufferGeometry(0.25);
       const sphereMesh = new THREE.Mesh(sphereGeo, controlPointShaderMaterial);
       sphereMesh.name = "ControlPoint"
       sphereMesh.position.set(vertex.x, vertex.y, vertex.z);

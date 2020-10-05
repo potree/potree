@@ -29,9 +29,9 @@ Flatbuffer.Primitives.TimestampType = {
  * @enum {string}
  */
 Flatbuffer.Primitives.TimestampTypeName = {
-  0: 'NONE',
-  1: 'ObjectTimestamp',
-  2: 'VertexTimestamps'
+  '0': 'NONE',
+  '1': 'ObjectTimestamp',
+  '2': 'VertexTimestamps'
 };
 
 /**
@@ -51,9 +51,9 @@ Flatbuffer.Primitives.ColorType = {
  * @enum {string}
  */
 Flatbuffer.Primitives.ColorTypeName = {
-  0: 'NONE',
-  1: 'ObjectColor',
-  2: 'VertexColors'
+  '0': 'NONE',
+  '1': 'ObjectColor',
+  '2': 'VertexColors'
 };
 
 /**
@@ -71,11 +71,11 @@ Flatbuffer.Primitives.VisualizationType = {
  * @enum {string}
  */
 Flatbuffer.Primitives.VisualizationTypeName = {
-  0: 'NONE',
-  1: 'NoVisualization',
-  2: 'StaticVisualization',
-  3: 'HideAndShowAnimation',
-  4: 'HighlightAnimation'
+  '0': 'NONE',
+  '1': 'NoVisualization',
+  '2': 'StaticVisualization',
+  '3': 'HideAndShowAnimation',
+  '4': 'HighlightAnimation'
 };
 
 /**
@@ -83,7 +83,7 @@ Flatbuffer.Primitives.VisualizationTypeName = {
  *
  * @constructor
  */
-function Vec2() {
+Flatbuffer.Primitives.Vec2 = function() {
   /**
    * @type {flatbuffers.ByteBuffer}
    */
@@ -93,14 +93,14 @@ function Vec2() {
    * @type {number}
    */
   this.bb_pos = 0;
-}
+};
 
 /**
  * @param {number} i
  * @param {flatbuffers.ByteBuffer} bb
- * @returns {Vec2}
+ * @returns {Flatbuffer.Primitives.Vec2}
  */
-Vec2.prototype.__init = function(i, bb) {
+Flatbuffer.Primitives.Vec2.prototype.__init = function(i, bb) {
   this.bb_pos = i;
   this.bb = bb;
   return this;
@@ -109,45 +109,15 @@ Vec2.prototype.__init = function(i, bb) {
 /**
  * @returns {number}
  */
-Vec2.prototype.x = function() {
+Flatbuffer.Primitives.Vec2.prototype.x = function() {
   return this.bb.readFloat64(this.bb_pos);
-};
-
-/**
- * @param {number} value
- * @returns {boolean}
- */
-Vec2.prototype.mutate_x = function(value) {
-  var offset = this.bb.__offset(this.bb_pos, 0);
-
-  if (offset === 0) {
-    return false;
-  }
-
-  this.bb.writeFloat64(this.bb_pos + offset, value);
-  return true;
 };
 
 /**
  * @returns {number}
  */
-Vec2.prototype.y = function() {
+Flatbuffer.Primitives.Vec2.prototype.y = function() {
   return this.bb.readFloat64(this.bb_pos + 8);
-};
-
-/**
- * @param {number} value
- * @returns {boolean}
- */
-Vec2.prototype.mutate_y = function(value) {
-  var offset = this.bb.__offset(this.bb_pos, 8);
-
-  if (offset === 0) {
-    return false;
-  }
-
-  this.bb.writeFloat64(this.bb_pos + offset, value);
-  return true;
 };
 
 /**
@@ -156,7 +126,7 @@ Vec2.prototype.mutate_y = function(value) {
  * @param {number} y
  * @returns {flatbuffers.Offset}
  */
-Vec2.createVec2 = function(builder, x, y) {
+Flatbuffer.Primitives.Vec2.createVec2 = function(builder, x, y) {
   builder.prep(8, 16);
   builder.writeFloat64(y);
   builder.writeFloat64(x);
@@ -168,7 +138,7 @@ Vec2.createVec2 = function(builder, x, y) {
  *
  * @constructor
  */
-function Vec3() {
+Flatbuffer.Primitives.Vec3 = function() {
   /**
    * @type {flatbuffers.ByteBuffer}
    */
@@ -178,14 +148,14 @@ function Vec3() {
    * @type {number}
    */
   this.bb_pos = 0;
-}
+};
 
 /**
  * @param {number} i
  * @param {flatbuffers.ByteBuffer} bb
- * @returns {Vec3}
+ * @returns {Flatbuffer.Primitives.Vec3}
  */
-Vec3.prototype.__init = function(i, bb) {
+Flatbuffer.Primitives.Vec3.prototype.__init = function(i, bb) {
   this.bb_pos = i;
   this.bb = bb;
   return this;
@@ -194,67 +164,22 @@ Vec3.prototype.__init = function(i, bb) {
 /**
  * @returns {number}
  */
-Vec3.prototype.x = function() {
+Flatbuffer.Primitives.Vec3.prototype.x = function() {
   return this.bb.readFloat64(this.bb_pos);
 };
 
 /**
- * @param {number} value
- * @returns {boolean}
- */
-Vec3.prototype.mutate_x = function(value) {
-  var offset = this.bb.__offset(this.bb_pos, 0);
-
-  if (offset === 0) {
-    return false;
-  }
-
-  this.bb.writeFloat64(this.bb_pos + offset, value);
-  return true;
-};
-
-/**
  * @returns {number}
  */
-Vec3.prototype.y = function() {
+Flatbuffer.Primitives.Vec3.prototype.y = function() {
   return this.bb.readFloat64(this.bb_pos + 8);
 };
 
 /**
- * @param {number} value
- * @returns {boolean}
- */
-Vec3.prototype.mutate_y = function(value) {
-  var offset = this.bb.__offset(this.bb_pos, 8);
-
-  if (offset === 0) {
-    return false;
-  }
-
-  this.bb.writeFloat64(this.bb_pos + offset, value);
-  return true;
-};
-
-/**
  * @returns {number}
  */
-Vec3.prototype.z = function() {
+Flatbuffer.Primitives.Vec3.prototype.z = function() {
   return this.bb.readFloat64(this.bb_pos + 16);
-};
-
-/**
- * @param {number} value
- * @returns {boolean}
- */
-Vec3.prototype.mutate_z = function(value) {
-  var offset = this.bb.__offset(this.bb_pos, 16);
-
-  if (offset === 0) {
-    return false;
-  }
-
-  this.bb.writeFloat64(this.bb_pos + offset, value);
-  return true;
 };
 
 /**
@@ -264,7 +189,7 @@ Vec3.prototype.mutate_z = function(value) {
  * @param {number} z
  * @returns {flatbuffers.Offset}
  */
-Vec3.createVec3 = function(builder, x, y, z) {
+Flatbuffer.Primitives.Vec3.createVec3 = function(builder, x, y, z) {
   builder.prep(8, 24);
   builder.writeFloat64(z);
   builder.writeFloat64(y);
@@ -277,7 +202,7 @@ Vec3.createVec3 = function(builder, x, y, z) {
  *
  * @constructor
  */
-function Vec4() {
+Flatbuffer.Primitives.Vec4 = function() {
   /**
    * @type {flatbuffers.ByteBuffer}
    */
@@ -287,14 +212,14 @@ function Vec4() {
    * @type {number}
    */
   this.bb_pos = 0;
-}
+};
 
 /**
  * @param {number} i
  * @param {flatbuffers.ByteBuffer} bb
- * @returns {Vec4}
+ * @returns {Flatbuffer.Primitives.Vec4}
  */
-Vec4.prototype.__init = function(i, bb) {
+Flatbuffer.Primitives.Vec4.prototype.__init = function(i, bb) {
   this.bb_pos = i;
   this.bb = bb;
   return this;
@@ -303,89 +228,29 @@ Vec4.prototype.__init = function(i, bb) {
 /**
  * @returns {number}
  */
-Vec4.prototype.x = function() {
+Flatbuffer.Primitives.Vec4.prototype.x = function() {
   return this.bb.readFloat64(this.bb_pos);
 };
 
 /**
- * @param {number} value
- * @returns {boolean}
- */
-Vec4.prototype.mutate_x = function(value) {
-  var offset = this.bb.__offset(this.bb_pos, 0);
-
-  if (offset === 0) {
-    return false;
-  }
-
-  this.bb.writeFloat64(this.bb_pos + offset, value);
-  return true;
-};
-
-/**
  * @returns {number}
  */
-Vec4.prototype.y = function() {
+Flatbuffer.Primitives.Vec4.prototype.y = function() {
   return this.bb.readFloat64(this.bb_pos + 8);
 };
 
 /**
- * @param {number} value
- * @returns {boolean}
- */
-Vec4.prototype.mutate_y = function(value) {
-  var offset = this.bb.__offset(this.bb_pos, 8);
-
-  if (offset === 0) {
-    return false;
-  }
-
-  this.bb.writeFloat64(this.bb_pos + offset, value);
-  return true;
-};
-
-/**
  * @returns {number}
  */
-Vec4.prototype.z = function() {
+Flatbuffer.Primitives.Vec4.prototype.z = function() {
   return this.bb.readFloat64(this.bb_pos + 16);
 };
 
 /**
- * @param {number} value
- * @returns {boolean}
- */
-Vec4.prototype.mutate_z = function(value) {
-  var offset = this.bb.__offset(this.bb_pos, 16);
-
-  if (offset === 0) {
-    return false;
-  }
-
-  this.bb.writeFloat64(this.bb_pos + offset, value);
-  return true;
-};
-
-/**
  * @returns {number}
  */
-Vec4.prototype.w = function() {
+Flatbuffer.Primitives.Vec4.prototype.w = function() {
   return this.bb.readFloat64(this.bb_pos + 24);
-};
-
-/**
- * @param {number} value
- * @returns {boolean}
- */
-Vec4.prototype.mutate_w = function(value) {
-  var offset = this.bb.__offset(this.bb_pos, 24);
-
-  if (offset === 0) {
-    return false;
-  }
-
-  this.bb.writeFloat64(this.bb_pos + offset, value);
-  return true;
 };
 
 /**
@@ -396,7 +261,7 @@ Vec4.prototype.mutate_w = function(value) {
  * @param {number} w
  * @returns {flatbuffers.Offset}
  */
-Vec4.createVec4 = function(builder, x, y, z, w) {
+Flatbuffer.Primitives.Vec4.createVec4 = function(builder, x, y, z, w) {
   builder.prep(8, 32);
   builder.writeFloat64(w);
   builder.writeFloat64(z);
@@ -410,7 +275,7 @@ Vec4.createVec4 = function(builder, x, y, z, w) {
  *
  * @constructor
  */
-function Color() {
+Flatbuffer.Primitives.Color = function() {
   /**
    * @type {flatbuffers.ByteBuffer}
    */
@@ -420,14 +285,14 @@ function Color() {
    * @type {number}
    */
   this.bb_pos = 0;
-}
+};
 
 /**
  * @param {number} i
  * @param {flatbuffers.ByteBuffer} bb
- * @returns {Color}
+ * @returns {Flatbuffer.Primitives.Color}
  */
-Color.prototype.__init = function(i, bb) {
+Flatbuffer.Primitives.Color.prototype.__init = function(i, bb) {
   this.bb_pos = i;
   this.bb = bb;
   return this;
@@ -436,89 +301,29 @@ Color.prototype.__init = function(i, bb) {
 /**
  * @returns {number}
  */
-Color.prototype.r = function() {
+Flatbuffer.Primitives.Color.prototype.r = function() {
   return this.bb.readUint8(this.bb_pos);
 };
 
 /**
- * @param {number} value
- * @returns {boolean}
- */
-Color.prototype.mutate_r = function(value) {
-  var offset = this.bb.__offset(this.bb_pos, 0);
-
-  if (offset === 0) {
-    return false;
-  }
-
-  this.bb.writeUint8(this.bb_pos + offset, value);
-  return true;
-};
-
-/**
  * @returns {number}
  */
-Color.prototype.g = function() {
+Flatbuffer.Primitives.Color.prototype.g = function() {
   return this.bb.readUint8(this.bb_pos + 1);
 };
 
 /**
- * @param {number} value
- * @returns {boolean}
- */
-Color.prototype.mutate_g = function(value) {
-  var offset = this.bb.__offset(this.bb_pos, 1);
-
-  if (offset === 0) {
-    return false;
-  }
-
-  this.bb.writeUint8(this.bb_pos + offset, value);
-  return true;
-};
-
-/**
  * @returns {number}
  */
-Color.prototype.b = function() {
+Flatbuffer.Primitives.Color.prototype.b = function() {
   return this.bb.readUint8(this.bb_pos + 2);
 };
 
 /**
- * @param {number} value
- * @returns {boolean}
- */
-Color.prototype.mutate_b = function(value) {
-  var offset = this.bb.__offset(this.bb_pos, 2);
-
-  if (offset === 0) {
-    return false;
-  }
-
-  this.bb.writeUint8(this.bb_pos + offset, value);
-  return true;
-};
-
-/**
  * @returns {number}
  */
-Color.prototype.a = function() {
+Flatbuffer.Primitives.Color.prototype.a = function() {
   return this.bb.readUint8(this.bb_pos + 3);
-};
-
-/**
- * @param {number} value
- * @returns {boolean}
- */
-Color.prototype.mutate_a = function(value) {
-  var offset = this.bb.__offset(this.bb_pos, 3);
-
-  if (offset === 0) {
-    return false;
-  }
-
-  this.bb.writeUint8(this.bb_pos + offset, value);
-  return true;
 };
 
 /**
@@ -529,7 +334,7 @@ Color.prototype.mutate_a = function(value) {
  * @param {number} a
  * @returns {flatbuffers.Offset}
  */
-Color.createColor = function(builder, r, g, b, a) {
+Flatbuffer.Primitives.Color.createColor = function(builder, r, g, b, a) {
   builder.prep(1, 4);
   builder.writeInt8(a);
   builder.writeInt8(b);
@@ -576,26 +381,20 @@ Flatbuffer.Primitives.ObjectTimestamp.getRootAsObjectTimestamp = function(bb, ob
 };
 
 /**
+ * @param {flatbuffers.ByteBuffer} bb
+ * @param {Flatbuffer.Primitives.ObjectTimestamp=} obj
+ * @returns {Flatbuffer.Primitives.ObjectTimestamp}
+ */
+Flatbuffer.Primitives.ObjectTimestamp.getSizePrefixedRootAsObjectTimestamp = function(bb, obj) {
+  return (obj || new Flatbuffer.Primitives.ObjectTimestamp).__init(bb.readInt32(bb.position()) + bb.position(), bb);
+};
+
+/**
  * @returns {number}
  */
 Flatbuffer.Primitives.ObjectTimestamp.prototype.value = function() {
   var offset = this.bb.__offset(this.bb_pos, 4);
   return offset ? this.bb.readFloat64(this.bb_pos + offset) : 0.0;
-};
-
-/**
- * @param {number} value
- * @returns {boolean}
- */
-Flatbuffer.Primitives.ObjectTimestamp.prototype.mutate_value = function(value) {
-  var offset = this.bb.__offset(this.bb_pos, 4);
-
-  if (offset === 0) {
-    return false;
-  }
-
-  this.bb.writeFloat64(this.bb_pos + offset, value);
-  return true;
 };
 
 /**
@@ -667,6 +466,15 @@ Flatbuffer.Primitives.VertexTimestamps.prototype.__init = function(i, bb) {
  * @returns {Flatbuffer.Primitives.VertexTimestamps}
  */
 Flatbuffer.Primitives.VertexTimestamps.getRootAsVertexTimestamps = function(bb, obj) {
+  return (obj || new Flatbuffer.Primitives.VertexTimestamps).__init(bb.readInt32(bb.position()) + bb.position(), bb);
+};
+
+/**
+ * @param {flatbuffers.ByteBuffer} bb
+ * @param {Flatbuffer.Primitives.VertexTimestamps=} obj
+ * @returns {Flatbuffer.Primitives.VertexTimestamps}
+ */
+Flatbuffer.Primitives.VertexTimestamps.getSizePrefixedRootAsVertexTimestamps = function(bb, obj) {
   return (obj || new Flatbuffer.Primitives.VertexTimestamps).__init(bb.readInt32(bb.position()) + bb.position(), bb);
 };
 
@@ -789,12 +597,21 @@ Flatbuffer.Primitives.ObjectColor.getRootAsObjectColor = function(bb, obj) {
 };
 
 /**
- * @param {Color=} obj
- * @returns {Color|null}
+ * @param {flatbuffers.ByteBuffer} bb
+ * @param {Flatbuffer.Primitives.ObjectColor=} obj
+ * @returns {Flatbuffer.Primitives.ObjectColor}
+ */
+Flatbuffer.Primitives.ObjectColor.getSizePrefixedRootAsObjectColor = function(bb, obj) {
+  return (obj || new Flatbuffer.Primitives.ObjectColor).__init(bb.readInt32(bb.position()) + bb.position(), bb);
+};
+
+/**
+ * @param {Flatbuffer.Primitives.Color=} obj
+ * @returns {Flatbuffer.Primitives.Color|null}
  */
 Flatbuffer.Primitives.ObjectColor.prototype.value = function(obj) {
   var offset = this.bb.__offset(this.bb_pos, 4);
-  return offset ? (obj || new Color).__init(this.bb_pos + offset, this.bb) : null;
+  return offset ? (obj || new Flatbuffer.Primitives.Color).__init(this.bb_pos + offset, this.bb) : null;
 };
 
 /**
@@ -870,13 +687,22 @@ Flatbuffer.Primitives.VertexColors.getRootAsVertexColors = function(bb, obj) {
 };
 
 /**
+ * @param {flatbuffers.ByteBuffer} bb
+ * @param {Flatbuffer.Primitives.VertexColors=} obj
+ * @returns {Flatbuffer.Primitives.VertexColors}
+ */
+Flatbuffer.Primitives.VertexColors.getSizePrefixedRootAsVertexColors = function(bb, obj) {
+  return (obj || new Flatbuffer.Primitives.VertexColors).__init(bb.readInt32(bb.position()) + bb.position(), bb);
+};
+
+/**
  * @param {number} index
- * @param {Color=} obj
- * @returns {Color}
+ * @param {Flatbuffer.Primitives.Color=} obj
+ * @returns {Flatbuffer.Primitives.Color}
  */
 Flatbuffer.Primitives.VertexColors.prototype.values = function(index, obj) {
   var offset = this.bb.__offset(this.bb_pos, 4);
-  return offset ? (obj || new Color).__init(this.bb.__vector(this.bb_pos + offset) + index * 4, this.bb) : null;
+  return offset ? (obj || new Flatbuffer.Primitives.Color).__init(this.bb.__vector(this.bb_pos + offset) + index * 4, this.bb) : null;
 };
 
 /**
@@ -968,6 +794,15 @@ Flatbuffer.Primitives.NoVisualization.getRootAsNoVisualization = function(bb, ob
 };
 
 /**
+ * @param {flatbuffers.ByteBuffer} bb
+ * @param {Flatbuffer.Primitives.NoVisualization=} obj
+ * @returns {Flatbuffer.Primitives.NoVisualization}
+ */
+Flatbuffer.Primitives.NoVisualization.getSizePrefixedRootAsNoVisualization = function(bb, obj) {
+  return (obj || new Flatbuffer.Primitives.NoVisualization).__init(bb.readInt32(bb.position()) + bb.position(), bb);
+};
+
+/**
  * @param {flatbuffers.Builder} builder
  */
 Flatbuffer.Primitives.NoVisualization.startNoVisualization = function(builder) {
@@ -1030,26 +865,20 @@ Flatbuffer.Primitives.StaticVisualization.getRootAsStaticVisualization = functio
 };
 
 /**
+ * @param {flatbuffers.ByteBuffer} bb
+ * @param {Flatbuffer.Primitives.StaticVisualization=} obj
+ * @returns {Flatbuffer.Primitives.StaticVisualization}
+ */
+Flatbuffer.Primitives.StaticVisualization.getSizePrefixedRootAsStaticVisualization = function(bb, obj) {
+  return (obj || new Flatbuffer.Primitives.StaticVisualization).__init(bb.readInt32(bb.position()) + bb.position(), bb);
+};
+
+/**
  * @returns {Flatbuffer.Primitives.ColorType}
  */
 Flatbuffer.Primitives.StaticVisualization.prototype.colorType = function() {
   var offset = this.bb.__offset(this.bb_pos, 4);
   return offset ? /** @type {Flatbuffer.Primitives.ColorType} */ (this.bb.readUint8(this.bb_pos + offset)) : Flatbuffer.Primitives.ColorType.NONE;
-};
-
-/**
- * @param {Flatbuffer.Primitives.ColorType} value
- * @returns {boolean}
- */
-Flatbuffer.Primitives.StaticVisualization.prototype.mutate_color_type = function(value) {
-  var offset = this.bb.__offset(this.bb_pos, 4);
-
-  if (offset === 0) {
-    return false;
-  }
-
-  this.bb.writeUint8(this.bb_pos + offset, value);
-  return true;
 };
 
 /**
@@ -1144,26 +973,20 @@ Flatbuffer.Primitives.HideAndShowAnimation.getRootAsHideAndShowAnimation = funct
 };
 
 /**
+ * @param {flatbuffers.ByteBuffer} bb
+ * @param {Flatbuffer.Primitives.HideAndShowAnimation=} obj
+ * @returns {Flatbuffer.Primitives.HideAndShowAnimation}
+ */
+Flatbuffer.Primitives.HideAndShowAnimation.getSizePrefixedRootAsHideAndShowAnimation = function(bb, obj) {
+  return (obj || new Flatbuffer.Primitives.HideAndShowAnimation).__init(bb.readInt32(bb.position()) + bb.position(), bb);
+};
+
+/**
  * @returns {Flatbuffer.Primitives.TimestampType}
  */
 Flatbuffer.Primitives.HideAndShowAnimation.prototype.timestampType = function() {
   var offset = this.bb.__offset(this.bb_pos, 4);
   return offset ? /** @type {Flatbuffer.Primitives.TimestampType} */ (this.bb.readUint8(this.bb_pos + offset)) : Flatbuffer.Primitives.TimestampType.NONE;
-};
-
-/**
- * @param {Flatbuffer.Primitives.TimestampType} value
- * @returns {boolean}
- */
-Flatbuffer.Primitives.HideAndShowAnimation.prototype.mutate_timestamp_type = function(value) {
-  var offset = this.bb.__offset(this.bb_pos, 4);
-
-  if (offset === 0) {
-    return false;
-  }
-
-  this.bb.writeUint8(this.bb_pos + offset, value);
-  return true;
 };
 
 /**
@@ -1184,41 +1007,11 @@ Flatbuffer.Primitives.HideAndShowAnimation.prototype.visibleWhenActive = functio
 };
 
 /**
- * @param {boolean} value
- * @returns {boolean}
- */
-Flatbuffer.Primitives.HideAndShowAnimation.prototype.mutate_visibleWhenActive = function(value) {
-  var offset = this.bb.__offset(this.bb_pos, 8);
-
-  if (offset === 0) {
-    return false;
-  }
-
-  this.bb.writeInt8(this.bb_pos + offset, value);
-  return true;
-};
-
-/**
  * @returns {Flatbuffer.Primitives.ColorType}
  */
 Flatbuffer.Primitives.HideAndShowAnimation.prototype.colorType = function() {
   var offset = this.bb.__offset(this.bb_pos, 10);
   return offset ? /** @type {Flatbuffer.Primitives.ColorType} */ (this.bb.readUint8(this.bb_pos + offset)) : Flatbuffer.Primitives.ColorType.NONE;
-};
-
-/**
- * @param {Flatbuffer.Primitives.ColorType} value
- * @returns {boolean}
- */
-Flatbuffer.Primitives.HideAndShowAnimation.prototype.mutate_color_type = function(value) {
-  var offset = this.bb.__offset(this.bb_pos, 10);
-
-  if (offset === 0) {
-    return false;
-  }
-
-  this.bb.writeUint8(this.bb_pos + offset, value);
-  return true;
 };
 
 /**
@@ -1343,26 +1136,20 @@ Flatbuffer.Primitives.HighlightAnimation.getRootAsHighlightAnimation = function(
 };
 
 /**
+ * @param {flatbuffers.ByteBuffer} bb
+ * @param {Flatbuffer.Primitives.HighlightAnimation=} obj
+ * @returns {Flatbuffer.Primitives.HighlightAnimation}
+ */
+Flatbuffer.Primitives.HighlightAnimation.getSizePrefixedRootAsHighlightAnimation = function(bb, obj) {
+  return (obj || new Flatbuffer.Primitives.HighlightAnimation).__init(bb.readInt32(bb.position()) + bb.position(), bb);
+};
+
+/**
  * @returns {Flatbuffer.Primitives.TimestampType}
  */
 Flatbuffer.Primitives.HighlightAnimation.prototype.timestampType = function() {
   var offset = this.bb.__offset(this.bb_pos, 4);
   return offset ? /** @type {Flatbuffer.Primitives.TimestampType} */ (this.bb.readUint8(this.bb_pos + offset)) : Flatbuffer.Primitives.TimestampType.NONE;
-};
-
-/**
- * @param {Flatbuffer.Primitives.TimestampType} value
- * @returns {boolean}
- */
-Flatbuffer.Primitives.HighlightAnimation.prototype.mutate_timestamp_type = function(value) {
-  var offset = this.bb.__offset(this.bb_pos, 4);
-
-  if (offset === 0) {
-    return false;
-  }
-
-  this.bb.writeUint8(this.bb_pos + offset, value);
-  return true;
 };
 
 /**
@@ -1375,21 +1162,21 @@ Flatbuffer.Primitives.HighlightAnimation.prototype.timestamp = function(obj) {
 };
 
 /**
- * @param {Color=} obj
- * @returns {Color|null}
+ * @param {Flatbuffer.Primitives.Color=} obj
+ * @returns {Flatbuffer.Primitives.Color|null}
  */
 Flatbuffer.Primitives.HighlightAnimation.prototype.color = function(obj) {
   var offset = this.bb.__offset(this.bb_pos, 8);
-  return offset ? (obj || new Color).__init(this.bb_pos + offset, this.bb) : null;
+  return offset ? (obj || new Flatbuffer.Primitives.Color).__init(this.bb_pos + offset, this.bb) : null;
 };
 
 /**
- * @param {Color=} obj
- * @returns {Color|null}
+ * @param {Flatbuffer.Primitives.Color=} obj
+ * @returns {Flatbuffer.Primitives.Color|null}
  */
 Flatbuffer.Primitives.HighlightAnimation.prototype.highlightColor = function(obj) {
   var offset = this.bb.__offset(this.bb_pos, 10);
-  return offset ? (obj || new Color).__init(this.bb_pos + offset, this.bb) : null;
+  return offset ? (obj || new Flatbuffer.Primitives.Color).__init(this.bb_pos + offset, this.bb) : null;
 };
 
 /**
@@ -1495,12 +1282,21 @@ Flatbuffer.Primitives.Point3D.getRootAsPoint3D = function(bb, obj) {
 };
 
 /**
- * @param {Vec3=} obj
- * @returns {Vec3|null}
+ * @param {flatbuffers.ByteBuffer} bb
+ * @param {Flatbuffer.Primitives.Point3D=} obj
+ * @returns {Flatbuffer.Primitives.Point3D}
+ */
+Flatbuffer.Primitives.Point3D.getSizePrefixedRootAsPoint3D = function(bb, obj) {
+  return (obj || new Flatbuffer.Primitives.Point3D).__init(bb.readInt32(bb.position()) + bb.position(), bb);
+};
+
+/**
+ * @param {Flatbuffer.Primitives.Vec3=} obj
+ * @returns {Flatbuffer.Primitives.Vec3|null}
  */
 Flatbuffer.Primitives.Point3D.prototype.pos = function(obj) {
   var offset = this.bb.__offset(this.bb_pos, 4);
-  return offset ? (obj || new Vec3).__init(this.bb_pos + offset, this.bb) : null;
+  return offset ? (obj || new Flatbuffer.Primitives.Vec3).__init(this.bb_pos + offset, this.bb) : null;
 };
 
 /**
@@ -1509,21 +1305,6 @@ Flatbuffer.Primitives.Point3D.prototype.pos = function(obj) {
 Flatbuffer.Primitives.Point3D.prototype.vizType = function() {
   var offset = this.bb.__offset(this.bb_pos, 6);
   return offset ? /** @type {Flatbuffer.Primitives.VisualizationType} */ (this.bb.readUint8(this.bb_pos + offset)) : Flatbuffer.Primitives.VisualizationType.NONE;
-};
-
-/**
- * @param {Flatbuffer.Primitives.VisualizationType} value
- * @returns {boolean}
- */
-Flatbuffer.Primitives.Point3D.prototype.mutate_viz_type = function(value) {
-  var offset = this.bb.__offset(this.bb_pos, 6);
-
-  if (offset === 0) {
-    return false;
-  }
-
-  this.bb.writeUint8(this.bb_pos + offset, value);
-  return true;
 };
 
 /**
@@ -1622,6 +1403,15 @@ Flatbuffer.Primitives.Points3D.prototype.__init = function(i, bb) {
  * @returns {Flatbuffer.Primitives.Points3D}
  */
 Flatbuffer.Primitives.Points3D.getRootAsPoints3D = function(bb, obj) {
+  return (obj || new Flatbuffer.Primitives.Points3D).__init(bb.readInt32(bb.position()) + bb.position(), bb);
+};
+
+/**
+ * @param {flatbuffers.ByteBuffer} bb
+ * @param {Flatbuffer.Primitives.Points3D=} obj
+ * @returns {Flatbuffer.Primitives.Points3D}
+ */
+Flatbuffer.Primitives.Points3D.getSizePrefixedRootAsPoints3D = function(bb, obj) {
   return (obj || new Flatbuffer.Primitives.Points3D).__init(bb.readInt32(bb.position()) + bb.position(), bb);
 };
 
@@ -1737,12 +1527,21 @@ Flatbuffer.Primitives.Sphere3D.getRootAsSphere3D = function(bb, obj) {
 };
 
 /**
- * @param {Vec3=} obj
- * @returns {Vec3|null}
+ * @param {flatbuffers.ByteBuffer} bb
+ * @param {Flatbuffer.Primitives.Sphere3D=} obj
+ * @returns {Flatbuffer.Primitives.Sphere3D}
+ */
+Flatbuffer.Primitives.Sphere3D.getSizePrefixedRootAsSphere3D = function(bb, obj) {
+  return (obj || new Flatbuffer.Primitives.Sphere3D).__init(bb.readInt32(bb.position()) + bb.position(), bb);
+};
+
+/**
+ * @param {Flatbuffer.Primitives.Vec3=} obj
+ * @returns {Flatbuffer.Primitives.Vec3|null}
  */
 Flatbuffer.Primitives.Sphere3D.prototype.pos = function(obj) {
   var offset = this.bb.__offset(this.bb_pos, 4);
-  return offset ? (obj || new Vec3).__init(this.bb_pos + offset, this.bb) : null;
+  return offset ? (obj || new Flatbuffer.Primitives.Vec3).__init(this.bb_pos + offset, this.bb) : null;
 };
 
 /**
@@ -1754,41 +1553,11 @@ Flatbuffer.Primitives.Sphere3D.prototype.radius = function() {
 };
 
 /**
- * @param {number} value
- * @returns {boolean}
- */
-Flatbuffer.Primitives.Sphere3D.prototype.mutate_radius = function(value) {
-  var offset = this.bb.__offset(this.bb_pos, 6);
-
-  if (offset === 0) {
-    return false;
-  }
-
-  this.bb.writeFloat64(this.bb_pos + offset, value);
-  return true;
-};
-
-/**
  * @returns {Flatbuffer.Primitives.VisualizationType}
  */
 Flatbuffer.Primitives.Sphere3D.prototype.vizType = function() {
   var offset = this.bb.__offset(this.bb_pos, 8);
   return offset ? /** @type {Flatbuffer.Primitives.VisualizationType} */ (this.bb.readUint8(this.bb_pos + offset)) : Flatbuffer.Primitives.VisualizationType.NONE;
-};
-
-/**
- * @param {Flatbuffer.Primitives.VisualizationType} value
- * @returns {boolean}
- */
-Flatbuffer.Primitives.Sphere3D.prototype.mutate_viz_type = function(value) {
-  var offset = this.bb.__offset(this.bb_pos, 8);
-
-  if (offset === 0) {
-    return false;
-  }
-
-  this.bb.writeUint8(this.bb_pos + offset, value);
-  return true;
 };
 
 /**
@@ -1801,10 +1570,18 @@ Flatbuffer.Primitives.Sphere3D.prototype.viz = function(obj) {
 };
 
 /**
+ * @returns {number}
+ */
+Flatbuffer.Primitives.Sphere3D.prototype.timestamp = function() {
+  var offset = this.bb.__offset(this.bb_pos, 12);
+  return offset ? this.bb.readFloat64(this.bb_pos + offset) : 0.0;
+};
+
+/**
  * @param {flatbuffers.Builder} builder
  */
 Flatbuffer.Primitives.Sphere3D.startSphere3D = function(builder) {
-  builder.startObject(4);
+  builder.startObject(5);
 };
 
 /**
@@ -1841,6 +1618,14 @@ Flatbuffer.Primitives.Sphere3D.addViz = function(builder, vizOffset) {
 
 /**
  * @param {flatbuffers.Builder} builder
+ * @param {number} timestamp
+ */
+Flatbuffer.Primitives.Sphere3D.addTimestamp = function(builder, timestamp) {
+  builder.addFieldFloat64(4, timestamp, 0.0);
+};
+
+/**
+ * @param {flatbuffers.Builder} builder
  * @returns {flatbuffers.Offset}
  */
 Flatbuffer.Primitives.Sphere3D.endSphere3D = function(builder) {
@@ -1854,14 +1639,16 @@ Flatbuffer.Primitives.Sphere3D.endSphere3D = function(builder) {
  * @param {number} radius
  * @param {Flatbuffer.Primitives.VisualizationType} vizType
  * @param {flatbuffers.Offset} vizOffset
+ * @param {number} timestamp
  * @returns {flatbuffers.Offset}
  */
-Flatbuffer.Primitives.Sphere3D.createSphere3D = function(builder, posOffset, radius, vizType, vizOffset) {
+Flatbuffer.Primitives.Sphere3D.createSphere3D = function(builder, posOffset, radius, vizType, vizOffset, timestamp) {
   Flatbuffer.Primitives.Sphere3D.startSphere3D(builder);
   Flatbuffer.Primitives.Sphere3D.addPos(builder, posOffset);
   Flatbuffer.Primitives.Sphere3D.addRadius(builder, radius);
   Flatbuffer.Primitives.Sphere3D.addVizType(builder, vizType);
   Flatbuffer.Primitives.Sphere3D.addViz(builder, vizOffset);
+  Flatbuffer.Primitives.Sphere3D.addTimestamp(builder, timestamp);
   return Flatbuffer.Primitives.Sphere3D.endSphere3D(builder);
 }
 
@@ -1897,6 +1684,15 @@ Flatbuffer.Primitives.Spheres3D.prototype.__init = function(i, bb) {
  * @returns {Flatbuffer.Primitives.Spheres3D}
  */
 Flatbuffer.Primitives.Spheres3D.getRootAsSpheres3D = function(bb, obj) {
+  return (obj || new Flatbuffer.Primitives.Spheres3D).__init(bb.readInt32(bb.position()) + bb.position(), bb);
+};
+
+/**
+ * @param {flatbuffers.ByteBuffer} bb
+ * @param {Flatbuffer.Primitives.Spheres3D=} obj
+ * @returns {Flatbuffer.Primitives.Spheres3D}
+ */
+Flatbuffer.Primitives.Spheres3D.getSizePrefixedRootAsSpheres3D = function(bb, obj) {
   return (obj || new Flatbuffer.Primitives.Spheres3D).__init(bb.readInt32(bb.position()) + bb.position(), bb);
 };
 
@@ -2012,13 +1808,22 @@ Flatbuffer.Primitives.PolyLine3D.getRootAsPolyLine3D = function(bb, obj) {
 };
 
 /**
+ * @param {flatbuffers.ByteBuffer} bb
+ * @param {Flatbuffer.Primitives.PolyLine3D=} obj
+ * @returns {Flatbuffer.Primitives.PolyLine3D}
+ */
+Flatbuffer.Primitives.PolyLine3D.getSizePrefixedRootAsPolyLine3D = function(bb, obj) {
+  return (obj || new Flatbuffer.Primitives.PolyLine3D).__init(bb.readInt32(bb.position()) + bb.position(), bb);
+};
+
+/**
  * @param {number} index
- * @param {Vec3=} obj
- * @returns {Vec3}
+ * @param {Flatbuffer.Primitives.Vec3=} obj
+ * @returns {Flatbuffer.Primitives.Vec3}
  */
 Flatbuffer.Primitives.PolyLine3D.prototype.vertices = function(index, obj) {
   var offset = this.bb.__offset(this.bb_pos, 4);
-  return offset ? (obj || new Vec3).__init(this.bb.__vector(this.bb_pos + offset) + index * 24, this.bb) : null;
+  return offset ? (obj || new Flatbuffer.Primitives.Vec3).__init(this.bb.__vector(this.bb_pos + offset) + index * 24, this.bb) : null;
 };
 
 /**
@@ -2038,21 +1843,6 @@ Flatbuffer.Primitives.PolyLine3D.prototype.vizType = function() {
 };
 
 /**
- * @param {Flatbuffer.Primitives.VisualizationType} value
- * @returns {boolean}
- */
-Flatbuffer.Primitives.PolyLine3D.prototype.mutate_viz_type = function(value) {
-  var offset = this.bb.__offset(this.bb_pos, 6);
-
-  if (offset === 0) {
-    return false;
-  }
-
-  this.bb.writeUint8(this.bb_pos + offset, value);
-  return true;
-};
-
-/**
  * @param {flatbuffers.Table} obj
  * @returns {?flatbuffers.Table}
  */
@@ -2067,21 +1857,6 @@ Flatbuffer.Primitives.PolyLine3D.prototype.viz = function(obj) {
 Flatbuffer.Primitives.PolyLine3D.prototype.widthForVisualization = function() {
   var offset = this.bb.__offset(this.bb_pos, 10);
   return offset ? this.bb.readFloat64(this.bb_pos + offset) : 1.0;
-};
-
-/**
- * @param {number} value
- * @returns {boolean}
- */
-Flatbuffer.Primitives.PolyLine3D.prototype.mutate_widthForVisualization = function(value) {
-  var offset = this.bb.__offset(this.bb_pos, 10);
-
-  if (offset === 0) {
-    return false;
-  }
-
-  this.bb.writeFloat64(this.bb_pos + offset, value);
-  return true;
 };
 
 /**
@@ -2189,6 +1964,15 @@ Flatbuffer.Primitives.PolyLines3D.prototype.__init = function(i, bb) {
  * @returns {Flatbuffer.Primitives.PolyLines3D}
  */
 Flatbuffer.Primitives.PolyLines3D.getRootAsPolyLines3D = function(bb, obj) {
+  return (obj || new Flatbuffer.Primitives.PolyLines3D).__init(bb.readInt32(bb.position()) + bb.position(), bb);
+};
+
+/**
+ * @param {flatbuffers.ByteBuffer} bb
+ * @param {Flatbuffer.Primitives.PolyLines3D=} obj
+ * @returns {Flatbuffer.Primitives.PolyLines3D}
+ */
+Flatbuffer.Primitives.PolyLines3D.getSizePrefixedRootAsPolyLines3D = function(bb, obj) {
   return (obj || new Flatbuffer.Primitives.PolyLines3D).__init(bb.readInt32(bb.position()) + bb.position(), bb);
 };
 
@@ -2304,75 +2088,84 @@ Flatbuffer.Primitives.Box3D.getRootAsBox3D = function(bb, obj) {
 };
 
 /**
- * @param {Vec3=} obj
- * @returns {Vec3|null}
+ * @param {flatbuffers.ByteBuffer} bb
+ * @param {Flatbuffer.Primitives.Box3D=} obj
+ * @returns {Flatbuffer.Primitives.Box3D}
+ */
+Flatbuffer.Primitives.Box3D.getSizePrefixedRootAsBox3D = function(bb, obj) {
+  return (obj || new Flatbuffer.Primitives.Box3D).__init(bb.readInt32(bb.position()) + bb.position(), bb);
+};
+
+/**
+ * @param {Flatbuffer.Primitives.Vec3=} obj
+ * @returns {Flatbuffer.Primitives.Vec3|null}
  */
 Flatbuffer.Primitives.Box3D.prototype.p0 = function(obj) {
   var offset = this.bb.__offset(this.bb_pos, 4);
-  return offset ? (obj || new Vec3).__init(this.bb_pos + offset, this.bb) : null;
+  return offset ? (obj || new Flatbuffer.Primitives.Vec3).__init(this.bb_pos + offset, this.bb) : null;
 };
 
 /**
- * @param {Vec3=} obj
- * @returns {Vec3|null}
+ * @param {Flatbuffer.Primitives.Vec3=} obj
+ * @returns {Flatbuffer.Primitives.Vec3|null}
  */
 Flatbuffer.Primitives.Box3D.prototype.p1 = function(obj) {
   var offset = this.bb.__offset(this.bb_pos, 6);
-  return offset ? (obj || new Vec3).__init(this.bb_pos + offset, this.bb) : null;
+  return offset ? (obj || new Flatbuffer.Primitives.Vec3).__init(this.bb_pos + offset, this.bb) : null;
 };
 
 /**
- * @param {Vec3=} obj
- * @returns {Vec3|null}
+ * @param {Flatbuffer.Primitives.Vec3=} obj
+ * @returns {Flatbuffer.Primitives.Vec3|null}
  */
 Flatbuffer.Primitives.Box3D.prototype.p2 = function(obj) {
   var offset = this.bb.__offset(this.bb_pos, 8);
-  return offset ? (obj || new Vec3).__init(this.bb_pos + offset, this.bb) : null;
+  return offset ? (obj || new Flatbuffer.Primitives.Vec3).__init(this.bb_pos + offset, this.bb) : null;
 };
 
 /**
- * @param {Vec3=} obj
- * @returns {Vec3|null}
+ * @param {Flatbuffer.Primitives.Vec3=} obj
+ * @returns {Flatbuffer.Primitives.Vec3|null}
  */
 Flatbuffer.Primitives.Box3D.prototype.p3 = function(obj) {
   var offset = this.bb.__offset(this.bb_pos, 10);
-  return offset ? (obj || new Vec3).__init(this.bb_pos + offset, this.bb) : null;
+  return offset ? (obj || new Flatbuffer.Primitives.Vec3).__init(this.bb_pos + offset, this.bb) : null;
 };
 
 /**
- * @param {Vec3=} obj
- * @returns {Vec3|null}
+ * @param {Flatbuffer.Primitives.Vec3=} obj
+ * @returns {Flatbuffer.Primitives.Vec3|null}
  */
 Flatbuffer.Primitives.Box3D.prototype.p4 = function(obj) {
   var offset = this.bb.__offset(this.bb_pos, 12);
-  return offset ? (obj || new Vec3).__init(this.bb_pos + offset, this.bb) : null;
+  return offset ? (obj || new Flatbuffer.Primitives.Vec3).__init(this.bb_pos + offset, this.bb) : null;
 };
 
 /**
- * @param {Vec3=} obj
- * @returns {Vec3|null}
+ * @param {Flatbuffer.Primitives.Vec3=} obj
+ * @returns {Flatbuffer.Primitives.Vec3|null}
  */
 Flatbuffer.Primitives.Box3D.prototype.p5 = function(obj) {
   var offset = this.bb.__offset(this.bb_pos, 14);
-  return offset ? (obj || new Vec3).__init(this.bb_pos + offset, this.bb) : null;
+  return offset ? (obj || new Flatbuffer.Primitives.Vec3).__init(this.bb_pos + offset, this.bb) : null;
 };
 
 /**
- * @param {Vec3=} obj
- * @returns {Vec3|null}
+ * @param {Flatbuffer.Primitives.Vec3=} obj
+ * @returns {Flatbuffer.Primitives.Vec3|null}
  */
 Flatbuffer.Primitives.Box3D.prototype.p6 = function(obj) {
   var offset = this.bb.__offset(this.bb_pos, 16);
-  return offset ? (obj || new Vec3).__init(this.bb_pos + offset, this.bb) : null;
+  return offset ? (obj || new Flatbuffer.Primitives.Vec3).__init(this.bb_pos + offset, this.bb) : null;
 };
 
 /**
- * @param {Vec3=} obj
- * @returns {Vec3|null}
+ * @param {Flatbuffer.Primitives.Vec3=} obj
+ * @returns {Flatbuffer.Primitives.Vec3|null}
  */
 Flatbuffer.Primitives.Box3D.prototype.p7 = function(obj) {
   var offset = this.bb.__offset(this.bb_pos, 18);
-  return offset ? (obj || new Vec3).__init(this.bb_pos + offset, this.bb) : null;
+  return offset ? (obj || new Flatbuffer.Primitives.Vec3).__init(this.bb_pos + offset, this.bb) : null;
 };
 
 /**
@@ -2381,21 +2174,6 @@ Flatbuffer.Primitives.Box3D.prototype.p7 = function(obj) {
 Flatbuffer.Primitives.Box3D.prototype.vizType = function() {
   var offset = this.bb.__offset(this.bb_pos, 20);
   return offset ? /** @type {Flatbuffer.Primitives.VisualizationType} */ (this.bb.readUint8(this.bb_pos + offset)) : Flatbuffer.Primitives.VisualizationType.NONE;
-};
-
-/**
- * @param {Flatbuffer.Primitives.VisualizationType} value
- * @returns {boolean}
- */
-Flatbuffer.Primitives.Box3D.prototype.mutate_viz_type = function(value) {
-  var offset = this.bb.__offset(this.bb_pos, 20);
-
-  if (offset === 0) {
-    return false;
-  }
-
-  this.bb.writeUint8(this.bb_pos + offset, value);
-  return true;
 };
 
 /**
@@ -2568,6 +2346,15 @@ Flatbuffer.Primitives.Boxes3D.getRootAsBoxes3D = function(bb, obj) {
 };
 
 /**
+ * @param {flatbuffers.ByteBuffer} bb
+ * @param {Flatbuffer.Primitives.Boxes3D=} obj
+ * @returns {Flatbuffer.Primitives.Boxes3D}
+ */
+Flatbuffer.Primitives.Boxes3D.getSizePrefixedRootAsBoxes3D = function(bb, obj) {
+  return (obj || new Flatbuffer.Primitives.Boxes3D).__init(bb.readInt32(bb.position()) + bb.position(), bb);
+};
+
+/**
  * @param {number} index
  * @param {Flatbuffer.Primitives.Box3D=} obj
  * @returns {Flatbuffer.Primitives.Box3D}
@@ -2642,8 +2429,4 @@ Flatbuffer.Primitives.Boxes3D.createBoxes3D = function(builder, boxesOffset) {
 }
 
 // Exports for ECMAScript6 Modules
-export {Vec2};
-export {Vec3};
-export {Vec4};
-export {Color};
 export {Flatbuffer};

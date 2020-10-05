@@ -169,7 +169,7 @@ async function createRadarVisualizationMeshes (radarVisualizationData, radarVisu
   for (let ii = 0; ii < length; ii++) {
     const point = radarVisualizationData.points(ii)
     const vertex = { x: point.pos().x(), y: point.pos().y(), z: point.pos().z() };
-    const timestamp = point.timestamp - animationEngine.tstart;
+    const timestamp = point.timestamp() - animationEngine.tstart;
 
     const data = {
       position: vertex,

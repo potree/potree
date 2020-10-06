@@ -189,7 +189,7 @@ async function createControlMeshes (controlPoints, controlPointShaderMaterial, F
   const initialPosition = controlPoints.points(0).pos();
   const offset = new THREE.Vector3(initialPosition.x(), initialPosition.y(), initialPosition.z());
 
-  const sphereGeo = new THREE.InstancedBufferGeometry().copy(new THREE.SphereBufferGeometry(0.15));
+  const sphereGeo = new THREE.InstancedBufferGeometry().copy(new THREE.SphereBufferGeometry(0.25));
   const mesh = new THREE.InstancedMesh(sphereGeo, controlPointShaderMaterial, window.controlPointBudget);
   mesh.name = "ControlPoint"
   mesh.frustumCulled = false;
@@ -228,7 +228,7 @@ async function createREMControlMeshes (controlPoints, controlPointShaderMaterial
   const initialPosition = controlPoints[0].pos();
   const offset = new THREE.Vector3(initialPosition.x(), initialPosition.y(), initialPosition.z());
 
-  const sphereGeo = new THREE.InstancedBufferGeometry().copy(new THREE.SphereBufferGeometry(0.15));
+  const sphereGeo = new THREE.InstancedBufferGeometry().copy(new THREE.SphereBufferGeometry(0.25));
   const mesh = new THREE.InstancedMesh(sphereGeo, controlPointShaderMaterial, window.controlPointBudget);
   mesh.name = "ControlPoint"
   mesh.frustumCulled = false;

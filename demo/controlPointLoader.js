@@ -113,10 +113,10 @@ async function loadControlPointsCallbackHelper (s3, bucket, name, animationEngin
           newTransform.setPosition(currentPosition.x, currentPosition.y, currentPosition.z);
 
           mesh.setMatrixAt(i, newTransform);
-          mesh.instanceMatrix.needsUpdate = true;
         }
 
         mesh.geometry.setAttribute('gpsTime', new THREE.InstancedBufferAttribute(timestamps, 1));
+        mesh.instanceMatrix.needsUpdate = true;
     });
   }, controlPointType);
 }

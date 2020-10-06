@@ -23,6 +23,44 @@ export async function loadRadarVisualizationCallback (files) {
   }
 }
 
+function indexOfClosestTimestamp(radarData, timestamp) {
+  if (timestamp <= radarData[0].timestamp) {
+    return 0;
+  }
+
+  if (timestamp >= radarData[radarData.length - 1].timestamp) {
+    return radarData.length - 1;
+  }
+
+  let start = 0;
+  let end = radarData.length;
+  let mid = 0;
+
+  while (start < end) {
+    mid = Math.floor((start + end) / 2);
+
+    if (radarData[mid].timestamp === timestamp) {
+      return mid;
+    }
+    else if (timestamp < radarData[mid].timestamp) {
+      if (mid > 0 && timestamp > radarData[mid - 1].timestamp) {
+        return Math.abs(timestamp - radarData[mid].timestamp) < Math.abs(timestamp - radarData[mid - 1].timestamp) ? mid : mid - 1;
+      }
+
+      end = mid;
+    }
+    else {
+      if (mid < radarData.length - 1 && timestamp < radarData[mid + 1].timestamp) {
+        return Math.abs(timestamp - radarData[mid].timestamp) < Math.abs(timestamp - radarData[mid + 1].timestamp) ? mid : mid + 1;
+      }
+
+      start = mid + 1;
+    }
+  }
+
+  return mid;
+}
+
 window.radarVisualizationBudget = 1000;
 async function loadRadarVisualizationCallbackHelper (radarVisualizationType) {
   const shaderMaterial = getInstancedShaderMaterial();
@@ -38,7 +76,7 @@ async function loadRadarVisualizationCallbackHelper (radarVisualizationType) {
     const radarDataTimestamps = radarData.map((data, i) => ({
       timestamp: data.timestamp,
       index: i
-    }));
+    })).sort((a, b) => a.timestamp - b.timestamp);
 
     viewer.scene.scene.add(radarVisualizationLayer);
     const e = new CustomEvent('truth_layer_added', {detail: radarVisualizationLayer, writable: true});
@@ -49,8 +87,8 @@ async function loadRadarVisualizationCallbackHelper (radarVisualizationType) {
     // TODO check if group works as expected, then trigger "truth_layer_added" event
     animationEngine.tweenTargets.push((gpsTime) => {
       const currentTime = gpsTime - animationEngine.tstart;
-      const minActiveWindow = currentTime + animationEngine.activeWindow.backward;
-      const maxActiveWindow = currentTime + animationEngine.activeWindow.forward;
+      radarVisualizationShaderMaterial.uniforms.minGpsTime.value = currentTime + animationEngine.activeWindow.backward;
+      radarVisualizationShaderMaterial.uniforms.maxGpsTime.value = currentTime + animationEngine.activeWindow.forward;
 
       if (mesh.count !== window.radarVisualizationBudget) {
         radarVisualizationLayer.remove(mesh);
@@ -66,13 +104,10 @@ async function loadRadarVisualizationCallbackHelper (radarVisualizationType) {
         radarVisualizationLayer.add(mesh);
       }
 
-      radarVisualizationShaderMaterial.uniforms.minGpsTime.value = currentTime + animationEngine.activeWindow.backward;
-      radarVisualizationShaderMaterial.uniforms.maxGpsTime.value = currentTime + animationEngine.activeWindow.forward;
-
-      const currentData = radarDataTimestamps
-        .filter(({timestamp}) => timestamp >= minActiveWindow && timestamp <= maxActiveWindow)
-        .sort((a, b) => Math.abs(currentTime - a.timestamp) - Math.abs(currentTime - b.timestamp))
-        .slice(0, window.radarVisualizationBudget);
+      const currentIndex = indexOfClosestTimestamp(radarDataTimestamps, currentTime);
+      const minIndex = Math.max(0, currentIndex - window.radarVisualizationBudget / 2);
+      const maxIndex = Math.min(radarDataTimestamps.length, currentIndex + Math.ceil(window.radarVisualizationBudget / 2));
+      const currentData = radarDataTimestamps.slice(minIndex, maxIndex);
 
       const timestamps = new Float32Array(window.radarVisualizationBudget).fill(undefined);
       for (let i = 0; i < currentData.length; i++) {
@@ -83,10 +118,10 @@ async function loadRadarVisualizationCallbackHelper (radarVisualizationType) {
         newTransform.setPosition(currentPosition.x, currentPosition.y, currentPosition.z);
 
         mesh.setMatrixAt(i, newTransform);
+        mesh.instanceMatrix.needsUpdate = true;
       }
 
       mesh.geometry.setAttribute('gpsTime', new THREE.InstancedBufferAttribute(timestamps, 1));
-      mesh.instanceMatrix.needsUpdate = true;
     });
   }, radarVisualizationType);
 }

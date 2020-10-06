@@ -46,7 +46,9 @@ export class AnimationEngine {
   }
 
   launch() {
-    let durationMillis = this.timeRange*1000*this.playbackRate;
+    const timeRemaining = Math.abs(this.tend - this.timeline.t);
+    const durationMillis = timeRemaining*1000/this.playbackRate;
+
     this.tweenEngine = new TWEEN.Tween(this.timeline).to({t:this.tend}, durationMillis);
     this.tweenEngine.easing(TWEEN.Easing.Linear.None);
     this.tweenEngine.onUpdate(() => this.updateTimeForAll(true));
@@ -61,6 +63,7 @@ export class AnimationEngine {
 
   // TODO don't use callback, already exists with onStart()
   start() {
+    this.launch();
     if (this.preStartCallback) {
       this.preStartCallback();
     }
@@ -77,6 +80,7 @@ export class AnimationEngine {
     this.isPlaying = false;
   }
 
+  // TODO not sure this ever gets called, and not sure it does anything when it is called
   update() {
     let t = (this.timeline.t - this.tstart) / this.timeRange;
     this.tweenEngine.update(t);

@@ -129,7 +129,7 @@ $(document).ready(function () {
       </tr>
 
       <tr>
-          <td>Roll</td>
+          <td><span id="DOF-roll">Roll</span></td>
           <td><span class="calibration-value" id="velo2rtk-roll">0.0000</span> <span class="rotation-unit">rad</span></td>
           <td><input class="calibration-original" id="velo2rtk-loaded-roll" type="number" placeholder="" step='any' value='0'/> <span class="rotation-unit">rad</span></td>
           <td><input class="calibration-setpoint" id="velo2rtk-setpoint-roll" type="number" placeholder="" step='any' value='0'/> <span class="rotation-unit">rad</span></td>
@@ -139,7 +139,7 @@ $(document).ready(function () {
       </tr>
 
       <tr>
-          <td>Pitch</td>
+          <td><span id="DOF-pitch">Pitch</span></td>
           <td><span class="calibration-value" id="velo2rtk-pitch">0.0000</span> <span class="rotation-unit">rad</span></td>
           <td><input class="calibration-original" id="velo2rtk-loaded-pitch" type="number" placeholder="" step='any' value='0'/> <span class="rotation-unit">rad</span></td>
           <td><input class="calibration-setpoint" id="velo2rtk-setpoint-pitch" type="number" placeholder="" step='any' value='0'/> <span class="rotation-unit">rad</span></td>
@@ -493,6 +493,14 @@ const velo2rtk = convertToCorrectUnits(velo2RtkInput);
     $("#velo2rtk-setpoint-yaw").val(Number(velo2rtk.yaw).toFixed(4));
     $("#velo2rtk-yaw").text(velo2rtk.yaw.toFixed(4));
     $("#velo2rtk-yaw").trigger('input');
+
+    if (velo2rtk.version > 2.5) {
+      console.log("Version 3 cals. Pay attention to roll and pitch.");
+      $("#DOF-pitch").text("Roll");
+      $("#DOF-roll").text("Pitch");
+    } else {
+      console.log("Version 1-2 cals.");
+    }
 
     // Update units:
     const unit = window.calibrationPanelDegrees ? "deg" : "rad";

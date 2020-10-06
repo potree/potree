@@ -46,8 +46,8 @@ export class AnimationEngine {
   }
 
   launch() {
-    let timeRemaining = Math.abs(this.tend - this.timeline.t);
-    let durationMillis = timeRemaining*1000/this.playbackRate;
+    const timeRemaining = Math.abs(this.tend - this.timeline.t);
+    const durationMillis = timeRemaining*1000/this.playbackRate;
 
     this.tweenEngine = new TWEEN.Tween(this.timeline).to({t:this.tend}, durationMillis);
     this.tweenEngine.easing(TWEEN.Easing.Linear.None);

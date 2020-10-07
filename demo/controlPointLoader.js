@@ -18,6 +18,44 @@ export async function loadControlPointsCallback (s3, bucket, name, animationEngi
   }
 }
 
+function indexOfClosestTimestamp(controlPoints, timestamp) {
+  if (timestamp <= controlPoints[0].timestamp) {
+    return 0;
+  }
+
+  if (timestamp >= controlPoints[controlPoints.length - 1].timestamp) {
+    return controlPoints.length - 1;
+  }
+
+  let start = 0;
+  let end = controlPoints.length;
+  let mid = 0;
+
+  while (start < end) {
+    mid = Math.floor((start + end) / 2);
+
+    if (controlPoints[mid].timestamp === timestamp) {
+      return mid;
+    }
+    else if (timestamp < controlPoints[mid].timestamp) {
+      if (mid > 0 && timestamp > controlPoints[mid - 1].timestamp) {
+        return Math.abs(timestamp - controlPoints[mid].timestamp) < Math.abs(timestamp - controlPoints[mid - 1].timestamp) ? mid : mid - 1;
+      }
+
+      end = mid;
+    }
+    else {
+      if (mid < controlPoints.length - 1 && timestamp < controlPoints[mid + 1].timestamp) {
+        return Math.abs(timestamp - controlPoints[mid].timestamp) < Math.abs(timestamp - controlPoints[mid + 1].timestamp) ? mid : mid + 1;
+      }
+
+      start = mid + 1;
+    }
+  }
+
+  return mid;
+}
+
 window.controlPointBudget = 1000;
 async function loadControlPointsCallbackHelper (s3, bucket, name, animationEngine, controlPointType) {
   const shaderMaterial = getInstancedShaderMaterial();
@@ -33,7 +71,7 @@ async function loadControlPointsCallbackHelper (s3, bucket, name, animationEngin
     const controlPointTimestamps = controlPointData.map((data, i) => ({
       timestamp: data.timestamp,
       index: i
-    }));
+    })).sort((a, b) => a.timestamp - b.timestamp);
 
     viewer.scene.scene.add(controlPointLayer);
     const e = new CustomEvent('truth_layer_added', {detail: controlPointLayer, writable: true});
@@ -44,8 +82,8 @@ async function loadControlPointsCallbackHelper (s3, bucket, name, animationEngin
     // TODO check if group works as expected, then trigger "truth_layer_added" event
     animationEngine.tweenTargets.push((gpsTime) => {
       const currentTime = gpsTime - animationEngine.tstart;
-      const minActiveWindow = currentTime + animationEngine.activeWindow.backward;
-      const maxActiveWindow = currentTime + animationEngine.activeWindow.forward;
+      controlPointShaderMaterial.uniforms.minGpsTime.value = currentTime + animationEngine.activeWindow.backward;
+      controlPointShaderMaterial.uniforms.maxGpsTime.value = currentTime + animationEngine.activeWindow.forward;
 
       if (mesh.count !== window.controlPointBudget) {
         controlPointLayer.remove(mesh);
@@ -61,13 +99,10 @@ async function loadControlPointsCallbackHelper (s3, bucket, name, animationEngin
         controlPointLayer.add(mesh);
       }
 
-      controlPointShaderMaterial.uniforms.minGpsTime.value = currentTime + animationEngine.activeWindow.backward;
-      controlPointShaderMaterial.uniforms.maxGpsTime.value = currentTime + animationEngine.activeWindow.forward;
-
-      const currentData = controlPointTimestamps
-        .filter(({timestamp}) => timestamp >= minActiveWindow && timestamp <= maxActiveWindow)
-        .sort((a, b) => Math.abs(currentTime - a.timestamp) - Math.abs(currentTime - b.timestamp))
-        .slice(0, window.controlPointBudget);
+      const currentIndex = indexOfClosestTimestamp(controlPointTimestamps, currentTime);
+      const minIndex = Math.max(0, currentIndex - window.controlPointBudget / 2);
+      const maxIndex = Math.min(controlPointTimestamps.length, currentIndex + Math.ceil(window.controlPointBudget / 2));
+      const currentData = controlPointTimestamps.slice(minIndex, maxIndex);
 
         const timestamps = new Float32Array(window.controlPointBudget).fill(undefined);
         for (let i = 0; i < currentData.length; i++) {

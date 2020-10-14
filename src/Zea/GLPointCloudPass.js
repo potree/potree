@@ -1,10 +1,11 @@
-import { Frustum, NumberParameter, GLTexture2D, GLPass } from '@zeainc/zea-engine'
+import { Frustum, NumberParameter, GLTexture2D, GLPass, GLRenderTarget, GLMesh, Plane, Color } from '@zeainc/zea-engine'
 
 import { PointCloudAsset } from './PointCloudAsset.js'
 import { GLPointCloudAsset } from './GLPointCloudAsset.js'
 import { BinaryHeap } from '../../libs/other/BinaryHeap.js'
 import { PotreePointsShader, PotreePointsGeomDataShader, PotreePointsHilighlightShader } from './PotreePointsShader.js'
 import { LRU } from '../LRU.js'
+import { EyeDomeLightingShader } from './EyeDomeLightingShader.js'
 
 /**
  * The GLPointCloudPass Class
@@ -75,25 +76,57 @@ class GLPointCloudPass extends GLPass {
       data,
     })
 
-    this.__renderer.registerPass(
-      (treeItem) => {
-        if (treeItem instanceof PointCloudAsset) {
-          this.addPotreeasset(treeItem)
-          return true
-        }
-        return false
-      },
-      (treeItem) => {
-        if (treeItem instanceof PointCloudAsset) {
-          this.removePotreeasset(treeItem)
-          return true
-        }
-        return false
-      }
-    )
-
     this.setViewport(renderer.getViewport())
+    
+    this.renderTarget = new GLRenderTarget(gl, {
+      type: 'FLOAT',
+      format: 'RGBA',
+      filter: 'LINEAR',
+      width: this.viewportSize[0],
+      height:this.viewportSize[1],
+      depthType: gl.FLOAT,
+      depthFormat: gl.DEPTH_COMPONENT,
+      depthInternalFormat: gl.DEPTH_COMPONENT32F
+    });
+    
+    this.quad = new GLMesh(gl, new Plane(1, 1))
+    this.eyeDomeLightingShader = new EyeDomeLightingShader(gl)
+
   }
+  
+  /**
+   * The itemAddedToScene method is called on each pass when a new item
+   * is added to the scene, and the renderer must decide how to render it.
+   * It allows Passes to select geometries to handle the drawing of.
+   * @param {TreeItem} treeItem - The treeItem value.
+   * @param {object} rargs - Extra return values are passed back in this object.
+   * The object contains a parameter 'continueInSubTree', which can be set to false,
+   * so the subtree of this node will not be traversed after this node is handled.
+   * @return {Boolean} - The return value.
+   */
+  itemAddedToScene(treeItem, rargs) {
+    if (treeItem instanceof PointCloudAsset) {
+      this.addPotreeasset(treeItem)
+      return true
+    }
+    return false
+  }
+
+  /**
+   * The itemRemovedFromScene method is called on each pass when aa item
+   * is removed to the scene, and the pass must handle cleaning up any resources.
+   * @param {TreeItem} treeItem - The treeItem value.
+   * @param {object} rargs - Extra return values are passed back in this object.
+   * @return {Boolean} - The return value.
+   */
+  itemRemovedFromScene(treeItem, rargs) {
+    if (treeItem instanceof PointCloudAsset) {
+      this.removePotreeasset(treeItem)
+      return true
+    }
+    return false
+  }
+
 
   /**
    * The addPotreeasset method
@@ -135,10 +168,18 @@ class GLPointCloudPass extends GLPass {
     this.viewport.on('viewChanged', () => {
       this.visibleNodesNeedUpdating = true
     })
-    this.viewport.on('resized', () => {
+    this.viewport.on('resized', (event) => {
+      
+      const {width, height} = event
+      this.viewportSize = [width, height]
+      if (this.renderTarget) {
+        this.renderTarget.resize(width, height)
+      }
+
       this.visibleNodesNeedUpdating = true
     })
     this.visibleNodesNeedUpdating = true
+    this.viewportSize = [viewport.getWidth(), viewport.getHeight()]
   }
 
   /**
@@ -384,6 +425,7 @@ class GLPointCloudPass extends GLPass {
 
     const gl = this.__gl
 
+
     gl.disable(gl.BLEND)
     gl.depthMask(true)
     gl.enable(gl.DEPTH_TEST)
@@ -395,8 +437,40 @@ class GLPointCloudPass extends GLPass {
 
     // gl.uniform1f(PointSize.location, this.pointSize);
 
-    // RENDER
-    this.glpointcloudAssets.forEach((a) => a.draw(renderstate))
+    
+    if (this.renderTarget) {
+      this.renderTarget.bindForWriting(renderstate, true)
+
+      gl.disable(gl.BLEND)
+      gl.depthMask(true)
+      gl.enable(gl.DEPTH_TEST)
+ 
+      // We need to explicitly clear the depth buffer,
+      // It seems that sometimes the function above does
+      // not do the trick.
+      // gl.colorMask(true, true, true, true)
+      // gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
+      // RENDER
+      this.glpointcloudAssets.forEach((a) => a.draw(renderstate))
+
+      this.renderTarget.unbindForWriting(renderstate)
+      
+      this.eyeDomeLightingShader.bind(renderstate)
+
+      const unifs = renderstate.unifs
+      this.renderTarget.bindColorTexture(renderstate, unifs.uEDLColor)
+      // this.renderTarget.bindDepthTexture(renderstate, unifs.depthTexture)
+      
+      gl.uniform2f(unifs.viewportSize.location, this.viewportSize[0], this.viewportSize[1])
+      gl.uniform1f(unifs.edlStrength.location, 0.5)
+      gl.uniform1f(unifs.radius.location, 1.0)
+      
+      this.quad.bindAndDraw(renderstate)
+    } else {
+      // RENDER
+      this.glpointcloudAssets.forEach((a) => a.draw(renderstate))
+    }
   }
 
   /**

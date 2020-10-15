@@ -29,7 +29,7 @@ class PointCloudAsset extends AssetItem {
     // })
     // this.addParameter(new NumberParameter('Version', 0))
     this.addParameter(new NumberParameter('Num Points', 0))
-    this.addParameter(new NumberParameter('Point Size', 1))
+    this.addParameter(new NumberParameter('Point Size', 1.1))
     this.addParameter(new NumberParameter('Point Size Attenuation', 1.0))
   }
 

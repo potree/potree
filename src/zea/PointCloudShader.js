@@ -1,6 +1,6 @@
 import { GLShader, Registry, shaderLibrary } from '@zeainc/zea-engine'
 
-class PotreePointsShader extends GLShader {
+class PointCloudShader extends GLShader {
   constructor(gl) {
     super(gl)
     this.__shaderStages['VERTEX_SHADER'] = shaderLibrary.parseShader(
@@ -221,17 +221,17 @@ void main(void) {
   }
 
   static getGeomDataShaderName() {
-    return 'PotreePointsGeomDataShader'
+    return 'PointCloudGeomDataShader'
   }
 
   static getSelectedShaderName() {
-    return 'PotreePointsHilighlightShader'
+    return 'PointCloudHilighlightShader'
   }
 }
 
-Registry.register('PotreePointsShader', PotreePointsShader)
+Registry.register('PointCloudShader', PointCloudShader)
 
-class PotreePointsGeomDataShader extends PotreePointsShader {
+class PointCloudGeomDataShader extends PointCloudShader {
   constructor(gl) {
     super(gl)
 
@@ -277,9 +277,9 @@ void main(void) {
   }
 }
 
-Registry.register('PotreePointsGeomDataShader', PotreePointsGeomDataShader)
+Registry.register('PointCloudGeomDataShader', PointCloudGeomDataShader)
 
-class PotreePointsHilighlightShader extends PotreePointsShader {
+class PointCloudHilighlightShader extends PointCloudShader {
   constructor(gl) {
     super(gl)
 
@@ -319,6 +319,6 @@ void main(void) {
   }
 }
 
-Registry.register('PotreePointsHilighlightShader', PotreePointsHilighlightShader)
+Registry.register('PointCloudHilighlightShader', PointCloudHilighlightShader)
 
-export { PotreePointsShader, PotreePointsGeomDataShader, PotreePointsHilighlightShader }
+export { PointCloudShader, PointCloudGeomDataShader, PointCloudHilighlightShader }

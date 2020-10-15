@@ -3,9 +3,10 @@ import { Frustum, NumberParameter, GLTexture2D, GLPass, GLRenderTarget, GLMesh, 
 import { PointCloudAsset } from './PointCloudAsset.js'
 import { GLPointCloudAsset } from './GLPointCloudAsset.js'
 import { BinaryHeap } from '../../libs/other/BinaryHeap.js'
-import { PotreePointsShader, PotreePointsGeomDataShader, PotreePointsHilighlightShader } from './PotreePointsShader.js'
+import { PointCloudShader, PointCloudGeomDataShader, PointCloudHilighlightShader } from './PointCloudShader.js'
 import { LRU } from '../LRU.js'
 import { EyeDomeLightingShader } from './EyeDomeLightingShader.js'
+import { SmoothingShader } from './SmoothingShader.js'
 
 /**
  * The GLPointCloudPass Class
@@ -57,9 +58,9 @@ class GLPointCloudPass extends GLPass {
   init(renderer, passIndex) {
     super.init(renderer, passIndex)
     const gl = renderer.gl
-    this.glshader = new PotreePointsShader(gl)
-    this.glgeomdataShader = new PotreePointsGeomDataShader(gl)
-    this.glhighlightShader = new PotreePointsHilighlightShader(gl)
+    this.glshader = new PointCloudShader(gl)
+    this.glgeomdataShader = new PointCloudGeomDataShader(gl)
+    this.glhighlightShader = new PointCloudHilighlightShader(gl)
 
     const size = 2048
     const data = new Uint8Array(size * 4)
@@ -78,20 +79,34 @@ class GLPointCloudPass extends GLPass {
 
     this.setViewport(renderer.getViewport())
     
-    this.renderTarget = new GLRenderTarget(gl, {
+    this.primaryRenderTarget = new GLRenderTarget(gl, {
       type: 'FLOAT',
       format: 'RGBA',
-      filter: 'LINEAR',
+      filter: 'NEAREST',
       width: this.viewportSize[0],
       height:this.viewportSize[1],
       depthType: gl.FLOAT,
       depthFormat: gl.DEPTH_COMPONENT,
       depthInternalFormat: gl.DEPTH_COMPONENT32F
     });
+    this.primaryRenderTarget.clearColor.a = 99999.0;
+    
+    this.smoothedRenderTarget = new GLRenderTarget(gl, {
+      type: 'FLOAT',
+      format: 'RGBA',
+      filter: 'NEAREST',
+      width: this.viewportSize[0],
+      height:this.viewportSize[1],
+      depthType: gl.FLOAT,
+      depthFormat: gl.DEPTH_COMPONENT,
+      depthInternalFormat: gl.DEPTH_COMPONENT32F
+    });
+    this.smoothedRenderTarget.clearColor.a = 99999.0;
     
     this.quad = new GLMesh(gl, new Plane(1, 1))
     this.eyeDomeLightingShader = new EyeDomeLightingShader(gl)
-
+    this.smoothingShader = new SmoothingShader(gl)
+    
   }
   
   /**
@@ -172,10 +187,12 @@ class GLPointCloudPass extends GLPass {
       
       const {width, height} = event
       this.viewportSize = [width, height]
-      if (this.renderTarget) {
-        this.renderTarget.resize(width, height)
+      if (this.primaryRenderTarget) {
+        this.primaryRenderTarget.resize(width, height)
       }
-
+      if (this.smoothedRenderTarget) {
+        this.smoothedRenderTarget.resize(width, height)
+      }
       this.visibleNodesNeedUpdating = true
     })
     this.visibleNodesNeedUpdating = true
@@ -438,35 +455,47 @@ class GLPointCloudPass extends GLPass {
     // gl.uniform1f(PointSize.location, this.pointSize);
 
     
-    if (this.renderTarget) {
-      this.renderTarget.bindForWriting(renderstate, true)
-
-      gl.disable(gl.BLEND)
-      gl.depthMask(true)
-      gl.enable(gl.DEPTH_TEST)
+    if (this.primaryRenderTarget) {
+      this.primaryRenderTarget.bindForWriting(renderstate, true)
  
-      // We need to explicitly clear the depth buffer,
-      // It seems that sometimes the function above does
-      // not do the trick.
-      // gl.colorMask(true, true, true, true)
-      // gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-
       // RENDER
       this.glpointcloudAssets.forEach((a) => a.draw(renderstate))
+      this.primaryRenderTarget.unbindForWriting(renderstate)
 
-      this.renderTarget.unbindForWriting(renderstate)
-      
-      this.eyeDomeLightingShader.bind(renderstate)
+      // SMOOTHING
+      {
+        
+        this.smoothedRenderTarget.bindForWriting(renderstate, true)
+        this.smoothingShader.bind(renderstate)
+        
+        const unifs = renderstate.unifs
+        this.primaryRenderTarget.bindColorTexture(renderstate, unifs.colorTexture)
+        
+        if (unifs.viewportSize)
+        gl.uniform2f(unifs.viewportSize.location, this.viewportSize[0], this.viewportSize[1])
+        if (unifs.smoothRadius)
+        gl.uniform1f(unifs.smoothRadius.location, 1.0)
+        
+        this.quad.bindAndDraw(renderstate)
+        
+        this.smoothedRenderTarget.unbindForWriting(renderstate)
+      }
 
-      const unifs = renderstate.unifs
-      this.renderTarget.bindColorTexture(renderstate, unifs.uEDLColor)
-      // this.renderTarget.bindDepthTexture(renderstate, unifs.depthTexture)
-      
-      gl.uniform2f(unifs.viewportSize.location, this.viewportSize[0], this.viewportSize[1])
-      gl.uniform1f(unifs.edlStrength.location, 0.5)
-      gl.uniform1f(unifs.radius.location, 1.0)
-      
-      this.quad.bindAndDraw(renderstate)
+      // EYE DOME LIGHTING
+      {
+        this.eyeDomeLightingShader.bind(renderstate)
+
+        const unifs = renderstate.unifs
+        this.smoothedRenderTarget.bindColorTexture(renderstate, unifs.uEDLColor)
+        
+        gl.uniform2f(unifs.viewportSize.location, this.viewportSize[0], this.viewportSize[1])
+        if (unifs.edlStrength)
+        gl.uniform1f(unifs.edlStrength.location, 0.5)
+        if (unifs.radius)
+        gl.uniform1f(unifs.radius.location, 1.0)
+        
+        this.quad.bindAndDraw(renderstate)
+      }
     } else {
       // RENDER
       this.glpointcloudAssets.forEach((a) => a.draw(renderstate))

@@ -345,7 +345,13 @@ export class OctreeLoader{
 			}else{
 				attribute.range = [min, max];
 			}
-			
+
+			if (name === "gps-time") { // HACK: Guard against bad gpsTime range in metadata, see potree/potree#909
+				if (attribute.range[0] === attribute.range[1]) {
+					attribute.range[1] += 1;
+				}
+			}
+
 			attribute.initialRange = attribute.range;
 
 			attributes.add(attribute);

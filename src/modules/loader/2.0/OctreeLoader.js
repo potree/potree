@@ -331,7 +331,7 @@ export class OctreeLoader{
 			"rgb": "rgba",
 		};
 
-		for(let jsonAttribute of jsonAttributes){
+		for (const jsonAttribute of jsonAttributes) {
 			let {name, description, size, numElements, elementSize, min, max} = jsonAttribute;
 
 			let type = typenameTypeattributeMap[jsonAttribute.type];

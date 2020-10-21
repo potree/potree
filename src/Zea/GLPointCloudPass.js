@@ -23,6 +23,7 @@ class GLPointCloudPass extends GLPass {
     this.visiblePointsTarget = 2 * 1000 * 1000
     this.lru = new LRU()
     this.minimumNodeVSize = 0.2
+    this.eyeDomeLighting = false
     this.glpointcloudAssets = []
     this.hilghlightedAssets = []
 
@@ -78,7 +79,11 @@ class GLPointCloudPass extends GLPass {
     })
 
     this.setViewport(renderer.getViewport())
-    
+  }
+
+  initEyeDomeLighting() {
+    const gl = this.__gl
+
     this.primaryRenderTarget = new GLRenderTarget(gl, {
       type: 'FLOAT',
       format: 'RGBA',
@@ -454,8 +459,11 @@ class GLPointCloudPass extends GLPass {
 
     // gl.uniform1f(PointSize.location, this.pointSize);
 
-    
-    if (this.primaryRenderTarget) {
+    if (this.eyeDomeLighting) {
+      if (!this.primaryRenderTarget) {
+        this.initEyeDomeLighting();
+      }
+
       this.primaryRenderTarget.bindForWriting(renderstate, true)
  
       // RENDER

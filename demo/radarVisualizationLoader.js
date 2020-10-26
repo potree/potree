@@ -240,39 +240,37 @@ async function createRadarVisualizationMeshes (radarVisualizationData, radarVisu
 }
 
 function getRadarVisualizationName(file) {
-  if (file in radarVisualizationNameTable) { return radarVisualizationNameTable[file]; }
-  return "Unknown Radar Data"
+  return (file in radarVisualizationNameTable) ? radarVisualizationNameTable[file] : "Unknown Radar Data";
 }
 
 function getRadarVisualizationColor (file) {
-  if (file in radarVisualizationColorTable) { return radarVisualizationColorTable[file]; }
-  return new THREE.Color(0xFFFF00);
+  return (file in radarVisualizationColorTable) ? radarVisualizationColorTable[file] : new THREE.Color(0xFFFF00);
 }
 
 const radarVisualizationColorTable = {
   'mrr_detects_visualization.fb': new THREE.Color(0x689F38), // LG
   'mrr_tracks_visualization.fb': new THREE.Color(0x006400), // G
-  'srr_detects_fr_visualization.fb': new THREE.Color(0x0099FF), // LB
-  'srr_detects_fl_visualization.fb': new THREE.Color(0xDCB3FF), // LP
-  'srr_detects_br_visualization.fb': new THREE.Color(0xFFF7B2), // LY
-  'srr_detects_bl_visualization.fb': new THREE.Color(0xFF9A00), // LO
-  'srr_tracks_fr_visualization.fb': new THREE.Color(0x0000FF), // B
-  'srr_tracks_fl_visualization.fb': new THREE.Color(0xB967FF), // P
-  'srr_tracks_br_visualization.fb': new THREE.Color(0xFFE700), // Y
-  'srr_tracks_bl_visualization.fb': new THREE.Color(0xFF7400), // O
+  'srr_fr_detects_visualization.fb': new THREE.Color(0x0099FF), // LB
+  'srr_fl_detects_visualization.fb': new THREE.Color(0xDCB3FF), // LP
+  'srr_br_detects_visualization.fb': new THREE.Color(0xFFF7B2), // LY
+  'srr_bl_detects_visualization.fb': new THREE.Color(0xFF9A00), // LO
+  'srr_fr_tracks_visualization.fb': new THREE.Color(0x0000FF), // B
+  'srr_fl_tracks_visualization.fb': new THREE.Color(0xB967FF), // P
+  'srr_br_tracks_visualization.fb': new THREE.Color(0xFFE700), // Y
+  'srr_bl_tracks_visualization.fb': new THREE.Color(0xFF7400), // O
   'object_fusion_tracks_visualization.fb': new THREE.Color(0x00FFFF)
 };
 
 const radarVisualizationNameTable = {
   'mrr_detects_visualization.fb': 'MRR Detects',
   'mrr_tracks_visualization.fb': 'MRR Tracks',
-  'srr_detects_fr_visualization.fb': 'SRR FR Detects',
-  'srr_detects_fl_visualization.fb': 'SRR FL Detects',
-  'srr_detects_br_visualization.fb': 'SRR BR Detects',
-  'srr_detects_bl_visualization.fb': 'SRR BL Detects',
-  'srr_tracks_fr_visualization.fb': 'SRR FR Tracks',
-  'srr_tracks_fl_visualization.fb': 'SRR FL Tracks',
-  'srr_tracks_br_visualization.fb': 'SRR BR Tracks',
-  'srr_tracks_bl_visualization.fb': 'SRR BL Tracks',
+  'srr_fr_detects_visualization.fb': 'SRR FR Detects',
+  'srr_fl_detects_visualization.fb': 'SRR FL Detects',
+  'srr_br_detects_visualization.fb': 'SRR BR Detects',
+  'srr_bl_detects_visualization.fb': 'SRR BL Detects',
+  'srr_fr_tracks_visualization.fb': 'SRR FR Tracks',
+  'srr_fl_tracks_visualization.fb': 'SRR FL Tracks',
+  'srr_br_tracks_visualization.fb': 'SRR BR Tracks',
+  'srr_bl_tracks_visualization.fb': 'SRR BL Tracks',
   'object_fusion_tracks_visualization.fb': 'Object Fusion Tracks'
 };

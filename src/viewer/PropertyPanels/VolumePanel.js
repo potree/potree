@@ -9,7 +9,7 @@ export class VolumePanel extends MeasurePanel{
 		super(viewer, measurement, propertiesPanel);
 
 		let copyIconPath = Potree.resourcePath + '/icons/copy.svg';
-		let removeIconPath = Potree.resourcePath + '/icons/remove.svg';
+		let removeIconPath = Potree.resourcePath + '/icons/remove.png';
 
 		let lblLengthText = new Map([
 			[BoxVolume, "length"],

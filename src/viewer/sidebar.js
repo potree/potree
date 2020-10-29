@@ -85,7 +85,7 @@ export class Sidebar{
 
 		// POINT
 		elToolbar.append(this.createToolIcon(
-			Potree.resourcePath + '/icons/point.svg',
+			Potree.resourcePath + '/icons/point.png',
 			'[title]tt.point_measurement',
 			() => {
 				$('#menu_measurements').next().slideDown();
@@ -107,7 +107,7 @@ export class Sidebar{
 
 		// DISTANCE
 		elToolbar.append(this.createToolIcon(
-			Potree.resourcePath + '/icons/distance.svg',
+			Potree.resourcePath + '/icons/distance.png',
 			'[title]tt.distance_measurement',
 			() => {
 				$('#menu_measurements').next().slideDown();
@@ -126,7 +126,7 @@ export class Sidebar{
 
 		// HEIGHT
 		elToolbar.append(this.createToolIcon(
-			Potree.resourcePath + '/icons/height.svg',
+			Potree.resourcePath + '/icons/height.png',
 			'[title]tt.height_measurement',
 			() => {
 				$('#menu_measurements').next().slideDown();
@@ -147,7 +147,7 @@ export class Sidebar{
 
 		// CIRCLE
 		elToolbar.append(this.createToolIcon(
-			Potree.resourcePath + '/icons/circle.svg',
+			Potree.resourcePath + '/icons/circle.png',
 			'[title]tt.circle_measurement',
 			() => {
 				$('#menu_measurements').next().slideDown();
@@ -170,7 +170,7 @@ export class Sidebar{
 
 		// AZIMUTH
 		elToolbar.append(this.createToolIcon(
-			Potree.resourcePath + '/icons/azimuth.svg',
+			Potree.resourcePath + '/icons/azimuth.png',
 			'Azimuth',
 			() => {
 				$('#menu_measurements').next().slideDown();
@@ -194,7 +194,7 @@ export class Sidebar{
 
 		// AREA
 		elToolbar.append(this.createToolIcon(
-			Potree.resourcePath + '/icons/area.svg',
+			Potree.resourcePath + '/icons/area.png',
 			'[title]tt.area_measurement',
 			() => {
 				$('#menu_measurements').next().slideDown();
@@ -213,7 +213,7 @@ export class Sidebar{
 
 		// VOLUME
 		elToolbar.append(this.createToolIcon(
-			Potree.resourcePath + '/icons/volume.svg',
+			Potree.resourcePath + '/icons/volume.png',
 			'[title]tt.volume_measurement',
 			() => {
 				let volume = this.volumeTool.startInsertion(); 
@@ -227,7 +227,7 @@ export class Sidebar{
 
 		// SPHERE VOLUME
 		elToolbar.append(this.createToolIcon(
-			Potree.resourcePath + '/icons/sphere_distances.svg',
+			Potree.resourcePath + '/icons/sphere_distances.png',
 			'[title]tt.volume_measurement',
 			() => { 
 				let volume = this.volumeTool.startInsertion({type: SphereVolume}); 
@@ -241,7 +241,7 @@ export class Sidebar{
 
 		// PROFILE
 		elToolbar.append(this.createToolIcon(
-			Potree.resourcePath + '/icons/profile.svg',
+			Potree.resourcePath + '/icons/profile.png',
 			'[title]tt.height_profile',
 			() => {
 				$('#menu_measurements').next().slideDown(); ;
@@ -256,7 +256,7 @@ export class Sidebar{
 
 		// ANNOTATION
 		elToolbar.append(this.createToolIcon(
-			Potree.resourcePath + '/icons/annotation.svg',
+			Potree.resourcePath + '/icons/annotation.png',
 			'[title]tt.annotation',
 			() => {
 				$('#menu_measurements').next().slideDown(); ;
@@ -271,7 +271,7 @@ export class Sidebar{
 
 		// REMOVE ALL
 		elToolbar.append(this.createToolIcon(
-			Potree.resourcePath + '/icons/reset_tools.svg',
+			Potree.resourcePath + '/icons/reset_tools.png',
 			'[title]tt.remove_all_measurement',
 			() => {
 				this.viewer.scene.removeAllMeasurements();
@@ -592,7 +592,7 @@ export class Sidebar{
 		let onAnnotationAdded = (e) => {
 			let annotation = e.annotation;
 
-			let annotationIcon = `${Potree.resourcePath}/icons/annotation.svg`;
+			let annotationIcon = `${Potree.resourcePath}/icons/annotation.png`;
 			let parentID = this.annotationMapping.get(annotation.parent);
 			let annotationID = createNode(parentID, annotation.title, annotationIcon, annotation);
 			this.annotationMapping.set(annotation, annotationID);
@@ -608,7 +608,7 @@ export class Sidebar{
 		let onCameraAnimationAdded = (e) => {
 			const animation = e.animation;
 
-			const animationIcon = `${Potree.resourcePath}/icons/camera_animation.svg`;
+			const animationIcon = `${Potree.resourcePath}/icons/camera_animation.png`;
 			createNode(otherID, "animation", animationIcon, animation);
 		};
 
@@ -709,7 +709,7 @@ export class Sidebar{
 		this.viewer.scene.addEventListener("profile_removed", onProfileRemoved);
 
 		{
-			let annotationIcon = `${Potree.resourcePath}/icons/annotation.svg`;
+			let annotationIcon = `${Potree.resourcePath}/icons/annotation.png`;
 			this.annotationMapping = new Map(); 
 			this.annotationMapping.set(this.viewer.scene.annotations, annotationsID);
 			this.viewer.scene.annotations.traverseDescendants(annotation => {
@@ -868,7 +868,7 @@ export class Sidebar{
 
 		{ // REMOVE CLIPPING TOOLS
 			clippingToolBar.append(this.createToolIcon(
-				Potree.resourcePath + "/icons/remove.svg",
+				Potree.resourcePath + "/icons/remove.png",
 				"[title]tt.remove_all_measurement",
 				() => {
 
@@ -1374,7 +1374,7 @@ export class Sidebar{
 		));
 
 		elNavigation.append(this.createToolIcon(
-			Potree.resourcePath + '/icons/fps_controls.svg',
+			Potree.resourcePath + '/icons/fps_controls.png',
 			'[title]tt.flight_control',
 			() => {
 				this.viewer.setControls(this.viewer.fpControls);
@@ -1383,7 +1383,7 @@ export class Sidebar{
 		));
 
 		elNavigation.append(this.createToolIcon(
-			Potree.resourcePath + '/icons/helicopter_controls.svg',
+			Potree.resourcePath + '/icons/helicopter_controls.png',
 			'[title]tt.heli_control',
 			() => { 
 				this.viewer.setControls(this.viewer.fpControls);
@@ -1392,19 +1392,19 @@ export class Sidebar{
 		));
 
 		elNavigation.append(this.createToolIcon(
-			Potree.resourcePath + '/icons/orbit_controls.svg',
+			Potree.resourcePath + '/icons/orbit_controls.png',
 			'[title]tt.orbit_control',
 			() => { this.viewer.setControls(this.viewer.orbitControls); }
 		));
 
 		elNavigation.append(this.createToolIcon(
-			Potree.resourcePath + '/icons/focus.svg',
+			Potree.resourcePath + '/icons/focus.png',
 			'[title]tt.focus_control',
 			() => { this.viewer.fitToScreen(); }
 		));
 
 		elNavigation.append(this.createToolIcon(
-			Potree.resourcePath + "/icons/navigation_cube.svg",
+			Potree.resourcePath + "/icons/navigation_cube.png",
 			"[title]tt.navigation_cube_control",
 			() => {this.viewer.toggleNavigationCube()}
 		));
@@ -1419,7 +1419,7 @@ export class Sidebar{
 		));
 
 		elNavigation.append(this.createToolIcon(
-			Potree.resourcePath + "/icons/camera_animation.svg",
+			Potree.resourcePath + "/icons/camera_animation.png",
 			"[title]tt.camera_animation",
 			() => {
 				const animation = CameraAnimation.defaultFromView(this.viewer);

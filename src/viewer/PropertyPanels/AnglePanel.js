@@ -6,7 +6,7 @@ export class AnglePanel extends MeasurePanel{
 	constructor(viewer, measurement, propertiesPanel){
 		super(viewer, measurement, propertiesPanel);
 
-		let removeIconPath = Potree.resourcePath + '/icons/remove.svg';
+		let removeIconPath = Potree.resourcePath + '/icons/remove.png';
 		this.elContent = $(`
 			<div class="measurement_content selectable">
 				<span class="coordinates_table_container"></span>

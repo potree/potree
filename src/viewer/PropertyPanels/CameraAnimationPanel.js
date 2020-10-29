@@ -112,7 +112,7 @@ export class CameraAnimationPanel{
 						<span style="flex-grow: 0; font-size: 1.5em">keyframe</span>
 						<span style="flex-grow: 1"></span>
 						<span style="flex-grow: 0;">
-							<img name="delete" src="${Potree.resourcePath}/icons/remove.svg" style="width: 1.5em; height: 1.5em"/>
+							<img name="delete" src="${Potree.resourcePath}/icons/remove.png" style="width: 1.5em; height: 1.5em"/>
 						</span>
 					</div>
 				`);

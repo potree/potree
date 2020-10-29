@@ -5,7 +5,7 @@
 	<meta name="description" content="">
 	<meta name="author" content="">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-	<title>Potree Viewer</title>
+	<title>Senai</title>
 
 	<link rel="stylesheet" type="text/css" href="../build/potree/potree.css">
 	<link rel="stylesheet" type="text/css" href="../libs/jquery-ui/jquery-ui.min.css">
@@ -226,7 +226,7 @@
 				position: [589769.27, 231236.83, 783.89],
 				description: `This annotation has actions that switch between elevation and color rendering modes.`,
 				actions: [{
-					"icon": Potree.resourcePath + "/icons/profile.svg",
+					"icon": Potree.resourcePath + "/icons/profile.png",
 					"onclick": function(){
 						for(let pointcloud of viewer.scene.pointclouds){
 							pointcloud.material.activeAttributeName = "elevation";

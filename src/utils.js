@@ -810,22 +810,22 @@ export class Utils {
 	static getMeasurementIcon(measurement){
 		if (measurement instanceof Measure) {
 			if (measurement.showDistances && !measurement.showArea && !measurement.showAngles) {
-				return `${Potree.resourcePath}/icons/distance.svg`;
+				return `${Potree.resourcePath}/icons/distance.png`;
 			} else if (measurement.showDistances && measurement.showArea && !measurement.showAngles) {
-				return `${Potree.resourcePath}/icons/area.svg`;
+				return `${Potree.resourcePath}/icons/area.png`;
 			} else if (measurement.maxMarkers === 1) {
-				return `${Potree.resourcePath}/icons/point.svg`;
+				return `${Potree.resourcePath}/icons/point.png`;
 			} else if (!measurement.showDistances && !measurement.showArea && measurement.showAngles) {
 				return `${Potree.resourcePath}/icons/angle.png`;
 			} else if (measurement.showHeight) {
-				return `${Potree.resourcePath}/icons/height.svg`;
+				return `${Potree.resourcePath}/icons/height.png`;
 			} else {
-				return `${Potree.resourcePath}/icons/distance.svg`;
+				return `${Potree.resourcePath}/icons/distance.png`;
 			}
 		} else if (measurement instanceof Profile) {
-			return `${Potree.resourcePath}/icons/profile.svg`;
+			return `${Potree.resourcePath}/icons/profile.png`;
 		} else if (measurement instanceof Volume) {
-			return `${Potree.resourcePath}/icons/volume.svg`;
+			return `${Potree.resourcePath}/icons/volume.png`;
 		} else if (measurement instanceof PolygonClipVolume) {
 			return `${Potree.resourcePath}/icons/clip-polygon.svg`;
 		}

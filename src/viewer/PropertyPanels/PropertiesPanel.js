@@ -709,7 +709,7 @@ export class PropertiesPanel{
 		let panel = new Panel(this.viewer, object, this);
 		this.container.append(panel.elContent);
 		if (type == TYPE.VOLUME) {
-			// can only render event listeners when volume section is added 
+			// can only render event listeners when volume section is added
 			// (not in document up until this point)
 			addVolLabelListeners(this.viewer);
 		}

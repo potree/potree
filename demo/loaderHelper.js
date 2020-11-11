@@ -39,7 +39,7 @@ function finishLoading({pointcloud}) {
   const material = pointcloud.material;
   viewer.scene.addPointCloud(pointcloud);
   material.pointColorType = Potree.PointColorType.INTENSITY; // any Potree.PointColorType.XXXX
-  material.gradient = Potree.Gradients.GRAYSCALE; // Can define custom gradient or look up in Potree.Gradients
+  material.gradient = Potree.Gradients.PLASMA; // Can define custom gradient or look up in Potree.Gradients
   material.size = 0.09;
   material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
   material.shape = Potree.PointShape.SQUARE;
@@ -94,7 +94,7 @@ export async function loadPotree() {
   window.viewer = viewer;
   const animationEngine = new AnimationEngine({
     activeWindow: {backward: defaultTimeRange.min, forward: defaultTimeRange.max, step: 0.01},
-    elevationWindow: {min: -1.00, max: 2.00, step: 0.01}
+    elevationWindow: {min: -1.00, max: 8.00, step: 0.01}
   });
   window.animationEngine = animationEngine;
 

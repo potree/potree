@@ -61,7 +61,7 @@ function addLabelExport() {
         const filename = `${timestamp}_labels.json`
         console.log(`Saving label data to ${filename}`)
         // from potree/data-labeling/download.js
-        download(filename, outputJsonString, 'text/plain')
+        download(outputJsonString, filename, 'text/plain')
     })
 }
 

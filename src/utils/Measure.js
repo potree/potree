@@ -426,7 +426,6 @@ export class Measure extends THREE.Object3D {
 						// loop through current keys and cleanup ones that will be orphaned
 						for (let key of Object.keys(point)) {
 							if (!I.point[key]) {
-								console.log(`deleting ${key}`);
 								delete point[key];
 							}
 						}

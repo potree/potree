@@ -422,6 +422,15 @@ export class Measure extends THREE.Object3D {
 					let i = this.spheres.indexOf(e.drag.object);
 					if (i !== -1) {
 						let point = this.points[i];
+						
+						// loop through current keys and cleanup ones that will be orphaned
+						for (let key of Object.keys(point)) {
+							if (!I.point[key]) {
+								console.log(`deleting ${key}`);
+								delete point[key];
+							}
+						}
+
 						for (let key of Object.keys(I.point).filter(e => e !== 'position')) {
 							point[key] = I.point[key];
 						}

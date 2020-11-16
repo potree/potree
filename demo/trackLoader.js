@@ -331,8 +331,8 @@ export async function loadTracksCallback(s3, bucket, name, trackShaderMaterial, 
         loadTracksCallbackHelper(s3, bucket, name, trackShaderMaterial, animationEngine, file, 'Tracked Objects');
       } else {
         const newTrackShaderMaterial = trackShaderMaterial.clone();
-        newTrackShaderMaterial.uniforms.color.value = new THREE.Color(0xdf00fe);
-        loadTracksCallbackHelper(s3, bucket, name, newTrackShaderMaterial, animationEngine, file, removeFileExtension(file));
+        newTrackShaderMaterial.uniforms.color.value = getTrackColor(file);
+        loadTracksCallbackHelper(s3, bucket, name, newTrackShaderMaterial, animationEngine, file, getTrackName(file));
       }
     }
   } else {
@@ -363,3 +363,25 @@ async function loadTracksCallbackHelper (s3, bucket, name, trackShaderMaterial, 
 		});
 	});
 }  // end of loadTracksCallback
+
+function getTrackName(file) {
+  return (file in trackNames) ? trackNames[file] : removeFileExtension(file);
+}
+
+function getTrackColor (file) {
+  return (file in trackColors) ? trackColors[file] : new THREE.Color(0xFFFF00);
+}
+
+const trackColors = {
+  'srr_detects_association_regions_tracks.fb': new THREE.Color(0xB967FF), // P
+  'srr_detects_interpolated_states_tracks.fb': new THREE.Color(0xB967FF), // P
+  'mrr_detects_association_regions_tracks.fb': new THREE.Color(0xFF7400), // O
+  'mrr_detects_interpolated_states_tracks.fb': new THREE.Color(0xFF7400), // O
+};
+
+const trackNames = {
+  'srr_detects_association_regions_tracks.fb': "SRR Detects Association Regions",
+  'srr_detects_interpolated_states_tracks.fb': "SRR Detects Interpolated States",
+  'mrr_detects_association_regions_tracks.fb': "MRR Detects Association Regions",
+  'mrr_detects_interpolated_states_tracks.fb': "MRR Detects Interpolated States",
+};

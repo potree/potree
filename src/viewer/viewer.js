@@ -1314,7 +1314,7 @@ export class Viewer extends EventDispatcher{
 						if (cap <= 1) {
 							pointcloud.material.intensityRange = [0, 1];
 						} else if (cap <= 256) {
-							pointcloud.material.intensityRange = [34, 147];
+							pointcloud.material.intensityRange = [0, 255];
 						} else {
 							pointcloud.material.intensityRange = [0, cap];
 						}

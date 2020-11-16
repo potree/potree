@@ -272,5 +272,17 @@ const radarVisualizationNameTable = {
   'srr_fl_tracks_visualization.fb': 'SRR FL Tracks',
   'srr_br_tracks_visualization.fb': 'SRR BR Tracks',
   'srr_bl_tracks_visualization.fb': 'SRR BL Tracks',
-  'object_fusion_tracks_visualization.fb': 'Object Fusion Tracks'
+  'object_fusion_tracks_visualization.fb': 'Object Fusion Tracks',
+  // Assessment Visualizations
+  'mrr_detects_assessments_visualization.fb': 'Assessed MRR Detects',
+  'mrr_tracks_assessments_visualization.fb': 'Assessed MRR Tracks',
+  'srr_fr_detects_assessments_visualization.fb': 'Assessed SRR FR Detects',
+  'srr_fl_detects_assessments_visualization.fb': 'Assessed SRR FL Detects',
+  'srr_br_detects_assessments_visualization.fb': 'Assessed SRR BR Detects',
+  'srr_bl_detects_assessments_visualization.fb': 'Assessed SRR BL Detects',
+  'srr_fr_tracks_assessments_visualization.fb': 'Assessed SRR FR Tracks',
+  'srr_fl_tracks_assessments_visualization.fb': 'Assessed SRR FL Tracks',
+  'srr_br_tracks_assessments_visualization.fb': 'Assessed SRR BR Tracks',
+  'srr_bl_tracks_assessments_visualization.fb': 'Assessed SRR BL Tracks',
+  'object_fusion_tracks_assessments_visualization.fb': 'Assessed Object Fusion Tracks'
 };

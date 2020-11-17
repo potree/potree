@@ -332,8 +332,17 @@ function getControlPointName (controlPointType) {
   let words = controlPointType.slice(0, -3);
   // remove 'viz_Spheres3D_' prefix
   words = words.substring(13);
-  // split on '_', join into display name
   words = words.split("_");
+
+  if (words.includes("LaneSense")) {
+    words = words.map(word => word === "LaneSense" ? "Lane Sense" : word);
+  }
+  else {
+    // TODO: This is hacky, and should be changed when fork is private
+    if (words.length > 1) words[1] = "Lane Polynomial";
+    if (words.length > 3) words[3] = "";
+  }
+
   words = words.join(" ");
   return words;
 }

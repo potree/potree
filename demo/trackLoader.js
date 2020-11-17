@@ -343,7 +343,8 @@ export async function loadTracksCallback(s3, bucket, name, trackShaderMaterial, 
 async function loadTracksCallbackHelper (s3, bucket, name, trackShaderMaterial, animationEngine, trackFileName, trackName) {
 	await loadTracks(s3, bucket, name, trackFileName, trackShaderMaterial, animationEngine, (trackGeometries) => {
 		const trackLayer = new THREE.Group();
-		trackLayer.name = trackName;
+    trackLayer.name = trackName;
+    trackLayer.visible = trackName === 'Tracked Objects'
 		for (let ii = 0, len = trackGeometries.bbox.length; ii < len; ii++) {
 			trackLayer.add(trackGeometries.bbox[ii]);
 			// viewer.scene.scene.add(trackGeometries.bbox[ii]); // Original

@@ -7,7 +7,8 @@ import { getFbFileInfo } from "./loaderUtilities.js";
 let objectFusionTracksFiles = null;
 export const objectFusionTracksDownloads = async (datasetFiles) => {
   objectFusionTracksFiles = await getFbFileInfo(datasetFiles,
-                                       "sf_bounding_boxes.fb", // 2_Truth
+                                       "sf_bounding_boxes.fb",
+                                       "2_Truth",
                                        "GroundTruth_generated.js", // 5_Schemas
                                        "../data/sf_bounding_boxes.fb",
                                        "../schemas/GroundTruth_generated.js");

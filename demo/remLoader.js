@@ -8,7 +8,8 @@ let remFiles = null;
 // sets local variable and returns so # files can be counted
 export const remDownloads = async (datasetFiles) => {
   remFiles = await getFbFileInfo(datasetFiles,
-                                 "control_point_3_rtk_relative.fb", // 3_Assessments
+                                 "control_point_3_rtk_relative.fb",
+                                 "3_Assessments",
                                  "VisualizationPrimitives_generated.js", // 5_Schemas
                                  "../data/control_point_3_rtk_relative.fb",
                                  "../schemas/VisualizationPrimitives_generated.js");

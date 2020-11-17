@@ -6,7 +6,8 @@ import { getFbFileInfo } from "./loaderUtilities.js";
 let radarVisualizationFiles = null;
 export const radarVisualizationDownloads = async (datasetFiles) => {
   radarVisualizationFiles = await getFbFileInfo(datasetFiles,
-                                       "visualization.fb", // 2_Truth
+                                       "visualization.fb",
+                                       "2_Truth",
                                        "GroundTruth_generated.js", // 5_Schemas
                                        "../data/visualization.fb",
                                        "../schemas/GroundTruth_generated.js");

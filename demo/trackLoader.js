@@ -9,7 +9,8 @@ import { getFbFileInfo, removeFileExtension } from "./loaderUtilities.js";
 let trackFiles = null;
 export const trackDownloads = async (datasetFiles) => {
   trackFiles = await getFbFileInfo(datasetFiles,
-                                   "tracks.fb", // 2_Truth
+                                   "tracks.fb",
+                                   "2_Truth",
                                    "GroundTruth_generated.js", // 5_Schemas
                                    "../data/tracks.fb",
                                    "../schemas/GroundTruth_generated.js");

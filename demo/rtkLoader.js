@@ -10,7 +10,8 @@ let rtkFiles = null;
 // sets local variable and returns so # files can be counted
 export const rtkDownloads = async (datasetFiles) => {
   rtkFiles = await getFbFileInfo(datasetFiles,
-                                 "rtk.fb", // 0_Preprocessed
+                                 "rtk.fb",
+                                 "0_Preprocessed",
                                  "RTK_generated.js", // 5_Schemas
                                  "../data/rtk.fb",
                                  "../schemas/RTK_generated.js");

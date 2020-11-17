@@ -9,7 +9,8 @@ import { getFbFileInfo } from "./loaderUtilities.js";
 let laneFiles = null;
 export const laneDownloads = async (datasetFiles) => {
   laneFiles = await getFbFileInfo(datasetFiles,
-                                  "lanes.fb", // 2_Truth
+                                  "lanes.fb",
+                                  "2_Truth",
                                   "GroundTruth_generated.js", // 5_Schemas
                                   "../data/lanes.fb",
                                   "../schemas/GroundTruth_generated.js");

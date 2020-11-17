@@ -253,16 +253,22 @@ async function determineNumTasks(datasetFiles) {
 	let numDownloads = 0 // generally incremented by if objectName is present in the returned dictionary
 	let numLoads = 0 // normally incremented with numDownloads except when texture/mesh is present (increment solely)
 	for (const getRelevantFiles of downloadList) {
-	  const relevantFiles = await getRelevantFiles(datasetFiles)
-	  if (relevantFiles) {
+	  	const relevantFiles = await getRelevantFiles(datasetFiles)
+
+	  	if (relevantFiles) {
             if (relevantFiles.texture && relevantFiles.mesh) {
-	      // special case for textureLoader (loads 2 things, but only one is trackable, so combine)
-              numLoads++;
-            } else {
-	      numDownloads++;
-	      numLoads++;
-	    }
-          }
+	     	 	// special case for textureLoader (loads 2 things, but only one is trackable, so combine)
+              	numLoads++;
+			}
+			else if (relevantFiles.extrinsics || relevantFiles.nominal || relevantFiles.metadata) {
+				numDownloads += Object.keys(relevantFiles).length;
+				numLoads += Object.keys(relevantFiles).length;
+			}
+			else {
+				numDownloads += relevantFiles?.fileCount || 1;
+				numLoads += relevantFiles?.fileCount || 1;
+			}
+        }
 	}
   return numLoads + numDownloads;
 }

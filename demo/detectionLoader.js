@@ -7,7 +7,8 @@ import { getFbFileInfo } from "./loaderUtilities.js";
 let detectionFiles = null;
 export const detectionDownloads = async (datasetFiles) => {
   detectionFiles = await getFbFileInfo(datasetFiles,
-                                       "detections.fb", // 2_Truth
+                                       "detections.fb",
+                                       "2_Truth",
                                        "GroundTruth_generated.js", // 5_Schemas
                                        "../data/detections.fb",
                                        "../schemas/GroundTruth_generated.js");

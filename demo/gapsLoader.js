@@ -6,7 +6,8 @@ import { getFbFileInfo } from "./loaderUtilities.js";
 let gapFiles = null;
 export const gapDownloads = async (datasetFiles) => {
   gapFiles = await getFbFileInfo(datasetFiles,
-                                 "gaps.fb", // 3_Assessments
+                                 "gaps.fb",
+                                 "3_Assessments",
                                  "VisualizationPrimitives_generated.js", // 5_Schemas
                                  "../data/gaps.fb",
                                  "../schemas/VisualizationPrimitives_generated.js");

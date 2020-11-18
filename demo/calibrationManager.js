@@ -207,6 +207,10 @@ export async function loadCalibrationFile(s3, bucket, name, calType) {
     console.log("No calibration files present")
     return null;
   }
+  else if (!calFiles[calType]) {
+    console.log(`Missing calibration: ${calType}`)
+    return null;
+  }
 
   //is name here the dataset name? We should be more careful about that....
   if (s3 && bucket && name) {

@@ -23,12 +23,13 @@ async function existsOrNull(path) {
     })
 }
 
-export const getFbFileInfo = async (datasetFiles, objNameMatch, schemaMatch, localObj, localSchema) =>
+export const getFbFileInfo = async (datasetFiles, objNameMatch, objFolderMatch, schemaMatch, localObj, localSchema) =>
   {
     if (datasetFiles) {
-      const objectName = datasetFiles.filter(path => path.endsWith(objNameMatch))[0];
+      const objectName = datasetFiles.filter(path => path.endsWith(objNameMatch) && path.includes(objFolderMatch))[0];
       const schemaFile = datasetFiles.filter(path => path.endsWith(schemaMatch))[0];
-      return objectName && schemaFile && {objectName, schemaFile};
+      const fileCount = datasetFiles.filter(path => path.endsWith(objNameMatch) && path.includes(objFolderMatch))?.length;
+      return objectName && schemaFile && {objectName, schemaFile, fileCount};
     } else {
       const objectName = await existsOrNull(localObj);
       const schemaFile = await existsOrNull(localSchema);

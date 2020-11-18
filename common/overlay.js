@@ -115,9 +115,11 @@ export async function incrementLoadingBarTotal(text) {
  * (additional math to clean up the number and make progress bar clean done here)
  */
 export async function updateLoadingBar(currPerc) {
-  const toSet = calcToSet(currPerc, loadingBar)
-  loadingBar.set(toSet)
-  await pause()
+  if (Math.ceil(currPerc) > Math.ceil(loadingBar.value) || Math.ceil(currPerc) >= 100) {
+    const toSet = calcToSet(currPerc, loadingBar)
+    loadingBar.set(toSet)
+    await pause()
+  }
 }
 
 function calcToSet(currPercent, thisLoadingBar) {

@@ -261,8 +261,9 @@ async function determineNumTasks(datasetFiles) {
               	numLoads++;
 			}
 			else if (relevantFiles.extrinsics || relevantFiles.nominal || relevantFiles.metadata) {
-				numDownloads += Object.keys(relevantFiles).length;
-				numLoads += Object.keys(relevantFiles).length;
+				const numCals = Object.keys(relevantFiles).filter(key => relevantFiles[key]).length;
+				numDownloads += numCals;
+				numLoads += numCals;
 			}
 			else {
 				numDownloads += relevantFiles?.fileCount || 1;

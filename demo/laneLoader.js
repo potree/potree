@@ -14,7 +14,7 @@ export const laneDownloads = async (datasetFiles) => {
                                   "GroundTruth_generated.js", // 5_Schemas
                                   "../data/lanes.fb",
                                   "../schemas/GroundTruth_generated.js");
-  if (laneFiles.hasOwnProperty("fileCount")) laneFiles.fileCount = 1;
+  if (laneFiles?.hasOwnProperty("fileCount")) laneFiles.fileCount = 1;
   return laneFiles
 }
 

@@ -41,6 +41,7 @@ export class PointCloudEptGeometry {
 		this.url = url;
 		this.info = info;
 		this.type = 'ept';
+		this.queryString = queryString;
 
 		this.schema = schema;
 		this.span = info.span || info.ticks;
@@ -252,7 +253,7 @@ export class PointCloudEptGeometryNode extends PointCloudTreeNode {
 		this.hasChildren = false;
 
 		let eptHierarchyFile =
-			`${this.ept.url}ept-hierarchy/${this.filename()}.json`;
+			`${this.ept.url}ept-hierarchy/${this.filename()}.json${this.ept.queryString}`;
 
 		let response = await fetch(eptHierarchyFile);
 		let hier = await response.json();

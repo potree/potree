@@ -259,7 +259,19 @@ const radarVisualizationColorTable = {
   'srr_fl_tracks_visualization.fb': new THREE.Color(0xB967FF), // P
   'srr_br_tracks_visualization.fb': new THREE.Color(0xFFE700), // Y
   'srr_bl_tracks_visualization.fb': new THREE.Color(0xFF7400), // O
-  'object_fusion_tracks_visualization.fb': new THREE.Color(0x00FFFF)
+  'object_fusion_tracks_visualization.fb': new THREE.Color(0x00FFFF),
+  // Assessment Visualizations
+  'mrr_detects_assessments_visualization.fb': new THREE.Color(0x689F38), // LG
+  'mrr_tracks_assessments_visualization.fb': new THREE.Color(0x006400), // G
+  'srr_fr_detects_assessments_visualization.fb': new THREE.Color(0x0099FF), // LB
+  'srr_fl_detects_assessments_visualization.fb': new THREE.Color(0xDCB3FF), // LP
+  'srr_br_detects_assessments_visualization.fb': new THREE.Color(0xFFF7B2), // LY
+  'srr_bl_detects_assessments_visualization.fb': new THREE.Color(0xFF9A00), // LO
+  'srr_fr_tracks_assessments_visualization.fb': new THREE.Color(0x0000FF), // B
+  'srr_fl_tracks_assessments_visualization.fb': new THREE.Color(0xB967FF), // P
+  'srr_br_tracks_assessments_visualization.fb': new THREE.Color(0xFFE700), // Y
+  'srr_bl_tracks_assessments_visualization.fb': new THREE.Color(0xFF7400), // O
+  'object_fusion_tracks_assessments_visualization.fb': new THREE.Color(0x00FFFF)
 };
 
 const radarVisualizationNameTable = {

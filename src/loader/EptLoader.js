@@ -12,7 +12,7 @@ export class EptLoader {
 		let queryString = file.split('?')[1];
 		queryString = (queryString ? '?' + queryString : queryString);
 
-		let geometry = new Potree.PointCloudEptGeometry(url, queryString, json);
+		let geometry = new Potree.PointCloudEptGeometry(url, json, queryString);
 		let root = new Potree.PointCloudEptGeometryNode(geometry);
 
 		geometry.root = root;

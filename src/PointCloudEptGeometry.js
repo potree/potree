@@ -22,7 +22,7 @@ class U {
 };
 
 export class PointCloudEptGeometry {
-	constructor(url, info) {
+	constructor(url, info, queryString = '') {
 		let version = info.version;
 		let schema = info.schema;
 		let bounds = info.bounds;

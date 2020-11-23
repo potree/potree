@@ -13,7 +13,7 @@ export class EptLaszipLoader {
 	load(node) {
 		if (node.loaded) return;
 
-		let url = node.url() + '.laz';
+		let url = node.url() + `.laz${node.ept.queryString}`;
 
 		let xhr = XHRFactory.createXMLHttpRequest();
 		xhr.open('GET', url, true);
@@ -86,13 +86,13 @@ export class EptLaszipLoader {
 
 		}catch(err){
 			console.error('Error reading LAZ:', err);
-			
+
 			if (lf.isOpen) {
 				await lf.close();
 
 				lf.isOpen = false;
 			}
-			
+
 			throw err;
 		}
 	}
@@ -122,23 +122,23 @@ export class EptLazBatcher {
 			let gpsTime = new Float32Array(e.data.gpsTime);
 
 			g.addAttribute('position',
-					new THREE.BufferAttribute(positions, 3));
+				new THREE.BufferAttribute(positions, 3));
 			g.addAttribute('rgba',
-					new THREE.BufferAttribute(colors, 4, true));
+				new THREE.BufferAttribute(colors, 4, true));
 			g.addAttribute('intensity',
-					new THREE.BufferAttribute(intensities, 1));
+				new THREE.BufferAttribute(intensities, 1));
 			g.addAttribute('classification',
-					new THREE.BufferAttribute(classifications, 1));
+				new THREE.BufferAttribute(classifications, 1));
 			g.addAttribute('return number',
-					new THREE.BufferAttribute(returnNumbers, 1));
+				new THREE.BufferAttribute(returnNumbers, 1));
 			g.addAttribute('number of returns',
-					new THREE.BufferAttribute(numberOfReturns, 1));
+				new THREE.BufferAttribute(numberOfReturns, 1));
 			g.addAttribute('source id',
-					new THREE.BufferAttribute(pointSourceIDs, 1));
+				new THREE.BufferAttribute(pointSourceIDs, 1));
 			g.addAttribute('indices',
-					new THREE.BufferAttribute(indices, 4));
+				new THREE.BufferAttribute(indices, 4));
 			g.addAttribute('gpsTime',
-					new THREE.BufferAttribute(gpsTime, 1));
+				new THREE.BufferAttribute(gpsTime, 1));
 			this.node.gpsTime = e.data.gpsMeta;
 
 			g.attributes.indices.normalized = true;

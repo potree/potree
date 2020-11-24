@@ -7,14 +7,30 @@ import { getFbFileInfo } from "./loaderUtilities.js";
 
 
 let laneFiles = null;
+let showLanesDefault = true;
+
 export const laneDownloads = async (datasetFiles) => {
   laneFiles = await getFbFileInfo(datasetFiles,
-                                  "lanes.fb",
+                                  "annotated-lanes.fb",
                                   "2_Truth",
                                   "GroundTruth_generated.js", // 5_Schemas
                                   "../data/lanes.fb",
-                                  "../schemas/GroundTruth_generated.js");
+                                  "../schemas/GroundTruth_generated.js",
+                                  true);
+
+  if (!laneFiles) {
+    laneFiles = await getFbFileInfo(datasetFiles,
+                                    "lanes.fb",
+                                    "2_Truth",
+                                    "GroundTruth_generated.js", // 5_Schemas
+                                    "../data/lanes.fb",
+                                    "../schemas/GroundTruth_generated.js",
+                                    true);
+    showLanesDefault = false;
+  }
+
   if (laneFiles?.hasOwnProperty("fileCount")) laneFiles.fileCount = 1;
+
   return laneFiles
 }
 
@@ -351,6 +367,7 @@ function addLaneGeometries (laneGeometries, lanesLayer) {
   for (let ii = 0, len = laneGeometries.all.length; ii < len; ii++) {
     lanesLayer.add(laneGeometries.all[ii]);
   }
+  lanesLayer.visible = showLanesDefault;
   viewer.scene.scene.add(lanesLayer);
 
   // add lane anomaly geometries

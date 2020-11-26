@@ -334,7 +334,9 @@ function addAnnotations (laneGeometries) {
       position: laneGeometries.leftAnomalies[0],
       collapseThreshold: 0
     });
-    aAnomalies.add(populateAnomaliesHelper(aLeft, laneGeometries.leftAnomalies, 'Left'))
+    aAnomalies.children.push(aLeft);
+    aLeft.parent = aAnomalies;
+    populateAnomaliesHelper(aLeft, laneGeometries.leftAnomalies, 'Left');
   }
 
   if (laneGeometries.rightAnomalies.length !== 0) {
@@ -344,11 +346,14 @@ function addAnnotations (laneGeometries) {
       position: laneGeometries.rightAnomalies[0],
       collapseThreshold: 0
     });
-    aAnomalies.add(populateAnomaliesHelper(aRight, laneGeometries.rightAnomalies, 'Right'))
+    aAnomalies.children.push(aRight);
+    aRight.parent = aAnomalies;
+    populateAnomaliesHelper(aRight, laneGeometries.rightAnomalies, 'Right');
   }
 }
 
 function populateAnomaliesHelper (annotation, anomalies, name) {
+  const anomaliesArray = [];
   for (let ii = 0, len = anomalies.length; ii < len; ii++) {
     const point = anomalies[ii];
     const aAnomaly = new Potree.Annotation({
@@ -357,9 +362,9 @@ function populateAnomaliesHelper (annotation, anomalies, name) {
       cameraPosition: new THREE.Vector3(point.x, point.y, point.z + 20),
       cameraTarget: point
     });
-    annotation.add(aAnomaly);
+    anomaliesArray.push(aAnomaly);
   }
-  return annotation;
+  annotation.addMultiple(viewer.scene.annotations, anomaliesArray);
 }
 
 // Adds lane geometries to viewer

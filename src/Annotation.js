@@ -390,6 +390,16 @@ export class Annotation extends EventDispatcher {
 		}
 	}
 
+	addMultiple (root, annotations) {
+		this.children.push(...annotations);
+		annotations.forEach(annotation => annotation.parent = this);
+
+		root.dispatchEvent({
+			'type': 'annotation_added',
+			'annotation': this
+		});
+	}
+
 	level () {
 		if (this.parent === null) {
 			return 0;

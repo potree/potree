@@ -6,8 +6,8 @@
 * Newest information and work in progress is usually available on [twitter](https://twitter.com/m_schuetz)
 * Contact: Markus Schütz (mschuetz@potree.org)
 * References: 
-    * [Potree: Rendering Large Point Clouds in Web Browsers](https://www.cg.tuwien.ac.at/research/publications/2016/SCHUETZ-2016-POT/SCHUETZ-2016-POT-thesis.pdf)
-    * [Fast Out-of-Core Octree Generation for Massive Point Clouds](https://www.cg.tuwien.ac.at/research/publications/2020/SCHUETZ-2020-MPC/)
+    * [Potree: Rendering Large Point Clouds in Web Browsers](https://www.cg.tuwien.ac.at/research/publications/2016/SCHUETZ-2016-POT/SCHUETZ-2016-POT-thesis.pdf) (2016)
+    * [Fast Out-of-Core Octree Generation for Massive Point Clouds](https://www.cg.tuwien.ac.at/research/publications/2020/SCHUETZ-2020-MPC/) (2020)
     
 <a href="http://potree.org/wp/demo/" target="_blank"> ![](./docs/images/potree_screens.png) </a>
 

@@ -229,6 +229,9 @@ export async function loadCalibrationFile(s3, bucket, name, calType) {
       const calibrationText = new TextDecoder("utf-8").decode(data.Body);
       if (calType === 'metadata') {
         calibration = parseMetadataFile(calibrationText, calType);
+
+        // Default to Velodyne 64
+        window.velodyneType = calibration && calibration['velodyne-type'] || 64;
       } else if (calType === 'extrinsics' || calType === 'nominal') {
         calibration = parseCalibrationFile(calibrationText, calType);
       } else {

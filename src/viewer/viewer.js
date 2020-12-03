@@ -1314,6 +1314,12 @@ export class Viewer extends EventDispatcher{
 						if (cap <= 1) {
 							pointcloud.material.intensityRange = [0, 1];
 						} else if (cap <= 256) {
+							if (window?.velodyneType === 128) {
+								pointcloud.material.intensityGamma = 1.00;
+								pointcloud.material.intensityContrast = 0.10;
+								pointcloud.material.intensityBrightness = 0.29;
+							}
+
 							pointcloud.material.intensityRange = [0, 255];
 						} else {
 							pointcloud.material.intensityRange = [0, cap];

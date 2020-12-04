@@ -55,6 +55,8 @@ export class PointCloudMaterial extends THREE.RawShaderMaterial {
 		this.defines = new Map();
 
 		this._defaultIntensityRangeChanged = false;
+		this._defaultCompositeContrastChanged = false;
+		this._defaultCompositeBrightnessChanged = false;
 		this._defaultElevationRangeChanged = false;
 
 		this.attributes = {

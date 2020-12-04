@@ -376,6 +376,14 @@ export class PropertiesPanel{
 					blockElevation.css('display', 'block');
 					blockRGB.css('display', 'block');
 					blockIntensity.css('display', 'block');
+
+					if (!material._defaultCompositeContrastChanged) {
+						material.intensityContrast = 0.5;
+					}
+
+					if (!material._defaultCompositeBrightnessChanged) {
+						material.intensityBrightness = 0.04;
+					}
 				} else if (selectedValue === 'Elevation') {
 					blockElevation.css('display', 'block');
 				} else if (selectedValue === 'RGB and Elevation') {
@@ -386,6 +394,14 @@ export class PropertiesPanel{
 				} else if (selectedValue === 'Color') {
 					blockColor.css('display', 'block');
 				} else if (selectedValue === 'Intensity') {
+					if (!material._defaultCompositeContrastChanged) {
+						window && window.velodyneType && window.velodyneType === 128 ? material.intensityContrast = 0.10 : material.intensityContrast = 0.0;
+					}
+
+					if (!material._defaultCompositeBrightnessChanged) {
+						window && window.velodyneType && window.velodyneType === 128 ? material.intensityBrightness = 0.29 : material.intensityBrightness = 0.0;
+					}
+
 					blockIntensity.css('display', 'block');
 				} else if (selectedValue === 'Intensity Gradient') {
 					blockIntensity.css('display', 'block');
@@ -507,13 +523,19 @@ export class PropertiesPanel{
 			panel.find('#sldIntensityContrast').slider({
 				value: material.intensityContrast,
 				min: -1, max: 1, step: 0.01,
-				slide: (event, ui) => {material.intensityContrast = ui.value}
+				slide: (event, ui) => {
+					material._defaultCompositeContrastChanged = true;
+					material.intensityContrast = ui.value
+				}
 			});
 
 			panel.find('#sldIntensityBrightness').slider({
 				value: material.intensityBrightness,
 				min: -1, max: 1, step: 0.01,
-				slide: (event, ui) => {material.intensityBrightness = ui.value}
+				slide: (event, ui) => {
+					material._defaultCompositeBrightnessChanged = true;
+					material.intensityBrightness = ui.value
+				}
 			});
 
 			panel.find('#sldWeightRGB').slider({

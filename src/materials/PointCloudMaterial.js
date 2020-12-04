@@ -55,6 +55,8 @@ export class PointCloudMaterial extends THREE.RawShaderMaterial {
 		this.defines = new Map();
 
 		this._defaultIntensityRangeChanged = false;
+		this._defaultCompositeContrastChanged = false;
+		this._defaultCompositeBrightnessChanged = false;
 		this._defaultElevationRangeChanged = false;
 
 		this.attributes = {
@@ -116,8 +118,8 @@ export class PointCloudMaterial extends THREE.RawShaderMaterial {
 			transition:			{ type: "f", value: 0.5 },
 			intensityRange:		{ type: "fv", value: [0, 65000] },
 			intensityGamma:		{ type: "f", value: 1.00 },
-			intensityContrast:	{ type: "f", value: 0.51 },
-			intensityBrightness:{ type: "f", value: -0.14 },
+			intensityContrast:	{ type: "f", value: 0 },
+			intensityBrightness:{ type: "f", value: 0 },
 			rgbGamma:			{ type: "f", value: 1 },
 			rgbContrast:		{ type: "f", value: 0 },
 			rgbBrightness:		{ type: "f", value: 0 },

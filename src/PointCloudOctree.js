@@ -756,10 +756,8 @@ export class PointCloudOctree extends PointCloudTree {
 
 		let getVal = (a, b) => a !== undefined ? a : b;
 
-		let pickWindowSize = getVal(params.pickWindowSize, 17);
+		let pickWindowSize = getVal(params.pickWindowSize, 65);
 		let pickOutsideClipRegion = getVal(params.pickOutsideClipRegion, false);
-
-		pickWindowSize = 65;
 
 		let size = renderer.getSize(new THREE.Vector2());
 

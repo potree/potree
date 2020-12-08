@@ -141,14 +141,14 @@ Potree.PointCloudArena4DGeometryNode = class PointCloudArena4DGeometryNode{
 
 			let geometry = new THREE.BufferGeometry();
 
-			geometry.addAttribute('position', new THREE.BufferAttribute(position, 3));
-			geometry.addAttribute('color', new THREE.BufferAttribute(color, 4, true));
-			geometry.addAttribute('intensity', new THREE.BufferAttribute(intensities, 1));
-			geometry.addAttribute('classification', new THREE.BufferAttribute(classifications, 1));
+			geometry.setAttribute('position', new THREE.BufferAttribute(position, 3));
+			geometry.setAttribute('color', new THREE.BufferAttribute(color, 4, true));
+			geometry.setAttribute('intensity', new THREE.BufferAttribute(intensities, 1));
+			geometry.setAttribute('classification', new THREE.BufferAttribute(classifications, 1));
 			{
 				let bufferAttribute = new THREE.BufferAttribute(new Uint8Array(indices), 4, true);
 				//bufferAttribute.normalized = true;
-				geometry.addAttribute('indices', bufferAttribute);
+				geometry.setAttribute('indices', bufferAttribute);
 			}
 		
 			node.geometry = geometry;

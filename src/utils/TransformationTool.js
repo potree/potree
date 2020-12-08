@@ -609,7 +609,7 @@ export class TransformationTool {
 				let iOnLine = drag.line.closestPointToPoint(I, false, new THREE.Vector3());
 				let direction = handle.alignment.reduce( (a, v) => a + v, 0);
 
-				let toObjectSpace = new THREE.Matrix4().getInverse( this.selection[0].matrixWorld);
+				let toObjectSpace = this.selection[0].matrixWorld.clone().invert();
 				let iOnLineOS = iOnLine.clone().applyMatrix4(toObjectSpace);
 				let pivotOS = drag.pivot.clone().applyMatrix4(toObjectSpace);
 				let diffOS = new THREE.Vector3().subVectors(iOnLineOS, pivotOS);
@@ -771,7 +771,7 @@ export class TransformationTool {
 					let scale = new THREE.Vector3(s, s, s).divide(ws);
 
 					let rot = new THREE.Matrix4().makeRotationFromEuler(node.rotation);
-					let rotInv = new THREE.Matrix4().getInverse(rot);
+					let rotInv = rot.clone().invert();
 
 					scale.applyMatrix4(rotInv);
 					scale.x = Math.abs(scale.x);
@@ -784,7 +784,7 @@ export class TransformationTool {
 				// adjust rotation handles
 				if(!this.dragging){
 					let tWorld = this.scene.matrixWorld;
-					let tObject = new THREE.Matrix4().getInverse(tWorld)
+					let tObject = tWorld.clone().invert();
 					let camObjectPos = camera.getWorldPosition(new THREE.Vector3()).applyMatrix4(tObject);
 
 					let x = this.rotationHandles["rotation.x"].node.rotation;

@@ -26,7 +26,7 @@ export class Box3Helper extends THREE.LineSegments {
 
 		let geometry = new THREE.BufferGeometry();
 		geometry.setIndex(new THREE.BufferAttribute(indices, 1));
-		geometry.addAttribute('position', new THREE.BufferAttribute(positions, 3));
+		geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
 
 		let material = new THREE.LineBasicMaterial({ color: color });
 

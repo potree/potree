@@ -47,7 +47,7 @@ export class PointCloudSM{
 		this.camera.updateProjectionMatrix();
 		this.camera.updateMatrix();
 		this.camera.updateMatrixWorld();
-		this.camera.matrixWorldInverse.getInverse(this.camera.matrixWorld);
+		this.camera.matrixWorldInverse.copy(this.camera.matrixWorld).invert();
 	}
 
 	setSize(width, height){

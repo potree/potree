@@ -1339,7 +1339,7 @@ export class Viewer extends EventDispatcher{
 		gl.getExtension('WEBGL_depth_texture');
 		gl.getExtension('WEBGL_color_buffer_float'); 	// Enable explicitly for more portability, EXT_color_buffer_float is the proper name in WebGL 2
 		
-		//if(gl instanceof WebGLRenderingContext){
+		if(gl.createVertexArray == null){
 			let extVAO = gl.getExtension('OES_vertex_array_object');
 
 			if(!extVAO){
@@ -1348,9 +1348,7 @@ export class Viewer extends EventDispatcher{
 
 			gl.createVertexArray = extVAO.createVertexArrayOES.bind(extVAO);
 			gl.bindVertexArray = extVAO.bindVertexArrayOES.bind(extVAO);
-		//}else if(gl instanceof WebGL2RenderingContext){
-		//	gl.getExtension("EXT_color_buffer_float");
-		//}
+		}
 		
 	}
 
@@ -1728,12 +1726,12 @@ export class Viewer extends EventDispatcher{
 		
 		camera.updateMatrix();
 		camera.updateMatrixWorld();
-		camera.matrixWorldInverse.getInverse(camera.matrixWorld);
+		camera.matrixWorldInverse.copy(camera.matrixWorld).invert();
 
 		{
 			if(this._previousCamera === undefined){
 				this._previousCamera = this.scene.getActiveCamera().clone();
-				this._previousCamera.rotation.copy(this.scene.getActiveCamera());
+				this._previousCamera.rotation.copy(this.scene.getActiveCamera().rotation);
 			}
 
 			if(!this._previousCamera.matrixWorld.equals(camera.matrixWorld)){
@@ -1751,7 +1749,7 @@ export class Viewer extends EventDispatcher{
 			}
 
 			this._previousCamera = this.scene.getActiveCamera().clone();
-			this._previousCamera.rotation.copy(this.scene.getActiveCamera());
+			this._previousCamera.rotation.copy(this.scene.getActiveCamera().rotation);
 
 		}
 
@@ -1773,7 +1771,7 @@ export class Viewer extends EventDispatcher{
 			let clipBoxes = boxes.filter(degenerate).map( box => {
 				box.updateMatrixWorld();
 				
-				let boxInverse = new THREE.Matrix4().getInverse(box.matrixWorld);
+				let boxInverse = box.matrixWorld.clone().invert();
 				let boxPosition = box.getWorldPosition(new THREE.Vector3());
 
 				return {box: box, inverse: boxInverse, position: boxPosition};
@@ -1894,7 +1892,7 @@ export class Viewer extends EventDispatcher{
 					0, -1, 0, 0,
 					0, 0, 0, 1
 				]);
-				const flipView = new THREE.Matrix4().getInverse(flipWorld);
+				const flipView = flipWorld.clone().invert();
 
 				vr.node.updateMatrixWorld();
 
@@ -1903,12 +1901,12 @@ export class Viewer extends EventDispatcher{
 
 					const leftView = new THREE.Matrix4().fromArray(frameData.leftViewMatrix);
 					const view = new THREE.Matrix4().multiplyMatrices(leftView, flipView);
-					const world = new THREE.Matrix4().getInverse(view);
+					const world = view.clone().invert();
 
 					{
 						const tmp = new THREE.Matrix4().multiplyMatrices(vr.node.matrixWorld, world);
 						world.copy(tmp);
-						view.getInverse(world);
+						view.copy(world).invert();
 					}
 
 					camera.matrixWorldInverse.copy(view);
@@ -1927,12 +1925,12 @@ export class Viewer extends EventDispatcher{
 
 					const rightView = new THREE.Matrix4().fromArray(frameData.rightViewMatrix);
 					const view = new THREE.Matrix4().multiplyMatrices(rightView, flipView);
-					const world = new THREE.Matrix4().getInverse(view);
+					const world = view.clone().invert();
 
 					{
 						const tmp = new THREE.Matrix4().multiplyMatrices(vr.node.matrixWorld, world);
 						world.copy(tmp);
-						view.getInverse(world);
+						view.copy(world).invert;
 					}
 
 					camera.matrixWorldInverse.copy(view);
@@ -1961,12 +1959,12 @@ export class Viewer extends EventDispatcher{
 						}
 
 						const view = new THREE.Matrix4().multiplyMatrices(centerView, flipView);
-						const world = new THREE.Matrix4().getInverse(view);
+						const world = view.clone().invert();
 
 						{
 							const tmp = new THREE.Matrix4().multiplyMatrices(vr.node.matrixWorld, world);
 							world.copy(tmp);
-							view.getInverse(world);
+							view.copy(world).invert;
 						}
 
 						camera.matrixWorldInverse.copy(view);

@@ -71,7 +71,7 @@ export class VRControlls{
 		const geometry = new THREE.BufferGeometry();
 
 		geometry.setIndex( new THREE.BufferAttribute( indices, 1 ) );
-		geometry.addAttribute( 'position', new THREE.Float32BufferAttribute( positions, 3 ) );
+		geometry.setAttribute( 'position', new THREE.Float32BufferAttribute( positions, 3 ) );
 
 		geometry.computeBoundingSphere();
 

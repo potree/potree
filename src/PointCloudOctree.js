@@ -67,7 +67,7 @@ export class PointCloudOctreeNode extends PointCloudTreeNode {
 		let stride = buffer.stride;
 		let view = new DataView(buffer.data);
 
-		let worldToBox = new THREE.Matrix4().getInverse(boxNode.matrixWorld);
+		let worldToBox = boxNode.matrixWorld.clone().invert();
 		let objectToBox = new THREE.Matrix4().multiplyMatrices(worldToBox, this.sceneNode.matrixWorld);
 
 		let inBox = [];
@@ -426,7 +426,7 @@ export class PointCloudOctree extends PointCloudTree {
 
 	deepestNodeAt(position){
 		
-		const toObjectSpace = new THREE.Matrix4().getInverse(this.matrixWorld);
+		const toObjectSpace = this.matrixWorld.clone().invert();
 
 		const objPos = position.clone().applyMatrix4(toObjectSpace);
 
@@ -462,8 +462,6 @@ export class PointCloudOctree extends PointCloudTree {
 		let _ray = ray.clone();
 		for (let i = 0; i < nodes.length; i++) {
 			let node = nodes[i];
-			// let inverseWorld = new THREE.Matrix4().getInverse(node.matrixWorld);
-			// let sphere = node.getBoundingSphere().clone().applyMatrix4(node.sceneNode.matrixWorld);
 			let sphere = node.getBoundingSphere().clone().applyMatrix4(this.matrixWorld);
 
 			if (_ray.intersectsSphere(sphere)) {
@@ -706,7 +704,7 @@ export class PointCloudOctree extends PointCloudTree {
 			const sdf = this.signedDistanceField;
 			const boundingBox = this.boundingBox;
 
-			const toObjectSpace = new THREE.Matrix4().getInverse(this.matrixWorld);
+			const toObjectSpace = this.matrixWorld.clone().invert();
 
 			const objPos = position.clone().applyMatrix4(toObjectSpace);
 
@@ -1016,7 +1014,7 @@ export class PointCloudOctree extends PointCloudTree {
 		let start = performance.now();
 
 		let shrinkedLocalBounds = new THREE.Box3();
-		let worldToBox = new THREE.Matrix4().getInverse(boxNode.matrixWorld);
+		let worldToBox = boxNode.matrixWorld.clone().invert();
 
 		for(let node of this.visibleNodes){
 			if(!node.sceneNode){
@@ -1075,7 +1073,7 @@ export class PointCloudOctree extends PointCloudTree {
 		let start = performance.now();
 
 		let shrinkedLocalBounds = new THREE.Box3();
-		let worldToBox = new THREE.Matrix4().getInverse(boxNode.matrixWorld);
+		let worldToBox = boxNode.matrixWorld.clone().invert();
 
 		for(let node of this.visibleNodes){
 			if(!node.sceneNode || node.getLevel() > maxLevel){

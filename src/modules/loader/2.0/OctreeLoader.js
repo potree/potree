@@ -78,16 +78,16 @@ export class NodeLoader{
 					let buffer = buffers[property].buffer;
 
 					if(property === "position"){
-						geometry.addAttribute('position', new THREE.BufferAttribute(new Float32Array(buffer), 3));
+						geometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(buffer), 3));
 					}else if(property === "rgba"){
-						geometry.addAttribute('rgba', new THREE.BufferAttribute(new Uint8Array(buffer), 4, true));
+						geometry.setAttribute('rgba', new THREE.BufferAttribute(new Uint8Array(buffer), 4, true));
 					}else if(property === "NORMAL"){
-						//geometry.addAttribute('rgba', new THREE.BufferAttribute(new Uint8Array(buffer), 4, true));
-						geometry.addAttribute('normal', new THREE.BufferAttribute(new Float32Array(buffer), 3));
+						//geometry.setAttribute('rgba', new THREE.BufferAttribute(new Uint8Array(buffer), 4, true));
+						geometry.setAttribute('normal', new THREE.BufferAttribute(new Float32Array(buffer), 3));
 					}else if (property === "INDICES") {
 						let bufferAttribute = new THREE.BufferAttribute(new Uint8Array(buffer), 4);
 						bufferAttribute.normalized = true;
-						geometry.addAttribute('indices', bufferAttribute);
+						geometry.setAttribute('indices', bufferAttribute);
 					}else{
 						const bufferAttribute = new THREE.BufferAttribute(new Float32Array(buffer), 1);
 
@@ -99,7 +99,7 @@ export class NodeLoader{
 							range: batchAttribute.range,
 						};
 
-						geometry.addAttribute(property, bufferAttribute);
+						geometry.setAttribute(property, bufferAttribute);
 					}
 
 				}

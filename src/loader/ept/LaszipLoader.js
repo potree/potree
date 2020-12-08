@@ -121,23 +121,23 @@ export class EptLazBatcher {
 			let indices = new Uint8Array(e.data.indices);
 			let gpsTime = new Float32Array(e.data.gpsTime);
 
-			g.addAttribute('position',
+			g.setAttribute('position',
 					new THREE.BufferAttribute(positions, 3));
-			g.addAttribute('rgba',
+			g.setAttribute('rgba',
 					new THREE.BufferAttribute(colors, 4, true));
-			g.addAttribute('intensity',
+			g.setAttribute('intensity',
 					new THREE.BufferAttribute(intensities, 1));
-			g.addAttribute('classification',
+			g.setAttribute('classification',
 					new THREE.BufferAttribute(classifications, 1));
-			g.addAttribute('return number',
+			g.setAttribute('return number',
 					new THREE.BufferAttribute(returnNumbers, 1));
-			g.addAttribute('number of returns',
+			g.setAttribute('number of returns',
 					new THREE.BufferAttribute(numberOfReturns, 1));
-			g.addAttribute('source id',
+			g.setAttribute('source id',
 					new THREE.BufferAttribute(pointSourceIDs, 1));
-			g.addAttribute('indices',
+			g.setAttribute('indices',
 					new THREE.BufferAttribute(indices, 4));
-			g.addAttribute('gpsTime',
+			g.setAttribute('gpsTime',
 					new THREE.BufferAttribute(gpsTime, 1));
 			this.node.gpsTime = e.data.gpsMeta;
 

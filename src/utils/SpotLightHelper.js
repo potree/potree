@@ -37,7 +37,7 @@ export class SpotLightHelper extends THREE.Object3D{
 			]);
 
 			let geometry = new THREE.BufferGeometry();
-			geometry.addAttribute("position", new THREE.BufferAttribute(positions, 3));
+			geometry.setAttribute("position", new THREE.BufferAttribute(positions, 3));
 
 			let material = new THREE.LineBasicMaterial();
 
@@ -73,26 +73,6 @@ export class SpotLightHelper extends THREE.Object3D{
 		let coneWidth = coneLength * Math.tan( this.light.angle * 0.5 );
 
 		this.frustum.scale.set(coneWidth, coneWidth, coneLength);
-		
-
-
-		//{
-		//	let fov = (180 * light.angle) / Math.PI;
-		//	let aspect = light.shadow.mapSize.width / light.shadow.mapSize.height;
-		//	let near = 0.1;
-		//	let far = light.distance === 0 ? 10000 : light.distance;
-		//	this.camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
-		//	this.camera.up.set(0, 0, 1);
-		//	this.camera.position.copy(light.position);
-
-		//	let target = new THREE.Vector3().addVectors(light.position, light.getWorldDirection(new THREE.Vector3()));
-		//	this.camera.lookAt(target);
-
-		//	this.camera.updateProjectionMatrix();
-		//	this.camera.updateMatrix();
-		//	this.camera.updateMatrixWorld();
-		//	this.camera.matrixWorldInverse.getInverse(this.camera.matrixWorld);
-		//}
 
 	}
 

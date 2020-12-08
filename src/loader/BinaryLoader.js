@@ -80,22 +80,22 @@ export class BinaryLoader{
 				let batchAttribute = buffers[property].attribute;
 
 				if (property === "POSITION_CARTESIAN") {
-					geometry.addAttribute('position', new THREE.BufferAttribute(new Float32Array(buffer), 3));
+					geometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(buffer), 3));
 				} else if (property === "rgba") {
-					geometry.addAttribute("rgba", new THREE.BufferAttribute(new Uint8Array(buffer), 4, true));
+					geometry.setAttribute("rgba", new THREE.BufferAttribute(new Uint8Array(buffer), 4, true));
 				} else if (property === "NORMAL_SPHEREMAPPED") {
-					geometry.addAttribute('normal', new THREE.BufferAttribute(new Float32Array(buffer), 3));
+					geometry.setAttribute('normal', new THREE.BufferAttribute(new Float32Array(buffer), 3));
 				} else if (property === "NORMAL_OCT16") {
-					geometry.addAttribute('normal', new THREE.BufferAttribute(new Float32Array(buffer), 3));
+					geometry.setAttribute('normal', new THREE.BufferAttribute(new Float32Array(buffer), 3));
 				} else if (property === "NORMAL") {
-					geometry.addAttribute('normal', new THREE.BufferAttribute(new Float32Array(buffer), 3));
+					geometry.setAttribute('normal', new THREE.BufferAttribute(new Float32Array(buffer), 3));
 				} else if (property === "INDICES") {
 					let bufferAttribute = new THREE.BufferAttribute(new Uint8Array(buffer), 4);
 					bufferAttribute.normalized = true;
-					geometry.addAttribute('indices', bufferAttribute);
+					geometry.setAttribute('indices', bufferAttribute);
 				} else if (property === "SPACING") {
 					let bufferAttribute = new THREE.BufferAttribute(new Float32Array(buffer), 1);
-					geometry.addAttribute('spacing', bufferAttribute);
+					geometry.setAttribute('spacing', bufferAttribute);
 				} else {
 					const bufferAttribute = new THREE.BufferAttribute(new Float32Array(buffer), 1);
 
@@ -106,7 +106,7 @@ export class BinaryLoader{
 						range: batchAttribute.range,
 					};
 
-					geometry.addAttribute(property, bufferAttribute);
+					geometry.setAttribute(property, bufferAttribute);
 
 					const attribute = pointAttributes.attributes.find(a => a.name === batchAttribute.name);
 					attribute.range[0] = Math.min(attribute.range[0], batchAttribute.range[0]);

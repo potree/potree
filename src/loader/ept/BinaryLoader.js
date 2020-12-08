@@ -46,38 +46,38 @@ export class EptBinaryLoader {
 			let numPoints = e.data.numPoints;
 
 			let position = new Float32Array(e.data.position);
-			g.addAttribute('position', new THREE.BufferAttribute(position, 3));
+			g.setAttribute('position', new THREE.BufferAttribute(position, 3));
 
 			let indices = new Uint8Array(e.data.indices);
-			g.addAttribute('indices', new THREE.BufferAttribute(indices, 4));
+			g.setAttribute('indices', new THREE.BufferAttribute(indices, 4));
 
 			if (e.data.color) {
 				let color = new Uint8Array(e.data.color);
-				g.addAttribute('color', new THREE.BufferAttribute(color, 4, true));
+				g.setAttribute('color', new THREE.BufferAttribute(color, 4, true));
 			}
 			if (e.data.intensity) {
 				let intensity = new Float32Array(e.data.intensity);
-				g.addAttribute('intensity',
+				g.setAttribute('intensity',
 						new THREE.BufferAttribute(intensity, 1));
 			}
 			if (e.data.classification) {
 				let classification = new Uint8Array(e.data.classification);
-				g.addAttribute('classification',
+				g.setAttribute('classification',
 						new THREE.BufferAttribute(classification, 1));
 			}
 			if (e.data.returnNumber) {
 				let returnNumber = new Uint8Array(e.data.returnNumber);
-				g.addAttribute('return number',
+				g.setAttribute('return number',
 						new THREE.BufferAttribute(returnNumber, 1));
 			}
 			if (e.data.numberOfReturns) {
 				let numberOfReturns = new Uint8Array(e.data.numberOfReturns);
-				g.addAttribute('number of returns',
+				g.setAttribute('number of returns',
 						new THREE.BufferAttribute(numberOfReturns, 1));
 			}
 			if (e.data.pointSourceId) {
 				let pointSourceId = new Uint16Array(e.data.pointSourceId);
-				g.addAttribute('source id',
+				g.setAttribute('source id',
 						new THREE.BufferAttribute(pointSourceId, 1));
 			}
 

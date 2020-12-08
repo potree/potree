@@ -177,7 +177,7 @@ export class EDLRenderer{
 			}
 
 			viewer.shadowTestCam.updateMatrixWorld();
-			viewer.shadowTestCam.matrixWorldInverse.getInverse(viewer.shadowTestCam.matrixWorld);
+			viewer.shadowTestCam.matrixWorldInverse.copy(viewer.shadowTestCam.matrixWorld).invert();
 			viewer.shadowTestCam.updateProjectionMatrix();
 		}
 

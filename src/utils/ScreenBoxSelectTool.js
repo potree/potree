@@ -117,7 +117,7 @@ export class ScreenBoxSelectTool extends EventDispatcher{
 				volCam.updateMatrix();
 				volCam.updateMatrixWorld();
 				volCam.updateProjectionMatrix();
-				volCam.matrixWorldInverse.getInverse(volCam.matrixWorld);
+				volCam.matrixWorldInverse.copy(volCam.matrixWorld).invert();
 
 				let ray = new THREE.Ray(volCam.getWorldPosition(new THREE.Vector3()), volCam.getWorldDirection(new THREE.Vector3()));
 				let rayInverse = new THREE.Ray(
@@ -138,7 +138,7 @@ export class ScreenBoxSelectTool extends EventDispatcher{
 				volCam.updateMatrix();
 				volCam.updateMatrixWorld();
 				volCam.updateProjectionMatrix();
-				volCam.matrixWorldInverse.getInverse(volCam.matrixWorld);
+				volCam.matrixWorldInverse.copy(volCam.matrixWorld).invert();
 				let pointsFar = pointcloud.pick(viewer, volCam, rayInverse, pickerSettings);
 
 				allPointsNear.push(...pointsNear);

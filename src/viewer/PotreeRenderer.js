@@ -1,9 +1,23 @@
 
+
+
+
 export class PotreeRenderer {
 
 	constructor (viewer) {
 		this.viewer = viewer;
 		this.renderer = viewer.renderer;
+
+		{
+			let dummyScene = new THREE.Scene();
+			let geometry = new THREE.SphereGeometry(0.001, 2, 2);
+			let mesh = new THREE.Mesh(geometry, new THREE.MeshBasicMaterial());
+			mesh.position.set(36453, 35163, 764712);
+			dummyScene.add(mesh);
+
+			this.dummyMesh = mesh;
+			this.dummyScene = dummyScene;
+		}
 	}
 
 	clearTargets(){
@@ -13,23 +27,21 @@ export class PotreeRenderer {
 	clear(){
 		let {viewer, renderer} = this;
 
+
 		// render skybox
 		if(viewer.background === "skybox"){
-			renderer.setClearColor(0x000000, 0);
-			renderer.clear(true, true, false);
+			renderer.setClearColor(0xff0000, 1);
 		}else if(viewer.background === "gradient"){
-			renderer.setClearColor(0x000000, 0);
-			renderer.clear(true, true, false);
+			renderer.setClearColor(0x00ff00, 1);
 		}else if(viewer.background === "black"){
 			renderer.setClearColor(0x000000, 1);
-			renderer.clear(true, true, false);
 		}else if(viewer.background === "white"){
 			renderer.setClearColor(0xFFFFFF, 1);
-			renderer.clear(true, true, false);
 		}else{
 			renderer.setClearColor(0x000000, 0);
-			renderer.clear(true, true, false);
 		}
+
+		renderer.clear();
 	}
  
 	render(params){
@@ -43,6 +55,17 @@ export class PotreeRenderer {
 		const width = params.viewport ? params.viewport[2] : renderAreaSize.x;
 		const height = params.viewport ? params.viewport[3] : renderAreaSize.y;
 
+		{ 
+			// workaround for https://github.com/mrdoob/three.js/issues/20549
+			// make sure vertex array object states get reset by rendering a dummy scene.
+
+			// that would be the nice version, but bindingStates is private
+			renderer.bindingStates.reset()
+
+			// render dummy scene to reset vertex array object state
+			//this.dummyMesh.position.copy(camera.position);
+			//renderer.render(this.dummyScene, viewer.scene.cameraBG);
+		}
 
 		// render skybox
 		if(viewer.background === "skybox"){
@@ -54,11 +77,12 @@ export class PotreeRenderer {
 		}else if(viewer.background === "gradient"){
 			renderer.render(viewer.scene.sceneBG, viewer.scene.cameraBG);
 		}
+
+		
 		
 		for(let pointcloud of this.viewer.scene.pointclouds){
 			const {material} = pointcloud;
 			material.useEDL = false;
-			//material.updateShaderSource();
 		}
 		
 		viewer.pRenderer.render(viewer.scene.scenePointCloud, camera, null, {
@@ -92,14 +116,6 @@ export class PotreeRenderer {
 		renderer.render(viewer.navigationCube, viewer.navigationCube.camera);		
 		renderer.setViewport(0, 0, width, height);
 		
-		// renderer.render(viewer.transformationTool.scene, camera);
-
-		// renderer.setViewport(renderer.domElement.clientWidth - viewer.navigationCube.width, 
-		// 							renderer.domElement.clientHeight - viewer.navigationCube.width, 
-		// 							viewer.navigationCube.width, viewer.navigationCube.width);
-		// renderer.render(viewer.navigationCube, viewer.navigationCube.camera);		
-		// renderer.setViewport(0, 0, renderer.domElement.clientWidth, renderer.domElement.clientHeight);
-
 		viewer.dispatchEvent({type: "render.pass.end",viewer: viewer});
 	}
 

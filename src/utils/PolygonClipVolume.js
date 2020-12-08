@@ -12,7 +12,7 @@ export class PolygonClipVolume extends THREE.Object3D{
 		this.camera.rotation.order = camera.rotation.order;
 		this.camera.updateMatrixWorld();
 		this.camera.updateProjectionMatrix();
-		this.camera.matrixWorldInverse.getInverse(this.camera.matrixWorld);
+		this.camera.matrixWorldInverse.copy(this.camera.matrixWorld).invert();
 
 		this.viewMatrix = this.camera.matrixWorldInverse.clone();
 		this.projMatrix = this.camera.projectionMatrix.clone();

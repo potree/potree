@@ -64,12 +64,12 @@ export function updateVisibilityStructures(pointclouds, camera, renderer) {
 		let proj = camera.projectionMatrix;
 
 		let fm = new THREE.Matrix4().multiply(proj).multiply(viewI).multiply(world);
-		frustum.setFromMatrix(fm);
+		frustum.setFromProjectionMatrix(fm);
 		frustums.push(frustum);
 
 		// camera position in object space
 		let view = camera.matrixWorld;
-		let worldI = new THREE.Matrix4().getInverse(world);
+		let worldI = world.clone().invert();
 		let camMatrixObject = new THREE.Matrix4().multiply(worldI).multiply(view);
 		let camObjPos = new THREE.Vector3().setFromMatrixPosition(camMatrixObject);
 		camObjPositions.push(camObjPos);
@@ -194,7 +194,7 @@ export function updateVisibility(pointclouds, camera, renderer){
 
 			for(let clipBox of clipBoxes){
 
-				let pcWorldInverse = new THREE.Matrix4().getInverse(pointcloud.matrixWorld);
+				let pcWorldInverse = pointcloud.matrixWorld.clone().invert();
 				let toPCObject = pcWorldInverse.multiply(clipBox.box.matrixWorld);
 
 				let px = new THREE.Vector3(+0.5, 0, 0).applyMatrix4(pcWorldInverse);

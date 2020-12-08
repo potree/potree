@@ -1037,8 +1037,8 @@ export class Renderer {
 		let view = camera.matrixWorldInverse;
 		let viewInv = camera.matrixWorld;
 		let proj = camera.projectionMatrix;
-		let projInv = new THREE.Matrix4().getInverse(proj);
-		let worldView = new THREE.Matrix4();
+		let projInv = proj.clone().invert();
+		//let worldView = new THREE.Matrix4();
 
 		let shader = null;
 		let visibilityTextureData = null;
@@ -1254,7 +1254,7 @@ export class Renderer {
 					//let clipToWorld = new THREE.Matrix4().multiplyMatrices(mTranslate, mScale);
 					let clipToWorld = clipSphere.matrixWorld;
 					let viewToWorld = camera.matrixWorld
-					let worldToClip = new THREE.Matrix4().getInverse(clipToWorld);
+					let worldToClip = clipToWorld.clone().invert();
 
 					let viewToClip = new THREE.Matrix4().multiplyMatrices(worldToClip, viewToWorld);
 
@@ -1443,7 +1443,9 @@ export class Renderer {
 
 		// CLEANUP
 		gl.activeTexture(gl.TEXTURE1);
-		gl.bindTexture(gl.TEXTURE_2D, null)
+		gl.bindTexture(gl.TEXTURE_2D, null);
+		gl.bindBuffer(gl.ARRAY_BUFFER, null);
+		gl.bindVertexArray(null);
 
 		this.threeRenderer.state.reset();
 	}

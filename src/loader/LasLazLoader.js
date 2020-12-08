@@ -142,14 +142,14 @@ export class LasLazBatcher{
 			let pointSourceIDs = new Uint16Array(e.data.pointSourceID);
 			let indices = new Uint8Array(e.data.indices);
 
-			geometry.addAttribute('position', new THREE.BufferAttribute(positions, 3));
-			geometry.addAttribute('color', new THREE.BufferAttribute(colors, 4, true));
-			geometry.addAttribute('intensity', new THREE.BufferAttribute(intensities, 1));
-			geometry.addAttribute('classification', new THREE.BufferAttribute(classifications, 1));
-			geometry.addAttribute('return number', new THREE.BufferAttribute(returnNumbers, 1));
-			geometry.addAttribute('number of returns', new THREE.BufferAttribute(numberOfReturns, 1));
-			geometry.addAttribute('source id', new THREE.BufferAttribute(pointSourceIDs, 1));
-			geometry.addAttribute('indices', new THREE.BufferAttribute(indices, 4));
+			geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+			geometry.setAttribute('color', new THREE.BufferAttribute(colors, 4, true));
+			geometry.setAttribute('intensity', new THREE.BufferAttribute(intensities, 1));
+			geometry.setAttribute('classification', new THREE.BufferAttribute(classifications, 1));
+			geometry.setAttribute('return number', new THREE.BufferAttribute(returnNumbers, 1));
+			geometry.setAttribute('number of returns', new THREE.BufferAttribute(numberOfReturns, 1));
+			geometry.setAttribute('source id', new THREE.BufferAttribute(pointSourceIDs, 1));
+			geometry.setAttribute('indices', new THREE.BufferAttribute(indices, 4));
 			geometry.attributes.indices.normalized = true;
 
 			for(const key in e.data.ranges){

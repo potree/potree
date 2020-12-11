@@ -77,7 +77,9 @@ export function getLambda () {
     accessKeyId: accessKeyId,
     secretAccessKey: secretAccessKey,
     sessionToken: sessionToken,
-    apiVersion: '2015-03-31'
+    apiVersion: '2015-03-31',
+    httpOptions:{timeout: 900000},
+    maxRetries: 0
   });
 }
 

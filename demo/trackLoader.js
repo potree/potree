@@ -379,6 +379,10 @@ const trackColors = {
   'srr_detects_interpolated_states_tracks.fb': new THREE.Color(0xB967FF), // P
   'mrr_detects_association_regions_tracks.fb': new THREE.Color(0xFF7400), // O
   'mrr_detects_interpolated_states_tracks.fb': new THREE.Color(0xFF7400), // O
+  'srr_tracks_association_regions_tracks.fb': new THREE.Color(0x0000FF),  // B
+  'srr_tracks_interpolated_states_tracks.fb': new THREE.Color(0x0000FF),  // B
+  'mrr_tracks_association_regions_tracks.fb': new THREE.Color(0x006400), // G
+  'mrr_tracks_interpolated_states_tracks.fb': new THREE.Color(0x006400), // G
 };
 
 const trackNames = {
@@ -386,4 +390,8 @@ const trackNames = {
   'srr_detects_interpolated_states_tracks.fb': "SRR Detects Interpolated States",
   'mrr_detects_association_regions_tracks.fb': "MRR Detects Association Regions",
   'mrr_detects_interpolated_states_tracks.fb': "MRR Detects Interpolated States",
+  'srr_tracks_association_regions_tracks.fb': "SRR Tracklets Association Regions",
+  'srr_tracks_interpolated_states_tracks.fb': "SRR Tracklets Interpolated States",
+  'mrr_tracks_association_regions_tracks.fb': "MRR Tracklets Association Regions",
+  'mrr_tracks_interpolated_states_tracks.fb': "MRR Tracklets Interpolated States",
 };

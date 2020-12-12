@@ -52,38 +52,47 @@ Active EC2 instances (as of 2020-04-24):
 | `prod.viz.nextdroid.com` | `NextDroidDev.pem` | `/var/www/potree` | "Production" server - runs everywhere right now, except |
 |  `dev.viz.nextdroid.com` | `NextDroidDev.pem` | `/var/www/potree` | "Development" server - running on dev, demo, and test sites |
 
-Steps for deploying (primarily for Veritas Dev server):
-[Bob has been deploying more simply, by downloading the .zip file from GitHub to his laptop, then scp'ing the zip file to the server, unzipping, stoppig nginx, moving it to the right place, then restarting nginx.]
+### Deploy steps (primarily for Veritas Dev server):
 
-1. ssh into the desired EC2 instance with the appropriate keypair  
-2. Activate ssh-agent by running `eval $(ssh-agent -s)` and   
-2.1.0 make a directory in the ~/.ssh folder like `[your_name]_rsa` to store your keys   
-2.1.1 `ssh-keygen -t rsa -b 4096 -C "your_email@example.com" -f ~/.ssh/[your_name]_rsa/id_rsa`   
-2.1.2 `chmod 600 ~/.ssh/[your_name]_rsa/id_rsa`   
-2.1.3 `ssh-add ~/.ssh/[your_name]_rsa/id_rsa`    
-2.1.4 You can confirm that your key is added with `ssh-add -l` if you don't see anything, double check that you ran `eval $(ssh-agent -s)` and try again.  
-2.1.5 `cat ~/.ssh/[your_name]_rsa/id_rsa.pub` and copy the public key (don't copy from vi since it can add extra characters!) then add your public key to github [Adding a new SSH key to your GitHub account](https://help.github.com/en/enterprise/2.15/user/articles/adding-a-new-ssh-key-to-your-github-account).  
-2.1.6  Check that your ssh-agent is connected to github: `ssh -vT git@github.com` this will show you a verbose debug output so you can see what's up if something went wrong with your keygen process.  
-3. Once you have your github connection, checkout the appropriate branch in potree (see table above for potree location on ec2 instance).
-4. Compile the code using `gulp watch`. Note this both compiles the code and launches a gulp server, however, we use an Nginx server for serving on TCP ports, so you can kill the process after compiling (which takes about 1-2 seconds).
-5. Check the visualization in a private browser on [dev.vts.nextdroid.com](https://dev.vts.nextdroid.com) - if you do not use a private browser then you will likely not see the updated visualization due to browser caching.
+1. Download the .zip file from GitHub to your local computer. 
+2. Upload to the server
 
+`scp -i ~/.ssh/NextDroidDev.pem ~/Downloads/potree-develop.zip ubuntu@dev.viz.nextdroid.com`
 
+3. Log in to the server:
 
+`ssh -i ~/.ssh/NextDroidDev.pem ubuntu@dev.viz.nextdroid.com:/home/ubuntu`
 
-Sample Walkthrough for deploying to Development Server:
+4. Stop nginx and install new deployment
 ```
-ssh -i /path/to/NextDroidDev.pem ubuntu@18.208.171.218
-
-## Inside EC2 instance:
-eval $(ssh-agent -s)		# activate ssh-agent
-ssh-add /path/to/id_rsa		# add your ssh private key
-cd git/GroundTruthVisualization/external/potree/
-git fetch
-git checkout <branch>
-gulp watch 					# let it compile then you can kill the process with ctrl-C
+unzip -q potree-develop.zip
+rm potree-develop.zip
+sudo systemctl stop nginx
+sudo rm -rf /var/www/potree
+sudo mv potree-develop /var/www/potree
+cd /var/www/potree/
+npm install
+gulp watch
 ```
 
+Wait for gulp to finish.  The output will look something like this ...
+
+```bash
+21:31:47] Finished 'watch' after 823 ms
+src/Potree.js → build/potree/potree.js...
+(!) Circular dependencies
+src/utils.js -> src/utils/Profile.js -> src/utils.js
+src/utils.js -> src/utils/Measure.js -> src/utils.js
+created build/potree/potree.js in 3.3s
+src/workers/BinaryDecoderWorker.js → build/potree/workers/BinaryDecoderWorker.js...
+created build/potree/workers/BinaryDecoderWorker.js in 92ms
+```
+
+... then ^c to terminate
+
+5. Start nginx 
+
+`sudo systemctl start nginx`
 
 ## Downloads
 

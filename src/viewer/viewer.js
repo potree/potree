@@ -1865,26 +1865,27 @@ export class Viewer extends EventDispatcher{
 		// 	return;
 		// }
 
-		let xrCameras = xr.getCamera(camera);
+		let ctmp = camera.clone();
+		ctmp.matrixAutoUpdate = false;
+		ctmp.parent = ctmp;
 
-		// DBG
-		// if(typeof Potree.debug.asd === "undefined"){
-		// 	console.log(xrCameras);
-		// 	Potree.debug.asd = true;
-		// }
 
-		// { // SKYBOX
-		// 	let {skybox, scene} = this;
+		{ // SKYBOX
+			let {skybox, scene} = this;
 
-		// 	skybox.camera.rotation.copy(scene.cameraP.rotation);
-		// 	skybox.camera.fov = scene.cameraP.fov;
-		// 	skybox.camera.aspect = scene.cameraP.aspect;
-		// 	skybox.camera.updateProjectionMatrix();
+			skybox.camera.rotation.copy(scene.cameraP.rotation);
+			skybox.camera.fov = scene.cameraP.fov;
+			skybox.camera.aspect = scene.cameraP.aspect;
+			skybox.camera.updateProjectionMatrix();
 
-		// 	renderer.render(skybox.scene, skybox.camera);
-		// }
+			renderer.render(skybox.scene, skybox.camera);
+		}
 
-		renderer.render(this.scene.scene, camera);
+		renderer.render(this.scene.scene, ctmp);
+
+
+		//let xrCameras = xr.getCamera(ctmp);
+		let xrCameras = xr.cameraVR;
 
 
 		if(xrCameras.cameras.length !== 2){
@@ -1892,6 +1893,7 @@ export class Viewer extends EventDispatcher{
 		}
 
 		for(let xrCamera of xrCameras.cameras){
+
 			let v = xrCamera.viewport;
 			renderer.setViewport(v.x, v.y, v.width, v.height);
 

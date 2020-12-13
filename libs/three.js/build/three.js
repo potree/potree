@@ -16659,6 +16659,7 @@
 		var _currentDepthNear = null;
 		var _currentDepthFar = null; //
 
+		this.cameraVR = cameraVR;
 		this.enabled = false;
 		this.isPresenting = false;
 

@@ -57,7 +57,7 @@
 		
 		viewer.setEDLEnabled(true);
 		viewer.setFOV(60);
-		viewer.setPointBudget(5*1000*1000);
+		viewer.setPointBudget(5_000_000);
 		viewer.setMinNodeSize(0);
 		viewer.loadSettingsFromURL();
 		viewer.setBackground("skybox");
@@ -76,7 +76,7 @@
 			viewer.scene.addPointCloud(e.pointcloud);
 			e.pointcloud.position.z = 0;
 			let material = e.pointcloud.material;
-			material.size = 5;
+			material.size = 2;
 			material.pointSizeType = Potree.PointSizeType.FIXED;
 
 			viewer.scene.view.position.set(13.856734292740617, -9.125174923658731, 14.563928417406354);

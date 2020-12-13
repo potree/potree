@@ -1429,7 +1429,8 @@ export class Renderer {
 			this.threeRenderer.setRenderTarget(target);
 		}
 
-		camera.updateProjectionMatrix();
+		//camera.updateProjectionMatrix();
+		// camera.matrixWorldInverse.invert(camera.matrixWorld);
 
 		const traversalResult = this.traverse(scene);
 

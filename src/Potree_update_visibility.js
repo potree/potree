@@ -178,7 +178,7 @@ export function updateVisibility(pointclouds, camera, renderer){
 		visible = visible && !(numVisiblePoints + node.getNumPoints() > Potree.pointBudget);
 		visible = visible && !(numVisiblePointsInPointclouds.get(pointcloud) + node.getNumPoints() > pointcloud.pointBudget);
 		visible = visible && level < maxLevel;
-		//visible = visible && node.name !== "r613";
+		visible = visible || node.getLevel() <= 2;
 
 		let clipBoxes = pointcloud.material.clipBoxes;
 		if(true && clipBoxes.length > 0){

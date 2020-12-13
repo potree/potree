@@ -187,8 +187,9 @@ export class EDLRenderer{
 		this.initEDL();
 
 		const viewer = this.viewer;
-		const camera = params.camera ? params.camera : viewer.scene.getActiveCamera();
+		let camera = params.camera ? params.camera : viewer.scene.getActiveCamera();
 		const {width, height} = this.viewer.renderer.getSize(new THREE.Vector2());
+
 
 		viewer.dispatchEvent({type: "render.pass.begin",viewer: viewer});
 		
@@ -252,6 +253,30 @@ export class EDLRenderer{
 					transparent: false,
 				});
 			}else{
+
+				
+				// let test = camera.clone();
+				// test.matrixAutoUpdate = false;
+
+				// //test.updateMatrixWorld = () => {};
+
+				// let mat = new THREE.Matrix4().set(
+				// 	1, 0, 0, 0,
+				// 	0, 0, 1, 0,
+				// 	0, -1, 0, 0,
+				// 	0, 0, 0, 1,
+				// );
+				// mat.invert()
+
+				// test.matrix.multiplyMatrices(mat, test.matrix);
+				// test.updateMatrixWorld();
+
+				//test.matrixWorld.multiplyMatrices(mat, test.matrixWorld);
+				//test.matrixWorld.multiply(mat);
+				//test.matrixWorldInverse.invert(test.matrixWorld);
+				//test.matrixWorldInverse.multiplyMatrices(test.matrixWorldInverse, mat);
+				
+
 				viewer.pRenderer.render(viewer.scene.scenePointCloud, camera, this.rtEDL, {
 					clipSpheres: viewer.scene.volumes.filter(v => (v instanceof SphereVolume)),
 					transparent: false,

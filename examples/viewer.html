@@ -38,7 +38,9 @@
 		<div id="potree_sidebar_container"> </div>
 	</div>
 	
-	<script>
+	<script type="module">
+
+		import { VRButton } from '../libs/three.js/extra/VRButton.js';
 	
 		window.viewer = new Potree.Viewer(document.getElementById("potree_render_area"));
 		
@@ -68,11 +70,47 @@
 			material.shape = Potree.PointShape.SQUARE;
 			
 			scene.addPointCloud(pointcloud);
+
+			{
+				let sg = new THREE.SphereGeometry(1, 12, 12);
+
+				{
+					let sm = new THREE.MeshNormalMaterial();
+					let sphere = new THREE.Mesh(sg, sm);
+					sphere.position.copy(pointcloud.position);
+					sphere.scale.set(50, 50, 50);
+					sphere.position.x += 100;
+					sphere.position.y += 100;
+					sphere.position.z += 50;
+
+					viewer.scene.scene.add(sphere);
+				}
+
+				for(let i = 0; i < 20; i++){
+
+					let color = new THREE.Color(Math.random(), Math.random(), Math.random());
+					let sm = new THREE.MeshBasicMaterial({color: color});
+					let sphere = new THREE.Mesh(sg, sm);
+
+					let x = (Math.random() - 0.5) * 50;
+					let y = (Math.random() - 0.5) * 50;
+					let z = (Math.random() - 0.5) * 50;
+					sphere.position.set(x, y, z);
+
+					viewer.scene.scene.add(sphere);
+				}
+
+
+
+			}
 			
 			//scene.view.position.set(589974.341, 231698.397, 986.146);
 			//scene.view.lookAt(new THREE.Vector3(589851.587, 231428.213, 715.634));
 			viewer.fitToScreen();
 		});
+
+		viewer.renderer.xr.enabled = true;
+		document.body.appendChild( VRButton.createButton( viewer.renderer ) );
 		
 	</script>
 	

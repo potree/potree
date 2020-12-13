@@ -55,17 +55,17 @@ export class PotreeRenderer {
 		const width = params.viewport ? params.viewport[2] : renderAreaSize.x;
 		const height = params.viewport ? params.viewport[3] : renderAreaSize.y;
 
-		{ 
-			// workaround for https://github.com/mrdoob/three.js/issues/20549
-			// make sure vertex array object states get reset by rendering a dummy scene.
+		// { 
+		// 	// workaround for https://github.com/mrdoob/three.js/issues/20549
+		// 	// make sure vertex array object states get reset by rendering a dummy scene.
 
-			// that would be the nice version, but bindingStates is private
-			renderer.bindingStates.reset()
+		// 	// that would be the nice version, but bindingStates is private
+		// 	renderer.bindingStates.reset()
 
-			// render dummy scene to reset vertex array object state
-			//this.dummyMesh.position.copy(camera.position);
-			//renderer.render(this.dummyScene, viewer.scene.cameraBG);
-		}
+		// 	// render dummy scene to reset vertex array object state
+		// 	//this.dummyMesh.position.copy(camera.position);
+		// 	//renderer.render(this.dummyScene, viewer.scene.cameraBG);
+		// }
 
 		// render skybox
 		if(viewer.background === "skybox"){

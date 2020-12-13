@@ -41,7 +41,9 @@
 
 	
 	
-	<script>
+	<script type="module">
+
+		import { VRButton } from '../libs/three.js/extra/VRButton.js';
 
 
 		let clipSpheres = [
@@ -58,6 +60,7 @@
 		viewer.setPointBudget(5*1000*1000);
 		viewer.setMinNodeSize(0);
 		viewer.loadSettingsFromURL();
+		viewer.setBackground("skybox");
 		
 		viewer.setDescription(`Heidentor point cloud courtesy of <a href="http://archpro.lbg.ac.at/" target="_blank">Ludwig Boltzmann Institute - Archeological Prospection and Virtual Archeology</a> (26M points)`);
 		
@@ -73,12 +76,44 @@
 			viewer.scene.addPointCloud(e.pointcloud);
 			e.pointcloud.position.z = 0;
 			let material = e.pointcloud.material;
-			material.size = 1;
-			material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
+			material.size = 5;
+			material.pointSizeType = Potree.PointSizeType.FIXED;
 
 			viewer.scene.view.position.set(13.856734292740617, -9.125174923658731, 14.563928417406354);
 			viewer.scene.view.lookAt(-3.5482630104475366, 2.728596783815762, 6.1406044783018725);
 		});
+
+		{
+			let sg = new THREE.SphereGeometry(1, 12, 12);
+
+			for(let i = 0; i < 50; i++){
+
+				let color = new THREE.Color(Math.random(), Math.random(), Math.random());
+				let sm = new THREE.MeshBasicMaterial({color: color});
+				let sphere = new THREE.Mesh(sg, sm);
+
+				if(i === 0){
+					sphere.scale.set(0.5, 0.5, 0.5);
+				}else{
+					let x = (Math.random() - 0.5) * 50;
+					let y = (Math.random() - 0.5) * 50;
+					let z = (Math.random() - 0.5) * 50;
+					sphere.position.set(x, y, z);
+				}
+
+				viewer.scene.scene.add(sphere);
+			}
+		}
+
+		{
+			let geometry = new THREE.PlaneBufferGeometry(10, 10, 10, 10);
+			let material = new THREE.MeshNormalMaterial();
+			let plane = new THREE.Mesh(geometry, material);
+			viewer.scene.scene.add(plane);
+		}
+
+		viewer.renderer.xr.enabled = true;
+		document.body.appendChild( VRButton.createButton( viewer.renderer ) );
 		
 	</script>
 	

@@ -20,7 +20,7 @@
 	<script src="../libs/jquery/jquery-3.1.1.min.js"></script>
 	<script src="../libs/spectrum/spectrum.js"></script>
 	<script src="../libs/jquery-ui/jquery-ui.min.js"></script>
-	<script src="../libs/three.js/build/three.min.js"></script>
+	<script src="../libs/three.js/build/three.js"></script>
 	<script src="../libs/three.js/extra/lines.js"></script>
 	<script src="../libs/other/BinaryHeap.js"></script>
 	<script src="../libs/tween/tween.min.js"></script>
@@ -99,8 +99,6 @@
 		
 		potreeViewer.scene.view.position.set(689429.64, 3877023.77, 42878.97);
 		potreeViewer.scene.view.lookAt(new THREE.Vector3(696072.86, 3916730.04, 82.04));
-
-		Potree.measureTimings = true;
 
 		let pointcloudProjection = e.pointcloud.projection;
 		let mapProjection = proj4.defs("WGS84");

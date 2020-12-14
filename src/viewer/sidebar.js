@@ -1126,6 +1126,10 @@ export class Sidebar{
 		$('#set_freeze').click(() => {
 			this.viewer.setFreeze($('#set_freeze').prop("checked"));
 		});
+
+		$('#visualize_time_range').click(() => {
+			this.viewer.setVisualizeTimeRange($('#visualize_time_range').prop("checked"));
+		});
 	}
 
 }

@@ -119,6 +119,7 @@ export class Viewer extends EventDispatcher{
 		this.filterNumberOfReturnsRange = [0, 7];
 		this.filterGPSTimeRange = [0, Infinity];
 		this.filterGPSTimeExtent = [0, 1];
+		this.visualizeTimeRange = true;
 
 		this.potreeRenderer = null;
 		this.edlRenderer = null;
@@ -588,6 +589,11 @@ export class Viewer extends EventDispatcher{
 	setFilterGPSTimeExtent(from, to){
 		this.filterGPSTimeExtent = [from, to];
 		this.dispatchEvent({'type': 'filter_gps_time_extent_changed', 'viewer': this});
+	}
+
+	setVisualizeTimeRange(visualize){
+		this.visualizeTimeRange = visualize;
+		this.dispatchEvent({'type': 'visualize_time_range_changed', 'viewer': this});
 	}
 
 	setLengthUnit (value) {
@@ -1392,6 +1398,7 @@ export class Viewer extends EventDispatcher{
 			material.uniforms.uFilterReturnNumberRange.value = this.filterReturnNumberRange;
 			material.uniforms.uFilterNumberOfReturnsRange.value = this.filterNumberOfReturnsRange;
 			material.uniforms.uFilterGPSTimeClipRange.value = this.filterGPSTimeRange;
+			material.uniforms.uVisualizeTimeRange.value = this.visualizeTimeRange;
 		}
 
 		{

@@ -146,6 +146,7 @@ export class PointCloudMaterial extends THREE.RawShaderMaterial {
 			uFilterReturnNumberRange:		{ type: "fv", value: [0, 7]},
 			uFilterNumberOfReturnsRange:	{ type: "fv", value: [0, 7]},
 			uFilterGPSTimeClipRange:		{ type: "fv", value: [0, 7]},
+			uVisualizeTimeRange:			{ type: "b", value: true },
 
 			currentRtkPosition: 			{type: "v3", value: new THREE.Vector3(0,0,0)},
 			currentRtkOrientation: 			{type: "v3", value: new THREE.Vector3(0,0,0)},

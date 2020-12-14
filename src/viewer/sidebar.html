@@ -1,13 +1,13 @@
 
-<div id="sidebar_root" 
-	class="perfect_scrollbar navmenu navmenu-default navmenu-fixed-left unselectable" 
+<div id="sidebar_root"
+	class="perfect_scrollbar navmenu navmenu-default navmenu-fixed-left unselectable"
 	style="position: absolute; min-height: 100%; height: 100%; width: calc(100% - 1px); border-right: 1px solid black !important; overflow: hidden">
 	<div id="sidebar_header">
 		<span id="potree_branding" class="potree_sidebar_brand" style="display: flex; flex-direction: row">
-			<a href="http://potree.org" target="_blank">potree.org</a> 
-			<span style="margin: 0px 3px; color: #9AA1A4"> - </span> 
+			<a href="http://potree.org" target="_blank">potree.org</a>
+			<span style="margin: 0px 3px; color: #9AA1A4"> - </span>
 			<a href="https://github.com/potree/potree" target="_blank">github</a>
-			<span style="margin: 0px 3px; color: #9AA1A4"> - </span> 
+			<span style="margin: 0px 3px; color: #9AA1A4"> - </span>
 			<a href="https://twitter.com/m_schuetz" target="_blank">twitter</a>
 			<span style="flex-grow: 1"></span>
 			<span id="potree_version_number" style="color: #9AA1A4; font-size: 80%; font-weight: 100"></span>
@@ -16,7 +16,7 @@
 	</div>
 	<div>
 	<div id="potree_menu" class="accordion">
-	
+
 		<!-- APPEARANCE -->
 		<h3 id="menu_appearance"><span data-i18n="tb.rendering_opt"></span></h3>
 		<div>
@@ -29,7 +29,7 @@
 				<li><label><input type="checkbox" id="chkEDLEnabled"/><span data-i18n="appearance.edl_enable"></span></label></li>
 				<li><span data-i18n="appearance.edl_radius"></span>: <span id="lblEDLRadius"></span><div id="sldEDLRadius"></div></li>
 				<li><span data-i18n="appearance.edl_strength"></span>: <span id="lblEDLStrength"></span><div id="sldEDLStrength"></div></li>
-				
+
 				<div class="divider"><span>Background</span></div>
 
 				<li>
@@ -50,14 +50,14 @@
 						<option id="splat_quality_options_hq" value="hq">High Quality</option>
 					</selectgroup>
 				</li>
-				
+
 				<li><span data-i18n="appearance.min_node_size"></span>: <span id="lblMinNodeSize"></span><div id="sldMinNodeSize"></div></li>
 				<li><label><input id="show_bounding_box" type="checkbox" /><span data-i18n="appearance.box"></span></label></li>
 				<li><label><input id="set_freeze" type="checkbox" /><span data-i18n="appearance.freeze"></span></label></li>
 			</ul>
-			
+
 		</div>
-		
+
 		<!-- TOOLS -->
 		<h3 id="menu_tools"><span data-i18n="tb.tools_opt"></span></h3>
 		<div class="pv-menu-list">
@@ -85,7 +85,7 @@
 					<option id="clipmethod_options_all" value="INSIDE_ALL">Inside All</option>
 				</selectgroup>
 			</li>
-			
+
 			<div class="divider" style="padding: 10px 0px 15px 0px"><span>Navigation</span></div>
 
 			<li id="navigation"></li>
@@ -120,7 +120,7 @@
 
 			<div id="return_filter_panel">
 				<ul class="pv-menu-list">
-					
+
 					<li><span data-i18n="filters.return_number"></span>: <span id="lblReturnNumber"></span> <div id="sldReturnNumber"></div></li>
 					<li><span data-i18n="filters.number_of_returns"></span>: <span id="lblNumberOfReturns"></span> <div id="sldNumberOfReturns"></div></li>
 
@@ -132,7 +132,7 @@
 			<div id="gpstime_filter_panel">
 
 				<ul class="pv-menu-list">
-					
+
 					<!-- <li>
 						<span style="display: flex">
 							<span style="flex: 0.5; padding: 2px;">
@@ -151,16 +151,21 @@
 						<span id="spnGPSTime"></span>
 					</li>
 
+					<li>
+						<input id="visualize_time_range" type="checkbox" checked />
+						<label for="visualize_time_range">Visualize Time Range</label>
+					</li>
+
 				</ul>
 
 			</div>
 		</div>
-		
+
 		<!-- ABOUT -->
 		<h3 id="menu_about"><span data-i18n="tb.about_opt"></span></h3>
 		<div>
 			<ul class="pv-menu-list">
-				<li><a href="http://potree.org" target="_blank">Potree</a> is a viewer for large point cloud / LIDAR data sets, developed at the Vienna University of Technology. 
+				<li><a href="http://potree.org" target="_blank">Potree</a> is a viewer for large point cloud / LIDAR data sets, developed at the Vienna University of Technology.
 				<a href="https://github.com/potree/potree" target="_blank">(github)</a>
 				</li>
 				<li>Author: <a href="mailto:mschuetz@potree.org">Markus Sch&uuml;tz</a></li>
@@ -189,7 +194,7 @@
 				</li>
 				<li>Credits:
 					<ul>
-						<li><a target="_blank" href="https://www.cg.tuwien.ac.at/staff/MichaelWimmer.html">Michael Wimmer</a> & 
+						<li><a target="_blank" href="https://www.cg.tuwien.ac.at/staff/MichaelWimmer.html">Michael Wimmer</a> &
 							<a target="_blank" href="https://www.cg.tuwien.ac.at/staff/ClausScheiblauer.html">Claus Scheiblauer</a></li>
 						<li><a target="_blank" href="https://www.cg.tuwien.ac.at/">TU Wien, Insitute of Computer Graphics and Algorithms</a></li>
 						<li><a target="_blank" href="https://harvest4d.org/">Harvest4D</a></li>
@@ -200,7 +205,7 @@
 						<li><a target="_blank" href="http://sitn.ne.ch/">sitn</a></li>
 					</ul>
 				</li>
-			
+
 			</ul>
 		</div>
 	</div>
@@ -221,7 +226,5 @@
 			<br>
 		</div>
 	</div>
-	
+
 </div>
-
-

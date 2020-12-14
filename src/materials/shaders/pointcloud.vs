@@ -50,6 +50,7 @@ uniform float far;
 
 uniform bool uDebug;
 uniform bool uExtrinsicsMode;
+uniform bool uVisualizeTimeRange;
 
 uniform bool uUseOrthographicCamera;
 uniform float uOrthoWidth;
@@ -862,7 +863,7 @@ void doClipping(vec4 correctedPosition){
 		//}
 
 		if (!uExtrinsicsMode) {
-			if (time > range.x && time < range.y) { // favor this first
+			if (time > range.x && time < range.y && uVisualizeTimeRange) { // favor this first
 				vColor.r = 1.0;
 				vColor.b = 0.0;
 				vColor.g = 0.0;
@@ -952,7 +953,7 @@ void main() {
 	// Construct Transforms relating Potree's Octree Grid (Node) Reference Frame and ISO 8855 Vehicle Frame:
 	mat4 T5_ISO_to_Grid  = getSE3(originalRtkPosition, originalRtkOrientation);	// Should be based on originalRtkPosition and originalRtkOrientation
 	mat4 T5_Grid_to_ISO  = inverse(T5_ISO_to_Grid);								// Should be based on originalRtkPosition and originalRtkOrientation (inverse of T_ISO_to_Grid)
-	
+
 	// Construct Full Calibration Transform Matrix:
 	mat4 T_full;
 	if (uDebug) {

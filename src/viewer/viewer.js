@@ -27,8 +27,10 @@ import {OrbitControls} from "../navigation/OrbitControls.js";
 import {FirstPersonControls} from "../navigation/FirstPersonControls.js";
 import {EarthControls} from "../navigation/EarthControls.js";
 import {DeviceOrientationControls} from "../navigation/DeviceOrientationControls.js";
+import {VRControls} from "../navigation/VRControls.js";
 import { EventDispatcher } from "../EventDispatcher.js";
 import { ClassificationScheme } from "../materials/ClassificationScheme.js";
+import { VRButton } from '../../libs/three.js/extra/VRButton.js';
 
 import JSON5 from "../../libs/json5-2.1.3/json5.mjs";
 
@@ -77,6 +79,44 @@ export class Viewer extends EventDispatcher{
 						style="position: absolute; z-index: 100000; width: 100%; height: 100%; pointer-events: none;"></div>`);
 				$(domElement).append(potreeAnnotationContainer);
 			}
+
+			if ($(domElement).find('#potree_quick_buttons').length === 0) {
+				let potreeMap = $(`
+					<div id="potree_quick_buttons" class="quick_buttons_container" style="">
+					</div>
+				`);
+
+				// {
+				// 	let imgMenuToggle = document.createElement('img');
+				// 	imgMenuToggle.src = new URL(Potree.resourcePath + '/icons/menu_button.svg').href;
+				// 	imgMenuToggle.onclick = this.toggleSidebar;
+				// 	// imgMenuToggle.classList.add('potree_menu_toggle');
+
+				// 	potreeMap.append(imgMenuToggle);
+				// }
+
+				// {
+				// 	let imgMenuToggle = document.createElement('img');
+				// 	imgMenuToggle.src = new URL(Potree.resourcePath + '/icons/menu_button.svg').href;
+				// 	imgMenuToggle.onclick = this.toggleSidebar;
+				// 	// imgMenuToggle.classList.add('potree_menu_toggle');
+
+				// 	potreeMap.append(imgMenuToggle);
+				// }
+
+				// {
+				// 	let imgMenuToggle = document.createElement('img');
+				// 	imgMenuToggle.src = new URL(Potree.resourcePath + '/icons/menu_button.svg').href;
+				// 	imgMenuToggle.onclick = this.toggleSidebar;
+				// 	// imgMenuToggle.classList.add('potree_menu_toggle');
+
+				// 	potreeMap.append(imgMenuToggle);
+				// }
+
+				
+
+				$(domElement).append(potreeMap);
+			}
 		}
 
 		this.pointCloudLoadedCallback = args.onPointCloudLoaded || function () {};
@@ -124,6 +164,7 @@ export class Viewer extends EventDispatcher{
 		this.pRenderer = null;
 
 		this.scene = null;
+		this.sceneVR = null;
 		this.overlay = null;
 		this.overlayCamera = null;
 
@@ -140,7 +181,6 @@ export class Viewer extends EventDispatcher{
 		this.background = null;
 
 		this.initThree();
-		this.prepareVR();
 
 		if(args.noDragAndDrop){
 			
@@ -189,6 +229,8 @@ export class Viewer extends EventDispatcher{
 		
 
 		let scene = new Scene(this.renderer);
+		this.sceneVR = new THREE.Scene();
+
 		this.setScene(scene);
 
 		{
@@ -381,7 +423,13 @@ export class Viewer extends EventDispatcher{
 	}
 
 	getControls () {
-		return this.controls;
+
+		if(this.renderer.xr.isPresenting){
+			return this.vrControls;
+		}else{
+			return this.controls;
+		}
+		
 	}
 
 	getMinNodeSize () {
@@ -1083,6 +1131,15 @@ export class Viewer extends EventDispatcher{
 			this.deviceControls.addEventListener('start', this.disableAnnotations.bind(this));
 			this.deviceControls.addEventListener('end', this.enableAnnotations.bind(this));
 		}
+
+		{ // create VR CONTROLS
+			this.vrControls = new VRControls(this);
+			this.vrControls.enabled = false;
+			this.vrControls.addEventListener('start', this.disableAnnotations.bind(this));
+			this.vrControls.addEventListener('end', this.enableAnnotations.bind(this));
+		}
+
+
 	};
 
 	toggleSidebar () {
@@ -1148,8 +1205,47 @@ export class Viewer extends EventDispatcher{
 			imgMapToggle.onclick = e => { this.toggleMap(); };
 			imgMapToggle.id = 'potree_map_toggle';
 
-			viewer.renderArea.insertBefore(imgMapToggle, viewer.renderArea.children[0]);
-			viewer.renderArea.insertBefore(imgMenuToggle, viewer.renderArea.children[0]);
+			
+
+			let elButtons = $("#potree_quick_buttons").get(0);
+
+			elButtons.append(imgMenuToggle);
+			elButtons.append(imgMapToggle);
+
+
+			VRButton.createButton(this.renderer).then(vrButton => {
+
+				if(vrButton == null){
+					console.log("VR not supported or active.");
+
+					return;
+				}
+
+				this.renderer.xr.enabled = true;
+
+				let element = vrButton.element;
+
+				element.style.position = "";
+				element.style.bottom = "";
+				element.style.left = "";
+				element.style.margin = "4px";
+				element.style.fontSize = "100%";
+				element.style.width = "2.5em";
+				element.style.height = "2.5em";
+				element.style.padding = "0";
+				element.style.textShadow = "black 2px 2px 2px";
+				element.style.display = "block";
+
+				elButtons.append(element);
+
+				vrButton.onStart(() => {
+					this.dispatchEvent({type: "vr_start"});
+				});
+
+				vrButton.onEnd(() => {
+					this.dispatchEvent({type: "vr_end"});
+				});
+			});
 
 			this.mapView = new MapView(this);
 			this.mapView.init();
@@ -1350,60 +1446,6 @@ export class Viewer extends EventDispatcher{
 
 			gl.createVertexArray = extVAO.createVertexArrayOES.bind(extVAO);
 			gl.bindVertexArray = extVAO.bindVertexArrayOES.bind(extVAO);
-		}
-		
-	}
-
-	onVr(callback){
-
-		if(this.vr){
-			callback();
-		}else{
-			this.onVrListeners.push(callback);
-		}
-
-	}
-
-	async prepareVR(){
-
-		if(!navigator.getVRDisplays){
-			console.info("browser does not support WebVR");
-
-			return false;
-		}
-
-		try{
-			let frameData = new VRFrameData();
-			let displays = await navigator.getVRDisplays();
-
-			if(displays.length == 0){
-				console.info("no VR display found");
-				return false;
-			}
-
-			let display = displays[displays.length - 1];
-			display.depthNear = 0.1;
-			display.depthFar = 10000.0;
-
-			if(!display.capabilities.canPresent){
-				// Not sure why canPresent would ever be false?
-				console.error("VR display canPresent === false");
-				return false;
-			}
-
-			this.vr = {
-				frameData: frameData,
-				display: display,
-				node: new THREE.Object3D(),
-			};
-
-			for(const listener of this.onVrListeners){
-				listener();
-			}
-		}catch(err){
-			console.error(err);
-
-			return false;
 		}
 		
 	}
@@ -1703,15 +1745,16 @@ export class Viewer extends EventDispatcher{
 		
 		this.scene.cameraP.fov = this.fov;
 		
-		if (this.getControls() === this.deviceControls) {
+		let controls = this.getControls();
+		if (controls === this.deviceControls) {
 			this.controls.setScene(scene);
 			this.controls.update(delta);
 
 			this.scene.cameraP.position.copy(scene.view.position);
 			this.scene.cameraO.position.copy(scene.view.position);
-		} else if (this.controls !== null) {
-			this.controls.setScene(scene);
-			this.controls.update(delta);
+		} else if (controls !== null) {
+			controls.setScene(scene);
+			controls.update(delta);
 
 			if(typeof debugDisabled === "undefined" ){
 				this.scene.cameraP.position.copy(scene.view.position);
@@ -1851,46 +1894,59 @@ export class Viewer extends EventDispatcher{
 	renderVR(){
 
 		let renderer = this.renderer;
-		// let pRenderer = this.getPRenderer();
 
 		renderer.setClearColor(0x550000, 0);
 		renderer.clear();
 
 		let camera = this.scene.getActiveCamera();
-		// renderer.render(this.scene.scene, camera);
 
 		let xr = renderer.xr;
+		let xrCameras = xr.cameraVR;
 
-		// if (!(xr.enabled === true && xr.isPresenting === true)) {
-		// 	return;
-		// }
+		if(xrCameras.cameras.length !== 2){
+			return;
+		}
 
-		let ctmp = camera.clone();
-		ctmp.matrixAutoUpdate = false;
-		ctmp.parent = ctmp;
+		let copyCam = () => {
+			let ctmp = camera.clone();
+			ctmp.position.set(0, 0, 0);
+			ctmp.up.set(0, 0, 1);
+			ctmp.lookAt(new THREE.Vector3(0, -1, 0));
+			ctmp.updateMatrix();
+			ctmp.updateMatrixWorld();
+			ctmp.matrixAutoUpdate = false;
+			ctmp.parent = ctmp;
 
+			return ctmp;
+		};
+
+		
+		let ctmp = copyCam();
 
 		{ // SKYBOX
-			let {skybox, scene} = this;
+			let {skybox} = this;
 
-			skybox.camera.rotation.copy(scene.cameraP.rotation);
-			skybox.camera.fov = scene.cameraP.fov;
-			skybox.camera.aspect = scene.cameraP.aspect;
+			skybox.camera.rotation.copy(ctmp.rotation);
+			skybox.camera.fov = ctmp.fov;
+			skybox.camera.aspect = ctmp.aspect;
 			skybox.camera.updateProjectionMatrix();
 
 			renderer.render(skybox.scene, skybox.camera);
 		}
 
-		renderer.render(this.scene.scene, ctmp);
+		{
 
+			let cam = camera.clone();
+			cam.up.set(0, 1, 0);
+			ctmp.updateMatrix();
+			ctmp.updateMatrixWorld();
 
-		//let xrCameras = xr.getCamera(ctmp);
-		let xrCameras = xr.cameraVR;
-
-
-		if(xrCameras.cameras.length !== 2){
-			return;
+			renderer.render(this.sceneVR, cam);
 		}
+		
+		ctmp = copyCam();
+		renderer.render(this.scene.scene, ctmp);
+		
 
 		for(let xrCamera of xrCameras.cameras){
 
@@ -1908,125 +1964,6 @@ export class Viewer extends EventDispatcher{
 
 		renderer.bindingStates.reset();
 
-
-		// const {display, frameData} = vr;
-		// let pRenderer = this.getPRenderer();
-
-		// const leftEye = display.getEyeParameters("left");
-		// const rightEye = display.getEyeParameters("right");
-
-		// let width = Math.max(leftEye.renderWidth, rightEye.renderWidth) * 2;
-		// let height = Math.max(leftEye.renderHeight, rightEye.renderHeight);
-
-		// // width *= 0.5;
-		// // height *= 0.5;
-
-		// this.renderer.setSize(width, height);
-
-		// pRenderer.clear();
-
-		// //const camera = new THREE.Camera();
-		// viewer.scene.cameraMode = CameraMode.VR;
-		// const camera = viewer.scene.getActiveCamera();
-		// {
-		// 	camera.near = display.depthNear;
-		// 	camera.far = display.depthFar;
-		// 	camera.projectionMatrix = new THREE.Matrix4();
-		// 	camera.matrixWorldInverse = new THREE.Matrix4();
-		// 	camera.matrixWorld = new THREE.Matrix4();
-		// 	camera.updateProjectionMatrix =  () => {};
-		// 	camera.updateMatrixWorld = () => {};
-		// 	camera.fov = 60;
-		// };
-
-		// const flipWorld = new THREE.Matrix4().fromArray([
-		// 	1, 0, 0, 0, 
-		// 	0, 0, 1, 0, 
-		// 	0, -1, 0, 0,
-		// 	0, 0, 0, 1
-		// ]);
-		// const flipView = flipWorld.clone().invert();
-
-		// vr.node.updateMatrixWorld();
-
-		// {// LEFT
-		// 	camera.projectionMatrix.fromArray(frameData.leftProjectionMatrix);
-
-		// 	const leftView = new THREE.Matrix4().fromArray(frameData.leftViewMatrix);
-		// 	const view = new THREE.Matrix4().multiplyMatrices(leftView, flipView);
-		// 	const world = view.clone().invert();
-
-		// 	{
-		// 		const tmp = new THREE.Matrix4().multiplyMatrices(vr.node.matrixWorld, world);
-		// 		world.copy(tmp);
-		// 		view.copy(world).invert();
-		// 	}
-
-		// 	camera.matrixWorldInverse.copy(view);
-		// 	camera.matrixWorld.copy(world);
-
-		// 	const viewport = [0, 0, width / 2, height];
-
-		// 	this.renderer.setViewport(...viewport);
-		// 	pRenderer.render({camera: camera, viewport: viewport});
-		// 	//this.renderer.render(this.overlay, this.overlayCamera);
-		// }
-
-		// {// RIGHT
-		
-		// 	camera.projectionMatrix.fromArray(frameData.rightProjectionMatrix);
-
-		// 	const rightView = new THREE.Matrix4().fromArray(frameData.rightViewMatrix);
-		// 	const view = new THREE.Matrix4().multiplyMatrices(rightView, flipView);
-		// 	const world = view.clone().invert();
-
-		// 	{
-		// 		const tmp = new THREE.Matrix4().multiplyMatrices(vr.node.matrixWorld, world);
-		// 		world.copy(tmp);
-		// 		view.copy(world).invert;
-		// 	}
-
-		// 	camera.matrixWorldInverse.copy(view);
-		// 	camera.matrixWorld.copy(world);
-
-		// 	const viewport = [width / 2, 0, width / 2, height];
-
-		// 	this.renderer.setViewport(...viewport);
-		// 	pRenderer.clearTargets();
-		// 	pRenderer.render({camera: camera, viewport: viewport, debug: 2});
-		// 	//this.renderer.render(this.overlay, this.overlayCamera);
-		// }
-
-		// { // CENTER
-
-		// 	{ // central view matrix
-		// 		// TODO this can't be right...can it?
-
-		// 		const left = frameData.leftViewMatrix;
-		// 		const right = frameData.rightViewMatrix
-
-		// 		const centerView = new THREE.Matrix4();
-
-		// 		for(let i = 0; i < centerView.elements.length; i++){
-		// 			centerView.elements[i] = (left[i] + right[i]) / 2;
-		// 		}
-
-		// 		const view = new THREE.Matrix4().multiplyMatrices(centerView, flipView);
-		// 		const world = view.clone().invert();
-
-		// 		{
-		// 			const tmp = new THREE.Matrix4().multiplyMatrices(vr.node.matrixWorld, world);
-		// 			world.copy(tmp);
-		// 			view.copy(world).invert;
-		// 		}
-
-		// 		camera.matrixWorldInverse.copy(view);
-		// 		camera.matrixWorld.copy(world);
-		// 	}
-
-
-		// 	camera.fov = leftEye.fieldOfView.upDegrees;
-		// }
 	}
 
 	renderDefault(){
@@ -2186,74 +2123,50 @@ export class Viewer extends EventDispatcher{
 		}
 	}
 
-	async toggleVR(){
-		const vrActive = (this.vr && this.vr.display.isPresenting);
-
-		if(vrActive){
-			this.stopVR();
-		}else{
-			this.startVR();
-		}
-	}
-
-	async startVR(){
-
-		if(this.vr === null){
-			return;
-		}
-
-		let canvas = this.renderer.domElement;
-		let display = this.vr.display;
-
-		try{
-			await display.requestPresent([{ source: canvas }]);
-		}catch(e){
-			console.error(e);
-			this.postError("requestPresent failed");
-			return;
-		}
-
-		//window.addEventListener('vrdisplaypresentchange', onVRPresentChange, false);
-		//window.addEventListener('vrdisplayactivate', onVRRequestPresent, false);
-		//window.addEventListener('vrdisplaydeactivate', onVRExitPresent, false);
-
-	}
-
-	async stopVR(){
-		// TODO shutdown VR
-	}
-
 	loop(timestamp){
 
 		if(this.stats){
 			this.stats.begin();
 		}
 
-		let queryAll;
 		if(Potree.measureTimings){
 			performance.mark("loop-start");
 		}
 
-
-		const vrActive = (this.vr && this.vr.display.isPresenting);
-
+		let vrActive = viewer.renderer.xr.isPresenting;
 		if(vrActive){
-			const {display, frameData} = this.vr;
-
-			// display.requestAnimationFrame(this.loop.bind(this));
-
-			display.getFrameData(frameData);
-
 			this.update(this.clock.getDelta(), timestamp);
-
 			this.render();
 
-			this.vr.display.submitFrame();
+			// let renderer = this.renderer;
+			// let gl = renderer.getContext();
+			// let session = viewer.renderer.xr.getSession();
+			// let baseLayer = session.renderState.baseLayer;
+
+			// gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+
+			// // gl.clearColor(1, 0, 1, 1);
+			// // gl.clear(gl.COLOR_BUFFER_BIT);
+
+			// gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER, null);
+			// gl.bindFramebuffer(gl.READ_FRAMEBUFFER, baseLayer.framebuffer);
+			// gl.blitFramebuffer(
+			// 	0, 0, 500, 500,
+			// 	0, 0, 500, 500,
+			// 	gl.COLOR_BUFFER_BIT, gl.NEAREST);
+
+
+			// gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER, null);
+			// gl.bindFramebuffer(gl.READ_FRAMEBUFFER, null);
+			// gl.bindFramebuffer(gl.FRAMEBUFFER, baseLayer.framebuffer);
+
+
+
+			
+
 		}else{
-			// requestAnimationFrame(this.loop.bind(this));
 
 			this.update(this.clock.getDelta(), timestamp);
-
 			this.render();
 		}
 

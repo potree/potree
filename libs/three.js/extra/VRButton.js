@@ -1,6 +1,24 @@
+
+// Adapted from three.js VRButton
+
+
 class VRButton {
 
-	static createButton( renderer, options ) {
+	constructor(){
+		this.onStartListeners = [];
+		this.onEndListeners = [];
+		this.element = null;
+	}
+
+	onStart(callback){
+		this.onStartListeners.push(callback);
+	}
+
+	onEnd(callback){
+		this.onEndListeners.push(callback);
+	}
+
+	static async createButton( renderer, options ) {
 
 		if ( options ) {
 
@@ -8,7 +26,24 @@ class VRButton {
 
 		}
 
-		const button = document.createElement( 'button' );
+		const button = new VRButton();
+		const element = document.createElement( 'button' );
+
+		button.element = element;
+
+		function setEnter(){
+			button.element.innerHTML = `
+				<div style="font-size: 0.5em;">ENTER</div>
+				<div style="font-weight: bold;">VR</div>
+			`;
+		}
+
+		function setExit(){
+			button.element.innerHTML = `
+				<div style="font-size: 0.5em;">EXIT</div>
+				<div style="font-weight: bold;">VR</div>
+			`;
+		}
 
 		function showEnterVR( /*device*/ ) {
 
@@ -18,8 +53,13 @@ class VRButton {
 
 				session.addEventListener( 'end', onSessionEnded );
 
+				for(let listener of button.onStartListeners){
+					listener();
+				}
+
+
 				renderer.xr.setSession( session );
-				button.textContent = 'EXIT VR';
+				setExit();
 
 				currentSession = session;
 
@@ -29,7 +69,11 @@ class VRButton {
 
 				currentSession.removeEventListener( 'end', onSessionEnded );
 
-				button.textContent = 'ENTER VR';
+				for(let listener of button.onEndListeners){
+					listener();
+				}
+
+				setEnter();
 
 				currentSession = null;
 
@@ -37,27 +81,25 @@ class VRButton {
 
 			//
 
-			button.style.display = '';
+			button.element.style.display = '';
 
-			button.style.cursor = 'pointer';
-			button.style.left = 'calc(50% - 50px)';
-			button.style.width = '100px';
+			button.element.style.cursor = 'pointer';
 
-			button.textContent = 'ENTER VR';
+			setEnter();
 
-			button.onmouseenter = function () {
+			button.element.onmouseenter = function () {
 
-				button.style.opacity = '1.0';
+				button.element.style.opacity = '1.0';
 
 			};
 
-			button.onmouseleave = function () {
+			button.element.onmouseleave = function () {
 
-				button.style.opacity = '0.5';
+				button.element.style.opacity = '0.7';
 
 			};
 
-			button.onclick = function () {
+			button.element.onclick = function () {
 
 				if ( currentSession === null ) {
 
@@ -81,29 +123,6 @@ class VRButton {
 
 		}
 
-		function disableButton() {
-
-			button.style.display = '';
-
-			button.style.cursor = 'auto';
-			button.style.left = 'calc(50% - 75px)';
-			button.style.width = '150px';
-
-			button.onmouseenter = null;
-			button.onmouseleave = null;
-
-			button.onclick = null;
-
-		}
-
-		function showWebXRNotFound() {
-
-			disableButton();
-
-			button.textContent = 'VR NOT SUPPORTED';
-
-		}
-
 		function stylizeElement( element ) {
 
 			element.style.position = 'absolute';
@@ -115,7 +134,7 @@ class VRButton {
 			element.style.color = '#fff';
 			element.style.font = 'normal 13px sans-serif';
 			element.style.textAlign = 'center';
-			element.style.opacity = '0.5';
+			element.style.opacity = '0.7';
 			element.style.outline = 'none';
 			element.style.zIndex = '999';
 
@@ -123,42 +142,36 @@ class VRButton {
 
 		if ( 'xr' in navigator ) {
 
-			button.id = 'VRButton';
-			button.style.display = 'none';
+			button.element.id = 'VRButton';
+			button.element.style.display = 'none';
 
-			stylizeElement( button );
+			stylizeElement( button.element );
 
-			navigator.xr.isSessionSupported( 'immersive-vr' ).then( function ( supported ) {
+			let supported = await navigator.xr.isSessionSupported( 'immersive-vr' );
 
-				supported ? showEnterVR() : showWebXRNotFound();
+			if(supported){
+				showEnterVR();
 
-			} );
-
-			return button;
+				return button;
+			}else{
+				return null;
+			}
 
 		} else {
 
-			const message = document.createElement( 'a' );
-
 			if ( window.isSecureContext === false ) {
 
-				message.href = document.location.href.replace( /^http:/, 'https:' );
-				message.innerHTML = 'WEBXR NEEDS HTTPS'; // TODO Improve message
+				console.log("WEBXR NEEDS HTTPS");
 
 			} else {
 
-				message.href = 'https://immersiveweb.dev/';
-				message.innerHTML = 'WEBXR NOT AVAILABLE';
+				console.log("WEBXR not available");
 
 			}
 
-			message.style.left = 'calc(50% - 90px)';
-			message.style.width = '180px';
-			message.style.textDecoration = 'none';
+			return null;
 
-			stylizeElement( message );
 
-			return message;
 
 		}
 

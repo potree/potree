@@ -40,7 +40,7 @@
 	
 	<script type="module">
 
-		import { VRButton } from '../libs/three.js/extra/VRButton.js';
+		// import { VRButton } from '../libs/three.js/extra/VRButton.js';
 	
 		window.viewer = new Potree.Viewer(document.getElementById("potree_render_area"));
 		
@@ -109,8 +109,8 @@
 			viewer.fitToScreen();
 		});
 
-		viewer.renderer.xr.enabled = true;
-		document.body.appendChild( VRButton.createButton( viewer.renderer ) );
+		// viewer.renderer.xr.enabled = true;
+		// document.body.appendChild( VRButton.createButton( viewer.renderer ) );
 		
 	</script>
 	

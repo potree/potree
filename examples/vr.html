@@ -109,44 +109,44 @@
 				2.569661863723081);
 		});
 
-		const controls = new Potree.VRControlls(viewer);
-		controls.speed = 2;
-		controls.speedModificationFactor = 4;
-		viewer.addEventListener("update", (e) => controls.update(e.delta));
+		// const controls = new Potree.VRControlls(viewer);
+		// controls.speed = 2;
+		// controls.speedModificationFactor = 4;
+		// viewer.addEventListener("update", (e) => controls.update(e.delta));
 
 	</script>
 
 
 	<script>
 	
-	// create VR button if VR display is available
-	async function createVRButton(){
+	// // create VR button if VR display is available
+	// async function createVRButton(){
 
-		if(typeof navigator.getVRDisplays === "undefined"){
-			return;
-		}
+	// 	if(typeof navigator.getVRDisplays === "undefined"){
+	// 		return;
+	// 	}
 
-		const displays = await navigator.getVRDisplays();
-		console.log(displays);
+	// 	const displays = await navigator.getVRDisplays();
+	// 	console.log(displays);
 
-		if(displays.length > 0){
+	// 	if(displays.length > 0){
 
-			const controls = new Potree.VRControlls(viewer);
-			viewer.addEventListener("update", (e) => controls.update(e.delta));
+	// 		const controls = new Potree.VRControlls(viewer);
+	// 		viewer.addEventListener("update", (e) => controls.update(e.delta));
 
 		
-			const elVR = document.createElement("div");
-			elVR.innerHTML = `
-				<div style="position: absolute; z-index: 10000; right: 10px; bottom: 10px;" 
-					onclick="viewer.toggleVR()">
-					<img src="../build/potree/resources/icons/vr_button.svg" />
-				</div>
-			`;
+	// 		const elVR = document.createElement("div");
+	// 		elVR.innerHTML = `
+	// 			<div style="position: absolute; z-index: 10000; right: 10px; bottom: 10px;" 
+	// 				onclick="viewer.toggleVR()">
+	// 				<img src="../build/potree/resources/icons/vr_button.svg" />
+	// 			</div>
+	// 		`;
 
-			document.body.appendChild(elVR);
-		}
-	}
-	createVRButton();
+	// 		document.body.appendChild(elVR);
+	// 	}
+	// }
+	// createVRButton();
 	
 	</script>
 	

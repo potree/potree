@@ -1593,6 +1593,11 @@ export class Viewer extends EventDispatcher{
 
 		if(Potree.measureTimings) performance.mark("update-start");
 
+		this.dispatchEvent({
+			type: 'update_start',
+			delta: delta,
+			timestamp: timestamp});
+
 		
 		const scene = this.scene;
 		const camera = scene.getActiveCamera();
@@ -1898,8 +1903,6 @@ export class Viewer extends EventDispatcher{
 		renderer.setClearColor(0x550000, 0);
 		renderer.clear();
 
-		let camera = this.scene.getActiveCamera();
-
 		let xr = renderer.xr;
 		let xrCameras = xr.cameraVR;
 
@@ -1907,25 +1910,12 @@ export class Viewer extends EventDispatcher{
 			return;
 		}
 
-		let copyCam = () => {
-			let ctmp = camera.clone();
-			ctmp.position.set(0, 0, 0);
-			ctmp.up.set(0, 0, 1);
-			ctmp.lookAt(new THREE.Vector3(0, -1, 0));
-			ctmp.updateMatrix();
-			ctmp.updateMatrixWorld();
-			ctmp.matrixAutoUpdate = false;
-			ctmp.parent = ctmp;
-
-			return ctmp;
-		};
-
-		
-		let ctmp = copyCam();
+		let makeCam = this.vrControls.getCamera.bind(this.vrControls);
 
 		{ // SKYBOX
 			let {skybox} = this;
 
+			let ctmp = makeCam();
 			skybox.camera.rotation.copy(ctmp.rotation);
 			skybox.camera.fov = ctmp.fov;
 			skybox.camera.aspect = ctmp.aspect;
@@ -1935,17 +1925,19 @@ export class Viewer extends EventDispatcher{
 		}
 
 		{
-
-			let cam = camera.clone();
+			let cam = makeCam();
 			cam.up.set(0, 1, 0);
-			ctmp.updateMatrix();
-			ctmp.updateMatrixWorld();
+			cam.updateMatrix();
+			cam.updateMatrixWorld();
+			cam.parent = null;
 
 			renderer.render(this.sceneVR, cam);
 		}
 		
-		ctmp = copyCam();
-		renderer.render(this.scene.scene, ctmp);
+		{
+			let ctmp = makeCam();
+			renderer.render(this.scene.scene, ctmp);
+		}
 		
 
 		for(let xrCamera of xrCameras.cameras){

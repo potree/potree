@@ -8,186 +8,114 @@ export class VRControls extends EventDispatcher{
 
 		this.viewer = viewer;
 
-		this.previousPads = [];
+		viewer.addEventListener("vr_start", this.onStart.bind(this));
+		viewer.addEventListener("vr_end", this.onEnd.bind(this));
 
-		this.selection = [];
+		this.node = new THREE.Object3D();
+		this.node.up.set(0, 0, 1);
 
-		this.triggerStarts = [];
+		let xr = viewer.renderer.xr;
+		this.cPrimary = xr.getController(0);
+		this.cSecondary = xr.getController(1);
+	}
 
-		this.scaleState = null;
+	onStart(){
 
-		this.selectionBox = this.createBox();
-		this.viewer.scene.scene.add(this.selectionBox);
+		let position = this.viewer.scene.view.position.clone();
+		let direction = this.viewer.scene.view.direction;
+		direction.multiplyScalar(-1);
 
-		this.dbgBox = this.createBox();
-		this.viewer.scene.scene.add(this.dbgBox);
+		let target = position.clone().add(direction);
+		target.z = position.z;
 
-		this.speed = 1;
-		this.speedModificationFactor = 50;
+		let scale = this.viewer.getMoveSpeed();
 
-		this.snLeft = this.createControllerModel();
-		this.snRight = this.createControllerModel();
+		this.node.position.copy(position);
+		this.node.lookAt(target);
+		this.node.scale.set(scale, scale, scale);
+		this.node.updateMatrix();
+		this.node.updateMatrixWorld();
+	}
+
+	onEnd(){
 		
-		this.viewer.scene.scene.add(this.snLeft.node);
-		this.viewer.scene.scene.add(this.snRight.node);
+	}
+
+	computeMove(controller){
+
+		if(!controller || !controller.inputSource || !controller.inputSource.gamepad){
+			return null;
+		}
+
+		let pad = controller.inputSource.gamepad;
+
+		let axes = pad.axes;
+		let scale = this.node.scale.x;
+		let amount = axes[1] * viewer.getMoveSpeed() / scale;
+
+		let rotation = new THREE.Quaternion().setFromEuler(controller.rotation);
+		let dir = new THREE.Vector3(0, 0, -1);
+		dir.applyQuaternion(rotation);
+
+		let move = dir.clone().multiplyScalar(amount);
+
+		let p1 = controller.position.clone().applyMatrix4(this.node.matrixWorld);
+		let m1 = move.clone().add(controller.position).applyMatrix4(this.node.matrixWorld);
+
+		move = m1.clone().sub(p1);
+		
+
+		return move;
 	}
 
 	setScene(scene){
 		this.scene = scene;
 	}
 
-	createControllerModel(){
-		const geometry = new THREE.SphereGeometry(1, 32, 32);
-		const material = new THREE.MeshLambertMaterial( { color: 0xff0000, side: THREE.DoubleSide, flatShading: true } );
-		const node = new THREE.Mesh(geometry, material);
+	getCamera(){
+		let camera = new THREE.PerspectiveCamera();
+		camera.near = 0.01;
+		camera.far = 10000;
+		camera.up.set(0, 0, 1);
+		camera.lookAt(new THREE.Vector3(0, -1, 0));
+		camera.updateMatrix();
+		camera.updateMatrixWorld();
 
-		node.position.set(0, 0, 0.5);
-		node.scale.set(0.02, 0.02, 0.02);
-		node.visible = false;
+		let scale = this.viewer.getMoveSpeed();
+		camera.position.copy(this.node.position);
+		camera.position.z -= 0.6 * scale;
+		camera.rotation.copy(this.node.rotation);
+		camera.scale.set(scale, scale, scale);
+		camera.updateMatrix();
+		camera.updateMatrixWorld();
+		camera.matrixAutoUpdate = false;
+		camera.parent = camera;
 
-		this.viewer.scene.scene.add(node);
-
-		const debug = new THREE.Mesh(geometry, new THREE.MeshNormalMaterial());
-		debug.position.set(0, 0, 0.5);
-		debug.scale.set(0.01, 0.01, 0.01);
-		debug.visible = false;
-
-
-		const controller = {
-			node: node,
-			debug: debug,
-		};
-		//viewer.scene.scene.add(node);
-
-		return controller;
+		return camera;
 	}
 
-	createBox(){
-		const color = 0xffff00;
-
-		const indices = new Uint16Array( [ 0, 1, 1, 2, 2, 3, 3, 0, 4, 5, 5, 6, 6, 7, 7, 4, 0, 4, 1, 5, 2, 6, 3, 7 ] );
-		const positions = [ 
-			1, 1, 1,
-			0, 1, 1,
-			0, 0, 1,
-			1, 0, 1,
-			1, 1, 0,
-			0, 1, 0,
-			0, 0, 0,
-			1, 0, 0
-		];
-		const geometry = new THREE.BufferGeometry();
-
-		geometry.setIndex( new THREE.BufferAttribute( indices, 1 ) );
-		geometry.setAttribute( 'position', new THREE.Float32BufferAttribute( positions, 3 ) );
-
-		geometry.computeBoundingSphere();
-
-		const mesh = new THREE.LineSegments(geometry, new THREE.LineBasicMaterial( { color: color } ) );
-		mesh.visible = false;
-
-		return mesh;
-	}
-
-	debugLine(start, end, index, color){
-
-		if(typeof this.debugLines === "undefined"){
-
-			const geometry = new THREE.SphereGeometry(1, 8, 8);
-
-			this.debugLines = {
-				geometry: geometry,
-			};
-		}
-
-		const n = 100;
-
-		if(!this.debugLines[index]){
-			const geometry = this.debugLines.geometry;
-			const material = new THREE.MeshBasicMaterial({color: color});
-			const nodes = [];
-
-			for(let i = 0; i <= n; i++){
-				const u = i / n;
-
-				const node = new THREE.Mesh(geometry, material);
-
-				const position = new THREE.Vector3().addVectors(
-					start.clone().multiplyScalar(1-u),
-					end.clone().multiplyScalar(u)
-				);
-
-				node.position.copy(position);
-				node.scale.set(0.002, 0.002, 0.002);
-				this.viewer.scene.scene.add(node);
-				nodes.push(node);
-			}
-
-			const debugLine = {
-				material: material,
-				nodes: nodes,
-			};
-
-			this.debugLines[index] = debugLine;
-		}else{
-			const debugLine = this.debugLines[index];
-
-			for(let i = 0; i <= n; i++){
-				const node = debugLine.nodes[i];
-				const u = i / n;
-
-				const position = new THREE.Vector3().addVectors(
-					start.clone().multiplyScalar(1-u),
-					end.clone().multiplyScalar(u)
-				);
-
-				node.position.copy(position);
-			}
-		}
-
-
-	}
-
-	getPointcloudsAt(pointclouds, position){
-
-		const I = [];
-		for(const pointcloud of pointclouds){
-			
-			const intersects = pointcloud.intersectsPoint(position);
-
-			if(intersects){
-				I.push(pointcloud);
-			}
-		}
-
-		return I;
-	}
 
 
 	update(delta){
 		let {renderer} = this.viewer;
 
-		let cameraVR = renderer.xr.cameraVR;
-		let view = this.scene.view;
+		let move = this.computeMove(this.cPrimary);
 
-		if(cameraVR == null){
-			return;
+		if(move){
+			move.multiplyScalar(-delta);
+
+			this.node.position.add(move);
 		}
 
-		let vrPos = new THREE.Vector3();
-		let vrDir = new THREE.Vector3();
-		cameraVR.getWorldPosition(vrPos);
-		cameraVR.getWorldDirection(vrDir);
+		let scale = this.node.scale.x;
 
-		vrDir.normalize().multiplyScalar(this.viewer.getMoveSpeed());
-
-		let target = vrPos.clone().add(vrDir);
-
-		view.position.copy(vrPos);
-		view.lookAt(target);
-
+		let camVR = this.viewer.renderer.xr.cameraVR;
 		
+		let vrPos = camVR.getWorldPosition(new THREE.Vector3());
+		let vrDir = camVR.getWorldDirection(new THREE.Vector3());
+		let vrTarget = vrPos.clone().add(vrDir.multiplyScalar(scale));
 
-		// console.log("update vr controls");
+		this.viewer.scene.view.setView(vrPos, vrTarget);
+
 	}
 };

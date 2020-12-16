@@ -316,37 +316,7 @@ export class PointCloudOctree extends PointCloudTree {
 		};
 		nodes.sort(sort);
 
-		// code sample taken from three.js src/math/Ray.js
-		let v1 = new THREE.Vector3();
-		let intersectSphereBack = (ray, sphere) => {
-			v1.subVectors( sphere.center, ray.origin );
-			let tca = v1.dot( ray.direction );
-			let d2 = v1.dot( v1 ) - tca * tca;
-			let radius2 = sphere.radius * sphere.radius;
-
-			if(d2 > radius2){
-				return null;
-			}
-
-			let thc = Math.sqrt( radius2 - d2 );
-
-			// t1 = second intersect point - exit point on back of sphere
-			let t1 = tca + thc;
-
-			if(t1 < 0 ){
-				return null;
-			}
-
-			return t1;
-		};
-
-		let lodRanges = new Map();
-		let leafNodeLodRanges = new Map();
-
-		let bBox = new THREE.Box3();
-		let bSphere = new THREE.Sphere();
 		let worldDir = new THREE.Vector3();
-		let cameraRay = new THREE.Ray(camera.position, camera.getWorldDirection(worldDir));
 
 		let nodeMap = new Map();
 		let offsetsToChild = new Array(nodes.length).fill(Infinity);
@@ -372,9 +342,6 @@ export class PointCloudOctree extends PointCloudTree {
 				data[parentOffset * 4 + 2] = (offsetsToChild[parentOffset] % 256);
 			}
 
-			// data[i * 4 + 3] = node.geometryNode.nodeType === 1 ? 1 : 0;
-			// data[i * 4 + 3] = node.name.length - 1;
-
 			let density = node.geometryNode.density;
 			
 			if(typeof density === "number"){
@@ -388,8 +355,6 @@ export class PointCloudOctree extends PointCloudTree {
 			}
 
 		}
-
-		var a = 10;
 
 		if(Potree.measureTimings){
 			performance.mark("computeVisibilityTextureData-end");

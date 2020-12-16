@@ -82,36 +82,15 @@
 			viewer.scene.view.lookAt(-3.5482630104475366, 2.728596783815762, 6.1406044783018725);
 		});
 
-		// {
-		// 	let sg = new THREE.SphereGeometry(1, 12, 12);
 
-		// 	for(let i = 0; i < 50; i++){
-
-		// 		let color = new THREE.Color(Math.random(), Math.random(), Math.random());
-		// 		let sm = new THREE.MeshBasicMaterial({color: color});
-		// 		let sphere = new THREE.Mesh(sg, sm);
-
-		// 		if(i === 0){
-		// 			sphere.scale.set(0.5, 0.5, 0.5);
-		// 		}else{
-		// 			let x = (Math.random() - 0.5) * 50;
-		// 			let y = (Math.random() - 0.5) * 50;
-		// 			let z = (Math.random() - 0.5) * 50;
-		// 			sphere.position.set(x, y, z);
-		// 		}
-
-		// 		viewer.scene.scene.add(sphere);
-		// 	}
-		// }
-
-		{
+		{ // ground plane
 			let geometry = new THREE.PlaneBufferGeometry(10, 10, 10, 10);
 			let material = new THREE.MeshNormalMaterial();
 			let plane = new THREE.Mesh(geometry, material);
 			viewer.scene.scene.add(plane);
 		}
 
-		{
+		{ // spheres to indicate coordinate axes
 			let sg = new THREE.SphereGeometry(0.1, 32, 32);
 
 			{
@@ -145,117 +124,6 @@
 			}
 			
 		}
-
-		let controllers = [];
-
-		{
-			let controller = viewer.renderer.xr.getController( 0 );
-
-			let sg = new THREE.SphereGeometry(0.02, 32, 32);
-			let sm = new THREE.MeshNormalMaterial();
-			let sphere = new THREE.Mesh(sg, sm);
-
-			controller.add(sphere);
-			controller.visible = true;
-			
-			viewer.sceneVR.add(controller);
-
-			controller.addEventListener( 'connected', function ( event ) {
-				const xrInputSource = event.data;
-				controller.inputSource = xrInputSource;
-			});
-
-			controller.addEventListener( 'disconnected', function ( event ) {
-				
-			});
-
-			controller.addEventListener("selectstart", (event) => {
-				console.log(event);
-			});
-
-			controller.addEventListener("select", (event) => {
-				console.log("select!");
-			});
-
-			window.controller1 = controller;
-			controllers.push(controller);
-		}
-
-		{
-			let controller = viewer.renderer.xr.getController(1);
-
-			let sg = new THREE.SphereGeometry(0.02, 32, 32);
-			let sm = new THREE.MeshBasicMaterial({color: 0x00ff00});
-			let sphere = new THREE.Mesh(sg, sm);
-
-			controller.add(sphere);
-			controller.visible = true;
-			
-			viewer.sceneVR.add(controller);
-
-			controller.addEventListener( 'connected', function ( event ) {
-				const xrInputSource = event.data;
-				controller.inputSource = xrInputSource;
-			});
-
-			controller.addEventListener( 'disconnected', function ( event ) {
-				
-			});
-
-			window.controller2 = controller;
-			controllers.push(controller);
-		}
-
-		viewer.addEventListener("vr_start", () => {
-
-		});
-
-		// viewer.addEventListener("update_start", (event) => {
-
-		// 	//let left = controllers.find(c => c.inputSources?.handedness === "left");
-		// 	//let right = controllers.find(c => c.inputSources?.handedness === "right");
-
-		// 	let primary = viewer.renderer.xr.getController(0);
-		// 	let secondary = viewer.renderer.xr.getController(1);
-
-		// 	let computeMove = (controller) => {
-
-		// 		if(controller?.inputSource?.gamepad == null){
-		// 			return null;
-		// 		}
-
-		// 		let pad = controller.inputSource.gamepad;
-
-		// 		let axes = pad.axes;
-		// 		let opos = controller.position;
-		// 		let rotation = new THREE.Quaternion().setFromEuler(controller.rotation);
-				
-		// 		const dir = new THREE.Vector3(0, 0, -1);
-		// 		dir.applyQuaternion(rotation);
-				
-		// 		const amount = axes[1] * viewer.getMoveSpeed();
-
-		// 		const move = dir.clone().multiplyScalar(amount);
-
-		// 		return move;
-		// 	};
-
-		// 	let move = computeMove(primary);
-
-		// 	if(move){
-		// 		move.multiplyScalar(event.delta * 0.1);
-
-		// 		let pos = viewer.scene.view.position;
-		// 		let dir = viewer.scene.view.direction;
-
-		// 		viewer.scene.view.translate(move.x, move.y, move.z);
-		// 		console.log(`translate`, move);
-		// 		//pos.add(move);
-		// 		//viewer.sceneVR.position.add(move);
-		// 	}
-
-		// });
-
 		
 	</script>
 	

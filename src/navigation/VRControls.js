@@ -15,8 +15,49 @@ export class VRControls extends EventDispatcher{
 		this.node.up.set(0, 0, 1);
 
 		let xr = viewer.renderer.xr;
-		this.cPrimary = xr.getController(0);
-		this.cSecondary = xr.getController(1);
+
+		{ // setup primary controller
+			let controller = xr.getController(0);
+
+			let sg = new THREE.SphereGeometry(0.02, 32, 32);
+			let sm = new THREE.MeshNormalMaterial();
+			let sphere = new THREE.Mesh(sg, sm);
+
+			controller.add(sphere);
+			controller.visible = true;
+			
+			this.viewer.sceneVR.add(controller);
+
+			controller.addEventListener( 'connected', function ( event ) {
+				const xrInputSource = event.data;
+				controller.inputSource = xrInputSource;
+			});
+
+			this.cPrimary =  controller;
+
+		}
+
+		{ // setup secondary controller
+			let controller = xr.getController(1);
+
+			let sg = new THREE.SphereGeometry(0.02, 32, 32);
+			let sm = new THREE.MeshBasicMaterial({color: 0xff0000});
+			let sphere = new THREE.Mesh(sg, sm);
+
+			controller.add(sphere);
+			controller.visible = true;
+			
+			this.viewer.sceneVR.add(controller);
+
+			controller.addEventListener( 'connected', function ( event ) {
+				const xrInputSource = event.data;
+				controller.inputSource = xrInputSource;
+			});
+
+			this.cSecondary =  controller;
+
+
+		}
 	}
 
 	onStart(){

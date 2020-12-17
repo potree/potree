@@ -39,7 +39,7 @@ function finishLoading({pointcloud}) {
   const material = pointcloud.material;
   viewer.scene.addPointCloud(pointcloud);
   material.pointColorType = Potree.PointColorType.INTENSITY; // any Potree.PointColorType.XXXX
-  material.gradient = Potree.Gradients.PLASMA; // Can define custom gradient or look up in Potree.Gradients
+  material.gradient = Potree.Gradients.RAINBOW; // Can define custom gradient or look up in Potree.Gradients
   material.size = 0.09;
   material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
   material.shape = Potree.PointShape.SQUARE;

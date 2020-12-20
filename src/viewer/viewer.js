@@ -1926,9 +1926,9 @@ export class Viewer extends EventDispatcher{
 
 		{
 			let cam = makeCam();
-			cam.up.set(0, 1, 0);
-			cam.updateMatrix();
-			cam.updateMatrixWorld();
+			// cam.up.set(0, 1, 0);
+			// cam.updateMatrix();
+			// cam.updateMatrixWorld();
 			cam.parent = null;
 
 			renderer.render(this.sceneVR, cam);

@@ -67,6 +67,8 @@ export class Utils {
 		sphere.position.copy(position);
 		sphere.scale.set(scale, scale, scale);
 		parent.add(sphere);
+
+		return sphere;
 	}
 
 	static debugLine(parent, start, end, color){
@@ -83,6 +85,17 @@ export class Utils {
 		tl.position.copy(start);
 
 		parent.add(tl);
+
+		let line = {
+			node: tl,
+			set: (start, end) => {
+				geometry.vertices[0].copy(start);
+				geometry.vertices[1].copy(end);
+				geometry.verticesNeedUpdate = true;
+			},
+		};
+
+		return line;
 	}
 
 	static debugCircle(parent, center, radius, normal, color){

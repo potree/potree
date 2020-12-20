@@ -83,12 +83,12 @@
 		});
 
 
-		// { // ground plane
-		// 	let geometry = new THREE.PlaneBufferGeometry(10, 10, 10, 10);
-		// 	let material = new THREE.MeshNormalMaterial();
-		// 	let plane = new THREE.Mesh(geometry, material);
-		// 	viewer.scene.scene.add(plane);
-		// }
+		{ // ground plane
+			let geometry = new THREE.PlaneBufferGeometry(10, 10, 10, 10);
+			let material = new THREE.MeshNormalMaterial();
+			let plane = new THREE.Mesh(geometry, material);
+			viewer.scene.scene.add(plane);
+		}
 
 		{ // spheres to indicate coordinate axes
 			let sg = new THREE.SphereGeometry(0.1, 32, 32);

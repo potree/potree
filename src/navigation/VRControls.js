@@ -20,10 +20,10 @@ function computeMove(vrControls, controller){
 
 	let move = dir.clone().multiplyScalar(amount);
 
-	let p1 = controller.position.clone().applyMatrix4(vrControls.node.matrixWorld);
-	let m1 = move.clone().add(controller.position).applyMatrix4(vrControls.node.matrixWorld);
+	let p1 = vrControls.toScene(controller.position);
+	let p2 = vrControls.toScene(controller.position.clone().add(move));
 
-	move = m1.clone().sub(p1);
+	move = p2.clone().sub(p1);
 	
 	return move;
 };
@@ -32,7 +32,7 @@ function computeMove(vrControls, controller){
 class FlyMode{
 
 	constructor(){
-
+		this.moveFactor = 1;
 	}
 
 	start(){
@@ -44,10 +44,30 @@ class FlyMode{
 	}
 
 	update(vrControls, delta){
-		let move = computeMove(vrControls, vrControls.cPrimary);
+
+		let primary = vrControls.cPrimary;
+		let secondary = vrControls.cSecondary;
+
+		if(secondary && secondary.inputSource && secondary.inputSource.gamepad){
+			let pad = secondary.inputSource.gamepad;
+			let axes = pad.axes;
+
+			let sign = Math.abs(axes[1]) > 0.5 ? -Math.sign(axes[1]) : 0;
+
+			if(sign > 0){
+				this.moveFactor *= 1.01;
+			}else if(sign < 0){
+				this.moveFactor *= 0.99
+			}
+
+			console.log(this.moveFactor);
+
+		}
+
+		let move =  computeMove(vrControls, primary);
 
 		if(move){
-			move.multiplyScalar(-delta);
+			move.multiplyScalar(-delta * this.moveFactor);
 
 			vrControls.node.position.add(move);
 		}
@@ -118,11 +138,7 @@ class RotScaleMode{
 
 		this.line.node.visible = true;
 
-		this.startState = {
-			position: vrControls.node.position.clone(),
-			scale: vrControls.node.scale.x,
-			rotation: vrControls.node.rotation.clone(),
-		};
+		this.startState = vrControls.node.clone();
 	}
 
 	end(vrControls){
@@ -131,27 +147,65 @@ class RotScaleMode{
 
 	update(vrControls, delta){
 
-		let start_c1 = vrControls.cPrimary.start.position.clone();
-		let start_c2 = vrControls.cSecondary.start.position.clone();
-		let end_c1 = vrControls.cPrimary.position.clone();
-		let end_c2 = vrControls.cSecondary.position.clone();
+		let start_c1 = vrControls.toScene(vrControls.cPrimary.start.position.clone());
+		let start_c2 = vrControls.toScene(vrControls.cSecondary.start.position.clone());
+		let start_center = start_c1.clone().add(start_c2).multiplyScalar(0.5);
+		let start_c1_c2 = start_c2.clone().sub(start_c1);
+		let end_c1 = vrControls.toScene(vrControls.cPrimary.position.clone());
+		let end_c2 = vrControls.toScene(vrControls.cSecondary.position.clone());
+		let end_center = end_c1.clone().add(end_c2).multiplyScalar(0.5);
+		let end_c1_c2 = end_c2.clone().sub(end_c1);
 
 		let d1 = start_c1.distanceTo(start_c2);
 		let d2 = end_c1.distanceTo(end_c2);
 
-		let scale = this.startState.scale * (d2 / d1);
-		scale = Math.max(1, scale);
-
-		console.log(scale);
+		let angleStart = new THREE.Vector2(start_c1_c2.x, start_c1_c2.y).angle();
+		let angleEnd = new THREE.Vector2(end_c1_c2.x, end_c1_c2.y).angle();
+		let angleDiff = angleEnd - angleStart;
 		
-		vrControls.node.scale.set(scale, scale, scale);
+		let scale = d1 / d2;
 
-		// vrControls.viewer.setMoveSpeed(scale);
+		let mToOrigin = new THREE.Matrix4().makeTranslation(-start_center.x, -start_center.y, -start_center.z);
+		let mRotate = new THREE.Matrix4().makeRotationZ(-angleDiff);
+		let mToStart = new THREE.Matrix4().makeTranslation(start_center.x, start_center.y, start_center.z);
+		let mScale = new THREE.Matrix4().makeScale(scale, scale, scale);
 
-		this.line.set(end_c1, end_c2);
+		let node = this.startState.clone();
+		node.updateMatrix();
+		node.matrixAutoUpdate = false;
+
+		let diff = start_center.clone().sub(end_center);
+		let mTranslate = new THREE.Matrix4().makeTranslation(diff.x, diff.y, diff.z);
+		
+		node.applyMatrix4(mToOrigin);
+		node.applyMatrix4(mRotate);
+		node.applyMatrix4(mScale);
+		node.applyMatrix4(mToStart);
+		node.applyMatrix4(mTranslate);
+
+		node.matrix.decompose( node.position, node.quaternion, node.scale );
+
+		console.log(node.scale);
+
+		vrControls.node.position.copy(node.position);
+		vrControls.node.quaternion.copy(node.quaternion);
+		vrControls.node.scale.copy(node.scale);
+		vrControls.node.updateMatrix();
 
 
+		{
+			let scale = vrControls.node.scale.x;
+			let camVR = vrControls.viewer.renderer.xr.cameraVR;
+			
+			let vrPos = camVR.getWorldPosition(new THREE.Vector3());
+			let vrDir = camVR.getWorldDirection(new THREE.Vector3());
+			let vrTarget = vrPos.clone().add(vrDir.multiplyScalar(scale));
 
+			vrControls.viewer.scene.view.setView(vrPos, vrTarget);
+			vrControls.viewer.setMoveSpeed(scale);
+		}
+
+		this.line.set(vrControls.toVR(end_c1), vrControls.toVR(end_c2));
 
 	}
 
@@ -330,14 +384,20 @@ export class VRControls extends EventDispatcher{
 
 	getCamera(){
 		let camera = new THREE.PerspectiveCamera();
-		camera.near = 0.01;
+
+		let reference = this.viewer.scene.getActiveCamera();
+
+		// let scale = this.node.scale.x;
+		let scale = this.viewer.getMoveSpeed();
+		camera.near = 0.1;
 		camera.far = 10000;
+		// camera.near = reference.near / scale;
+		// camera.far = reference.far / scale;
 		camera.up.set(0, 0, 1);
 		camera.lookAt(new THREE.Vector3(0, -1, 0));
 		camera.updateMatrix();
 		camera.updateMatrixWorld();
 
-		let scale = this.viewer.getMoveSpeed();
 		camera.position.copy(this.node.position);
 		camera.position.z -= 0.6 * scale;
 		camera.rotation.copy(this.node.rotation);

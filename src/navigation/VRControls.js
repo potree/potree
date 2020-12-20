@@ -146,7 +146,7 @@ class RotScaleMode{
 		
 		vrControls.node.scale.set(scale, scale, scale);
 
-		vrControls.viewer.setMoveSpeed(scale);
+		// vrControls.viewer.setMoveSpeed(scale);
 
 		this.line.set(end_c1, end_c2);
 

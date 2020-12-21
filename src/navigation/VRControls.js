@@ -60,8 +60,6 @@ class FlyMode{
 				this.moveFactor *= 0.99
 			}
 
-			console.log(this.moveFactor);
-
 		}
 
 		let move =  computeMove(vrControls, primary);

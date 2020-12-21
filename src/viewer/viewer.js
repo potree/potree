@@ -1912,7 +1912,24 @@ export class Viewer extends EventDispatcher{
 
 		let makeCam = this.vrControls.getCamera.bind(this.vrControls);
 
-		{ // SKYBOX
+		{
+			// render skybox
+			if(viewer.background === "skybox"){
+				renderer.setClearColor(0xff0000, 1);
+			}else if(viewer.background === "gradient"){
+				renderer.setClearColor(0x112233, 1);
+			}else if(viewer.background === "black"){
+				renderer.setClearColor(0x000000, 1);
+			}else if(viewer.background === "white"){
+				renderer.setClearColor(0xFFFFFF, 1);
+			}else{
+				renderer.setClearColor(0x000000, 0);
+			}
+
+			renderer.clear();
+		}
+
+		if(this.background === "skybox"){
 			let {skybox} = this;
 
 			let ctmp = makeCam();
@@ -1922,7 +1939,10 @@ export class Viewer extends EventDispatcher{
 			skybox.camera.updateProjectionMatrix();
 
 			renderer.render(skybox.scene, skybox.camera);
+		}else if(this.background === "gradient"){
+			// renderer.render(this.scene.sceneBG, this.scene.cameraBG);
 		}
+
 
 		{
 			let cam = makeCam();

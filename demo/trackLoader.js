@@ -137,11 +137,12 @@ async function parseTracks(bytesArray, shaderMaterial, FlatbufferModule, animati
     segOffset += segSize;
   }
 
-  return await createTrackGeometries(shaderMaterial, tracks, animationEngine);
+  const anomalyTypes = FlatbufferModule.Flatbuffer.GroundTruth.TrackAnomalyType || FlatbufferModule.Flatbuffer.GroundTruth.AnomalyType;
+  return await createTrackGeometries(shaderMaterial, tracks, animationEngine, anomalyTypes);
   // callback(trackGeometries, );
 }
 
-async function createTrackGeometries(shaderMaterial, tracks, animationEngine) {
+async function createTrackGeometries(shaderMaterial, tracks, animationEngine, anomalyTypes) {
 
   let lineMaterial = new THREE.LineBasicMaterial({
     color: 0x00ff00,
@@ -169,7 +170,10 @@ async function createTrackGeometries(shaderMaterial, tracks, animationEngine) {
     if (ss % 100 === 0) {
       await updateLoadingBar(ss/numTracks * 100);
     }
+
     let track = tracks[ss];
+    const isAnomalous = !!track.trackType && track.trackType() !== anomalyTypes?.NOT_APPLICABLE || 0;
+
     for (let ii=0, len=track.statesLength(); ii<len; ii++) {
 
       // Assign Current Track State:
@@ -271,6 +275,7 @@ async function createTrackGeometries(shaderMaterial, tracks, animationEngine) {
           // let bufferBoxGeometry = allBoxes;
           let wireframe = new THREE.LineSegments( edges, material ); // NOTE don't clone material to assign to multiple meshes
           let mesh = wireframe;
+          mesh.isAnomalous = isAnomalous;
           mesh.position.copy(firstCentroid);
           bboxs.push( mesh );
           allBoxes = new THREE.Geometry();
@@ -346,16 +351,35 @@ async function loadTracksCallbackHelper (s3, bucket, name, trackShaderMaterial, 
 		const trackLayer = new THREE.Group();
     trackLayer.name = trackName;
     trackLayer.visible = trackName === 'Tracked Objects'
+
+    const anomalousTrackLayer = new THREE.Group();
+    anomalousTrackLayer.name = `Anomalous ${trackName}`
+    anomalousTrackLayer.visible = false;
+
 		for (let ii = 0, len = trackGeometries.bbox.length; ii < len; ii++) {
-			trackLayer.add(trackGeometries.bbox[ii]);
-			// viewer.scene.scene.add(trackGeometries.bbox[ii]); // Original
-		}
-		viewer.scene.scene.add(trackLayer);
+      if (trackGeometries.bbox[ii].isAnomalous) {
+        anomalousTrackLayer.add(trackGeometries.bbox[ii]);
+      }
+      else {
+        trackLayer.add(trackGeometries.bbox[ii]);
+      }
+    }
+
+    viewer.scene.scene.add(trackLayer);
 		const e = new CustomEvent("truth_layer_added", { detail: trackLayer, writable: true });
 		viewer.scene.dispatchEvent({
 			"type": "truth_layer_added",
 			"truthLayer": trackLayer
-		});
+    });
+
+    if (anomalousTrackLayer.children.length > 0) {
+      viewer.scene.scene.add(anomalousTrackLayer);
+      const e = new CustomEvent("truth_layer_added", { detail: anomalousTrackLayer, writable: true });
+      viewer.scene.dispatchEvent({
+        "type": "truth_layer_added",
+        "truthLayer": anomalousTrackLayer
+      });
+    }
 
 		// TODO check if group works as expected, then trigger "truth_layer_added" event
 		animationEngine.tweenTargets.push((gpsTime) => {

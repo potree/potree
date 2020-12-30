@@ -211,7 +211,7 @@ async function loadDataIntoDocument(filesTable) {
 		}
 
 		try {
-			// TODO shaderMaterial
+			// shaderMaterial needs to be cloned to allow for different colors
 			const shaderMaterial = getShaderMaterial();
 			const trackShaderMaterial = shaderMaterial.clone();
 			loadObjectFusionTracksCallback(s3, bucket, name, trackShaderMaterial, animationEngine, filesTable['3_Assessments']);

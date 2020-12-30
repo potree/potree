@@ -1,215 +1,386 @@
-'use strict';
-import { incrementLoadingBarTotal, resetProgressBars, updateLoadingBar } from "../common/overlay.js";
-import { getS3, getAWSObjectVariables, getShaderMaterial } from "../demo/paramLoader.js"
-import { getFbFileInfo } from "./loaderUtilities.js";
+"use strict"
+// import { Flatbuffer } from "../schemas/GroundTruth_generated.js";
+// import { Flatbuffer } from "http://localhost:1234/schemas/GroundTruth_generated.js";
+import { updateLoadingBar, incrementLoadingBarTotal } from "../common/overlay.js";
+import { getFbFileInfo, removeFileExtension } from "./loaderUtilities.js";
 
 
-let objectFusionTracksFiles = null;
+// sets local variable and returns so # files can be counted
+let trackFiles = null;
 export const objectFusionTracksDownloads = async (datasetFiles) => {
-  objectFusionTracksFiles = await getFbFileInfo(datasetFiles,
-                                       "sf_bounding_boxes.fb",
-                                       "2_Truth",
-                                       "GroundTruth_generated.js", // 5_Schemas
-                                       "../data/sf_bounding_boxes.fb",
-                                       "../schemas/GroundTruth_generated.js");
-  return objectFusionTracksFiles;
+  trackFiles = await getFbFileInfo(datasetFiles,
+                                   "object_fusion_tracks.fb",
+                                   "3_Assessments",
+                                   "GroundTruth_generated.js", // 5_Schemas
+                                   "../data/object_fusion_tracks.fb",
+                                   "../schemas/GroundTruth_generated.js");
+  return trackFiles;
 }
 
-async function loadDetections(file, shaderMaterial, animationEngine) {
-
-  if (!objectFusionTracksFiles) {
-    console.log("No detection files present")
-    return null
-  } else {
-    // prepare for progress tracking (currently only triggered on button click)
-    resetProgressBars(2); // have to download & process/load detections
+export async function loadTracks(s3, bucket, name, trackFileName, shaderMaterial, animationEngine, callback) {
+  const tstart = performance.now();
+  if (!trackFiles) {
+    console.log("No track files present")
+    return
   }
 
-  const s3 = getS3();
-  const awsVariables = getAWSObjectVariables();
-  const bucket = awsVariables.bucket;
-  const name = awsVariables.name;
-
+  if (trackFileName) {
+    trackFiles.objectName = `${name}/3_Assessments/${trackFileName}`;
+  }
+  console.log("tracks", trackFileName);
+  console.log("tracks load", trackFiles.objectName);
   if (s3 && bucket && name) {
-    if (file) { objectFusionTracksFiles.objectName = `${name}/3_Assessments/${file}`; }
-    const request = s3.getObject({
-      Bucket: bucket,
-      Key: objectFusionTracksFiles.objectName
-    });
-    request.on("httpDownloadProgress", async (e) => {
-      await updateLoadingBar(e.loaded / e.total * 100);
-    });
-    const data = await request.promise();
-    incrementLoadingBarTotal("detections downloaded");
-    const schemaUrl = s3.getSignedUrl('getObject', {
-      Bucket: bucket,
-      Key: objectFusionTracksFiles.schemaFile
-    });
-    const FlatbufferModule = await import(schemaUrl);
-    const detectionGeometries = await parseDetections(data.Body, shaderMaterial, FlatbufferModule, animationEngine);
-    incrementLoadingBarTotal("detections loaded");
-    return detectionGeometries;
+    (async () => {
+      const schemaUrl = s3.getSignedUrl('getObject', {
+        Bucket: bucket,
+        Key: trackFiles.schemaFile
+      });
+      const request = await s3.getObject({Bucket: bucket,
+        Key: trackFiles.objectName},
+        async (err, data) => {
+          if (err) {
+            console.error("Error getting tracks file", err, err.stack);
+          } else {
+            const FlatbufferModule = await import(schemaUrl);
+            const trackGeometries = await parseTracks(data.Body, shaderMaterial, FlatbufferModule, animationEngine);
+            await callback(trackGeometries, );
+          }
+          incrementLoadingBarTotal("tracks loaded")
+        });
+      request.on("httpDownloadProgress", async (e) => {
+        await updateLoadingBar(e.loaded/e.total * 100);
+      });
+
+      request.on("complete", () => {
+        incrementLoadingBarTotal("tracks downloaded")
+      });
+    })();
+
   } else {
-    const response = await fetch(objectFusionTracksFiles.objectName);
-    incrementLoadingBarTotal("detections downloaded");
-    const FlatbufferModule = await import(objectFusionTracksFiles.schemaFile);
-    const detectionGeometries = await parseDetections(await response.arrayBuffer(), shaderMaterial, FlatbufferModule, animationEngine);
-    incrementLoadingBarTotal("detections loaded");
-    return detectionGeometries;
+    let t0, t1;
+
+    const xhr = new XMLHttpRequest();
+    xhr.open("GET", trackFiles.objectName);
+    xhr.responseType = "arraybuffer";
+
+    xhr.onprogress = async (e) => {
+      await updateLoadingBar(e.loaded/e.total*100)
+      t1 = performance.now();
+      t0 = t1;
+    }
+
+    xhr.onload = async (data) => {
+      incrementLoadingBarTotal("tracks downloaded")
+      const FlatbufferModule = await import(trackFiles.schemaFile);
+
+      const response = data.target.response;
+      if (!response) {
+        console.error("Could not create buffer from tracks data");
+        return;
+      }
+
+      let bytesArray = new Uint8Array(response);
+      const trackGeometries = await parseTracks(bytesArray, shaderMaterial, FlatbufferModule, animationEngine);
+      await callback(trackGeometries, );
+      incrementLoadingBarTotal("tracks loaded")
+    };
+
+    t0 = performance.now();
+    xhr.send();
   }
 }
 
-async function parseDetections(bytesArray, shaderMaterial, FlatbufferModule, animationEngine) {
+//
+// function loadTracks(shaderMaterial, callback) {
+//
+//   filename = "../data/tracks.bin";
+//
+//   const xhr = new XMLHttpRequest();
+//   xhr.open("GET", filename);
+//   xhr.responseType = "arraybuffer";
+//   xhr.onprogress = function(event) {
+//     console.log("TRACKS -- Loaded ["+event.loaded+"] bytes")
+//   }
+//
+//   xhr.onerror = function(e) {
+//     console.error("TRACKS -- Error loading tracks: ", e);
+//   }
+//
+//   xhr.onload = function() {
+//     const trackGeometries = parseTracks(data.target.response, shaderMaterial);
+//     callback(trackGeometries, );
+//   }
+//   xhr.send();
+// }
 
-  const numBytes = bytesArray.length;
-  const detections = [];
+async function parseTracks(bytesArray, shaderMaterial, FlatbufferModule, animationEngine) {
+
+  let numBytes = bytesArray.length;
+  let tracks = [];
 
   let segOffset = 0;
-  let segSize, viewSize;
+  let segSize, viewSize, viewData;
   while (segOffset < numBytes) {
 
     // Read SegmentSize:
     viewSize = new DataView(bytesArray.buffer, segOffset, 4);
     segSize = viewSize.getUint32(0, true); // True: little-endian | False: big-endian
 
-    // Get Flatbuffer Detection Object:
+    // Get Flatbuffer Track Object:
     segOffset += 4;
-    const buf = new Uint8Array(bytesArray.buffer.slice(segOffset, segOffset+segSize));
-    const fbuffer = new flatbuffers.ByteBuffer(buf);
-    const detection = FlatbufferModule.Flatbuffer.GroundTruth.Detections.getRootAsDetections(fbuffer);
+    let buf = new Uint8Array(bytesArray.buffer.slice(segOffset, segOffset+segSize));
+    let fbuffer = new flatbuffers.ByteBuffer(buf);
+    let track = FlatbufferModule.Flatbuffer.GroundTruth.Track.getRootAsTrack(fbuffer);
+    // debugger;
 
-    detections.push(detection);
+    tracks.push(track);
     segOffset += segSize;
   }
 
-  return await createDetectionGeometries(shaderMaterial, detections, animationEngine);
+  const anomalyTypes = FlatbufferModule.Flatbuffer.GroundTruth.TrackAnomalyType || FlatbufferModule.Flatbuffer.GroundTruth.AnomalyType;
+  return await createTrackGeometries(shaderMaterial, tracks, animationEngine, anomalyTypes);
+  // callback(trackGeometries, );
 }
 
-async function createDetectionGeometries(shaderMaterial, detections, animationEngine) {
-  const material = shaderMaterial;
+async function createTrackGeometries(shaderMaterial, tracks, animationEngine, anomalyTypes) {
 
-  let detect, firstCentroid, delta, boxGeometry2;
-  const bboxs = [];
-  const x0 = [];
-  const y0 = [];
-  const z0 = [];
-  let detectTimes = [];
+  let lineMaterial = new THREE.LineBasicMaterial({
+    color: 0x00FFFF,
+    transparent: true
+  });
 
+  let boxMaterial = new THREE.MeshNormalMaterial();
+
+  let material = shaderMaterial;
+
+  let state;
+  let bbox;
+  let bboxs = [];
+  let trackPoints = [];
+  let t0 = -1;
+  let x0 = [];
+  let y0 = [];
+  let z0 = [];
+  let firstTimestamp = true;
+  let firstCentroid, delta;
   let allBoxes = new THREE.Geometry();
+  let stateTimes = [];
+  let all = [];
+  for (let ss=0, numTracks=tracks.length; ss<numTracks; ss++) {
+    if (ss % 100 === 0) {
+      await updateLoadingBar(ss/numTracks * 100);
+    }
 
-  for (let ss=0, numDetections=detections.length; ss<numDetections; ss++) {
-    await updateLoadingBar(ss/numDetections*100)
-    const detection = detections[ss];
+    let track = tracks[ss];
+    const isAnomalous = !!track.trackType && track.trackType() !== anomalyTypes?.NOT_APPLICABLE || 0;
 
-    for (let ii=0, len=detection.detectionsLength(); ii<len; ii++) {
+    for (let ii=0, len=track.statesLength(); ii<len; ii++) {
 
-      // Assign Current Detection:
-      detect = detection.detections(ii);
+      // Assign Current Track State:
+      state = track.states(ii);
 
-      // Initializations:
-      const centroidLocation = new THREE.Vector3( detect.centroid().x(), detect.centroid().y(), detect.centroid().z() );
-      if (firstCentroid == undefined) {
-        firstCentroid = centroidLocation;
-      }
+      function getBoundingBoxGeometry(t0, state, material) {
 
-      delta = centroidLocation.clone().sub(firstCentroid);
-
-      const length = detect.majorAxis();
-      const width = detect.minorAxis();
-      const height = detect.height();
-
-      const boxGeometry = new THREE.BoxGeometry(length, width, height);
-      boxGeometry2 = boxGeometry.clone();
-
-      var edges = new THREE.EdgesGeometry( boxGeometry ); // or WireframeGeometry( geometry )
-      var wireframe = new THREE.LineSegments( edges, material.clone() ); // TODO don't clone material to assign to multiple meshes
-      var boxMesh = wireframe;
-
-      boxMesh.position.copy(centroidLocation);
-
-      // Rotate BoxGeometry:
-      const yaw = detect.heading();
-      const zAxis = new THREE.Vector3(0, 0, 1); // TODO Hack until fb data gets fixed
-      // let zAxis = p4.sub(p0);
-      // zAxis.normalize();
-      boxMesh.rotateOnAxis(zAxis, yaw);
-
-      // debugger; // lhw yaw/rotation
-      detectTimes.push(detect.timestamp()-animationEngine.tstart);
-
-
-      const se3 = new THREE.Matrix4();
-      const quaternion = new THREE.Quaternion().setFromAxisAngle(zAxis,yaw);
-      se3.makeRotationFromQuaternion(quaternion); // Rotation
-      se3.setPosition(delta); // Translation
-      // debugger; // se3
-
-      boxGeometry2.applyMatrix( se3 );
-      // TODO rotate boxGeometry.quaternion.setFromUnitVectors(axis, vector.clone().normalize());
-      allBoxes.merge(boxGeometry2);
-
-      if ((ss%1000)==0 || ss==(numDetections-1)) {
-        const bufferBoxGeometry = new THREE.BufferGeometry().fromGeometry(allBoxes);
-        const edges = new THREE.EdgesGeometry( bufferBoxGeometry ); // or WireframeGeometry( geometry )
-        const timestamps = [];
-        for (let tt=0, numTimes=detectTimes.length; tt<numTimes; tt++) {
-          for (let kk=0, numVerticesPerBox=24; kk<numVerticesPerBox; kk++) {  // NOTE: 24 vertices per edgesBox
-            timestamps.push(detectTimes[tt]);
-          }
+        // Initializations:
+        let centroidLocation;
+        let sumX = 0, sumY=0, sumZ=0;
+        for (let jj=0; jj<8;jj++) {
+          bbox = state.bbox(jj);
+          // vertices.push( new THREE.Vector3(bbox.x(), bbox.y(), bbox.z()));
+          sumX += bbox.x();
+          sumY += bbox.y();
+          sumZ += bbox.z();
         }
-        edges.addAttribute('gpsTime', new THREE.Float32BufferAttribute(timestamps, 1));
+        centroidLocation = new THREE.Vector3( sumX/8.0, sumY/8.0, sumZ/8.0 );
+        if (firstCentroid == undefined) {
+          firstCentroid = centroidLocation;
+        }
+        // debugger; // delta
+        delta = centroidLocation.clone().sub(firstCentroid);
 
-        // let bufferBoxGeometry = allBoxes;
-        const wireframe = new THREE.LineSegments( edges, material ); // NOTE don't clone material to assign to multiple meshes
-        const mesh = wireframe;
-        mesh.position.copy(firstCentroid);
-        bboxs.push( mesh );
-        allBoxes = new THREE.Geometry();
-        firstCentroid = centroidLocation.clone();
-        detectTimes = [];
+        let p0 = new THREE.Vector3(state.bbox(0).x(), state.bbox(0).y(), state.bbox(0).z()); // Front Left Bottom Point (near front left tire on vehicle e.g.)
+        let p1 = new THREE.Vector3(state.bbox(1).x(), state.bbox(1).y(), state.bbox(1).z()); // Front Right Bottom Point (near front right tire on vehicle e.g.)
+        let p2 = new THREE.Vector3(state.bbox(2).x(), state.bbox(2).y(), state.bbox(2).z()); // Back Right Bottom Point (near back right tire on vehicle e.g.)
+        let p3 = new THREE.Vector3(state.bbox(3).x(), state.bbox(3).y(), state.bbox(3).z());
+        let p4 = new THREE.Vector3(state.bbox(4).x(), state.bbox(4).y(), state.bbox(4).z()); // Front Left Top Point (above front left tire at height of roof of a vehicle e.g.)
+        let p5 = new THREE.Vector3(state.bbox(5).x(), state.bbox(5).y(), state.bbox(5).z());
+        let p6 = new THREE.Vector3(state.bbox(6).x(), state.bbox(6).y(), state.bbox(6).z());
+        let p7 = new THREE.Vector3(state.bbox(7).x(), state.bbox(7).y(), state.bbox(7).z());
+
+
+
+        let length = p2.distanceTo(p1);
+        let width = p1.distanceTo(p0);
+        let height = 2; // TODO Remove once bbox vertices are fixed
+        // let height = p4.distanceTo(p0);
+
+        // let length = state.bbox(2) - state.bbox(1); // Length is the distance from the front to rear bumper of a car
+        // let width = state.bbox(1) - state.bbox(0); // Width is the distance from the driver-side door to the passenger-side door of a car
+        // let height = state.bbox(4) - state.bbox(0); // Height is the distance from the bottom of the tire to the roof of a car
+
+        let boxGeometry = new THREE.BoxGeometry(length, width, height);
+        let boxGeometry2 = boxGeometry.clone();
+
+        var edges = new THREE.EdgesGeometry( boxGeometry ); // or WireframeGeometry( geometry )
+        var wireframe = new THREE.LineSegments( edges, material.clone() ); // TODO don't clone material to assign to multiple meshes
+        var boxMesh = wireframe;
+
+        boxMesh.position.copy(centroidLocation);
+
+        // Rotate BoxGeometry:
+        let yaw = state.yaw();
+        let zAxis = new THREE.Vector3(0, 0, 1); // TODO Hack until fb data gets fixed
+        // let zAxis = p4.sub(p0);
+        // zAxis.normalize();
+        boxMesh.rotateOnAxis(zAxis, yaw);
+
+        // debugger; // lhw yaw/rotation
+        if (t0 == -1) {
+          t0 = state.timestamps();
+        }
+        // x0.push(centroidLocation.x); // TODO Not needed?
+        // y0.push(centroidLocation.y); // TODO Not needed?
+        // z0.push(centroidLocation.z); // TODO Not needed?
+        // let timestamps = [];
+        // for (let kk=0, numVertices=boxMesh.geometry.attributes.position.count; kk<numVertices; kk++) {
+        //   timestamps.push(state.timestamps()-t0+16.8); // HACK -- 16.8 is a hack to get the tracked box timestamps to lineup with the rest of the animation
+        // }
+        // boxMesh.geometry.addAttribute('gpsTime', new THREE.Float32BufferAttribute(timestamps, 1));
+
+        stateTimes.push(state.timestamps()-animationEngine.tstart); // HACK -- 16.8 is a hack to get the tracked box timestamps to lineup with the rest of the animation
+
+
+        let se3 = new THREE.Matrix4();
+        let quaternion = new THREE.Quaternion().setFromAxisAngle(zAxis,yaw);
+        se3.makeRotationFromQuaternion(quaternion); // Rotation
+        se3.setPosition(delta); // Translation
+        // debugger; // se3
+
+        boxGeometry2.applyMatrix( se3 );
+        // TODO rotate boxGeometry.quaternion.setFromUnitVectors(axis, vector.clone().normalize());
+        allBoxes.merge(boxGeometry2);
+
+        if ((ii%10000)==0 || ii==(len-1)) {
+          let bufferBoxGeometry = new THREE.BufferGeometry().fromGeometry(allBoxes);
+          let edges = new THREE.EdgesGeometry( bufferBoxGeometry ); // or WireframeGeometry( geometry )
+          // debugger; //edges, stateTimes
+          let timestamps = [];
+          for (let tt=0, numTimes=stateTimes.length; tt<numTimes; tt++) {
+            for (let kk=0, numVerticesPerBox=24; kk<numVerticesPerBox; kk++) {  // NOTE: 24 vertices per edgesBox
+              timestamps.push(stateTimes[tt]);
+            }
+          }
+          edges.addAttribute('gpsTime', new THREE.Float32BufferAttribute(timestamps, 1));
+
+          // let bufferBoxGeometry = allBoxes;
+          let wireframe = new THREE.LineSegments( edges, material ); // NOTE don't clone material to assign to multiple meshes
+          let mesh = wireframe;
+          mesh.isAnomalous = isAnomalous;
+          mesh.position.copy(firstCentroid);
+          bboxs.push( mesh );
+          allBoxes = new THREE.Geometry();
+          firstCentroid = centroidLocation.clone();
+          stateTimes = [];
+        }
+
+
+        const output = {
+          t0: t0,
+          boxMesh: boxMesh,
+          boxGeometry: boxGeometry2
+        }
+        return output;
       }
+
+      let result = getBoundingBoxGeometry(t0, state, material);
+      t0 = result.t0;
+      // if (bboxs.length < 1000) {  // TODO only showing 1000 boxes because it of my inefficient way of updating them
+      // if (true) {
+      //   // bboxs.push( result.boxMesh );
+      //
+      //   // // let mesh = new THREE.Mesh(new THREE.BufferGeometry().fromGeometry(allBoxes), material); // Buffergeometry
+      //   //
+      //   // // let bufferBoxGeometry = new THREE.BufferGeometry().fromGeometry(allBoxes);
+      //   // let bufferBoxGeometry = allBoxes;
+      //   // let edges = new THREE.EdgesGeometry( bufferBoxGeometry ); // or WireframeGeometry( geometry )
+      //   // let wireframe = new THREE.LineSegments( edges, material.clone() ); // TODO don't clone material to assign to multiple meshes
+      //   // let mesh = wireframe;
+      //   // mesh.position.copy(firstCentroid);
+      //   // // bboxs.push(mesh);
+      //   // // TODO edges then wireframe mesh here then push into bboxs
+      //
+      //
+      // }
     }
   }
+  await updateLoadingBar(100);
+
+
   const output = {
     bbox: bboxs,
+    t0: t0,
     x0: x0,
     y0: y0,
     z0: z0
-  };
+  }
+
   return output;
 }
 
-export async function loadObjectFusionTracksCallback (files) {
-  for (let file of files) {
-    // Remove prefix filepath
-    file = file.split(/.*[\/|\\]/)[1].toLowerCase();
-    if (file.includes('object_fusion_tracks_bounding_boxes.fb')) {
-      await loadObjectFusionTracksCallbackHelper(file);
+export async function loadObjectFusionTracksCallback(s3, bucket, name, trackShaderMaterial, animationEngine, files) {
+  if (files) {
+    for (let file of files) {
+      file = file.split(/.*[\/|\\]/)[1];
+      if (file === 'object_fusion_tracks.fb') {
+        trackShaderMaterial.uniforms.color.value = new THREE.Color(0x00FFFF);
+        loadTracksCallbackHelper(s3, bucket, name, trackShaderMaterial, animationEngine, file, 'Object Fusion Tracks');
+      }
     }
+  } else {
+    loadTracksCallbackHelper(s3, bucket, name, trackShaderMaterial, animationEngine, 'object_fusion_tracks.fb', 'Object Fusion Tracks');
   }
 }
 
-async function loadObjectFusionTracksCallbackHelper (file) {
-  const shaderMaterial = getShaderMaterial();
-  const detectionShaderMaterial = shaderMaterial.clone();
-  detectionShaderMaterial.uniforms.color.value = new THREE.Color(0x00FFFF);
-  const detectionGeometries = await loadDetections(file, detectionShaderMaterial, animationEngine);
+async function loadTracksCallbackHelper (s3, bucket, name, trackShaderMaterial, animationEngine, trackFileName, trackName) {
+	await loadTracks(s3, bucket, name, trackFileName, trackShaderMaterial, animationEngine, (trackGeometries) => {
+		const objectFusionTrackLayer = new THREE.Group();
+    objectFusionTrackLayer.name = trackName;
+    objectFusionTrackLayer.visible = trackName === 'Object Fusion Tracks'
 
-  if (detectionGeometries != null) {
-    const detectionLayer = new THREE.Group();
-    detectionLayer.name = 'Object Fusion Tracks (boxes)';
-    for (let ii = 0, len = detectionGeometries.bbox.length; ii < len; ii++) {
-      detectionLayer.add(detectionGeometries.bbox[ii]);
+    const anomalousObjectFusionTrackLayer = new THREE.Group();
+    anomalousObjectFusionTrackLayer.name = `Anomalous ${trackName}`
+    anomalousObjectFusionTrackLayer.visible = false;
+
+		for (let ii = 0, len = trackGeometries.bbox.length; ii < len; ii++) {
+      if (trackGeometries.bbox[ii].isAnomalous) {
+        anomalousObjectFusionTrackLayer.add(trackGeometries.bbox[ii]);
+      }
+      else {
+        objectFusionTrackLayer.add(trackGeometries.bbox[ii]);
+      }
     }
-    viewer.scene.scene.add(detectionLayer);
-    viewer.scene.dispatchEvent({
-      type: "truth_layer_added",
-      truthLayer: detectionLayer
+
+    viewer.scene.scene.add(objectFusionTrackLayer);
+		const e = new CustomEvent("truth_layer_added", { detail: objectFusionTrackLayer, writable: true });
+		viewer.scene.dispatchEvent({
+			type: "sensor_layer_added",
+			sensorLayer: objectFusionTrackLayer
     });
-    animationEngine.tweenTargets.push((gpsTime) => {
-      const currentTime = gpsTime - animationEngine.tstart;
-      detectionShaderMaterial.uniforms.minGpsTime.value = currentTime + animationEngine.activeWindow.backward;
-      detectionShaderMaterial.uniforms.maxGpsTime.value = currentTime + animationEngine.activeWindow.forward;
-    });
-  }
-}
+
+    if (anomalousObjectFusionTrackLayer.children.length > 0) {
+      viewer.scene.scene.add(anomalousObjectFusionTrackLayer);
+      const e = new CustomEvent("truth_layer_added", { detail: anomalousObjectFusionTrackLayer, writable: true });
+      viewer.scene.dispatchEvent({
+        "type": "sensor_layer_added",
+        "sensorLayer": anomalousObjectFusionTrackLayer
+      });
+    }
+
+		// TODO check if group works as expected, then trigger "truth_layer_added" event
+		animationEngine.tweenTargets.push((gpsTime) => {
+			const currentTime = gpsTime - animationEngine.tstart;
+			trackShaderMaterial.uniforms.minGpsTime.value = currentTime + animationEngine.activeWindow.backward;
+			trackShaderMaterial.uniforms.maxGpsTime.value = currentTime + animationEngine.activeWindow.forward;
+		});
+	});
+}  // end of loadObjectFusionTracksCallback

@@ -880,8 +880,8 @@ export class PointCloudOctree extends PointCloudTree {
 			}
 		}
 
-		//DEBUG: show panel with pick image
-		// {
+		
+		// { // DEBUG: show panel with pick image
 		// 	let img = Utils.pixelsArrayToImage(buffer, w, h);
 		// 	let screenshot = img.src;
 		

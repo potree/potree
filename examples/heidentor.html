@@ -93,14 +93,14 @@
 		{ // spheres to indicate coordinate axes
 			let sg = new THREE.SphereGeometry(0.1, 32, 32);
 
-			{
+			{ // ORIGIN
 				let sm = new THREE.MeshBasicMaterial({color: 0xaaaaaa});
 				let sphere = new THREE.Mesh(sg, sm);
 				sphere.position.set(0, 0, 0);
 				viewer.scene.scene.add(sphere);
 			}
 
-			{
+			{ // X
 				let sm = new THREE.MeshBasicMaterial({color: 0xff0000});
 				let sphere = new THREE.Mesh(sg, sm);
 				sphere.position.set(2, 0, 0);
@@ -108,7 +108,7 @@
 			}
 
 			
-			{
+			{ // Y
 				let sm = new THREE.MeshBasicMaterial({color: 0x00ff00});
 				let sphere = new THREE.Mesh(sg, sm);
 				sphere.position.set(0, 2, 0);
@@ -116,12 +116,29 @@
 			}
 
 			
-			{
+			{ // Z
 				let sm = new THREE.MeshBasicMaterial({color: 0x0000ff});
 				let sphere = new THREE.Mesh(sg, sm);
 				sphere.position.set(0, 0, 2);
 				viewer.scene.scene.add(sphere);
 			}
+
+			// { // RANDOM SPHERES
+			// 	for(let i = 0; i < 1000; i++){
+			// 		let color = 
+			// 			((Math.random() * 255) << 16) |
+			// 			((Math.random() * 255) <<  8) |
+			// 			((Math.random() * 255) <<  0);
+			// 		let sm = new THREE.MeshBasicMaterial({color: color});
+			// 		let sphere = new THREE.Mesh(sg, sm);
+			// 		sphere.position.set(
+			// 			40 * Math.random() - 20, 
+			// 			40 * Math.random() - 20, 
+			// 			2);
+			// 		sphere.scale.set(1, 1, 1);
+			// 		viewer.scene.scene.add(sphere);
+			// 	}
+			// }
 			
 		}
 		

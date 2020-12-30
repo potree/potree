@@ -1943,6 +1943,10 @@ export class Viewer extends EventDispatcher{
 			// renderer.render(this.scene.sceneBG, this.scene.cameraBG);
 		}
 
+		this.renderer.xr.getSession().updateRenderState({
+			depthNear: 0.1,
+			depthFar: 10000
+		});
 
 		{
 			let cam = makeCam();
@@ -1950,10 +1954,56 @@ export class Viewer extends EventDispatcher{
 
 			renderer.render(this.sceneVR, cam);
 		}
+
+		// {
+		// 	let ref = this.vrControls.node;
+			
+		// 	let toScene = (vec, ref) => {
+		// 		let node = ref.clone();
+		// 		node.updateMatrix();
+		// 		node.updateMatrixWorld();
+
+		// 		let result = vec.clone().applyMatrix4(node.matrix);
+		// 		result.z -= 0.8 * node.scale.x;
+
+		// 		return result;
+		// 	};
+
+		// 	let dbgPos = toScene(new THREE.Vector3(0, 0.8, 0), ref);
+
+		// 	let cam = makeCam();
+		// 	//cam.position.z -= 0.8 * cam.scale.x;
+		// 	cam.position.copy(dbgPos);
+		// 	cam.parent = null;
+
+		// 	let s = 1 / ref.scale.x;
+		// 	cam.scale.set(1, 1, 1);
+		// 	viewer.scene.scene.scale.set(s, s, s);
+		// 	this.scene.scenePointCloud.scale.set(s, s, s);
+
+		// 	cam.updateMatrix();
+		// 	cam.updateMatrixWorld();
+
+
+
+		// 	cam.parent = cam;
+
+			
+
+
+		// 	renderer.render(this.scene.scene, cam);
+		// }
 		
 		{
-			let ctmp = makeCam();
-			renderer.render(this.scene.scene, ctmp);
+			let cam = makeCam();
+			cam.position.z -= 0.8 * cam.scale.x;
+			cam.parent = null;
+			cam.updateMatrix();
+			cam.updateMatrixWorld();
+			cam.parent = cam;
+
+
+			renderer.render(this.scene.scene, cam);
 		}
 		
 

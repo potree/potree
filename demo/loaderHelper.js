@@ -211,7 +211,10 @@ async function loadDataIntoDocument(filesTable) {
 		}
 
 		try {
-			loadObjectFusionTracksCallback(filesTable['3_Assessments']);
+			// shaderMaterial needs to be cloned to allow for different colors
+			const shaderMaterial = getShaderMaterial();
+			const trackShaderMaterial = shaderMaterial.clone();
+			loadObjectFusionTracksCallback(s3, bucket, name, trackShaderMaterial, animationEngine, filesTable['3_Assessments']);
 		} catch (e) {
 			console.error("Could not load object fusion tracks data")
 		}

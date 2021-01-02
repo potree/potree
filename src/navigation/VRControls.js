@@ -110,6 +110,13 @@ class FlyMode{
 		let sceneTarget = scenePos.clone().add(sceneDir);
 
 		vrControls.viewer.scene.view.setView(scenePos, sceneTarget);
+
+		// if(Potree.debug.message){
+		// 	this.dbgLabel.visible = true;
+		// 	this.dbgLabel.setText(Potree.debug.message);
+		// 	this.dbgLabel.scale.set(0.1, 0.1, 0.1);
+		// 	this.dbgLabel.position.copy(primary.position);
+		// }
 	}
 };
 

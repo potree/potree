@@ -862,23 +862,6 @@ export class TransformationTool {
 				}
 			}
 
-
-			{
-				let axisScale = (alignment) => {
-					let transformed = new THREE.Vector3(...alignment).applyMatrix4(selected.matrixWorld);
-					let distance = transformed.distanceTo(selected.getWorldPosition(new THREE.Vector3()));
-
-					return distance;
-				};
-
-				let scale = new THREE.Vector3(
-					axisScale([1, 0, 0]),
-					axisScale([0, 1, 0]),
-					axisScale([0, 0, 1]),
-				);
-
-			}
-
 		}else{
 			this.scene.visible = false;
 		}

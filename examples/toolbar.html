@@ -295,7 +295,7 @@
 		elToolbar.find('#sldPointBudget').slider({
 			value: viewer.getPointBudget(),
 			min: 100 * 1000,
-			max: 1 * 1000 * 1000,
+			max: 1_000_000,
 			step: 100 * 1000,
 			slide: (event, ui) => { this.viewer.setPointBudget(ui.value); }
 		});

@@ -1933,10 +1933,10 @@ export class Viewer extends EventDispatcher{
 		if(this.background === "skybox"){
 			let {skybox} = this;
 
-			let ctmp = makeCam();
-			skybox.camera.rotation.copy(ctmp.rotation);
-			skybox.camera.fov = ctmp.fov;
-			skybox.camera.aspect = ctmp.aspect;
+			let cam = makeCam();
+			skybox.camera.rotation.copy(cam.rotation);
+			skybox.camera.fov = cam.fov;
+			skybox.camera.aspect = cam.aspect;
 			skybox.camera.updateProjectionMatrix();
 
 			renderer.render(skybox.scene, skybox.camera);
@@ -1944,58 +1944,41 @@ export class Viewer extends EventDispatcher{
 			// renderer.render(this.scene.sceneBG, this.scene.cameraBG);
 		}
 
+		for(let pointcloud of this.scene.pointclouds){
+			pointcloud.material.useEDL = false;
+		}
+
 		this.renderer.xr.getSession().updateRenderState({
 			depthNear: 0.1,
 			depthFar: 10000
 		});
 
-		{
+		{ // render VR scene
 			let cam = makeCam();
 			cam.parent = null;
 
 			renderer.render(this.sceneVR, cam);
 		}
-
-		// {
-		// 	let ref = this.vrControls.node;
-			
-		// 	let toScene = (vec, ref) => {
-		// 		let node = ref.clone();
-		// 		node.updateMatrix();
-		// 		node.updateMatrixWorld();
-
-		// 		let result = vec.clone().applyMatrix4(node.matrix);
-		// 		result.z -= 0.8 * node.scale.x;
-
-		// 		return result;
-		// 	};
-
-		// 	let dbgPos = toScene(new THREE.Vector3(0, 0.8, 0), ref);
-
-		// 	let cam = makeCam();
-		// 	//cam.position.z -= 0.8 * cam.scale.x;
-		// 	cam.position.copy(dbgPos);
-		// 	cam.parent = null;
-
-		// 	let s = 1 / ref.scale.x;
-		// 	cam.scale.set(1, 1, 1);
-		// 	viewer.scene.scene.scale.set(s, s, s);
-		// 	this.scene.scenePointCloud.scale.set(s, s, s);
-
-		// 	cam.updateMatrix();
-		// 	cam.updateMatrixWorld();
-
-
-
-		// 	cam.parent = cam;
-
-			
-
-
-		// 	renderer.render(this.scene.scene, cam);
-		// }
 		
-		{
+		
+
+		// { // render other stuff
+		// 	let viewer = this;
+
+		// 	let camera = makeCam();
+		// 	camera.position.z -= 0.8 * camera.scale.x;
+		// 	camera.parent = null;
+		// 	camera.updateMatrix();
+		// 	camera.updateMatrixWorld();
+		// 	camera.parent = camera;
+
+		// 	// renderer.clearDepth();
+			
+		// 	viewer.renderer.render(viewer.measuringTool.scene, camera);
+		// 	// viewer.dispatchEvent({type: "render.pass.perspective_overlay",viewer: viewer});
+		// }
+
+		{ // render world scene
 			let cam = makeCam();
 			cam.position.z -= 0.8 * cam.scale.x;
 			cam.parent = null;
@@ -2003,11 +1986,10 @@ export class Viewer extends EventDispatcher{
 			cam.updateMatrixWorld();
 			cam.parent = cam;
 
-
 			renderer.render(this.scene.scene, cam);
 		}
 		
-
+		// render point clouds
 		for(let xrCamera of xrCameras.cameras){
 
 			let v = xrCamera.viewport;
@@ -2022,7 +2004,8 @@ export class Viewer extends EventDispatcher{
 
 		}
 
-		// renderer.bindingStates.reset();
+		
+
 		renderer.resetState();
 
 	}

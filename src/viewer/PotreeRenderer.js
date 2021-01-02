@@ -55,18 +55,6 @@ export class PotreeRenderer {
 		const width = params.viewport ? params.viewport[2] : renderAreaSize.x;
 		const height = params.viewport ? params.viewport[3] : renderAreaSize.y;
 
-		// { 
-		// 	// workaround for https://github.com/mrdoob/three.js/issues/20549
-		// 	// make sure vertex array object states get reset by rendering a dummy scene.
-
-		// 	// that would be the nice version, but bindingStates is private
-		// 	renderer.bindingStates.reset()
-
-		// 	// render dummy scene to reset vertex array object state
-		// 	//this.dummyMesh.position.copy(camera.position);
-		// 	//renderer.render(this.dummyScene, viewer.scene.cameraBG);
-		// }
-
 		// render skybox
 		if(viewer.background === "skybox"){
 			viewer.skybox.camera.rotation.copy(viewer.scene.cameraP.rotation);
@@ -77,8 +65,6 @@ export class PotreeRenderer {
 		}else if(viewer.background === "gradient"){
 			renderer.render(viewer.scene.sceneBG, viewer.scene.cameraBG);
 		}
-
-		
 		
 		for(let pointcloud of this.viewer.scene.pointclouds){
 			const {material} = pointcloud;
@@ -106,15 +92,15 @@ export class PotreeRenderer {
 		
 		viewer.dispatchEvent({type: "render.pass.perspective_overlay",viewer: viewer});
 
-		renderer.render(viewer.controls.sceneControls, camera);
-		renderer.render(viewer.clippingTool.sceneVolume, camera);
-		renderer.render(viewer.transformationTool.scene, camera);
+		// renderer.render(viewer.controls.sceneControls, camera);
+		// renderer.render(viewer.clippingTool.sceneVolume, camera);
+		// renderer.render(viewer.transformationTool.scene, camera);
 		
-		renderer.setViewport(width - viewer.navigationCube.width, 
-									height - viewer.navigationCube.width, 
-									viewer.navigationCube.width, viewer.navigationCube.width);
-		renderer.render(viewer.navigationCube, viewer.navigationCube.camera);		
-		renderer.setViewport(0, 0, width, height);
+		// renderer.setViewport(width - viewer.navigationCube.width, 
+		// 							height - viewer.navigationCube.width, 
+		// 							viewer.navigationCube.width, viewer.navigationCube.width);
+		// renderer.render(viewer.navigationCube, viewer.navigationCube.camera);		
+		// renderer.setViewport(0, 0, width, height);
 		
 		viewer.dispatchEvent({type: "render.pass.end",viewer: viewer});
 	}

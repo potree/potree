@@ -1448,10 +1448,7 @@ export class Renderer {
 		gl.bindBuffer(gl.ARRAY_BUFFER, null);
 		gl.bindVertexArray(null);
 
-		this.threeRenderer.state.reset();
-		if(this.threeRenderer.bindingStates){
-			this.threeRenderer.bindingStates.reset();
-		}
+		viewer.renderer.resetState();
 	}
 
 

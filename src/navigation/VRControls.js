@@ -1,6 +1,18 @@
 
 import {EventDispatcher} from "../EventDispatcher.js";
 
+let fakeCam = new THREE.PerspectiveCamera();
+
+function toScene(vec, ref){
+	let node = ref.clone();
+	node.updateMatrix();
+	node.updateMatrixWorld();
+
+	let result = vec.clone().applyMatrix4(node.matrix);
+	result.z -= 0.8 * node.scale.x;
+
+	return result;
+};
 
 function computeMove(vrControls, controller){
 
@@ -86,13 +98,18 @@ class FlyMode{
 
 		let scale = vrControls.node.scale.x;
 
-		let camVR = vrControls.viewer.renderer.xr.cameraVR;
+		let camVR = vrControls.viewer.renderer.xr.getCamera(fakeCam);
 		
 		let vrPos = camVR.getWorldPosition(new THREE.Vector3());
 		let vrDir = camVR.getWorldDirection(new THREE.Vector3());
 		let vrTarget = vrPos.clone().add(vrDir.multiplyScalar(scale));
 
-		vrControls.viewer.scene.view.setView(vrPos, vrTarget);
+		let scenePos = toScene(vrPos, vrControls.node);
+		let sceneDir = toScene(vrPos.clone().add(vrDir), vrControls.node).sub(scenePos);
+		sceneDir.normalize().multiplyScalar(scale);
+		let sceneTarget = scenePos.clone().add(sceneDir);
+
+		vrControls.viewer.scene.view.setView(scenePos, sceneTarget);
 	}
 };
 
@@ -162,17 +179,6 @@ class RotScaleMode{
 	}
 
 	update(vrControls, delta){
-
-		let toScene = (vec, ref) => {
-			let node = ref.clone();
-			node.updateMatrix();
-			node.updateMatrixWorld();
-
-			let result = vec.clone().applyMatrix4(node.matrix);
-			result.z -= 0.8 * node.scale.x;
-
-			return result;
-		};
 
 		let start_c1 = vrControls.cPrimary.start.position.clone();
 		let start_c2 = vrControls.cSecondary.start.position.clone();

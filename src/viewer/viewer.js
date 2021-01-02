@@ -1904,7 +1904,8 @@ export class Viewer extends EventDispatcher{
 		renderer.clear();
 
 		let xr = renderer.xr;
-		let xrCameras = xr.cameraVR;
+		let dbg = new THREE.PerspectiveCamera();
+		let xrCameras = xr.getCamera(dbg);
 
 		if(xrCameras.cameras.length !== 2){
 			return;
@@ -2021,7 +2022,8 @@ export class Viewer extends EventDispatcher{
 
 		}
 
-		renderer.bindingStates.reset();
+		// renderer.bindingStates.reset();
+		renderer.resetState();
 
 	}
 

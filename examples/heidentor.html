@@ -18,7 +18,7 @@
 	<script src="../libs/jquery/jquery-3.1.1.min.js"></script>
 	<script src="../libs/spectrum/spectrum.js"></script>
 	<script src="../libs/jquery-ui/jquery-ui.min.js"></script>
-	<script src="../libs/three.js/build/three.js"></script>
+	<script src="../libs/three.js/build/three.min.js"></script>
 	<script src="../libs/three.js/extra/lines.js"></script>
 	<script src="../libs/other/BinaryHeap.js"></script>
 	<script src="../libs/tween/tween.min.js"></script>
@@ -42,14 +42,6 @@
 	
 	
 	<script type="module">
-
-
-		let clipSpheres = [
-			{position: [0.032, -2.382, 4.279], scale: 3},
-			{position: [-1.787, 6.011, 1.711], scale: 1},
-			{position: [0.095, 7.636, 10.997], scale: 2},
-		];
-
 	
 		window.viewer = new Potree.Viewer(document.getElementById("potree_render_area"));
 		
@@ -77,51 +69,53 @@
 			let material = e.pointcloud.material;
 			material.size = 1;
 			material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
-
-			viewer.scene.view.position.set(13.856734292740617, -9.125174923658731, 14.563928417406354);
-			viewer.scene.view.lookAt(-3.5482630104475366, 2.728596783815762, 6.1406044783018725);
+			
+			viewer.scene.view.setView(
+				[13.856, -9.125, 14.563],
+				[-3.548,  2.728,  6.140],
+			);
 		});
 
 
-		{ // ground plane
-			let geometry = new THREE.PlaneBufferGeometry(10, 10, 10, 10);
-			let material = new THREE.MeshNormalMaterial();
-			let plane = new THREE.Mesh(geometry, material);
-			viewer.scene.scene.add(plane);
-		}
+		// { // ground plane
+		// 	let geometry = new THREE.PlaneBufferGeometry(10, 10, 10, 10);
+		// 	let material = new THREE.MeshNormalMaterial();
+		// 	let plane = new THREE.Mesh(geometry, material);
+		// 	viewer.scene.scene.add(plane);
+		// }
 
-		{ // spheres to indicate coordinate axes
-			let sg = new THREE.SphereGeometry(0.1, 32, 32);
+		// { // spheres to indicate coordinate axes
+		// 	let sg = new THREE.SphereGeometry(0.1, 32, 32);
 
-			{ // ORIGIN
-				let sm = new THREE.MeshBasicMaterial({color: 0xaaaaaa});
-				let sphere = new THREE.Mesh(sg, sm);
-				sphere.position.set(0, 0, 0);
-				viewer.scene.scene.add(sphere);
-			}
+		// 	{ // ORIGIN
+		// 		let sm = new THREE.MeshBasicMaterial({color: 0xaaaaaa});
+		// 		let sphere = new THREE.Mesh(sg, sm);
+		// 		sphere.position.set(0, 0, 0);
+		// 		viewer.scene.scene.add(sphere);
+		// 	}
 
-			{ // X
-				let sm = new THREE.MeshBasicMaterial({color: 0xff0000});
-				let sphere = new THREE.Mesh(sg, sm);
-				sphere.position.set(2, 0, 0);
-				viewer.scene.scene.add(sphere);
-			}
-
-			
-			{ // Y
-				let sm = new THREE.MeshBasicMaterial({color: 0x00ff00});
-				let sphere = new THREE.Mesh(sg, sm);
-				sphere.position.set(0, 2, 0);
-				viewer.scene.scene.add(sphere);
-			}
+		// 	{ // X
+		// 		let sm = new THREE.MeshBasicMaterial({color: 0xff0000});
+		// 		let sphere = new THREE.Mesh(sg, sm);
+		// 		sphere.position.set(2, 0, 0);
+		// 		viewer.scene.scene.add(sphere);
+		// 	}
 
 			
-			{ // Z
-				let sm = new THREE.MeshBasicMaterial({color: 0x0000ff});
-				let sphere = new THREE.Mesh(sg, sm);
-				sphere.position.set(0, 0, 2);
-				viewer.scene.scene.add(sphere);
-			}
+		// 	{ // Y
+		// 		let sm = new THREE.MeshBasicMaterial({color: 0x00ff00});
+		// 		let sphere = new THREE.Mesh(sg, sm);
+		// 		sphere.position.set(0, 2, 0);
+		// 		viewer.scene.scene.add(sphere);
+		// 	}
+
+			
+		// 	{ // Z
+		// 		let sm = new THREE.MeshBasicMaterial({color: 0x0000ff});
+		// 		let sphere = new THREE.Mesh(sg, sm);
+		// 		sphere.position.set(0, 0, 2);
+		// 		viewer.scene.scene.add(sphere);
+		// 	}
 
 			// { // RANDOM SPHERES
 			// 	for(let i = 0; i < 1000; i++){
@@ -140,7 +134,7 @@
 			// 	}
 			// }
 			
-		}
+		// }
 		
 	</script>
 	

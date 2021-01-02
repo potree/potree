@@ -8,6 +8,8 @@
  * @author mschuetz / http://potree.org
  */
 
+import * as THREE from "../../libs/three.js/build/three.module.js";
+
 export class Box3Helper extends THREE.LineSegments {
 	constructor (box, color) {
 		if (color === undefined) color = 0xffff00;

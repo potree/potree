@@ -1,4 +1,8 @@
 
+import * as THREE from "../../libs/three.js/build/three.module.js";
+import {Line2} from "../../libs/three.js/lines/Line2.js";
+import {LineGeometry} from "../../libs/three.js/lines/LineGeometry.js";
+import {LineMaterial} from "../../libs/three.js/lines/LineMaterial.js";
 import {Utils} from "../utils.js";
 
 const defaultColors = {
@@ -94,7 +98,7 @@ export class GeoPackageLoader{
 				boundingBox = boundingBox.projectBoundingBox(dao.projection, 'EPSG:4326');
 				const geoJson = data.queryForGeoJSONFeaturesInTable(table, boundingBox);
 
-				const matLine = new THREE.LineMaterial( {
+				const matLine = new LineMaterial( {
 					color: new THREE.Color().setRGB(...getColor(table)),
 					linewidth: 2, 
 					resolution:  new THREE.Vector2(1000, 1000),
@@ -160,10 +164,10 @@ export class GeoPackageLoader{
 				coordinates[i+2] -= min.z;
 			}
 			
-			const lineGeometry = new THREE.LineGeometry();
+			const lineGeometry = new LineGeometry();
 			lineGeometry.setPositions( coordinates );
 
-			const line = new THREE.Line2( lineGeometry, matLine );
+			const line = new Line2( lineGeometry, matLine );
 			line.computeLineDistances();
 			line.scale.set( 1, 1, 1 );
 			line.position.copy(min);
@@ -195,10 +199,10 @@ export class GeoPackageLoader{
 					coordinates[i+2] -= min.z;
 				}
 
-				const lineGeometry = new THREE.LineGeometry();
+				const lineGeometry = new LineGeometry();
 				lineGeometry.setPositions( coordinates );
 
-				const line = new THREE.Line2( lineGeometry, matLine );
+				const line = new Line2( lineGeometry, matLine );
 				line.computeLineDistances();
 				line.scale.set( 1, 1, 1 );
 				line.position.copy(min);

@@ -1,4 +1,5 @@
 
+import * as THREE from "../../libs/three.js/build/three.module.js";
 import {Shaders} from "../../build/shaders/shaders.js";
 
 export class NormalizationMaterial extends THREE.RawShaderMaterial{

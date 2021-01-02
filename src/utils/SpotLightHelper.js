@@ -1,4 +1,6 @@
 
+import * as THREE from "../../libs/three.js/build/three.module.js";
+
 export class SpotLightHelper extends THREE.Object3D{
 
 	constructor(light, color){
@@ -55,11 +57,8 @@ export class SpotLightHelper extends THREE.Object3D{
 		this.light.updateMatrixWorld();
 
 		let position = this.light.position;
-		//let target = new THREE.Vector3().addVectors(
-		//	light.position,
-		//	new THREE.Vector3().subVectors(light.position, this.light.getWorldDirection(new THREE.Vector3())));
 		let target = new THREE.Vector3().addVectors(
-			light.position, this.light.getWorldDirection(new THREE.Vector3()).multiplyScalar(-1));
+			this.light.position, this.light.getWorldDirection(new THREE.Vector3()).multiplyScalar(-1));
 		
 		let quat = new THREE.Quaternion().setFromRotationMatrix(
 			new THREE.Matrix4().lookAt( position, target, new THREE.Vector3( 0, 0, 1 ) )

@@ -1,5 +1,5 @@
 
-
+import * as THREE from "../../libs/three.js/build/three.module.js";
 import {MOUSE} from "../defines.js";
 import {Utils} from "../utils.js";
 import {EventDispatcher} from "../EventDispatcher.js";

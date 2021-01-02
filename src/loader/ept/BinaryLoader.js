@@ -1,3 +1,5 @@
+
+import * as THREE from "../../../libs/three.js/build/three.module.js";
 import {XHRFactory} from "../../XHRFactory.js";
 
 export class EptBinaryLoader {

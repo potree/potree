@@ -1,6 +1,11 @@
 
+import * as THREE from "../../../libs/three.js/build/three.module.js";
 import { EventDispatcher } from "../../EventDispatcher.js";
 import { Utils } from "../../utils.js";
+import {Line2} from "../../../libs/three.js/lines/Line2.js";
+import {LineGeometry} from "../../../libs/three.js/lines/LineGeometry.js";
+import {LineMaterial} from "../../../libs/three.js/lines/LineMaterial.js";
+
 
 class ControlPoint{
 
@@ -230,9 +235,9 @@ export class CameraAnimation extends EventDispatcher{
 	createPath(){
 
 		{ // position
-			const geometry = new THREE.LineGeometry();
+			const geometry = new LineGeometry();
 
-			let material = new THREE.LineMaterial({ 
+			let material = new LineMaterial({ 
 				color: 0x00ff00, 
 				dashSize: 5, 
 				gapSize: 2,
@@ -240,16 +245,16 @@ export class CameraAnimation extends EventDispatcher{
 				resolution:  new THREE.Vector2(1000, 1000),
 			});
 
-			const line = new THREE.Line2(geometry, material);
+			const line = new Line2(geometry, material);
 
 			this.line = line;
 			this.node.add(line);
 		}
 
 		{ // target
-			const geometry = new THREE.LineGeometry();
+			const geometry = new LineGeometry();
 
-			let material = new THREE.LineMaterial({ 
+			let material = new LineMaterial({ 
 				color: 0x0000ff, 
 				dashSize: 5, 
 				gapSize: 2,
@@ -257,7 +262,7 @@ export class CameraAnimation extends EventDispatcher{
 				resolution:  new THREE.Vector2(1000, 1000),
 			});
 
-			const line = new THREE.Line2(geometry, material);
+			const line = new Line2(geometry, material);
 
 			this.targetLine = line;
 			this.node.add(line);
@@ -294,19 +299,19 @@ export class CameraAnimation extends EventDispatcher{
 			-f, -f, +1,
 		];
 
-		const geometry = new THREE.LineGeometry();
+		const geometry = new LineGeometry();
 
 		geometry.setPositions(positions);
 		geometry.verticesNeedUpdate = true;
 		geometry.computeBoundingSphere();
 
-		let material = new THREE.LineMaterial({ 
+		let material = new LineMaterial({ 
 			color: 0xff0000, 
 			linewidth: 2, 
 			resolution:  new THREE.Vector2(1000, 1000),
 		});
 
-		const line = new THREE.Line2(geometry, material);
+		const line = new Line2(geometry, material);
 		line.computeLineDistances();
 		
 		return line;

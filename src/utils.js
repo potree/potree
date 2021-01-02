@@ -1,4 +1,5 @@
 
+import * as THREE from "../libs/three.js/build/three.module.js";
 import {XHRFactory} from "./XHRFactory.js";
 import {Volume} from "./utils/Volume.js";
 import {Profile} from "./utils/Profile.js";
@@ -31,7 +32,7 @@ export class Utils {
 	}
 
 	static toString (value) {
-		if (value instanceof THREE.Vector3) {
+		if (value.x != null) {
 			return value.x.toFixed(2) + ', ' + value.y.toFixed(2) + ', ' + value.z.toFixed(2);
 		} else {
 			return '' + value + '';

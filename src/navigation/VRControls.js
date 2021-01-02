@@ -1,5 +1,7 @@
 
+import * as THREE from "../../libs/three.js/build/three.module.js";
 import {EventDispatcher} from "../EventDispatcher.js";
+import { XRControllerModelFactory } from '../../libs/three.js/webxr/XRControllerModelFactory.js';
 
 let fakeCam = new THREE.PerspectiveCamera();
 
@@ -272,16 +274,30 @@ export class VRControls extends EventDispatcher{
 
 		let xr = viewer.renderer.xr;
 
+		{ // lights
+			
+			const light = new THREE.PointLight( 0xffffff, 5, 0, 1 );
+			light.position.set(0, 2, 0);
+			this.viewer.sceneVR.add(light)
+		}
+
+		const controllerModelFactory = new XRControllerModelFactory();
+
+		let sg = new THREE.SphereGeometry(1, 32, 32);
+		let sm = new THREE.MeshNormalMaterial();
+
 		{ // setup primary controller
 			let controller = xr.getController(0);
 
-			let sg = new THREE.SphereGeometry(0.02, 32, 32);
-			let sm = new THREE.MeshNormalMaterial();
+			let grip = xr.getControllerGrip(0);
+			grip.add( controllerModelFactory.createControllerModel( grip ) );
+			this.viewer.sceneVR.add( grip );
+
 			let sphere = new THREE.Mesh(sg, sm);
+			sphere.scale.set(0.005, 0.005, 0.005);
 
 			controller.add(sphere);
 			controller.visible = true;
-			
 			this.viewer.sceneVR.add(controller);
 
 			controller.addEventListener( 'connected', function ( event ) {
@@ -299,13 +315,15 @@ export class VRControls extends EventDispatcher{
 		{ // setup secondary controller
 			let controller = xr.getController(1);
 
-			let sg = new THREE.SphereGeometry(0.02, 32, 32);
-			let sm = new THREE.MeshBasicMaterial({color: 0xff0000});
-			let sphere = new THREE.Mesh(sg, sm);
+			let grip = xr.getControllerGrip(1);
+			grip.add( controllerModelFactory.createControllerModel( grip ) );
+			this.viewer.sceneVR.add( grip );
 
+			
+			let sphere = new THREE.Mesh(sg, sm);
+			sphere.scale.set(0.005, 0.005, 0.005);
 			controller.add(sphere);
 			controller.visible = true;
-			
 			this.viewer.sceneVR.add(controller);
 
 			controller.addEventListener( 'connected', function ( event ) {

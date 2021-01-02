@@ -1,4 +1,5 @@
 
+import * as THREE from "../../libs/three.js/build/three.module.js";
 
 export class ClipVolume extends THREE.Object3D{
 	

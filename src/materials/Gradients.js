@@ -1,3 +1,4 @@
+import * as THREE from "../../libs/three.js/build/three.module.js";
 
 // -------------------------------------------
 // to get a ready to use gradient array from a chroma.js gradient:

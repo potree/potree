@@ -1,4 +1,5 @@
 
+import * as THREE from "../../libs/three.js/build/three.module.js";
 import {ClipTask, ClipMethod, CameraMode, LengthUnits, ElevationGradientRepeat} from "../defines.js";
 import {Renderer} from "../PotreeRenderer.js";
 import {PotreeRenderer} from "./PotreeRenderer.js";
@@ -2197,42 +2198,18 @@ export class Viewer extends EventDispatcher{
 			performance.mark("loop-start");
 		}
 
-		let vrActive = viewer.renderer.xr.isPresenting;
-		if(vrActive){
-			this.update(this.clock.getDelta(), timestamp);
-			this.render();
+		this.update(this.clock.getDelta(), timestamp);
+		this.render();
 
-			// let renderer = this.renderer;
-			// let gl = renderer.getContext();
-			// let session = viewer.renderer.xr.getSession();
-			// let baseLayer = session.renderState.baseLayer;
+		// let vrActive = viewer.renderer.xr.isPresenting;
+		// if(vrActive){
+		// 	this.update(this.clock.getDelta(), timestamp);
+		// 	this.render();
+		// }else{
 
-			// gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-
-			// // gl.clearColor(1, 0, 1, 1);
-			// // gl.clear(gl.COLOR_BUFFER_BIT);
-
-			// gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER, null);
-			// gl.bindFramebuffer(gl.READ_FRAMEBUFFER, baseLayer.framebuffer);
-			// gl.blitFramebuffer(
-			// 	0, 0, 500, 500,
-			// 	0, 0, 500, 500,
-			// 	gl.COLOR_BUFFER_BIT, gl.NEAREST);
-
-
-			// gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER, null);
-			// gl.bindFramebuffer(gl.READ_FRAMEBUFFER, null);
-			// gl.bindFramebuffer(gl.FRAMEBUFFER, baseLayer.framebuffer);
-
-
-
-			
-
-		}else{
-
-			this.update(this.clock.getDelta(), timestamp);
-			this.render();
-		}
+		// 	this.update(this.clock.getDelta(), timestamp);
+		// 	this.render();
+		// }
 
 
 		if(Potree.measureTimings){

@@ -1,5 +1,5 @@
 
-
+import * as THREE from "../../libs/three.js/build/three.module.js";
 import {PointCloudOctreeGeometry, PointCloudOctreeGeometryNode} from "../PointCloudOctreeGeometry.js";
 import {Version} from "../Version.js";
 import {XHRFactory} from "../XHRFactory.js";

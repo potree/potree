@@ -111,12 +111,12 @@ class FlyMode{
 
 		vrControls.viewer.scene.view.setView(scenePos, sceneTarget);
 
-		// if(Potree.debug.message){
-		// 	this.dbgLabel.visible = true;
-		// 	this.dbgLabel.setText(Potree.debug.message);
-		// 	this.dbgLabel.scale.set(0.1, 0.1, 0.1);
-		// 	this.dbgLabel.position.copy(primary.position);
-		// }
+		if(Potree.debug.message){
+			this.dbgLabel.visible = true;
+			this.dbgLabel.setText(Potree.debug.message);
+			this.dbgLabel.scale.set(0.1, 0.1, 0.1);
+			this.dbgLabel.position.copy(primary.position);
+		}
 	}
 };
 
@@ -197,7 +197,7 @@ class RotScaleMode{
 		let end_c1_c2 = end_c2.clone().sub(end_c1);
 
 		let d1 = start_c1_c2.length();
-		let d2 = end_c1_c2.length();;
+		let d2 = end_c1_c2.length();
 
 		let angleStart = new THREE.Vector2(start_c1_c2.x, start_c1_c2.z).angle();
 		let angleEnd = new THREE.Vector2(end_c1_c2.x, end_c1_c2.z).angle();
@@ -234,13 +234,19 @@ class RotScaleMode{
 
 		{
 			let scale = vrControls.node.scale.x;
-			let camVR = vrControls.viewer.renderer.xr.cameraVR;
+			// let camVR = vrControls.viewer.renderer.xr.cameraVR;
+			let camVR = vrControls.viewer.renderer.xr.getCamera(fakeCam);
 			
 			let vrPos = camVR.getWorldPosition(new THREE.Vector3());
 			let vrDir = camVR.getWorldDirection(new THREE.Vector3());
 			let vrTarget = vrPos.clone().add(vrDir.multiplyScalar(scale));
 
-			vrControls.viewer.scene.view.setView(vrPos, vrTarget);
+			let scenePos = toScene(vrPos, this.startState);
+			let sceneDir = toScene(vrPos.clone().add(vrDir), this.startState).sub(scenePos);
+			sceneDir.normalize().multiplyScalar(scale);
+			let sceneTarget = scenePos.clone().add(sceneDir);
+
+			vrControls.viewer.scene.view.setView(scenePos, sceneTarget);
 			vrControls.viewer.setMoveSpeed(scale);
 		}
 

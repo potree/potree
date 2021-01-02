@@ -587,7 +587,8 @@ export class Viewer extends EventDispatcher{
 	};
 
 	setEDLEnabled (value) {
-		value = Boolean(value);
+		value = Boolean(value) && Features.SHADER_EDL.isSupported();
+
 		if (this.useEDL !== value) {
 			this.useEDL = value;
 			this.dispatchEvent({'type': 'use_edl_changed', 'viewer': this});
@@ -1913,8 +1914,7 @@ export class Viewer extends EventDispatcher{
 
 		let makeCam = this.vrControls.getCamera.bind(this.vrControls);
 
-		{
-			// render skybox
+		{ // clear framebuffer
 			if(viewer.background === "skybox"){
 				renderer.setClearColor(0xff0000, 1);
 			}else if(viewer.background === "gradient"){
@@ -1930,16 +1930,27 @@ export class Viewer extends EventDispatcher{
 			renderer.clear();
 		}
 
+		// render background
 		if(this.background === "skybox"){
 			let {skybox} = this;
 
 			let cam = makeCam();
 			skybox.camera.rotation.copy(cam.rotation);
+			// skybox.camera.rotation.order = "ZXY";
 			skybox.camera.fov = cam.fov;
 			skybox.camera.aspect = cam.aspect;
+			// skybox.camera.updateMatrix();
+			// skybox.camera.updateMatrixWorld();
 			skybox.camera.updateProjectionMatrix();
+			// skybox.camera.parent = skybox.camera;
+
+			// viewer.skybox.scene.position.copy(cam.position);
+
+			// let s = 0.9 * cam.far / 5000;
+			// viewer.skybox.scene.scale.set(10, 10, 10);
 
 			renderer.render(skybox.scene, skybox.camera);
+			// renderer.render(skybox.scene, cam);
 		}else if(this.background === "gradient"){
 			// renderer.render(this.scene.sceneBG, this.scene.cameraBG);
 		}
@@ -1960,6 +1971,17 @@ export class Viewer extends EventDispatcher{
 			renderer.render(this.sceneVR, cam);
 		}
 		
+		let cam = null;
+		{ // render world scene
+			cam = makeCam();
+			cam.position.z -= 0.8 * cam.scale.x;
+			cam.parent = null;
+			cam.updateMatrix();
+			cam.updateMatrixWorld();
+			cam.parent = cam;
+
+			renderer.render(this.scene.scene, cam);
+		}
 		
 
 		// { // render other stuff
@@ -1978,16 +2000,7 @@ export class Viewer extends EventDispatcher{
 		// 	// viewer.dispatchEvent({type: "render.pass.perspective_overlay",viewer: viewer});
 		// }
 
-		{ // render world scene
-			let cam = makeCam();
-			cam.position.z -= 0.8 * cam.scale.x;
-			cam.parent = null;
-			cam.updateMatrix();
-			cam.updateMatrixWorld();
-			cam.parent = cam;
-
-			renderer.render(this.scene.scene, cam);
-		}
+		
 		
 		// render point clouds
 		for(let xrCamera of xrCameras.cameras){

@@ -324,6 +324,8 @@ export class Utils {
 
 		scene.add(skybox);
 
+		scene.traverse(n => n.frustumCulled = false);
+
 		// z up
 		scene.rotation.x = Math.PI / 2;
 

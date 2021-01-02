@@ -1956,23 +1956,10 @@ export class Viewer extends EventDispatcher{
 			// renderer.render(this.scene.sceneBG, this.scene.cameraBG);
 		}
 
-		for(let pointcloud of this.scene.pointclouds){
-			pointcloud.material.useEDL = false;
-		}
-
 		this.renderer.xr.getSession().updateRenderState({
 			depthNear: 0.1,
 			depthFar: 10000
 		});
-
-		{ // render VR scene
-			let cam = makeCam();
-			cam.parent = null;
-
-			renderer.render(this.sceneVR, cam);
-		}
-
-
 		
 		let cam = null;
 		let view = null;
@@ -2005,6 +1992,20 @@ export class Viewer extends EventDispatcher{
 
 		}
 		
+		for(let pointcloud of this.scene.pointclouds){
+
+			let viewport = xrCameras.cameras[0].viewport;
+
+			pointcloud.material.useEDL = false;
+			pointcloud.screenHeight = viewport.height;
+			pointcloud.screenWidth = viewport.width;
+
+			// automatically switch to paraboloids because they cause far less flickering in VR, 
+			// when point sizes are larger than around 2 pixels
+			if(Features.SHADER_INTERPOLATION.isSupported()){
+				pointcloud.material.shape = Potree.PointShape.PARABOLOID;
+			}
+		}
 		
 		// render point clouds
 		for(let xrCamera of xrCameras.cameras){
@@ -2025,6 +2026,13 @@ export class Viewer extends EventDispatcher{
 				viewOverride: vrView,
 			});
 
+		}
+
+		{ // render VR scene
+			let cam = makeCam();
+			cam.parent = null;
+
+			renderer.render(this.sceneVR, cam);
 		}
 
 		renderer.resetState();

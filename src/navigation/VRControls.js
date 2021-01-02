@@ -2,6 +2,9 @@
 import * as THREE from "../../libs/three.js/build/three.module.js";
 import {EventDispatcher} from "../EventDispatcher.js";
 import { XRControllerModelFactory } from '../../libs/three.js/webxr/XRControllerModelFactory.js';
+import {Line2} from "../../libs/three.js/lines/Line2.js";
+import {LineGeometry} from "../../libs/three.js/lines/LineGeometry.js";
+import {LineMaterial} from "../../libs/three.js/lines/LineMaterial.js";
 
 let fakeCam = new THREE.PerspectiveCamera();
 
@@ -34,7 +37,7 @@ function computeMove(vrControls, controller){
 	}
 
 	let scale = vrControls.node.scale.x;
-	let amount = y * viewer.getMoveSpeed() / scale;
+	let amount = 2 * y * viewer.getMoveSpeed() / scale;
 
 	let rotation = new THREE.Quaternion().setFromEuler(controller.rotation);
 	let dir = new THREE.Vector3(0, 0, -1);
@@ -76,27 +79,35 @@ class FlyMode{
 		let primary = vrControls.cPrimary;
 		let secondary = vrControls.cSecondary;
 
-		if(secondary && secondary.inputSource && secondary.inputSource.gamepad){
-			let pad = secondary.inputSource.gamepad;
-			let axes = pad.axes;
+		// if(secondary && secondary.inputSource && secondary.inputSource.gamepad){
+		// 	let pad = secondary.inputSource.gamepad;
+		// 	let axes = pad.axes;
 
-			let sign = Math.abs(axes[1]) > 0.5 ? -Math.sign(axes[1]) : 0;
+		// 	let sign = Math.abs(axes[1]) > 0.5 ? -Math.sign(axes[1]) : 0;
 
-			if(sign > 0){
-				this.moveFactor *= 1.01;
-			}else if(sign < 0){
-				this.moveFactor *= 0.99
-			}
+		// 	if(sign > 0){
+		// 		this.moveFactor *= 1.01;
+		// 	}else if(sign < 0){
+		// 		this.moveFactor *= 0.99
+		// 	}
 
+		// }
+
+		let move1 = computeMove(vrControls, primary);
+		let move2 = computeMove(vrControls, secondary);
+		
+		if(!move1){
+			move1 = new THREE.Vector3();
+		}
+		if(!move2){
+			move2 = new THREE.Vector3();
 		}
 
-		let move = computeMove(vrControls, primary);
+		let move = move1.clone().add(move2);
 
-		if(move){
-			move.multiplyScalar(-delta * this.moveFactor);
-
-			vrControls.node.position.add(move);
-		}
+		move.multiplyScalar(-delta * this.moveFactor);
+		vrControls.node.position.add(move);
+		
 
 		let scale = vrControls.node.scale.x;
 
@@ -167,7 +178,7 @@ class RotScaleMode{
 	start(vrControls){
 		if(!this.line){
 			this.line = Potree.Utils.debugLine(
-				vrControls.viewer.scene.scene, 
+				vrControls.viewer.sceneVR, 
 				new THREE.Vector3(0, 0, 0),
 				new THREE.Vector3(0, 0, 0),
 				0xffff00,
@@ -185,6 +196,7 @@ class RotScaleMode{
 
 	end(vrControls){
 		this.line.node.visible = false;
+		this.dbgLabel.visible = false;
 	}
 
 	update(vrControls, delta){
@@ -236,7 +248,6 @@ class RotScaleMode{
 
 		{
 			let scale = vrControls.node.scale.x;
-			// let camVR = vrControls.viewer.renderer.xr.cameraVR;
 			let camVR = vrControls.viewer.renderer.xr.getCamera(fakeCam);
 			
 			let vrPos = camVR.getWorldPosition(new THREE.Vector3());
@@ -252,7 +263,15 @@ class RotScaleMode{
 			vrControls.viewer.setMoveSpeed(scale);
 		}
 
-		this.line.set(toScene(end_c1, vrControls.node), toScene(end_c2, vrControls.node));
+		{ // update "GUI"
+			this.line.set(end_c1, end_c2);
+
+			let scale = vrControls.node.scale.x;
+			this.dbgLabel.visible = true;
+			this.dbgLabel.position.copy(end_center);
+			this.dbgLabel.setText(`scale: 1 : ${scale.toFixed(2)}`);
+			this.dbgLabel.scale.set(0.05, 0.05, 0.05);
+		}
 
 	}
 
@@ -290,15 +309,38 @@ export class VRControls extends EventDispatcher{
 			let controller = xr.getController(0);
 
 			let grip = xr.getControllerGrip(0);
+
+			// ADD CONTROLLERMODEL
 			grip.add( controllerModelFactory.createControllerModel( grip ) );
 			this.viewer.sceneVR.add( grip );
 
+			// ADD SPHERE
 			let sphere = new THREE.Mesh(sg, sm);
 			sphere.scale.set(0.005, 0.005, 0.005);
 
 			controller.add(sphere);
 			controller.visible = true;
 			this.viewer.sceneVR.add(controller);
+
+			{ // ADD LINE
+				
+				let lineGeometry = new LineGeometry();
+
+				lineGeometry.setPositions([
+					0, 0, -0.05,
+					0, 0, 0.05,
+				]);
+
+				let lineMaterial = new LineMaterial({ 
+					color: 0xff0000, 
+					linewidth: 2, 
+					resolution:  new THREE.Vector2(1000, 1000),
+				});
+
+				const line = new Line2(lineGeometry, lineMaterial);
+				
+				controller.add(line);
+			}
 
 			controller.addEventListener( 'connected', function ( event ) {
 				const xrInputSource = event.data;
@@ -316,15 +358,37 @@ export class VRControls extends EventDispatcher{
 			let controller = xr.getController(1);
 
 			let grip = xr.getControllerGrip(1);
+
+			// ADD CONTROLLER MODEL
 			grip.add( controllerModelFactory.createControllerModel( grip ) );
 			this.viewer.sceneVR.add( grip );
 
-			
+			// ADD SPHERE
 			let sphere = new THREE.Mesh(sg, sm);
 			sphere.scale.set(0.005, 0.005, 0.005);
 			controller.add(sphere);
 			controller.visible = true;
 			this.viewer.sceneVR.add(controller);
+
+			{ // ADD LINE
+				
+				let lineGeometry = new LineGeometry();
+
+				lineGeometry.setPositions([
+					0, 0, -0.05,
+					0, 0, 0.05,
+				]);
+
+				let lineMaterial = new LineMaterial({ 
+					color: 0xff0000, 
+					linewidth: 2, 
+					resolution:  new THREE.Vector2(1000, 1000),
+				});
+
+				const line = new Line2(lineGeometry, lineMaterial);
+				
+				controller.add(line);
+			}
 
 			controller.addEventListener( 'connected', function ( event ) {
 				const xrInputSource = event.data;

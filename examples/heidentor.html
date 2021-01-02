@@ -40,6 +40,8 @@
 	
 	
 	<script type="module">
+
+		import * as THREE from "../libs/three.js/build/three.module.js";
 	
 		window.viewer = new Potree.Viewer(document.getElementById("potree_render_area"));
 		
@@ -72,15 +74,30 @@
 				[13.856, -9.125, 14.563],
 				[-3.548,  2.728,  6.140],
 			);
+
 		});
 
 
-		// { // ground plane
-		// 	let geometry = new THREE.PlaneBufferGeometry(10, 10, 10, 10);
-		// 	let material = new THREE.MeshNormalMaterial();
-		// 	let plane = new THREE.Mesh(geometry, material);
-		// 	viewer.scene.scene.add(plane);
-		// }
+		{ // ground plane
+			const texture = new THREE.TextureLoader().load(`${Potree.resourcePath}/textures/rectangle.png`);
+
+			texture.wrapS = THREE.RepeatWrapping;
+			texture.wrapT = THREE.RepeatWrapping;
+			texture.repeat.x = 10;
+			texture.repeat.y = 10;
+			texture.anisotropy = 16;
+
+			let geometry = new THREE.PlaneBufferGeometry(1, 1, 10, 10);
+			let material = new THREE.MeshBasicMaterial();
+			material.map = texture;
+			material.needsUpdate = true;
+			let plane = new THREE.Mesh(geometry, material);
+			plane.scale.set(18, 18, 18);
+			plane.position.set(-2, 3, 0);
+			plane.material.color.setRGB(0.8, 0.8, 0.8);
+			window.plane = plane;
+			viewer.scene.scene.add(plane);
+		}
 
 		// { // spheres to indicate coordinate axes
 		// 	let sg = new THREE.SphereGeometry(0.1, 8, 8);

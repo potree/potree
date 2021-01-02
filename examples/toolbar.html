@@ -291,14 +291,14 @@
 	{ // POINT BUDGET
 		elToolbar.find('#sldPointBudget').slider({
 			value: viewer.getPointBudget(),
-			min: 100 * 1000,
+			min: 100_000,
 			max: 1_000_000,
-			step: 100 * 1000,
+			step: 100_000,
 			slide: (event, ui) => { viewer.setPointBudget(ui.value); }
 		});
 
 		const onBudgetChange = () => {
-			let budget = (viewer.getPointBudget() / (1000 * 1000)).toFixed(1) + "M";
+			let budget = (viewer.getPointBudget() / (1000_000)).toFixed(1) + "M";
 			elToolbar.find('span[name=lblPointBudget]').html(budget);
 		};
 

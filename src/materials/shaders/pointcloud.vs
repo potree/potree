@@ -668,7 +668,13 @@ float getPointSize(){
 	
 	float slope = tan(fov / 2.0);
 	float projFactor = -0.5 * uScreenHeight / (slope * vViewPosition.z);
-	float scale = (modelViewMatrix * vec4(0, 0, 0, 1) - modelViewMatrix * vec4(1, 0, 0, 1)).x;
+	// float scale = (modelViewMatrix * vec4(0, 0, 0, 1) - modelViewMatrix * vec4(1, 0, 0, 1)).x;
+	// projFactor = projFactor * scale;
+
+	float scale = length(
+		modelViewMatrix * vec4(0, 0, 0, 1) - 
+		modelViewMatrix * vec4(uOctreeSpacing, 0, 0, 1)
+	) / uOctreeSpacing;
 	projFactor = projFactor * scale;
 	
 	float r = uOctreeSpacing * 1.7;

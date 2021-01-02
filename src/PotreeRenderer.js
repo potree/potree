@@ -703,6 +703,11 @@ export class Renderer {
 		let material = params.material ? params.material : octree.material;
 		let shadowMaps = params.shadowMaps == null ? [] : params.shadowMaps;
 		let view = camera.matrixWorldInverse;
+
+		if(params.viewOverride){
+			view = params.viewOverride;
+		}
+
 		let worldView = new THREE.Matrix4();
 
 		let mat4holder = new Float32Array(16);
@@ -1036,6 +1041,12 @@ export class Renderer {
 		let shadowMaps = params.shadowMaps == null ? [] : params.shadowMaps;
 		let view = camera.matrixWorldInverse;
 		let viewInv = camera.matrixWorld;
+
+		if(params.viewOverride){
+			view = params.viewOverride;
+			viewInv = view.clone().invert();
+		}
+
 		let proj = camera.projectionMatrix;
 		let projInv = proj.clone().invert();
 		//let worldView = new THREE.Matrix4();

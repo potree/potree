@@ -1970,36 +1970,39 @@ export class Viewer extends EventDispatcher{
 
 			renderer.render(this.sceneVR, cam);
 		}
+
+
 		
 		let cam = null;
+		let view = null;
+
 		{ // render world scene
 			cam = makeCam();
 			cam.position.z -= 0.8 * cam.scale.x;
 			cam.parent = null;
+			cam.near = 0.05;
+			cam.far = viewer.scene.getActiveCamera().far;
 			cam.updateMatrix();
 			cam.updateMatrixWorld();
-			cam.parent = cam;
+
+			this.scene.scene.updateMatrix();
+			this.scene.scene.updateMatrixWorld();
+			this.scene.scene.matrixAutoUpdate = false;
+
+			let camWorld = cam.matrixWorld.clone();
+			view = camWorld.clone().invert();
+			this.scene.scene.matrix.copy(view);
+			this.scene.scene.matrixWorld.copy(view);
+
+			cam.matrix.identity();
+			cam.matrixWorld.identity();
+			cam.matrixWorldInverse.identity();
 
 			renderer.render(this.scene.scene, cam);
+
+			this.scene.scene.matrixWorld.identity();
+
 		}
-		
-
-		// { // render other stuff
-		// 	let viewer = this;
-
-		// 	let camera = makeCam();
-		// 	camera.position.z -= 0.8 * camera.scale.x;
-		// 	camera.parent = null;
-		// 	camera.updateMatrix();
-		// 	camera.updateMatrixWorld();
-		// 	camera.parent = camera;
-
-		// 	// renderer.clearDepth();
-			
-		// 	viewer.renderer.render(viewer.measuringTool.scene, camera);
-		// 	// viewer.dispatchEvent({type: "render.pass.perspective_overlay",viewer: viewer});
-		// }
-
 		
 		
 		// render point clouds
@@ -2013,11 +2016,15 @@ export class Viewer extends EventDispatcher{
 				material.useEDL = false;
 			}
 
-			this.pRenderer.render(this.scene.scenePointCloud, xrCamera, null);
+			let vrWorld = view.clone().invert();
+			vrWorld.multiply(xrCamera.matrixWorld);
+			let vrView = vrWorld.clone().invert();
+
+			this.pRenderer.render(this.scene.scenePointCloud, xrCamera, null, {
+				viewOverride: vrView,
+			});
 
 		}
-
-		
 
 		renderer.resetState();
 

@@ -85,7 +85,7 @@
 		// }
 
 		// { // spheres to indicate coordinate axes
-		// 	let sg = new THREE.SphereGeometry(0.1, 32, 32);
+		// 	let sg = new THREE.SphereGeometry(0.1, 8, 8);
 
 		// 	{ // ORIGIN
 		// 		let sm = new THREE.MeshBasicMaterial({color: 0xaaaaaa});
@@ -117,22 +117,24 @@
 		// 		viewer.scene.scene.add(sphere);
 		// 	}
 
-			// { // RANDOM SPHERES
-			// 	for(let i = 0; i < 1000; i++){
-			// 		let color = 
-			// 			((Math.random() * 255) << 16) |
-			// 			((Math.random() * 255) <<  8) |
-			// 			((Math.random() * 255) <<  0);
-			// 		let sm = new THREE.MeshBasicMaterial({color: color});
-			// 		let sphere = new THREE.Mesh(sg, sm);
-			// 		sphere.position.set(
-			// 			40 * Math.random() - 20, 
-			// 			40 * Math.random() - 20, 
-			// 			2);
-			// 		sphere.scale.set(1, 1, 1);
-			// 		viewer.scene.scene.add(sphere);
-			// 	}
-			// }
+		// 	{ // RANDOM SPHERES
+		// 		for(let i = 0; i < 2000; i++){
+		// 			let color = 
+		// 				((Math.random() * 255) << 16) |
+		// 				((Math.random() * 255) <<  8) |
+		// 				((Math.random() * 255) <<  0);
+		// 			let sm = new THREE.MeshBasicMaterial({color: color});
+		// 			let sphere = new THREE.Mesh(sg, sm);
+		// 			sphere.position.set(
+		// 				100 * Math.random() - 50, 
+		// 				100 * Math.random() - 50, 
+		// 				2);
+		// 			sphere.scale.set(3, 3, 3);
+		// 			viewer.scene.scene.add(sphere);
+
+		// 			sphere.frustumCulled = false;
+		// 		}
+		// 	}
 			
 		// }
 		

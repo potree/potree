@@ -138,11 +138,13 @@ async function parseTracks(bytesArray, shaderMaterial, FlatbufferModule, animati
   }
 
   const anomalyTypes = FlatbufferModule.Flatbuffer.GroundTruth.TrackAnomalyType || FlatbufferModule.Flatbuffer.GroundTruth.AnomalyType;
-  return await createTrackGeometries(shaderMaterial, tracks, animationEngine, anomalyTypes);
+  const associationTypes = FlatbufferModule.Flatbuffer.GroundTruth.AssociationType;
+
+  return await createTrackGeometries(shaderMaterial, tracks, animationEngine, anomalyTypes, associationTypes);
   // callback(trackGeometries, );
 }
 
-async function createTrackGeometries(shaderMaterial, tracks, animationEngine, anomalyTypes) {
+async function createTrackGeometries(shaderMaterial, tracks, animationEngine, anomalyTypes, associationTypes) {
 
   let lineMaterial = new THREE.LineBasicMaterial({
     color: 0x00ff00,
@@ -172,12 +174,13 @@ async function createTrackGeometries(shaderMaterial, tracks, animationEngine, an
     }
 
     let track = tracks[ss];
-    const isAnomalous = !!track.trackType && track.trackType() !== anomalyTypes?.NOT_APPLICABLE || 0;
+    const isStatePropagated = [];
 
     for (let ii=0, len=track.statesLength(); ii<len; ii++) {
 
       // Assign Current Track State:
       state = track.states(ii);
+      isStatePropagated.push(state?.associationType() === associationTypes?.PROPAGATED)
 
       function getBoundingBoxGeometry(t0, state, material) {
 
@@ -275,8 +278,11 @@ async function createTrackGeometries(shaderMaterial, tracks, animationEngine, an
           // let bufferBoxGeometry = allBoxes;
           let wireframe = new THREE.LineSegments( edges, material ); // NOTE don't clone material to assign to multiple meshes
           let mesh = wireframe;
-          mesh.isAnomalous = isAnomalous;
+
+          mesh.track_id = track.id();
+          mesh.isAnomalous = !!track.trackType && track.trackType() !== anomalyTypes?.NOT_APPLICABLE || 0;
           mesh.position.copy(firstCentroid);
+
           bboxs.push( mesh );
           allBoxes = new THREE.Geometry();
           firstCentroid = centroidLocation.clone();
@@ -381,9 +387,36 @@ async function loadTracksCallbackHelper (s3, bucket, name, trackShaderMaterial, 
       });
     }
 
+    let currentTime;
+    if (trackLayer.name === 'Tracked Objects' || trackLayer.name === 'Anomalous Tracked Objects') {
+      let onMouseDown = (event) => {
+        if (window.annotateTracksModeActive && event.button === THREE.MOUSE.LEFT) {
+          const currentAnnotation = viewer.scene.annotations.children.find(({_title}) => _title.startsWith("Track ID: "));
+          if (currentAnnotation) viewer.scene.annotations.remove(currentAnnotation)
+
+          let mouse = new THREE.Vector2();
+          mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
+          mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
+
+          let raycaster = new THREE.Raycaster();
+          raycaster.setFromCamera(mouse.clone(), viewer.scene.getActiveCamera());
+
+          let intersects = raycaster.intersectObjects(trackLayer.children, true);
+
+          if (intersects?.length > 0) {
+            viewer.scene.annotations.add(new Potree.Annotation({
+              title: "Track ID: " + intersects[0].object.track_id,
+              position: intersects[0].point
+            }));
+          }
+        }
+      }
+      viewer.renderer.domElement.addEventListener('mousedown', onMouseDown);
+    }
+
 		// TODO check if group works as expected, then trigger "truth_layer_added" event
 		animationEngine.tweenTargets.push((gpsTime) => {
-			const currentTime = gpsTime - animationEngine.tstart;
+			currentTime = gpsTime - animationEngine.tstart;
 			trackShaderMaterial.uniforms.minGpsTime.value = currentTime + animationEngine.activeWindow.backward;
 			trackShaderMaterial.uniforms.maxGpsTime.value = currentTime + animationEngine.activeWindow.forward;
 		});
@@ -423,3 +456,19 @@ const trackNames = {
   'interpolated_states_tracks.fb' : 'Interpolated Truth Tracks',
   'association_regions_tracks.fb' : 'Association Region Tracks',
 };
+
+// add an event listener for the annotate tracks button
+export function addAnnotateTracksButton() {
+  window.annotateTracksModeActive = false; // starts off false
+
+  const annotateTracksButton = $("#annotate_tracks_button")[0];
+  annotateTracksButton.style.display = "block";
+
+  annotateTracksButton.addEventListener("mousedown", () => {
+    window.annotateTracksModeActive = !window.annotateTracksModeActive;
+    annotateTracksButton.style.backgroundColor = window.annotateTracksModeActive ? "#AAAAA0" : "";
+
+    const currentAnnotation = viewer.scene.annotations.children.find(({_title}) => _title.startsWith("Track ID: "));
+    if (currentAnnotation) viewer.scene.annotations.remove(currentAnnotation)
+  });
+}

@@ -13,7 +13,7 @@ import { textureDownloads } from "../demo/textureLoader.js"
 import { loadCalibrationFile, loadRtk2Vehicle, storeCalibration, calDownloads, addCalibrationButton, getAdjustedTransform, getCalibrationSettings } from "../demo/calibrationManager.js"
 import { storeVelo2Rtk, storeRtk2Vehicle, getVelo2Rtk, enablePanels, disablePanels } from "../common/calibration-panels.js"
 import { loadLanesCallback, addReloadLanesButton, laneDownloads } from "../demo/laneLoader.js"
-import { loadTracksCallback, trackDownloads } from "../demo/trackLoader.js"
+import { addAnnotateTracksButton, loadTracksCallback, trackDownloads } from "../demo/trackLoader.js"
 import { loadRadarVisualizationCallback, radarVisualizationDownloads } from "../demo/radarVisualizationLoader.js"
 import { loadObjectFusionTracksCallback, objectFusionTracksDownloads } from "../demo/objectFusionTracksLoader.js"
 import { addLoadGapsButton, gapDownloads } from "../demo/gapsLoader.js"
@@ -117,6 +117,7 @@ export async function loadPotree() {
   addLoadRadarButton();
   addCalibrationButton();
   addDetectionButton();
+  addAnnotateTracksButton();
   // load in actual data & configure playbar along the way
   await loadDataIntoDocument(files.table);
 

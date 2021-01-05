@@ -1,6 +1,6 @@
 // this file handles the creation of the potree viewer
 "use strict"
-import { visualizationMode, annotateLanesAvailable, downloadLanesAvailable, 
+import { visualizationMode, annotateAvailable, downloadLanesAvailable,
 	calibrationModeAvailable} from "../demo/paramLoader.js"
 import { updateSidebar, togglePointClass } from "../common/custom-sidebar.js"
 
@@ -49,13 +49,16 @@ export function createViewer() {
 		}
 
 		// Disable download lanes
-		if (!downloadLanesAvailable || !annotateLanesAvailable) {
+		if (!downloadLanesAvailable || !annotateAvailable) {
 			let downloadLanesButton = document.getElementById("download_lanes_button");
 			downloadLanesButton.parentNode.removeChild(downloadLanesButton);
 
-			if (!annotateLanesAvailable) {
+			if (!annotateAvailable) {
 				let reloadLanesButton = document.getElementById("reload_lanes_button");
 				reloadLanesButton.parentNode.removeChild(reloadLanesButton);
+
+				let annotateTracksButton = document.getElementById("annotate_tracks_button");
+				annotateTracksButton.parentNode.removeChild(annotateTracksButton);
 			}
 		}
 	});

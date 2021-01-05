@@ -2,7 +2,7 @@
 
 // this file is intended to call every other function in order to get potree to load
 import {
-	runLocalPointCloud, bucket, name, annotateLanesAvailable, s3,
+	runLocalPointCloud, bucket, name, annotateAvailable, s3,
 	getShaderMaterial, defaultTimeRange
 } from "../demo/paramLoader.js"
 import { createViewer } from "../demo/viewer.js"
@@ -110,14 +110,14 @@ export async function loadPotree() {
   const otherDownloads = [detectionDownloads, gapDownloads, radarDownloads]
   otherDownloads.forEach(async (getRelevantFiles) => await getRelevantFiles(files.filePaths))
 
-  if (annotateLanesAvailable) {
-    addReloadLanesButton();
+  if (annotateAvailable) {
+	addReloadLanesButton();
+	addAnnotateTracksButton();
   }
   addLoadGapsButton();
   addLoadRadarButton();
   addCalibrationButton();
   addDetectionButton();
-  addAnnotateTracksButton();
   // load in actual data & configure playbar along the way
   await loadDataIntoDocument(files.table);
 

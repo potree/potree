@@ -2,7 +2,7 @@
 
 // this file is intended to call every other function in order to get potree to load
 import {
-	runLocalPointCloud, bucket, name, annotateLanesAvailable, s3,
+	runLocalPointCloud, bucket, name, annotateAvailable, s3,
 	getShaderMaterial, defaultTimeRange
 } from "../demo/paramLoader.js"
 import { createViewer } from "../demo/viewer.js"
@@ -13,7 +13,7 @@ import { textureDownloads } from "../demo/textureLoader.js"
 import { loadCalibrationFile, loadRtk2Vehicle, storeCalibration, calDownloads, addCalibrationButton, getAdjustedTransform, getCalibrationSettings } from "../demo/calibrationManager.js"
 import { storeVelo2Rtk, storeRtk2Vehicle, getVelo2Rtk, enablePanels, disablePanels } from "../common/calibration-panels.js"
 import { loadLanesCallback, addReloadLanesButton, laneDownloads } from "../demo/laneLoader.js"
-import { loadTracksCallback, trackDownloads } from "../demo/trackLoader.js"
+import { addAnnotateTracksButton, loadTracksCallback, trackDownloads } from "../demo/trackLoader.js"
 import { loadRadarVisualizationCallback, radarVisualizationDownloads } from "../demo/radarVisualizationLoader.js"
 import { loadObjectFusionTracksCallback, objectFusionTracksDownloads } from "../demo/objectFusionTracksLoader.js"
 import { addLoadGapsButton, gapDownloads } from "../demo/gapsLoader.js"
@@ -110,8 +110,9 @@ export async function loadPotree() {
   const otherDownloads = [detectionDownloads, gapDownloads, radarDownloads]
   otherDownloads.forEach(async (getRelevantFiles) => await getRelevantFiles(files.filePaths))
 
-  if (annotateLanesAvailable) {
-    addReloadLanesButton();
+  if (annotateAvailable) {
+	addReloadLanesButton();
+	addAnnotateTracksButton();
   }
   addLoadGapsButton();
   addLoadRadarButton();

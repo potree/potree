@@ -184,22 +184,22 @@ async function createTrackGeometries(shaderMaterial, tracks, animationEngine, an
 
       const delta = centroidLocation.clone().sub(firstCentroid);
 
-      let p0 = new THREE.Vector3(state.bbox(0).x(), state.bbox(0).y(), state.bbox(0).z()); // Front Left Bottom Point (near front left tire on vehicle e.g.)
-      let p1 = new THREE.Vector3(state.bbox(1).x(), state.bbox(1).y(), state.bbox(1).z()); // Front Right Bottom Point (near front right tire on vehicle e.g.)
-      let p2 = new THREE.Vector3(state.bbox(2).x(), state.bbox(2).y(), state.bbox(2).z()); // Back Right Bottom Point (near back right tire on vehicle e.g.)
+      const p0 = new THREE.Vector3(state.bbox(0).x(), state.bbox(0).y(), state.bbox(0).z()); // Front Left Bottom Point (near front left tire on vehicle e.g.)
+      const p1 = new THREE.Vector3(state.bbox(1).x(), state.bbox(1).y(), state.bbox(1).z()); // Front Right Bottom Point (near front right tire on vehicle e.g.)
+      const p2 = new THREE.Vector3(state.bbox(2).x(), state.bbox(2).y(), state.bbox(2).z()); // Back Right Bottom Point (near back right tire on vehicle e.g.)
 
-      let length = p2.distanceTo(p1);
-      let width = p1.distanceTo(p0);
-      let height = 2;
+      const length = p2.distanceTo(p1);
+      const width = p1.distanceTo(p0);
+      const height = 2;
 
-      let boxGeometry = new THREE.BoxGeometry(length, width, height);
+      const boxGeometry = new THREE.BoxGeometry(length, width, height);
 
       // Rotate BoxGeometry:
-      let yaw = state.yaw();
-      let zAxis = new THREE.Vector3(0, 0, 1);
+      const yaw = state.yaw();
+      const zAxis = new THREE.Vector3(0, 0, 1);
 
-      let se3 = new THREE.Matrix4();
-      let quaternion = new THREE.Quaternion().setFromAxisAngle(zAxis,yaw);
+      const se3 = new THREE.Matrix4();
+      const quaternion = new THREE.Quaternion().setFromAxisAngle(zAxis,yaw);
       se3.makeRotationFromQuaternion(quaternion); // Rotation
       se3.setPosition(delta); // Translation
 

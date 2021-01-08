@@ -207,9 +207,10 @@ async function createTrackGeometries(shaderMaterial, tracks, animationEngine, an
     const trackMesh = new THREE.LineSegments(edgesGeo, shaderMaterial.clone());
 
     trackMesh.track_id = trackId;
+    trackMesh.isAnomalous = isAnomalous;
 
     const timeRange = { min: minTime, max: maxTime };
-    const completeTrack = { mesh: trackMesh, isAnomalous, timeRange, states };
+    const completeTrack = { mesh: trackMesh, timeRange, states };
 
     trackData.push(completeTrack);
   }
@@ -249,9 +250,10 @@ async function loadTracksCallbackHelper (s3, bucket, name, trackShaderMaterial, 
 
     const normalTrackColor = trackShaderMaterial.uniforms.color.value.getHex();
     const propagatedTrackColor = 0x55AAFF;
+    const selectedTrackColor = 0xFFFF00;
 
-    trackGeometries.forEach(({ mesh, isAnomalous }) => {
-      if (isAnomalous) {
+    trackGeometries.forEach(({ mesh }) => {
+      if (mesh.isAnomalous) {
         anomalousTrackLayer.add(mesh);
       }
       else {
@@ -275,6 +277,45 @@ async function loadTracksCallbackHelper (s3, bucket, name, trackShaderMaterial, 
       });
     }
 
+    let selectedTrack;
+    if (trackLayer.name === 'Tracked Objects') {
+      let onMouseDown = (event) => {
+        if (event.button === THREE.MOUSE.LEFT && window.annotateTracksModeActive) {
+          const bounds = viewer.renderer.domElement.getBoundingClientRect();
+          let mouse = new THREE.Vector2();
+          mouse.x = ( (event.clientX - bounds.left) / bounds.width ) * 2 - 1;
+          mouse.y = - ( (event.clientY - bounds.top) / bounds.height ) * 2 + 1;
+
+          let raycaster = new THREE.Raycaster();
+          raycaster.setFromCamera(mouse.clone(), viewer.scene.getActiveCamera());
+
+          let intersects = raycaster.intersectObjects(trackLayer.children, true);
+          if (!intersects || intersects?.length === 0) intersects = raycaster.intersectObjects(anomalousTrackLayer.children, true);
+
+          if (intersects?.length > 0) {
+            if (selectedTrack) {
+              selectedTrack.material.uniforms.color.value.setHex(selectedTrack.isPropagated && propagatedTrackColor || normalTrackColor);
+            }
+
+            selectedTrack = intersects[0].object;
+            selectedTrack.material.uniforms.color.value.setHex(selectedTrackColor);
+
+            document.getElementById("track_annotation_tools").removeChild(document.getElementById("track_annotation_tools_selected"));
+            $("#track_annotation_tools").append(`
+              <div id="track_annotation_tools_selected">
+                Selected Track:<br/>
+                - ID: ${selectedTrack.track_id}<br/>
+                - Timestamp: ${selectedTrack.timestamp}<br/>
+                - Anomalous: ${selectedTrack.isAnomalous ? "Yes" : "No"}<br/>
+                - Propagated: ${selectedTrack.isPropagated ? "Yes" : "No"}
+              </div>
+            `);
+          }
+        }
+      }
+      viewer.renderer.domElement.addEventListener('click', onMouseDown);
+    }
+
 		animationEngine.tweenTargets.push((gpsTime) => {
       const currentTime = gpsTime - animationEngine.tstart;
       const minTime = currentTime + animationEngine.activeWindow.backward;
@@ -294,9 +335,19 @@ async function loadTracksCallbackHelper (s3, bucket, name, trackShaderMaterial, 
             mesh.scale.copy(currentState.scale);
             mesh.geometry.setAttribute('gpsTime', new THREE.Float32BufferAttribute(new Float32Array(24).fill(currentState.timestamp), 1));
 
+            mesh.timestamp = currentState.timestamp;
+            mesh.isPropagated = currentState.isPropagated;
+
             mesh.material.uniforms.color.value.setHex(window.annotateTracksModeActive && currentState.isPropagated && propagatedTrackColor || normalTrackColor);
           }
         });
+      }
+
+      if (!window.annotateTracksModeActive && selectedTrack) {
+        selectedTrack = undefined;
+      }
+      else if (selectedTrack) {
+        selectedTrack.material.uniforms.color.value.setHex(selectedTrackColor);
       }
 		});
 	});
@@ -343,9 +394,36 @@ export function addAnnotateTracksButton() {
   const annotateTracksButton = $("#annotate_tracks_button")[0];
   annotateTracksButton.style.display = "block";
 
+  $("#track_annotation_tools_divider").hide();
+  $("#track_annotation_tools").hide();
+
+  $("#track_annotation_tools").append(`
+    <div id="track_annotation_tools_selected">
+      Selected Track:<br/>
+      Nothing selected
+    </div>
+  `)
+
   annotateTracksButton.addEventListener("mousedown", () => {
     window.annotateTracksModeActive = !window.annotateTracksModeActive;
     annotateTracksButton.style.backgroundColor = window.annotateTracksModeActive ? "#AAAAA0" : "";
+
+    if (window.annotateTracksModeActive) {
+      $("#track_annotation_tools_divider").show();
+      $("#track_annotation_tools").show();
+    }
+    else {
+      $("#track_annotation_tools_divider").hide();
+      $("#track_annotation_tools").hide();
+
+      document.getElementById("track_annotation_tools").removeChild(document.getElementById("track_annotation_tools_selected"));
+      $("#track_annotation_tools").append(`
+        <div id="track_annotation_tools_selected">
+          Selected Track:<br/>
+          Nothing selected
+        </div>
+      `)
+    }
 
     animationEngine.updateTimeForAll();
   });

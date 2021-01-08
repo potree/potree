@@ -2,7 +2,7 @@
 // import { Flatbuffer } from "../schemas/GroundTruth_generated.js";
 // import { Flatbuffer } from "http://localhost:1234/schemas/GroundTruth_generated.js";
 import { updateLoadingBar, incrementLoadingBarTotal } from "../common/overlay.js";
-import { getFbFileInfo, removeFileExtension } from "./loaderUtilities.js";
+import { getFbFileInfo, removeFileExtension, indexOfClosestTimestamp } from "./loaderUtilities.js";
 
 
 // sets local variable and returns so # files can be counted
@@ -144,106 +144,78 @@ async function parseTracks(bytesArray, shaderMaterial, FlatbufferModule, animati
   // callback(trackGeometries, );
 }
 
-async function createTrackGeometries(shaderMaterial, tracks, animationEngine, anomalyTypes, associationTypes) {
-  const propagatedShaderMaterial = shaderMaterial.clone();
+function getTrackStateParams(state, animationEngine, associationTypes) {
+  let sumX = 0, sumY = 0, sumZ = 0;
+  for (let i = 0; i < 8; i++) {
+    const bbox = state.bbox(i);
 
-  const bboxs = [];
-  for (let ss=0, numTracks=tracks.length; ss<numTracks; ss++) {
+    sumX += bbox.x();
+    sumY += bbox.y();
+    sumZ += bbox.z();
+  }
+  const centroidLocation = new THREE.Vector3(sumX / 8.0, sumY / 8.0, sumZ / 8.0);
+
+  const p0 = new THREE.Vector3(state.bbox(0).x(), state.bbox(0).y(), state.bbox(0).z()); // Front Left Bottom Point (near front left tire on vehicle e.g.)
+  const p1 = new THREE.Vector3(state.bbox(1).x(), state.bbox(1).y(), state.bbox(1).z()); // Front Right Bottom Point (near front right tire on vehicle e.g.)
+  const p2 = new THREE.Vector3(state.bbox(2).x(), state.bbox(2).y(), state.bbox(2).z()); // Back Right Bottom Point (near back right tire on vehicle e.g.)
+  const scale = new THREE.Vector3(p2.distanceTo(p1), p1.distanceTo(p0), 2);
+
+  const yaw = state.yaw();
+  const zAxis = new THREE.Vector3(0, 0, 1);
+  const quaternion = new THREE.Quaternion().setFromAxisAngle(zAxis, yaw);
+
+  const timestamp = state.timestamps() - animationEngine.tstart;
+  const isPropagated = state?.associationType() === associationTypes?.PROPAGATE;
+
+  return { position: centroidLocation, scale, quaternion, timestamp, isPropagated };
+}
+
+async function createTrackGeometries(shaderMaterial, tracks, animationEngine, anomalyTypes, associationTypes) {
+  const trackData = [];
+
+  for (let ss = 0, numTracks = tracks.length; ss < numTracks; ss++) {
     if (ss % 100 === 0) {
-      await updateLoadingBar(ss/numTracks * 100);
+      await updateLoadingBar(ss / numTracks * 100);
     }
 
     const track = tracks[ss];
+    const states = [];
 
-    const stateTimes = [];
-    const propagatedStateTimes = [];
+    const trackId = track.id();
+    const isAnomalous = !!track.trackType && track.trackType() !== anomalyTypes?.NOT_APPLICABLE || 0;
 
-    let firstCentroid;
-    const allBoxes = new THREE.Geometry();
-    const propagatedBoxes = new THREE.Geometry();
+    let minTime, maxTime;
 
-    for (let ii=0, len=track.statesLength(); ii<len; ii++) {
-      // Assign Current Track State:
+    for (let ii = 0, len = track.statesLength(); ii < len; ii++) {
       const state = track.states(ii);
 
-      // Initializations:
-      let centroidLocation;
-      let sumX = 0, sumY=0, sumZ=0;
-      for (let jj=0; jj<8;jj++) {
-        const bbox = state.bbox(jj);
-
-        sumX += bbox.x();
-        sumY += bbox.y();
-        sumZ += bbox.z();
-      }
-      centroidLocation = new THREE.Vector3( sumX/8.0, sumY/8.0, sumZ/8.0 );
-
-      if (firstCentroid == undefined) {
-        firstCentroid = centroidLocation;
+      if (!minTime || state.timestamps() < minTime) {
+        minTime = state.timestamps() - animationEngine.tstart;
       }
 
-      const delta = centroidLocation.clone().sub(firstCentroid);
-
-      const p0 = new THREE.Vector3(state.bbox(0).x(), state.bbox(0).y(), state.bbox(0).z()); // Front Left Bottom Point (near front left tire on vehicle e.g.)
-      const p1 = new THREE.Vector3(state.bbox(1).x(), state.bbox(1).y(), state.bbox(1).z()); // Front Right Bottom Point (near front right tire on vehicle e.g.)
-      const p2 = new THREE.Vector3(state.bbox(2).x(), state.bbox(2).y(), state.bbox(2).z()); // Back Right Bottom Point (near back right tire on vehicle e.g.)
-
-      const length = p2.distanceTo(p1);
-      const width = p1.distanceTo(p0);
-      const height = 2;
-
-      const boxGeometry = new THREE.BoxGeometry(length, width, height);
-
-      // Rotate BoxGeometry:
-      const yaw = state.yaw();
-      const zAxis = new THREE.Vector3(0, 0, 1);
-
-      const se3 = new THREE.Matrix4();
-      const quaternion = new THREE.Quaternion().setFromAxisAngle(zAxis,yaw);
-      se3.makeRotationFromQuaternion(quaternion); // Rotation
-      se3.setPosition(delta); // Translation
-
-      boxGeometry.applyMatrix( se3 );
-
-      if (state?.associationType() === associationTypes?.PROPAGATE) {
-        propagatedBoxes.merge(boxGeometry);
-        propagatedStateTimes.push(state.timestamps() - animationEngine.tstart);
-      } else {
-        allBoxes.merge(boxGeometry);
-        stateTimes.push(state.timestamps() - animationEngine.tstart);
+      if (!maxTime || state.timestamps > maxTime) {
+        maxTime = state.timestamps() - animationEngine.tstart;
       }
+
+      states.push(getTrackStateParams(state, animationEngine, associationTypes));
     }
 
-    function createTrackMesh(geometries, stateTimes, material) {
-      const bufferBoxGeometry = new THREE.BufferGeometry().fromGeometry(geometries);
-      const edges = new THREE.EdgesGeometry( bufferBoxGeometry );
+    states.sort((a, b) => a.timestamp - b.timestamp);
 
-      const timestamps = [];
-      for (let tt=0, numTimes=stateTimes.length; tt<numTimes; tt++) {
-        for (let kk=0, numVerticesPerBox=24; kk<numVerticesPerBox; kk++) {  // NOTE: 24 vertices per edgesBox
-          timestamps.push(stateTimes[tt]);
-        }
-      }
-      edges.addAttribute('gpsTime', new THREE.Float32BufferAttribute(timestamps, 1));
+    const bufferGeo = new THREE.BoxBufferGeometry();
+    const edgesGeo = new THREE.EdgesGeometry(bufferGeo);
+    const trackMesh = new THREE.LineSegments(edgesGeo, shaderMaterial.clone());
 
-      const mesh = new THREE.LineSegments( edges, material );
+    trackMesh.track_id = trackId;
 
-      mesh.track_id = track.id();
-      mesh.isAnomalous = !!track.trackType && track.trackType() !== anomalyTypes?.NOT_APPLICABLE || 0;
-      mesh.position.copy(firstCentroid);
+    const timeRange = { min: minTime, max: maxTime };
+    const completeTrack = { mesh: trackMesh, isAnomalous, timeRange, states };
 
-      return mesh;
-    }
-
-    bboxs.push( createTrackMesh(allBoxes, stateTimes, shaderMaterial) );
-
-    const propagatedMesh = createTrackMesh(propagatedBoxes, propagatedStateTimes, propagatedShaderMaterial);
-    propagatedMesh.isPropagated = true;
-    bboxs.push( propagatedMesh );
+    trackData.push(completeTrack);
   }
   await updateLoadingBar(100);
 
-  return { bbox: bboxs, propagatedShaderMaterial };
+  return trackData;
 }
 
 export async function loadTracksCallback(s3, bucket, name, trackShaderMaterial, animationEngine, files) {
@@ -275,14 +247,17 @@ async function loadTracksCallbackHelper (s3, bucket, name, trackShaderMaterial, 
     anomalousTrackLayer.name = `Anomalous ${trackName}`
     anomalousTrackLayer.visible = false;
 
-		for (let ii = 0, len = trackGeometries.bbox.length; ii < len; ii++) {
-      if (trackGeometries.bbox[ii].isAnomalous) {
-        anomalousTrackLayer.add(trackGeometries.bbox[ii]);
+    const normalTrackColor = trackShaderMaterial.uniforms.color.value.getHex();
+    const propagatedTrackColor = 0x55AAFF;
+
+    trackGeometries.forEach(({ mesh, isAnomalous }) => {
+      if (isAnomalous) {
+        anomalousTrackLayer.add(mesh);
       }
       else {
-        trackLayer.add(trackGeometries.bbox[ii]);
+        trackLayer.add(mesh);
       }
-    }
+    });
 
     viewer.scene.scene.add(trackLayer);
 		const e = new CustomEvent("truth_layer_added", { detail: trackLayer, writable: true });
@@ -300,46 +275,29 @@ async function loadTracksCallbackHelper (s3, bucket, name, trackShaderMaterial, 
       });
     }
 
-    /*if (trackLayer.name === 'Tracked Objects' || trackLayer.name === 'Anomalous Tracked Objects') {
-      let onMouseDown = (event) => {
-        if (window.annotateTracksModeActive && event.button === THREE.MOUSE.LEFT) {
-          const currentAnnotation = viewer.scene.annotations.children.find(({_title}) => _title.startsWith("Track ID: "));
-          if (currentAnnotation) viewer.scene.annotations.remove(currentAnnotation);
-
-          let mouse = new THREE.Vector2();
-          mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
-          mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
-
-          let raycaster = new THREE.Raycaster();
-          raycaster.setFromCamera(mouse.clone(), viewer.scene.getActiveCamera());
-
-          let intersects = raycaster.intersectObjects(trackLayer.children, true);
-
-          if (intersects?.length > 0) {
-            viewer.scene.annotations.add(new Potree.Annotation({
-              title: "Track ID: " + intersects[0].object.track_id + (intersects[0].object.isPropagated ? ", PROPAGATED" : ""),
-              position: intersects[0].point
-            }));
-          }
-        }
-      }
-      viewer.renderer.domElement.addEventListener('mousedown', onMouseDown);
-    }*/
-
 		animationEngine.tweenTargets.push((gpsTime) => {
-      if (window.annotateTracksModeActive) {
-        trackGeometries.propagatedShaderMaterial.uniforms.color.value.setHex(0x1055FF);
-      }
-      else {
-        trackGeometries.propagatedShaderMaterial.uniforms.color.value.set(trackShaderMaterial.uniforms.color.value);
-      }
+      const currentTime = gpsTime - animationEngine.tstart;
+      const minTime = currentTime + animationEngine.activeWindow.backward;
+      const maxTime = currentTime + animationEngine.activeWindow.forward;
 
-			const currentTime = gpsTime - animationEngine.tstart;
-			trackShaderMaterial.uniforms.minGpsTime.value = currentTime + animationEngine.activeWindow.backward;
-      trackShaderMaterial.uniforms.maxGpsTime.value = currentTime + animationEngine.activeWindow.forward;
+      if (trackLayer.visible || anomalousTrackLayer.visible) {
+        trackGeometries.forEach(({ mesh, timeRange, states }) => {
+          mesh.material.uniforms.minGpsTime.value = minTime;
+          mesh.material.uniforms.maxGpsTime.value = maxTime;
 
-      trackGeometries.propagatedShaderMaterial.uniforms.minGpsTime.value = currentTime + animationEngine.activeWindow.backward;
-      trackGeometries.propagatedShaderMaterial.uniforms.maxGpsTime.value = currentTime + animationEngine.activeWindow.forward;
+          if (timeRange.min <= maxTime && timeRange.max >= timeRange.min) {
+            const currentStateIndex = indexOfClosestTimestamp(states, currentTime);
+            const currentState = states[currentStateIndex];
+
+            mesh.position.copy(currentState.position);
+            mesh.quaternion.copy(currentState.quaternion);
+            mesh.scale.copy(currentState.scale);
+            mesh.geometry.setAttribute('gpsTime', new THREE.Float32BufferAttribute(new Float32Array(24).fill(currentState.timestamp), 1));
+
+            mesh.material.uniforms.color.value.setHex(window.annotateTracksModeActive && currentState.isPropagated && propagatedTrackColor || normalTrackColor);
+          }
+        });
+      }
 		});
 	});
 }  // end of loadTracksCallback

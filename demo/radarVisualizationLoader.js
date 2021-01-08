@@ -1,7 +1,7 @@
 'use strict';
 import { incrementLoadingBarTotal, resetProgressBars, updateLoadingBar } from "../common/overlay.js";
 import { getS3, getAWSObjectVariables, getInstancedShaderMaterial } from "../demo/paramLoader.js"
-import { getFbFileInfo } from "./loaderUtilities.js";
+import { getFbFileInfo, indexOfClosestTimestamp } from "./loaderUtilities.js";
 
 let radarVisualizationFiles = null;
 export const radarVisualizationDownloads = async (datasetFiles) => {
@@ -22,44 +22,6 @@ export async function loadRadarVisualizationCallback (files) {
       await loadRadarVisualizationCallbackHelper(file);
     }
   }
-}
-
-function indexOfClosestTimestamp(radarData, timestamp) {
-  if (timestamp <= radarData[0].timestamp) {
-    return 0;
-  }
-
-  if (timestamp >= radarData[radarData.length - 1].timestamp) {
-    return radarData.length - 1;
-  }
-
-  let start = 0;
-  let end = radarData.length;
-  let mid = 0;
-
-  while (start < end) {
-    mid = Math.floor((start + end) / 2);
-
-    if (radarData[mid].timestamp === timestamp) {
-      return mid;
-    }
-    else if (timestamp < radarData[mid].timestamp) {
-      if (mid > 0 && timestamp > radarData[mid - 1].timestamp) {
-        return Math.abs(timestamp - radarData[mid].timestamp) < Math.abs(timestamp - radarData[mid - 1].timestamp) ? mid : mid - 1;
-      }
-
-      end = mid;
-    }
-    else {
-      if (mid < radarData.length - 1 && timestamp < radarData[mid + 1].timestamp) {
-        return Math.abs(timestamp - radarData[mid].timestamp) < Math.abs(timestamp - radarData[mid + 1].timestamp) ? mid : mid + 1;
-      }
-
-      start = mid + 1;
-    }
-  }
-
-  return mid;
 }
 
 window.radarVisualizationBudget = 1000;

@@ -256,3 +256,41 @@ function getLocalFiles () {
   // TODO get local files
   return dirs;
 }
+
+export function indexOfClosestTimestamp(objectData, timestamp) {
+  if (timestamp <= objectData[0].timestamp) {
+    return 0;
+  }
+
+  if (timestamp >= objectData[objectData.length - 1].timestamp) {
+    return objectData.length - 1;
+  }
+
+  let start = 0;
+  let end = objectData.length;
+  let mid = 0;
+
+  while (start < end) {
+    mid = Math.floor((start + end) / 2);
+
+    if (objectData[mid].timestamp === timestamp) {
+      return mid;
+    }
+    else if (timestamp < objectData[mid].timestamp) {
+      if (mid > 0 && timestamp > objectData[mid - 1].timestamp) {
+        return Math.abs(timestamp - objectData[mid].timestamp) < Math.abs(timestamp - objectData[mid - 1].timestamp) ? mid : mid - 1;
+      }
+
+      end = mid;
+    }
+    else {
+      if (mid < objectData.length - 1 && timestamp < objectData[mid + 1].timestamp) {
+        return Math.abs(timestamp - objectData[mid].timestamp) < Math.abs(timestamp - objectData[mid + 1].timestamp) ? mid : mid + 1;
+      }
+
+      start = mid + 1;
+    }
+  }
+
+  return mid;
+}

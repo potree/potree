@@ -1,6 +1,7 @@
 'use strict';
 import { getInstancedShaderMaterial } from '../demo/paramLoader.js';
 import { updateLoadingBar, incrementLoadingBarTotal } from '../common/overlay.js';
+import { indexOfClosestTimestamp } from '../demo/loaderUtilities.js';
 
 // load control points
 export async function loadControlPointsCallback (s3, bucket, name, animationEngine, files) {
@@ -16,44 +17,6 @@ export async function loadControlPointsCallback (s3, bucket, name, animationEngi
       }
     }
   }
-}
-
-function indexOfClosestTimestamp(controlPoints, timestamp) {
-  if (timestamp <= controlPoints[0].timestamp) {
-    return 0;
-  }
-
-  if (timestamp >= controlPoints[controlPoints.length - 1].timestamp) {
-    return controlPoints.length - 1;
-  }
-
-  let start = 0;
-  let end = controlPoints.length;
-  let mid = 0;
-
-  while (start < end) {
-    mid = Math.floor((start + end) / 2);
-
-    if (controlPoints[mid].timestamp === timestamp) {
-      return mid;
-    }
-    else if (timestamp < controlPoints[mid].timestamp) {
-      if (mid > 0 && timestamp > controlPoints[mid - 1].timestamp) {
-        return Math.abs(timestamp - controlPoints[mid].timestamp) < Math.abs(timestamp - controlPoints[mid - 1].timestamp) ? mid : mid - 1;
-      }
-
-      end = mid;
-    }
-    else {
-      if (mid < controlPoints.length - 1 && timestamp < controlPoints[mid + 1].timestamp) {
-        return Math.abs(timestamp - controlPoints[mid].timestamp) < Math.abs(timestamp - controlPoints[mid + 1].timestamp) ? mid : mid + 1;
-      }
-
-      start = mid + 1;
-    }
-  }
-
-  return mid;
 }
 
 window.controlPointBudget = 1000;

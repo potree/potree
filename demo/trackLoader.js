@@ -197,7 +197,11 @@ async function createTrackGeometries(shaderMaterial, tracks, animationEngine, an
         maxTime = state.timestamps() - animationEngine.tstart;
       }
 
-      states.push(getTrackStateParams(state, animationEngine, associationTypes));
+      const stateInfo = getTrackStateParams(state, animationEngine, associationTypes);
+      stateInfo.isStart = ii === 0;
+      stateInfo.isEnd = ii === track.statesLength() - 1;
+
+      states.push(stateInfo);
     }
 
     states.sort((a, b) => a.timestamp - b.timestamp);
@@ -238,6 +242,31 @@ export async function loadTracksCallback(s3, bucket, name, trackShaderMaterial, 
   }
 }
 
+function setSelectedTrackText(selectedTrack) {
+  if (selectedTrack) {
+    document.getElementById("track_annotation_tools").removeChild(document.getElementById("track_annotation_tools_selected"));
+    $("#track_annotation_tools").append(`
+      <div id="track_annotation_tools_selected">
+        Selected Track:<br/>
+        - ID: ${selectedTrack.track_id}<br/>
+        - Timestamp: ${selectedTrack.timestamp}<br/>
+        - Anomalous: ${selectedTrack.isAnomalous ? "Yes" : "No"}<br/>
+        - Propagated: ${selectedTrack.isPropagated ? "Yes" : "No"}<br/>
+        ${selectedTrack.isStart && "* Start of Track" || selectedTrack.isEnd && "* End of Track" || ""}
+      </div>
+    `);
+  }
+  else {
+    document.getElementById("track_annotation_tools").removeChild(document.getElementById("track_annotation_tools_selected"));
+    $("#track_annotation_tools").append(`
+      <div id="track_annotation_tools_selected">
+        Selected Track:<br/>
+        Nothing selected
+      </div>
+    `)
+  }
+}
+
 async function loadTracksCallbackHelper (s3, bucket, name, trackShaderMaterial, animationEngine, trackFileName, trackName) {
 	await loadTracks(s3, bucket, name, trackFileName, trackShaderMaterial, animationEngine, (trackGeometries) => {
 		const trackLayer = new THREE.Group();
@@ -250,6 +279,7 @@ async function loadTracksCallbackHelper (s3, bucket, name, trackShaderMaterial, 
 
     const normalTrackColor = trackShaderMaterial.uniforms.color.value.getHex();
     const propagatedTrackColor = 0x55AAFF;
+    const startOrEndColor = 0xFF55AA;
     const selectedTrackColor = 0xFFFF00;
 
     trackGeometries.forEach(({ mesh }) => {
@@ -300,16 +330,7 @@ async function loadTracksCallbackHelper (s3, bucket, name, trackShaderMaterial, 
             selectedTrack = intersects[0].object;
             selectedTrack.material.uniforms.color.value.setHex(selectedTrackColor);
 
-            document.getElementById("track_annotation_tools").removeChild(document.getElementById("track_annotation_tools_selected"));
-            $("#track_annotation_tools").append(`
-              <div id="track_annotation_tools_selected">
-                Selected Track:<br/>
-                - ID: ${selectedTrack.track_id}<br/>
-                - Timestamp: ${selectedTrack.timestamp}<br/>
-                - Anomalous: ${selectedTrack.isAnomalous ? "Yes" : "No"}<br/>
-                - Propagated: ${selectedTrack.isPropagated ? "Yes" : "No"}
-              </div>
-            `);
+            setSelectedTrackText(selectedTrack);
           }
         }
       }
@@ -337,17 +358,22 @@ async function loadTracksCallbackHelper (s3, bucket, name, trackShaderMaterial, 
 
             mesh.timestamp = currentState.timestamp;
             mesh.isPropagated = currentState.isPropagated;
+            mesh.isStart = currentState.isStart;
+            mesh.isEnd = currentState.isEnd;
 
-            mesh.material.uniforms.color.value.setHex(window.annotateTracksModeActive && currentState.isPropagated && propagatedTrackColor || normalTrackColor);
+            const meshColor = window.annotateTracksModeActive ?
+              currentState.isStart || currentState.isEnd ? startOrEndColor :
+              currentState.isPropagated ? propagatedTrackColor :
+              normalTrackColor : normalTrackColor;
+
+            mesh.material.uniforms.color.value.setHex(meshColor);
           }
         });
       }
 
-      if (!window.annotateTracksModeActive && selectedTrack) {
+      if (selectedTrack) {
         selectedTrack = undefined;
-      }
-      else if (selectedTrack) {
-        selectedTrack.material.uniforms.color.value.setHex(selectedTrackColor);
+        setSelectedTrackText();
       }
 		});
 	});
@@ -416,13 +442,7 @@ export function addAnnotateTracksButton() {
       $("#track_annotation_tools_divider").hide();
       $("#track_annotation_tools").hide();
 
-      document.getElementById("track_annotation_tools").removeChild(document.getElementById("track_annotation_tools_selected"));
-      $("#track_annotation_tools").append(`
-        <div id="track_annotation_tools_selected">
-          Selected Track:<br/>
-          Nothing selected
-        </div>
-      `)
+      setSelectedTrackText();
     }
 
     animationEngine.updateTimeForAll();

@@ -111,8 +111,6 @@ export function getShaderMaterial() {
         color: { value: new THREE.Color(0x00ff00) },
         minGpsTime: { value: defaultTimeRange.min },
         maxGpsTime: { value: defaultTimeRange.max },
-        initialTime: { value: defaultTimeRange.initial }, // TODO not used
-        // offset: {value: new THREE.Vector3(0,0,0)},
     };
     let shaderMaterial = new THREE.ShaderMaterial({
 
@@ -123,6 +121,19 @@ export function getShaderMaterial() {
         depthWrite: false,
     });
     return shaderMaterial
+}
+
+// returns a THREE.ShaderMaterial object that should be used with tracks
+export function getTrackShaderMaterial() {
+  let uniforms = {};
+  let shaderMaterial = new THREE.ShaderMaterial({
+      uniforms: uniforms,
+      vertexShader: document.getElementById('track-vertexshader').textContent,
+      fragmentShader: document.getElementById('track-fragmentshader').textContent,
+      transparent: true,
+      depthWrite: false,
+  });
+  return shaderMaterial
 }
 
 // returns a THREE.ShaderMaterial object that should be used as standard for instanced meshes

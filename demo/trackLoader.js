@@ -247,8 +247,105 @@ function setSelectedTrackText(selectedTrack) {
   }
 }
 
+// Global colors used in numerous places
+const propagatedTrackColor = new THREE.Color(0x55AAFF);
+const startOrEndColor = new THREE.Color(0xFF55AA);
+const selectedTrackColor = new THREE.Color(0xFFFFFF);
+
+// Converts a three js color to a format readable by the shaders
 function colorToAttributeArray(color) {
   return new Float32Array(72).fill(null).map((val, i) => color.toArray()[i % 3]);
+}
+
+// When a track is no longer selected, it needs its color reset
+function resetColor(mesh, defaultColor) {
+  if (mesh.isStart || mesh.isEnd) {
+    mesh.geometry.setAttribute('color', new THREE.Float32BufferAttribute(colorToAttributeArray(startOrEndColor), 3));
+  }
+  else if (mesh.isPropagated) {
+    mesh.geometry.setAttribute('color', new THREE.Float32BufferAttribute(colorToAttributeArray(propagatedTrackColor), 3));
+  }
+  else {
+    mesh.geometry.setAttribute('color', new THREE.Float32BufferAttribute(colorToAttributeArray(defaultColor), 3));
+  }
+}
+
+// Updates a single track layer (i.e. updates mesh transforms and colors, discards unused meshes)
+function updateTrackLayer(layer, trackInfo, meshes, defaultColor, shaderMaterial, minTime, maxTime) {
+  if (layer.visible) {
+    // Create base geometry for the track meshes
+    const bufferGeo = new THREE.BoxBufferGeometry();
+    const edgesGeo = new THREE.EdgesGeometry(bufferGeo);
+    edgesGeo.setAttribute('color', new THREE.Float32BufferAttribute(colorToAttributeArray(defaultColor), 3));
+
+    // Iterate over each track
+    trackInfo.forEach(({ id, states }) => {
+      // Used to keep track of how many meshes have been updated - this is used later to delete tracks that have left the scene
+      let meshCounter = 0;
+
+      // Iterate each state of the track
+      states.forEach(({position, scale, quaternion, timestamp, isPropagated, isStart, isEnd}) => {
+        // Only do anything if the current state is within the time window
+        if (timestamp >= minTime && timestamp <= maxTime) {
+          // Add the current track's id to the dictionary of meshes if it hasn't been added already
+          if(!meshes.hasOwnProperty(id)) {
+            meshes[id] = [];
+          }
+
+          // If there are unused meshes available, use the next one. Otherwise add a new mesh
+          let currentMesh;
+          if (meshCounter < meshes[id].length) {
+            currentMesh = meshes[id][meshCounter];
+
+            // If the current mesh no longer requires a "special" color, set it back to the default
+            // TODO - Only do this in annotate mode, it's a bit expensive
+            if ((!isPropagated && currentMesh.isPropagated) || (!isStart && currentMesh.isStart) || (!isEnd && currentMesh.isEnd)) {
+              currentMesh.geometry.setAttribute('color', new THREE.Float32BufferAttribute(colorToAttributeArray(defaultColor), 3));
+            }
+          }
+          else {
+            currentMesh = new THREE.LineSegments(edgesGeo.clone(), shaderMaterial.clone());
+            meshes[id].push(currentMesh);
+            layer.add(currentMesh);
+          }
+
+          // Update the current mesh
+          currentMesh.position.copy(position);
+          currentMesh.quaternion.copy(quaternion);
+          currentMesh.scale.copy(scale);
+
+          currentMesh.track_id = id;
+          currentMesh.timestamp = timestamp;
+          currentMesh.isPropagated = isPropagated;
+          currentMesh.isAnomalous = false;
+          currentMesh.isStart = isStart;
+          currentMesh.isEnd = isEnd;
+
+          // If annotate mode is active, there are special colors for certains states
+          if (window.annotateTracksModeActive) {
+            if (isStart || isEnd) {
+              currentMesh.geometry.setAttribute('color', new THREE.Float32BufferAttribute(colorToAttributeArray(startOrEndColor), 3));
+            }
+            else if (isPropagated) {
+              currentMesh.geometry.setAttribute('color', new THREE.Float32BufferAttribute(colorToAttributeArray(propagatedTrackColor), 3));
+            }
+          }
+
+          meshCounter++;
+        }
+      });
+
+      // Clean up - remove meshes that are no longer visible
+      if (meshes.hasOwnProperty(id) && meshCounter < meshes[id].length) {
+        meshes[id].slice(meshCounter).forEach(mesh => {
+          mesh.geometry.dispose();
+          mesh.material.dispose();
+          layer.remove(mesh);
+        });
+        meshes[id] = meshes[id].slice(0, meshCounter);
+      }
+    });
+  }
 }
 
 async function loadTracksCallbackHelper (s3, bucket, name, trackShaderMaterial, animationEngine, trackFileName, trackName) {
@@ -261,12 +358,9 @@ async function loadTracksCallbackHelper (s3, bucket, name, trackShaderMaterial, 
     const anomalousTrackLayer = new THREE.Group();
     anomalousTrackLayer.name = `Anomalous ${trackName}`
     anomalousTrackLayer.visible = false;
-    const anomlousTrackInfo = trackGeometries.filter(track => track.isAnomalous);
+    const anomalousTrackInfo = trackGeometries.filter(track => track.isAnomalous);
 
     const normalTrackColor = getTrackColor(trackFileName);
-    const propagatedTrackColor = new THREE.Color(0x55AAFF);
-    const startOrEndColor = new THREE.Color(0xFF55AA);
-    const selectedTrackColor = new THREE.Color(0xFFFF00);
 
     viewer.scene.scene.add(trackLayer);
 		const e = new CustomEvent("truth_layer_added", { detail: trackLayer, writable: true });
@@ -275,7 +369,7 @@ async function loadTracksCallbackHelper (s3, bucket, name, trackShaderMaterial, 
 			"truthLayer": trackLayer
     });
 
-    if (anomlousTrackInfo.length > 0) {
+    if (anomalousTrackInfo.length > 0) {
       viewer.scene.scene.add(anomalousTrackLayer);
       const e = new CustomEvent("truth_layer_added", { detail: anomalousTrackLayer, writable: true });
       viewer.scene.dispatchEvent({
@@ -296,17 +390,12 @@ async function loadTracksCallbackHelper (s3, bucket, name, trackShaderMaterial, 
           let raycaster = new THREE.Raycaster();
           raycaster.setFromCamera(mouse.clone(), viewer.scene.getActiveCamera());
 
-          let intersects = raycaster.intersectObjects(trackLayer.children, true);
-          if (!intersects || intersects?.length === 0) intersects = raycaster.intersectObjects(anomalousTrackLayer.children, true);
+          let intersects = raycaster.intersectObjects(trackLayer.children);
+          if (!intersects || intersects?.length === 0) intersects = raycaster.intersectObjects(anomalousTrackLayer.children);
 
           if (intersects?.length > 0) {
             if (selectedTrack) {
-              if (isStart || isEnd) {
-                selectedTrack.geometry.setAttribute('color', new THREE.Float32BufferAttribute(colorToAttributeArray(startOrEndColor), 3));
-              }
-              else if (isPropagated) {
-                selectedTrack.geometry.setAttribute('color', new THREE.Float32BufferAttribute(colorToAttributeArray(propagatedTrackColor), 3));
-              }
+              resetColor(selectedTrack, normalTrackColor);
             }
 
             selectedTrack = intersects[0].object;
@@ -319,54 +408,17 @@ async function loadTracksCallbackHelper (s3, bucket, name, trackShaderMaterial, 
       viewer.renderer.domElement.addEventListener('click', onMouseDown);
     }
 
+    const meshes = {};
 		animationEngine.tweenTargets.push((gpsTime) => {
       const currentTime = gpsTime - animationEngine.tstart;
       const minTime = currentTime + animationEngine.activeWindow.backward;
       const maxTime = currentTime + animationEngine.activeWindow.forward;
 
-      if (trackLayer.visible) {
-        trackLayer.remove(...trackLayer.children);
-
-        const bufferGeo = new THREE.BoxBufferGeometry();
-        const edgesGeo = new THREE.EdgesGeometry(bufferGeo);
-        edgesGeo.setAttribute('color', new THREE.Float32BufferAttribute(colorToAttributeArray(normalTrackColor), 3));
-
-        const meshes = [];
-        trackInfo.forEach(({ id, states }) => {
-          states.forEach(({position, scale, quaternion, timestamp, isPropagated, isStart, isEnd}) => {
-            if (timestamp >= minTime && timestamp <= maxTime) {
-              const currentMesh = new THREE.LineSegments(edgesGeo.clone(), trackShaderMaterial.clone());
-
-              currentMesh.position.copy(position);
-              currentMesh.quaternion.copy(quaternion);
-              currentMesh.scale.copy(scale);
-
-              currentMesh.track_id = id;
-              currentMesh.timestamp = timestamp;
-              currentMesh.isPropagated = isPropagated;
-              currentMesh.isStart = isStart;
-              currentMesh.isEnd = isEnd;
-
-              if (window.annotateTracksModeActive) {
-                if (isStart || isEnd) {
-                  currentMesh.geometry.setAttribute('color', new THREE.Float32BufferAttribute(colorToAttributeArray(startOrEndColor), 3));
-                }
-                else if (isPropagated) {
-                  currentMesh.geometry.setAttribute('color', new THREE.Float32BufferAttribute(colorToAttributeArray(propagatedTrackColor), 3));
-                }
-              }
-
-              meshes.push(currentMesh);
-            }
-          });
-        });
-
-        if (meshes.length > 0) {
-          trackLayer.add(...meshes);
-        }
-      }
+      updateTrackLayer(trackLayer, trackInfo, meshes, normalTrackColor, trackShaderMaterial, minTime, maxTime);
+      updateTrackLayer(anomalousTrackLayer, anomalousTrackInfo, meshes, normalTrackColor, trackShaderMaterial, minTime, maxTime);
 
       if (selectedTrack) {
+        resetColor(selectedTrack, normalTrackColor);
         selectedTrack = undefined;
         setSelectedTrackText();
       }

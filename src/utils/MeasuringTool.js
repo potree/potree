@@ -258,7 +258,7 @@ export class MeasuringTool extends EventDispatcher{
 			measure.lengthUnitDisplay = this.viewer.lengthUnitDisplay;
 			measure.update();
 
-			updateAzimuth(viewer, measure);
+			updateAzimuth(this.viewer, measure);
 
 			// spheres
 			for(let sphere of measure.spheres){

@@ -17,6 +17,7 @@ function parseAttributes(cloudjs){
 		"RGBA": "rgba",
 		"INTENSITY": "intensity",
 		"CLASSIFICATION": "classification",
+		"GPS_TIME": "gps-time",
 	};
 
 	const replaceOldNames = (old) => {

@@ -45,7 +45,6 @@ export class Viewer extends EventDispatcher{
 		this.guiLoaded = false;
 		this.guiLoadTasks = [];
 
-		this.vr = null;
 		this.onVrListeners = [];
 
 		this.messages = [];
@@ -230,7 +229,22 @@ export class Viewer extends EventDispatcher{
 		
 
 		let scene = new Scene(this.renderer);
-		this.sceneVR = new THREE.Scene();
+		
+		{ // create VR scene
+			this.sceneVR = new THREE.Scene();
+
+			// let texture = new THREE.TextureLoader().load(`${Potree.resourcePath}/images/vr_controller_help.jpg`);
+
+			// let plane = new THREE.PlaneBufferGeometry(1, 1, 1, 1);
+			// let infoMaterial = new THREE.MeshBasicMaterial({map: texture});
+			// let infoNode = new THREE.Mesh(plane, infoMaterial);
+			// infoNode.position.set(-0.5, 1, 0);
+			// infoNode.scale.set(0.4, 0.3, 1);
+			// infoNode.lookAt(0, 1, 0)
+			// this.sceneVR.add(infoNode);
+
+			// window.infoNode = infoNode;
+		}
 
 		this.setScene(scene);
 
@@ -1937,18 +1951,23 @@ export class Viewer extends EventDispatcher{
 
 			let cam = makeCam();
 			skybox.camera.rotation.copy(cam.rotation);
-			// skybox.camera.rotation.order = "ZXY";
 			skybox.camera.fov = cam.fov;
 			skybox.camera.aspect = cam.aspect;
-			// skybox.camera.updateMatrix();
-			// skybox.camera.updateMatrixWorld();
+			
+			// let dbg = new THREE.Object3D();
+			let dbg = skybox.parent;
+			// dbg.up.set(0, 0, 1);
+			dbg.rotation.x = Math.PI / 2;
+
+			// skybox.camera.parent = dbg;
+			// dbg.children.push(skybox.camera);
+
+			dbg.updateMatrix();
+			dbg.updateMatrixWorld();
+
+			skybox.camera.updateMatrix();
+			skybox.camera.updateMatrixWorld();
 			skybox.camera.updateProjectionMatrix();
-			// skybox.camera.parent = skybox.camera;
-
-			// viewer.skybox.scene.position.copy(cam.position);
-
-			// let s = 0.9 * cam.far / 5000;
-			// viewer.skybox.scene.scale.set(10, 10, 10);
 
 			renderer.render(skybox.scene, skybox.camera);
 			// renderer.render(skybox.scene, cam);

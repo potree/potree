@@ -219,6 +219,10 @@ export class EDLRenderer{
 			viewer.skybox.camera.rotation.copy(viewer.scene.cameraP.rotation);
 			viewer.skybox.camera.fov = viewer.scene.cameraP.fov;
 			viewer.skybox.camera.aspect = viewer.scene.cameraP.aspect;
+
+			viewer.skybox.parent.rotation.x = 0;
+			viewer.skybox.parent.updateMatrixWorld();
+
 			viewer.skybox.camera.updateProjectionMatrix();
 			viewer.renderer.render(viewer.skybox.scene, viewer.skybox.camera);
 		} else if (viewer.background === 'gradient') {
@@ -241,7 +245,7 @@ export class EDLRenderer{
 				material.screenHeight = height;
 				material.uniforms.visibleNodes.value = pointcloud.material.visibleNodesTexture;
 				material.uniforms.octreeSize.value = octreeSize;
-				material.spacing = pointcloud.pcoGeometry.spacing * Math.max(pointcloud.scale.x, pointcloud.scale.y, pointcloud.scale.z);
+				material.spacing = pointcloud.pcoGeometry.spacing; // * Math.max(pointcloud.scale.x, pointcloud.scale.y, pointcloud.scale.z);
 			}
 			
 			// TODO adapt to multiple lights

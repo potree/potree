@@ -281,6 +281,8 @@ export class Utils {
 	}
 
 	static loadSkybox (path) {
+		let parent = new THREE.Object3D("skybox_root");
+
 		let camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 100000);
 		camera.up.set(0, 0, 1);
 		let scene = new THREE.Scene();
@@ -330,7 +332,10 @@ export class Utils {
 		// z up
 		scene.rotation.x = Math.PI / 2;
 
-		return {'camera': camera, 'scene': scene};
+		parent.children.push(camera);
+		camera.parent = parent;
+
+		return {camera, scene, parent};
 	};
 
 	static createGrid (width, length, spacing, color) {

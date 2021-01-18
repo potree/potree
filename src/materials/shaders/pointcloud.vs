@@ -668,8 +668,6 @@ float getPointSize(){
 	
 	float slope = tan(fov / 2.0);
 	float projFactor = -0.5 * uScreenHeight / (slope * vViewPosition.z);
-	// float scale = (modelViewMatrix * vec4(0, 0, 0, 1) - modelViewMatrix * vec4(1, 0, 0, 1)).x;
-	// projFactor = projFactor * scale;
 
 	float scale = length(
 		modelViewMatrix * vec4(0, 0, 0, 1) - 
@@ -693,23 +691,8 @@ float getPointSize(){
 			float worldSpaceSize = 1.0 * size * r / getPointSizeAttenuation();
 			pointSize = (worldSpaceSize / uOrthoWidth) * uScreenWidth;
 		} else {
-
-			// float leafSpacing = 0.122069092 * 8.0;
-			
-			// bool isLeafNode = getLOD() == 1000.0;
-			// if(isLeafNode){
-			// 	// pointSize = size * spacing * projFactor;
-
-			// 	float worldSpaceSize = size * leafSpacing;
-			// 	pointSize = worldSpaceSize * projFactor;
-			// }else{
-				float worldSpaceSize = 1.0 * size * r / getPointSizeAttenuation();
-
-				// minimum world space size
-				// worldSpaceSize = max(worldSpaceSize, leafSpacing);
-
-				pointSize = worldSpaceSize * projFactor;
-			// }
+			float worldSpaceSize = 1.0 * size * r / getPointSizeAttenuation();
+			pointSize = worldSpaceSize * projFactor;
 		}
 	#endif
 

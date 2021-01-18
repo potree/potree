@@ -60,6 +60,10 @@ export class PotreeRenderer {
 			viewer.skybox.camera.rotation.copy(viewer.scene.cameraP.rotation);
 			viewer.skybox.camera.fov = viewer.scene.cameraP.fov;
 			viewer.skybox.camera.aspect = viewer.scene.cameraP.aspect;
+			
+			viewer.skybox.parent.rotation.x = 0;
+			viewer.skybox.parent.updateMatrixWorld();
+
 			viewer.skybox.camera.updateProjectionMatrix();
 			renderer.render(viewer.skybox.scene, viewer.skybox.camera);
 		}else if(viewer.background === "gradient"){

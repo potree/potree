@@ -36,8 +36,11 @@ function computeMove(vrControls, controller){
 		y = axes[3];
 	}
 
+	y = Math.sign(y) * (2 * y) ** 2;
+
 	let scale = vrControls.node.scale.x;
-	let amount = 2 * y * viewer.getMoveSpeed() / scale;
+	let moveSpeed = viewer.getMoveSpeed();
+	let amount = 15 * y * (moveSpeed ** 0.5) / scale;
 
 	let rotation = new THREE.Quaternion().setFromEuler(controller.rotation);
 	let dir = new THREE.Vector3(0, 0, -1);
@@ -79,26 +82,14 @@ class FlyMode{
 		let primary = vrControls.cPrimary;
 		let secondary = vrControls.cSecondary;
 
-		// if(secondary && secondary.inputSource && secondary.inputSource.gamepad){
-		// 	let pad = secondary.inputSource.gamepad;
-		// 	let axes = pad.axes;
-
-		// 	let sign = Math.abs(axes[1]) > 0.5 ? -Math.sign(axes[1]) : 0;
-
-		// 	if(sign > 0){
-		// 		this.moveFactor *= 1.01;
-		// 	}else if(sign < 0){
-		// 		this.moveFactor *= 0.99
-		// 	}
-
-		// }
-
 		let move1 = computeMove(vrControls, primary);
 		let move2 = computeMove(vrControls, secondary);
-		
+
+
 		if(!move1){
 			move1 = new THREE.Vector3();
 		}
+
 		if(!move2){
 			move2 = new THREE.Vector3();
 		}
@@ -277,6 +268,7 @@ class RotScaleMode{
 
 };
 
+
 export class VRControls extends EventDispatcher{
 
 	constructor(viewer){
@@ -300,6 +292,8 @@ export class VRControls extends EventDispatcher{
 			this.viewer.sceneVR.add(light)
 		}
 
+		this.menu = null;
+
 		const controllerModelFactory = new XRControllerModelFactory();
 
 		let sg = new THREE.SphereGeometry(1, 32, 32);
@@ -309,10 +303,11 @@ export class VRControls extends EventDispatcher{
 			let controller = xr.getController(0);
 
 			let grip = xr.getControllerGrip(0);
+			grip.name = "grip(0)";
 
 			// ADD CONTROLLERMODEL
 			grip.add( controllerModelFactory.createControllerModel( grip ) );
-			this.viewer.sceneVR.add( grip );
+			this.viewer.sceneVR.add(grip);
 
 			// ADD SPHERE
 			let sphere = new THREE.Mesh(sg, sm);
@@ -327,7 +322,7 @@ export class VRControls extends EventDispatcher{
 				let lineGeometry = new LineGeometry();
 
 				lineGeometry.setPositions([
-					0, 0, -0.05,
+					0, 0, -0.15,
 					0, 0, 0.05,
 				]);
 
@@ -342,9 +337,11 @@ export class VRControls extends EventDispatcher{
 				controller.add(line);
 			}
 
+
 			controller.addEventListener( 'connected', function ( event ) {
 				const xrInputSource = event.data;
 				controller.inputSource = xrInputSource;
+				// initInfo(controller);
 			});
 
 			controller.addEventListener( 'selectstart', () => {this.onTriggerStart(controller)});
@@ -360,7 +357,8 @@ export class VRControls extends EventDispatcher{
 			let grip = xr.getControllerGrip(1);
 
 			// ADD CONTROLLER MODEL
-			grip.add( controllerModelFactory.createControllerModel( grip ) );
+			let model = controllerModelFactory.createControllerModel( grip );
+			grip.add(model);
 			this.viewer.sceneVR.add( grip );
 
 			// ADD SPHERE
@@ -375,7 +373,7 @@ export class VRControls extends EventDispatcher{
 				let lineGeometry = new LineGeometry();
 
 				lineGeometry.setPositions([
-					0, 0, -0.05,
+					0, 0, -0.15,
 					0, 0, 0.05,
 				]);
 
@@ -390,9 +388,10 @@ export class VRControls extends EventDispatcher{
 				controller.add(line);
 			}
 
-			controller.addEventListener( 'connected', function ( event ) {
+			controller.addEventListener( 'connected', (event) => {
 				const xrInputSource = event.data;
 				controller.inputSource = xrInputSource;
+				this.initMenu(controller);
 			});
 
 			controller.addEventListener( 'selectstart', () => {this.onTriggerStart(controller)});
@@ -406,6 +405,85 @@ export class VRControls extends EventDispatcher{
 		this.mode_rotScale = new RotScaleMode();
 		this.setMode(this.mode_fly);
 	}
+
+	createSlider(label, min, max){
+
+		let sg = new THREE.SphereGeometry(1, 8, 8);
+		let cg = new THREE.CylinderGeometry(1, 1, 1, 8);
+		let matHandle = new THREE.MeshBasicMaterial({color: 0xff0000});
+		let matScale = new THREE.MeshBasicMaterial({color: 0xff4444});
+		let matValue = new THREE.MeshNormalMaterial();
+
+		let node = new THREE.Object3D("slider");
+		let nLabel = new Potree.TextSprite(`${label}: 0`);
+		let nMax = new THREE.Mesh(sg, matHandle);
+		let nMin = new THREE.Mesh(sg, matHandle);
+		let nValue = new THREE.Mesh(sg, matValue);
+		let nScale = new THREE.Mesh(cg, matScale);
+
+		nLabel.scale.set(0.2, 0.2, 0.2);
+		nLabel.position.set(0, 0.35, 0);
+
+		nMax.scale.set(0.02, 0.02, 0.02);
+		nMax.position.set(0, 0.25, 0);
+
+		nMin.scale.set(0.02, 0.02, 0.02);
+		nMin.position.set(0, -0.25, 0);
+
+		nValue.scale.set(0.02, 0.02, 0.02);
+		nValue.position.set(0, 0, 0);
+
+		nScale.scale.set(0.005, 0.5, 0.005);
+
+		node.add(nLabel);
+		node.add(nMax);
+		node.add(nMin);
+		node.add(nValue);
+		node.add(nScale);
+
+		return node;
+	}
+
+	createInfo(){ 
+
+		let texture = new THREE.TextureLoader().load(`${Potree.resourcePath}/images/vr_controller_help.jpg`);
+		let plane = new THREE.PlaneBufferGeometry(1, 1, 1, 1);
+		let infoMaterial = new THREE.MeshBasicMaterial({map: texture});
+		let infoNode = new THREE.Mesh(plane, infoMaterial);
+
+		return infoNode;
+	}
+
+	initMenu(controller){
+
+		if(this.menu){
+			return;
+		}
+
+		let node = new THREE.Object3D("vr menu");
+
+		// let nSlider = this.createSlider("speed", 0, 1);
+		let nInfo = this.createInfo();
+
+		// node.add(nSlider);
+		node.add(nInfo);
+
+		node.rotation.set(-1.5, 0, 0)
+		node.scale.set(0.3, 0.3, 0.3);
+		node.position.set(-0.2, -0.002, -0.1)
+
+		// nInfo.position.set(0.5, 0, 0);
+		nInfo.scale.set(0.8, 0.6, 0);
+
+		controller.add(node);
+
+		this.menu = node;
+
+		// window.vrSlider = nSlider;
+		window.vrMenu = node;
+
+	}
+
 
 	toScene(vec){
 		let camVR = this.getCamera();
@@ -529,7 +607,24 @@ export class VRControls extends EventDispatcher{
 
 	update(delta){
 
+		
+
+		// if(this.mode === this.mode_fly){
+		// 	let ray = new THREE.Ray(origin, direction);
+			
+		// 	for(let object of this.selectables){
+
+		// 		if(object.intersectsRay(ray)){
+		// 			object.onHit(ray);
+		// 		}
+
+		// 	}
+
+		// }
+
 		this.mode.update(this, delta);
+
+		
 
 	}
 };

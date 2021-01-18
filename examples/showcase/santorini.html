@@ -18,7 +18,7 @@
 	<script src="../../libs/jquery/jquery-3.1.1.min.js"></script>
 	<script src="../../libs/spectrum/spectrum.js"></script>
 	<script src="../../libs/jquery-ui/jquery-ui.min.js"></script>
-	<script src="../../libs/three.js/build/three.min.js"></script>
+	
 	<script src="../../libs/other/BinaryHeap.js"></script>
 	<script src="../../libs/tween/tween.min.js"></script>
 	<script src="../../libs/d3/d3.js"></script>
@@ -37,13 +37,15 @@
 		<div id="potree_sidebar_container"> </div>
 	</div>
 	
-	<script>
+	<script type="module">
+
+	import * as THREE from "../../libs/three.js/build/three.module.js";
 	
 		window.viewer = new Potree.Viewer(document.getElementById("potree_render_area"));
 		
 		viewer.setEDLEnabled(true);
 		viewer.setFOV(60);
-		viewer.setPointBudget(1*1000*1000);
+		viewer.setPointBudget(1_000_000);
 		viewer.loadSettingsFromURL();
 		
 		viewer.setDescription(`Pyle, David; Parks, Michelle; Mather, Tamsin; Nomikou, Paraskevi (2014): 

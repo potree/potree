@@ -18,7 +18,6 @@
 	<script src="../libs/jquery/jquery-3.1.1.min.js"></script>
 	<script src="../libs/spectrum/spectrum.js"></script>
 	<script src="../libs/jquery-ui/jquery-ui.min.js"></script>
-	<script src="../libs/three.js/build/three.js"></script>
 	<script src="../libs/other/BinaryHeap.js"></script>
 	<script src="../libs/tween/tween.min.js"></script>
 	<script src="../libs/d3/d3.js"></script>
@@ -28,28 +27,23 @@
 	<script src="../libs/jstree/jstree.js"></script>
 	<script src="../build/potree/potree.js"></script>
 	<script src="../libs/plasio/js/laslaz.js"></script>
-
-	<script src="../libs/three.js/extra/lines.js"></script>
-	
-	<!-- INCLUDE ADDITIONAL DEPENDENCIES HERE -->
-	<!-- INCLUDE SETTINGS HERE -->
 	
 	<div class="potree_container" style="position: absolute; width: 100%; height: 100%; left: 0px; top: 0px; ">
 		<div id="potree_render_area" style="background-image: url('../build/potree/resources/images/background.jpg');">
 
 			<span style="position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%); z-index: 10000">
-
 				<input type="button" value="Default Scheme" onclick="setDefaultScheme()"/>
 				<input type="button" value="Tree Scheme" onclick="setTreeScheme()"/>
 				<input type="button" value="Random Scheme" onclick="setRandomScheme()"/>
-
 			</span>
 
 		</div>
 		<div id="potree_sidebar_container"> </div>
 	</div>
 	
-	<script>
+	<script type="module">
+
+		import * as THREE from "../libs/three.js/build/three.module.js";
 	
 		window.viewer = new Potree.Viewer(document.getElementById("potree_render_area"));
 
@@ -61,15 +55,13 @@
 		
 		viewer.setEDLEnabled(true);
 		viewer.setFOV(60);
-		viewer.setPointBudget(2 * 1000 * 1000);
+		viewer.setPointBudget(2_000_000);
 		
 		viewer.loadGUI(() => {
 			$("#menu_filters").next().show();
 			viewer.toggleSidebar();
 		});
 		
-		// Sigeom
-		//Potree.loadPointCloud("../pointclouds/morro_bay_converted/cloud.js", "CA13", function(e){
 		Potree.loadPointCloud("http://5.9.65.151/mschuetz/potree/resources/pointclouds/opentopography/CA13_1.4/cloud.js", "CA13", function(e){
 			viewer.scene.addPointCloud(e.pointcloud);
 			e.pointcloud.position.z = 0;
@@ -84,25 +76,22 @@
 		
 	</script>
 
-	<script>
+	<script type="module">
 
-		function setDefaultScheme(){
+		import * as THREE from "../libs/three.js/build/three.module.js";
 
+		window.setDefaultScheme = function(){
 			viewer.setClassifications(Potree.ClassificationScheme.DEFAULT);
-
 		}
 
-		function setTreeScheme(){
-
+		window.setTreeScheme = function(){
 			viewer.setClassifications({
 				5:       { visible: true, name: 'trees'        , color: [0.0, 1.0, 0.0, 1.0] },
 				DEFAULT: { visible: false, name: 'other' , color: [0.0, 0.0, 0.0, 1.0] },
 			});
-
 		}
 
-		function setRandomScheme(){
-
+		window.setRandomScheme = function(){
 			const scheme = {};
 
 			for(let i = 0; i < 32; i++){

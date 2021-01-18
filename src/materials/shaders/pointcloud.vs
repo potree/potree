@@ -668,6 +668,14 @@ float getPointSize(){
 	
 	float slope = tan(fov / 2.0);
 	float projFactor = -0.5 * uScreenHeight / (slope * vViewPosition.z);
+	// float scale = (modelViewMatrix * vec4(0, 0, 0, 1) - modelViewMatrix * vec4(1, 0, 0, 1)).x;
+	// projFactor = projFactor * scale;
+
+	float scale = length(
+		modelViewMatrix * vec4(0, 0, 0, 1) - 
+		modelViewMatrix * vec4(uOctreeSpacing, 0, 0, 1)
+	) / uOctreeSpacing;
+	projFactor = projFactor * scale;
 	
 	float r = uOctreeSpacing * 1.7;
 	vRadius = r;
@@ -874,13 +882,18 @@ void main() {
 	gl_Position = projectionMatrix * mvPosition;
 	vLogDepth = log2(-mvPosition.z);
 
+	//gl_Position = vec4(0.0, 0.0, 0.0, 1.0);
+	//gl_PointSize = 5.0;
+
 	// POINT SIZE
 	float pointSize = getPointSize();
+	//float pointSize = 2.0;
 	gl_PointSize = pointSize;
 	vPointSize = pointSize;
 
 	// COLOR
 	vColor = getColor();
+	// vColor = vec3(1.0, 0.0, 0.0);
 
 	//gl_Position = vec4(0.0, 0.0, 0.0, 1.0);
 	//gl_Position = vec4(position.xzy / 1000.0, 1.0 );

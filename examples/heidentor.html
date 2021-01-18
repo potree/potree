@@ -18,8 +18,6 @@
 	<script src="../libs/jquery/jquery-3.1.1.min.js"></script>
 	<script src="../libs/spectrum/spectrum.js"></script>
 	<script src="../libs/jquery-ui/jquery-ui.min.js"></script>
-	<script src="../libs/three.js/build/three.js"></script>
-	<script src="../libs/three.js/extra/lines.js"></script>
 	<script src="../libs/other/BinaryHeap.js"></script>
 	<script src="../libs/tween/tween.min.js"></script>
 	<script src="../libs/d3/d3.js"></script>
@@ -41,23 +39,19 @@
 
 	
 	
-	<script>
+	<script type="module">
 
-
-		let clipSpheres = [
-			{position: [0.032, -2.382, 4.279], scale: 3},
-			{position: [-1.787, 6.011, 1.711], scale: 1},
-			{position: [0.095, 7.636, 10.997], scale: 2},
-		];
-
+		import * as THREE from "../libs/three.js/build/three.module.js";
 	
 		window.viewer = new Potree.Viewer(document.getElementById("potree_render_area"));
 		
-		viewer.setEDLEnabled(true);
+		viewer.setEDLEnabled(false);
 		viewer.setFOV(60);
-		viewer.setPointBudget(5*1000*1000);
+		viewer.setPointBudget(1_000_000);
 		viewer.setMinNodeSize(0);
 		viewer.loadSettingsFromURL();
+		viewer.setBackground("skybox");
+		viewer.setShowBoundingBox(false);
 		
 		viewer.setDescription(`Heidentor point cloud courtesy of <a href="http://archpro.lbg.ac.at/" target="_blank">Ludwig Boltzmann Institute - Archeological Prospection and Virtual Archeology</a> (26M points)`);
 		
@@ -75,10 +69,89 @@
 			let material = e.pointcloud.material;
 			material.size = 1;
 			material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
+			
+			viewer.scene.view.setView(
+				[13.856, -9.125, 14.563],
+				[-3.548,  2.728,  6.140],
+			);
 
-			viewer.scene.view.position.set(13.856734292740617, -9.125174923658731, 14.563928417406354);
-			viewer.scene.view.lookAt(-3.5482630104475366, 2.728596783815762, 6.1406044783018725);
 		});
+
+
+		{ // ground plane
+			const texture = new THREE.TextureLoader().load(`${Potree.resourcePath}/textures/rectangle.png`);
+
+			texture.wrapS = THREE.RepeatWrapping;
+			texture.wrapT = THREE.RepeatWrapping;
+			texture.repeat.x = 10;
+			texture.repeat.y = 10;
+			texture.anisotropy = 16;
+
+			let geometry = new THREE.PlaneBufferGeometry(1, 1, 10, 10);
+			let material = new THREE.MeshBasicMaterial();
+			material.map = texture;
+			material.needsUpdate = true;
+			let plane = new THREE.Mesh(geometry, material);
+			plane.scale.set(18, 18, 18);
+			plane.position.set(-2, 3, 0);
+			plane.material.color.setRGB(0.8, 0.8, 0.8);
+			window.plane = plane;
+			viewer.scene.scene.add(plane);
+		}
+
+		// { // spheres to indicate coordinate axes
+		// 	let sg = new THREE.SphereGeometry(0.1, 8, 8);
+
+		// 	{ // ORIGIN
+		// 		let sm = new THREE.MeshBasicMaterial({color: 0xaaaaaa});
+		// 		let sphere = new THREE.Mesh(sg, sm);
+		// 		sphere.position.set(0, 0, 0);
+		// 		viewer.scene.scene.add(sphere);
+		// 	}
+
+		// 	{ // X
+		// 		let sm = new THREE.MeshBasicMaterial({color: 0xff0000});
+		// 		let sphere = new THREE.Mesh(sg, sm);
+		// 		sphere.position.set(2, 0, 0);
+		// 		viewer.scene.scene.add(sphere);
+		// 	}
+
+			
+		// 	{ // Y
+		// 		let sm = new THREE.MeshBasicMaterial({color: 0x00ff00});
+		// 		let sphere = new THREE.Mesh(sg, sm);
+		// 		sphere.position.set(0, 2, 0);
+		// 		viewer.scene.scene.add(sphere);
+		// 	}
+
+			
+		// 	{ // Z
+		// 		let sm = new THREE.MeshBasicMaterial({color: 0x0000ff});
+		// 		let sphere = new THREE.Mesh(sg, sm);
+		// 		sphere.position.set(0, 0, 2);
+		// 		viewer.scene.scene.add(sphere);
+		// 	}
+
+		// 	{ // RANDOM SPHERES
+		// 		for(let i = 0; i < 2000; i++){
+		// 			let color = 
+		// 				((Math.random() * 255) << 16) |
+		// 				((Math.random() * 255) <<  8) |
+		// 				((Math.random() * 255) <<  0);
+		// 			let sm = new THREE.MeshBasicMaterial({color: color});
+		// 			let sphere = new THREE.Mesh(sg, sm);
+		// 			sphere.position.set(
+		// 				100 * Math.random() - 50, 
+		// 				100 * Math.random() - 50, 
+		// 				2);
+		// 			sphere.scale.set(3, 3, 3);
+		// 			viewer.scene.scene.add(sphere);
+
+		// 			sphere.frustumCulled = false;
+		// 		}
+		// 	}
+			
+		// }
 		
 	</script>
 	

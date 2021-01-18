@@ -1,5 +1,6 @@
 
 
+import * as THREE from "../libs/three.js/build/three.module.js";
 import {Action} from "./Actions.js";
 import {Utils} from "./utils.js";
 import {EventDispatcher} from "./EventDispatcher.js";
@@ -16,7 +17,7 @@ export class Annotation extends EventDispatcher {
 
 		if (!args.position) {
 			this.position = null;
-		} else if (args.position instanceof THREE.Vector3) {
+		} else if (args.position.x != null) {
 			this.position = args.position;
 		} else {
 			this.position = new THREE.Vector3(...args.position);
@@ -502,8 +503,8 @@ export class Annotation extends EventDispatcher {
 	}
 
 	hasView () {
-		let hasPosTargetView = this.cameraTarget instanceof THREE.Vector3;
-		hasPosTargetView = hasPosTargetView && this.cameraPosition instanceof THREE.Vector3;
+		let hasPosTargetView = this.cameraTarget.x != null;
+		hasPosTargetView = hasPosTargetView && this.cameraPosition.x != null;
 
 		let hasRadiusView = this.radius !== undefined;
 

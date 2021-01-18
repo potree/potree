@@ -1,4 +1,5 @@
 
+import * as THREE from "../libs/three.js/build/three.module.js";
 import {PointCloudTree} from "./PointCloudTree.js";
 import {PointCloudOctreeNode} from "./PointCloudOctree.js";
 import {PointCloudArena4DNode} from "./arena4d/PointCloudArena4D.js";
@@ -703,6 +704,11 @@ export class Renderer {
 		let material = params.material ? params.material : octree.material;
 		let shadowMaps = params.shadowMaps == null ? [] : params.shadowMaps;
 		let view = camera.matrixWorldInverse;
+
+		if(params.viewOverride){
+			view = params.viewOverride;
+		}
+
 		let worldView = new THREE.Matrix4();
 
 		let mat4holder = new Float32Array(16);
@@ -1036,9 +1042,15 @@ export class Renderer {
 		let shadowMaps = params.shadowMaps == null ? [] : params.shadowMaps;
 		let view = camera.matrixWorldInverse;
 		let viewInv = camera.matrixWorld;
+
+		if(params.viewOverride){
+			view = params.viewOverride;
+			viewInv = view.clone().invert();
+		}
+
 		let proj = camera.projectionMatrix;
-		let projInv = new THREE.Matrix4().getInverse(proj);
-		let worldView = new THREE.Matrix4();
+		let projInv = proj.clone().invert();
+		//let worldView = new THREE.Matrix4();
 
 		let shader = null;
 		let visibilityTextureData = null;
@@ -1254,7 +1266,7 @@ export class Renderer {
 					//let clipToWorld = new THREE.Matrix4().multiplyMatrices(mTranslate, mScale);
 					let clipToWorld = clipSphere.matrixWorld;
 					let viewToWorld = camera.matrixWorld
-					let worldToClip = new THREE.Matrix4().getInverse(clipToWorld);
+					let worldToClip = clipToWorld.clone().invert();
 
 					let viewToClip = new THREE.Matrix4().multiplyMatrices(worldToClip, viewToWorld);
 
@@ -1429,7 +1441,8 @@ export class Renderer {
 			this.threeRenderer.setRenderTarget(target);
 		}
 
-		camera.updateProjectionMatrix();
+		//camera.updateProjectionMatrix();
+		// camera.matrixWorldInverse.invert(camera.matrixWorld);
 
 		const traversalResult = this.traverse(scene);
 
@@ -1443,9 +1456,11 @@ export class Renderer {
 
 		// CLEANUP
 		gl.activeTexture(gl.TEXTURE1);
-		gl.bindTexture(gl.TEXTURE_2D, null)
+		gl.bindTexture(gl.TEXTURE_2D, null);
+		gl.bindBuffer(gl.ARRAY_BUFFER, null);
+		gl.bindVertexArray(null);
 
-		this.threeRenderer.state.reset();
+		this.threeRenderer.resetState();
 	}
 
 

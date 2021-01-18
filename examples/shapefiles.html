@@ -18,8 +18,6 @@
 	<script src="../libs/jquery/jquery-3.1.1.min.js"></script>
 	<script src="../libs/spectrum/spectrum.js"></script>
 	<script src="../libs/jquery-ui/jquery-ui.min.js"></script>
-	<script src="../libs/three.js/build/three.js"></script>
-	<script src="../libs/three.js/extra/lines.js"></script>
 	<script src="../libs/other/BinaryHeap.js"></script>
 	<script src="../libs/tween/tween.min.js"></script>
 	<script src="../libs/d3/d3.js"></script>
@@ -42,7 +40,9 @@
 		<div id="potree_sidebar_container"> </div>
 	</div>
 	
-	<script>
+	<script type="module">
+
+		import * as THREE from "../libs/three.js/build/three.module.js";
 	
 		window.viewer = new Potree.Viewer(document.getElementById("potree_render_area"));
 		
@@ -50,7 +50,7 @@
 		
 		viewer.setEDLEnabled(false);
 		viewer.setFOV(60);
-		viewer.setPointBudget(3*1000*1000);
+		viewer.setPointBudget(3_000_000);
 		viewer.loadSettingsFromURL();
 		
 		viewer.setDescription('San Simeon, CA Central Coast point cloud taken from <a href="http://opentopo.sdsc.edu/gridsphere/gridsphere?cid=geonlidarframeportlet&gs_action=lidarDataset&opentopoID=OTLAS.032013.26910.2" target="_blank">Open Topography</a> (17.7b points)');
@@ -188,42 +188,6 @@
 			
 				
 		});
-		
-		
-
-		// {
-		// 	let positions = [
-		// 		693738.442, 3916080.340, 175.970,
-		// 		694121.015, 3915885.120, 2.500,
-		// 		694627.471, 3916099.287, 1.500,
-		// 		693961.765, 3916738.056, 1.460,
-		// 	];
-
-		// 	let colors = [
-		// 		1, 0, 0,
-		// 		1, 0, 0,
-		// 		1, 0, 0,
-		// 		1, 0, 0,
-		// 	];
-
-		// 	const geometry = new THREE.LineGeometry();
-		// 	geometry.setPositions( positions );
-		// 	geometry.setColors( colors );
-
-		// 	matLine = new THREE.LineMaterial( {
-		// 		color: 0xff0000,
-		// 		linewidth: 5, // in pixels
-		// 		resolution: new THREE.Vector2(2000, 2000),
-		// 		dashed: false
-		// 	} );
-
-		// 	line = new THREE.Line2( geometry, matLine );
-		// 	line.computeLineDistances();
-		// 	line.scale.set( 1, 1, 1 );
-		// 	viewer.scene.scene.add( line );
-
-		// }
-		
 		
 	</script>
 	

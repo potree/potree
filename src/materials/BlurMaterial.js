@@ -1,6 +1,8 @@
 
 // see http://john-chapman-graphics.blogspot.co.at/2013/01/ssao-tutorial.html
 
+import * as THREE from "../../libs/three.js/build/three.module.js";
+
 Potree.BlurMaterial = class BlurMaterial extends THREE.ShaderMaterial{
 
 	constructor(parameters = {}){

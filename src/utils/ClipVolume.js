@@ -1,4 +1,5 @@
 
+import * as THREE from "../../libs/three.js/build/three.module.js";
 
 export class ClipVolume extends THREE.Object3D{
 	
@@ -244,7 +245,7 @@ export class ClipVolume extends THREE.Object3D{
 				rotaxis = new THREE.Vector4(0, 0, 1, 0);
 			}
 			this.updateMatrixWorld();
-			let invM = new THREE.Matrix4().getInverse(this.matrixWorld);
+			let invM = newthis.matrixWorld.clone().invert();
 			rotaxis = rotaxis.applyMatrix4(invM).normalize();
 			rotaxis = new THREE.Vector3(rotaxis.x, rotaxis.y, rotaxis.z);
 			this.rotateOnAxis(rotaxis, dir * this.clipRotOffset * Math.PI / 180);

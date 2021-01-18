@@ -870,6 +870,9 @@ export class Renderer {
 				let scale = initialRangeSize / globalRangeSize;
 				let offset = -(globalRange[0] - initialRange[0]) / initialRangeSize;
 
+				scale = Number.isNaN(scale) ? 1 : scale;
+				offset = Number.isNaN(offset) ? 0 : offset;
+
 				shader.setUniform1f("uGpsScale", scale);
 				shader.setUniform1f("uGpsOffset", offset);
 				//shader.setUniform2f("uFilterGPSTimeClipRange", [-Infinity, Infinity]);
@@ -994,6 +997,9 @@ export class Renderer {
 
 					let scale = initialRangeSize / globalRangeSize;
 					let offset = -(globalRange[0] - initialRange[0]) / initialRangeSize;
+
+					scale = Number.isNaN(scale) ? 1 : scale;
+					offset = Number.isNaN(offset) ? 0 : offset;
 
 					shader.setUniform1f("uExtraScale", scale);
 					shader.setUniform1f("uExtraOffset", offset);					

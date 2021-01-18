@@ -332,7 +332,7 @@ export class OctreeLoader{
 			"rgb": "rgba",
 		};
 
-		for(let jsonAttribute of jsonAttributes){
+		for (const jsonAttribute of jsonAttributes) {
 			let {name, description, size, numElements, elementSize, min, max} = jsonAttribute;
 
 			let type = typenameTypeattributeMap[jsonAttribute.type];
@@ -346,7 +346,13 @@ export class OctreeLoader{
 			}else{
 				attribute.range = [min, max];
 			}
-			
+
+			if (name === "gps-time") { // HACK: Guard against bad gpsTime range in metadata, see potree/potree#909
+				if (attribute.range[0] === attribute.range[1]) {
+					attribute.range[1] += 1;
+				}
+			}
+
 			attribute.initialRange = attribute.range;
 
 			attributes.add(attribute);

@@ -663,8 +663,6 @@ export class ProfileWindow extends EventDispatcher {
 			const sm = new THREE.MeshNormalMaterial();
 			const s = new THREE.Mesh(sg, sm);
 
-			s.position.set(589530.450, 231398.860, 769.735);
-
 			this.scene.add(s);
 		}
 

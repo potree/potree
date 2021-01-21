@@ -870,7 +870,7 @@ export class Sidebar{
 		{ // REMOVE CLIPPING TOOLS
 			clippingToolBar.append(this.createToolIcon(
 				Potree.resourcePath + "/icons/remove.svg",
-				"[title]tt.remove_all_measurement",
+				"[title]tt.remove_all_clipping_volumes",
 				() => {
 
 					this.viewer.scene.removeAllClipVolumes();

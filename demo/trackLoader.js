@@ -270,6 +270,16 @@ function resetColor(mesh, defaultColor) {
   }
 }
 
+// Reset all meshes to default color
+function resetAllMeshColors(meshes, defaultColor) {
+  Object.values(meshes).forEach(track => track.forEach(mesh => {
+    mesh.geometry.setAttribute('color', new THREE.Float32BufferAttribute(colorToAttributeArray(defaultColor), 3));
+  }));
+}
+
+// Global to determine if all mesh colors should be reset - must be global so button function can access
+let resetAllColors = false;
+
 // Updates a single track layer (i.e. updates mesh transforms and colors, discards unused meshes)
 function updateTrackLayer(layer, trackInfo, meshes, defaultColor, shaderMaterial, minTime, maxTime) {
   if (layer.visible) {
@@ -278,8 +288,13 @@ function updateTrackLayer(layer, trackInfo, meshes, defaultColor, shaderMaterial
     const edgesGeo = new THREE.EdgesGeometry(bufferGeo);
     edgesGeo.setAttribute('color', new THREE.Float32BufferAttribute(colorToAttributeArray(defaultColor), 3));
 
+    if (resetAllColors) {
+      resetAllMeshColors(meshes, defaultColor);
+      resetAllColors = false;
+    }
+
     // Iterate over each track
-    trackInfo.forEach(({ id, states }) => {
+    trackInfo.forEach(({ id, states, isAnomalous }) => {
       // Used to keep track of how many meshes have been updated - this is used later to delete tracks that have left the scene
       let meshCounter = 0;
 
@@ -317,7 +332,7 @@ function updateTrackLayer(layer, trackInfo, meshes, defaultColor, shaderMaterial
           currentMesh.track_id = id;
           currentMesh.timestamp = timestamp;
           currentMesh.isPropagated = isPropagated;
-          currentMesh.isAnomalous = false;
+          currentMesh.isAnomalous = isAnomalous;
           currentMesh.isStart = isStart;
           currentMesh.isEnd = isEnd;
 
@@ -492,6 +507,7 @@ export function addAnnotateTracksButton() {
       setSelectedTrackText();
     }
 
+    resetAllColors = !window.annotateTracksModeActive;
     animationEngine.updateTimeForAll();
   });
 }

@@ -41,9 +41,13 @@ let workers = {
 		"src/workers/EptLaszipDecoderWorker.js"
 	],
 	"EptBinaryDecoderWorker": [
+		"libs/ept/ParseBuffer.js",
 		"src/workers/EptBinaryDecoderWorker.js"
 	],
 	"EptZstandardDecoderWorker": [
+		"src/workers/EptZstandardDecoder_preamble.js",
+		'libs/zstd-codec/bundle.js',
+		"libs/ept/ParseBuffer.js",
 		"src/workers/EptZstandardDecoderWorker.js"
 	]
 };

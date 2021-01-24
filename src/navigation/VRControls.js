@@ -468,14 +468,22 @@ export class VRControls extends EventDispatcher{
 		// node.add(nSlider);
 		node.add(nInfo);
 
-		node.rotation.set(-1.5, 0, 0)
-		node.scale.set(0.3, 0.3, 0.3);
-		node.position.set(-0.2, -0.002, -0.1)
+		// {
+		// 	node.rotation.set(-1.5, 0, 0)
+		// 	node.scale.set(0.3, 0.3, 0.3);
+		// 	node.position.set(-0.2, -0.002, -0.1)
 
-		// nInfo.position.set(0.5, 0, 0);
-		nInfo.scale.set(0.8, 0.6, 0);
+		// 	// nInfo.position.set(0.5, 0, 0);
+		// 	nInfo.scale.set(0.8, 0.6, 0);
 
-		controller.add(node);
+		// 	// controller.add(node);
+		// }
+
+		node.position.set(-0.3, 1.2, 0.2);
+		node.scale.set(0.3, 0.2, 0.3);
+		node.lookAt(new THREE.Vector3(0, 1.5, 0.1));
+
+		this.viewer.sceneVR.add(node);
 
 		this.menu = node;
 
@@ -585,8 +593,9 @@ export class VRControls extends EventDispatcher{
 
 		// let scale = this.node.scale.x;
 		let scale = this.viewer.getMoveSpeed();
-		camera.near = 0.01 / scale;
-		camera.far = 10000;
+		//camera.near = 0.01 / scale;
+		camera.near = 0.1;
+		camera.far = 1000;
 		// camera.near = reference.near / scale;
 		// camera.far = reference.far / scale;
 		camera.up.set(0, 0, 1);

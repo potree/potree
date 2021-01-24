@@ -1587,6 +1587,12 @@ export class Viewer extends EventDispatcher{
 
 		const material = pointcloud.material;
 
+		const attIntensity = pointcloud.getAttribute("intensity");
+		
+		if(attIntensity != null && material.intensityRange[0] === Infinity){
+			material.intensityRange = [...attIntensity.range];
+		}
+
 		// const attIntensity = pointcloud.getAttribute("intensity");
 		// if(attIntensity && material.intensityRange[0] === Infinity){
 		// 	material.intensityRange = [...attIntensity.range];
@@ -1987,7 +1993,8 @@ export class Viewer extends EventDispatcher{
 			cam = makeCam();
 			cam.position.z -= 0.8 * cam.scale.x;
 			cam.parent = null;
-			cam.near = 0.05;
+			// cam.near = 0.05;
+			cam.near = viewer.scene.getActiveCamera().near;
 			cam.far = viewer.scene.getActiveCamera().far;
 			cam.updateMatrix();
 			cam.updateMatrixWorld();
@@ -2021,9 +2028,9 @@ export class Viewer extends EventDispatcher{
 
 			// automatically switch to paraboloids because they cause far less flickering in VR, 
 			// when point sizes are larger than around 2 pixels
-			if(Features.SHADER_INTERPOLATION.isSupported()){
-				pointcloud.material.shape = Potree.PointShape.PARABOLOID;
-			}
+			// if(Features.SHADER_INTERPOLATION.isSupported()){
+			// 	pointcloud.material.shape = Potree.PointShape.PARABOLOID;
+			// }
 		}
 		
 		// render point clouds

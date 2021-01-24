@@ -322,7 +322,7 @@ export class Utils {
 			}
 		}
 
-		let skyGeometry = new THREE.CubeGeometry(5000, 5000, 5000);
+		let skyGeometry = new THREE.CubeGeometry(700, 700, 700);
 		let skybox = new THREE.Mesh(skyGeometry, materialArray);
 
 		scene.add(skybox);

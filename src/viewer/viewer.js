@@ -2039,7 +2039,18 @@ export class Viewer extends EventDispatcher{
 			let v = xrCamera.viewport;
 			renderer.setViewport(v.x, v.y, v.width, v.height);
 
-			xrCamera.fov = 90;
+			// xrCamera.fov = 90;
+
+			{ // estimate VR fov
+				let proj = xrCamera.projectionMatrix;
+				let inv = proj.clone().invert();
+
+				let p1 = new THREE.Vector4(0, 1, -1, 1).applyMatrix4(inv);
+				let rad = p1.y
+				let fov = 180 * (rad / Math.PI);
+
+				xrCamera.fov = fov;
+			}
 
 			for(let pointcloud of this.scene.pointclouds){
 				const {material} = pointcloud;

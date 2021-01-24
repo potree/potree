@@ -116,11 +116,33 @@ export class PointCloudOctree extends PointCloudTree {
 		this.updateMatrix();
 
 		{
-			let attributeName = "rgba";
-			if(this.pcoGeometry.pointAttributes.attributes.length > 1){
-				attributeName = this.pcoGeometry.pointAttributes.attributes[1].name;
+
+			let priorityQueue = ["rgba", "rgb", "intensity", "classification"];
+			let selected = "rgba";
+
+			for(let attributeName of priorityQueue){
+				let attribute = this.pcoGeometry.pointAttributes.attributes.find(a => a.name === attributeName);
+
+				if(!attribute){
+					continue;
+				}
+
+				let min = attribute.range[0].constructor.name === "Array" ? attribute.range[0] : [attribute.range[0]];
+				let max = attribute.range[1].constructor.name === "Array" ? attribute.range[1] : [attribute.range[1]];
+
+				let range_min = new THREE.Vector3(...min);
+				let range_max = new THREE.Vector3(...max);
+				let range = range_min.distanceTo(range_max);
+
+				if(range === 0){
+					continue;
+				}
+
+				selected = attributeName;
+				break;
 			}
-			this.material.activeAttributeName = attributeName;
+
+			this.material.activeAttributeName = selected;
 		}
 
 		this.showBoundingBox = false;

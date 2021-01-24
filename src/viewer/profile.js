@@ -117,7 +117,7 @@ class ProfileFakeOctree extends PointCloudTree{
 				this.currentBatch.geometry.computeBoundingBox();
 				this.currentBatch.geometry.computeBoundingSphere();
 
-				this.currentBatch = this.createNewBatch();
+				this.currentBatch = this.createNewBatch(data);
 				updateRange = {
 					start: 0,
 					count: 0

@@ -18,6 +18,8 @@
 	<script src="../libs/jquery/jquery-3.1.1.min.js"></script>
 	<script src="../libs/spectrum/spectrum.js"></script>
 	<script src="../libs/jquery-ui/jquery-ui.min.js"></script>
+	
+	
 	<script src="../libs/other/BinaryHeap.js"></script>
 	<script src="../libs/tween/tween.min.js"></script>
 	<script src="../libs/d3/d3.js"></script>
@@ -38,39 +40,43 @@
 	
 	<script type="module">
 
-	import * as THREE from "../libs/three.js/build/three.module.js";
-
-		// import * as Potree from "../src/Potree.js";
-	
 		window.viewer = new Potree.Viewer(document.getElementById("potree_render_area"));
 		
 		viewer.setEDLEnabled(true);
 		viewer.setFOV(60);
-		viewer.setPointBudget(5_000_000);
+		viewer.setPointBudget(1_000_000);
 		viewer.loadSettingsFromURL();
+		viewer.setBackground("skybox");
 		
 		viewer.setDescription(`Point cloud courtesy of PG&E and <a href="https://opentopography.org/">Open Topography</a>.`);
 		
-		viewer.loadGUI().then( () => {
+		viewer.loadGUI(() => {
 			viewer.setLanguage('en');
-			// $("#menu_filters").next().show();
+			$("#menu_tools").next().show();
+			$("#menu_clipping").next().show();
 			viewer.toggleSidebar();
 		});
 		
-		Potree.loadPointCloud("http://5.9.65.151/mschuetz/potree/resources/pointclouds/opentopography/CA13_1.4/cloud.js", "CA13", function(e){
-			viewer.scene.addPointCloud(e.pointcloud);
-			e.pointcloud.position.z = 0;
-			let material = e.pointcloud.material;
-			material.size = 0.8;
+		// Load and add point cloud to scene
+		Potree.loadPointCloud("https://potree.org/pointclouds/morro_bay/metadata.json", "Morro Bay", e => {
+			let scene = viewer.scene;
+			let pointcloud = e.pointcloud;
+			
+			let material = pointcloud.material;
+			material.size = 0.6;
 			material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
+			material.shape = Potree.PointShape.SQUARE;
 			material.activeAttributeName = "rgba";
 			
+			scene.addPointCloud(pointcloud);
+			
+			// viewer.fitToScreen();
 			viewer.scene.view.setView(
-				[694517.403, 3899262.595, 10642.698],
-				[694878.410, 3916332.067, 14.497],
+				[693507.083, 3915277.848, 940.159],
+				[694700.838, 3916428.109, 52.515],
 			);
 		});
-		
+
 	</script>
 	
 	

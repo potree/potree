@@ -102,8 +102,8 @@ Copy the converted directory into &lt;potreeDirectory&gt;/pointclouds/data_conve
 				<img src="examples/thumbnails/matcap.jpg" width="100%" />
 			</a>
 		</td><td>
-			<a href="http://potree.org/potree/examples/vr.html" target="_blank">
-				<img src="examples/thumbnails/vr.jpg" width="100%" />
+			<a href="https://potree.org/potree/examples/vr_heidentor.html" target="_blank">
+				<img src="examples/thumbnails/heidentor.jpg" width="100%" />
 			</a>
 		</td><td>
 			<a href="http://potree.org/potree/examples/heidentor.html" target="_blank">
@@ -232,6 +232,37 @@ Copy the converted directory into &lt;potreeDirectory&gt;/pointclouds/data_conve
 	</tr>
 </table>
 </details>
+
+# VR
+
+<table>
+	<tr>
+		<td>
+			<a href="https://potree.org/potree/examples/vr_heidentor.html" target="_blank">
+				<img src="examples/thumbnails/heidentor.jpg" width="100%" />
+			</a>
+		</td><td>
+			<a href="https://potree.org/potree/examples/vr_eclepens.html" target="_blank">
+				<img src="examples/thumbnails/eclepens.jpg" width="100%" />
+			</a>
+		</td><td>
+			<a href="https://potree.org/potree/examples/vr_morro_bay.html" target="_blank">
+				<img src="examples/thumbnails/ca13.png" width="100%" />
+			</a>
+		</td><td>
+			<a href="https://potree.org/potree/examples/vr_lion.html" target="_blank">
+				<img src="examples/thumbnails/lion.png" width="100%" />
+			</a>
+		</td><td>
+			<a href="https://potree.org/potree/examples/vr_dechen_cave.html" target="_blank">
+				<img src="examples/thumbnails/dechen_cave.jpg" width="100%" />
+			</a>
+		</td>
+	</tr>
+	<tr>
+		<th>Heidentor</th><th>Eclepens</th><th>Morro Bay</th><th>Lion</th><th>Dechen Cave</th>
+	</tr>
+</table>
 
 # Showcase
 

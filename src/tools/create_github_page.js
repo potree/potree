@@ -89,6 +89,7 @@ async function createGithubPage(){
 	let unhandledCode = ``;
 
 	let exampleCode = toCode(files, settings.examples);
+	let vrCode = toCode(files, settings.VR);
 	let showcaseCode = toCode(files, settings.showcase);
 	let thirdpartyCode = toCode(files, settings.thirdparty);
 
@@ -98,6 +99,12 @@ async function createGithubPage(){
 
 		<table>
 			${exampleCode}
+		</table>
+
+		<h1>VR</h1>
+
+		<table>
+			${vrCode}
 		</table>
 
 		<h1>Showcase</h1>

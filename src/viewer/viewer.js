@@ -2039,6 +2039,8 @@ export class Viewer extends EventDispatcher{
 			let v = xrCamera.viewport;
 			renderer.setViewport(v.x, v.y, v.width, v.height);
 
+			xrCamera.fov = 90;
+
 			for(let pointcloud of this.scene.pointclouds){
 				const {material} = pointcloud;
 				material.useEDL = false;

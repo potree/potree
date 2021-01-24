@@ -34,45 +34,73 @@
 	<div class="potree_container" style="position: absolute; width: 100%; height: 100%; left: 0px; top: 0px; ">
 		<div id="potree_render_area" style="background-image: url('../build/potree/resources/images/background.jpg');"></div>
 		<div id="potree_sidebar_container"> </div>
+		<input id="tiffTest" type="button" value="tiff test" />
 	</div>
+
+	
 	
 	<script type="module">
 
-	import * as THREE from "../libs/three.js/build/three.module.js";
-
-		// import * as Potree from "../src/Potree.js";
+		import * as THREE from "../libs/three.js/build/three.module.js";
 	
 		window.viewer = new Potree.Viewer(document.getElementById("potree_render_area"));
 		
 		viewer.setEDLEnabled(true);
-		viewer.setFOV(60);
-		viewer.setPointBudget(5_000_000);
+		viewer.setFOV(90);
+		viewer.setPointBudget(1_000_000);
+		viewer.setMinNodeSize(0);
 		viewer.loadSettingsFromURL();
+		viewer.setBackground("skybox");
+		viewer.setShowBoundingBox(false);
 		
-		viewer.setDescription(`Point cloud courtesy of PG&E and <a href="https://opentopography.org/">Open Topography</a>.`);
+		viewer.setDescription(`Heidentor point cloud courtesy of <a href="http://archpro.lbg.ac.at/" target="_blank">Ludwig Boltzmann Institute - Archeological Prospection and Virtual Archeology</a> (26M points)`);
 		
-		viewer.loadGUI().then( () => {
+		viewer.loadGUI(() => {
 			viewer.setLanguage('en');
-			// $("#menu_filters").next().show();
-			viewer.toggleSidebar();
+			$("#menu_appearance").next().show();
+			$("#menu_tools").next().show();
+			$("#menu_scene").next().show();
+			//viewer.toggleSidebar();
 		});
 		
-		Potree.loadPointCloud("http://5.9.65.151/mschuetz/potree/resources/pointclouds/opentopography/CA13_1.4/cloud.js", "CA13", function(e){
+		Potree.loadPointCloud("https://potree.org/pointclouds/heidentor/metadata.json", "Heidentor", function(e){
 			viewer.scene.addPointCloud(e.pointcloud);
 			e.pointcloud.position.z = 0;
 			let material = e.pointcloud.material;
-			material.size = 0.8;
+			material.size = 1;
 			material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
-			material.activeAttributeName = "rgba";
 			
 			viewer.scene.view.setView(
-				[694517.403, 3899262.595, 10642.698],
-				[694878.410, 3916332.067, 14.497],
+				[4.681, 3.228, 2.074],
+				[3.681, 3.222, 2.359],
 			);
+
 		});
-		
+
+
+		{ // ground plane
+			const texture = new THREE.TextureLoader().load(`${Potree.resourcePath}/textures/rectangle.png`);
+
+			texture.wrapS = THREE.RepeatWrapping;
+			texture.wrapT = THREE.RepeatWrapping;
+			texture.repeat.x = 10;
+			texture.repeat.y = 10;
+			texture.anisotropy = 16;
+
+			let geometry = new THREE.PlaneBufferGeometry(1, 1, 10, 10);
+			let material = new THREE.MeshBasicMaterial();
+			material.map = texture;
+			material.needsUpdate = true;
+			let plane = new THREE.Mesh(geometry, material);
+			plane.scale.set(18, 18, 18);
+			plane.position.set(-2, 3, 0);
+			plane.material.color.setRGB(0.8, 0.8, 0.8);
+			window.plane = plane;
+			viewer.scene.scene.add(plane);
+		}
+
+
 	</script>
-	
 	
   </body>
 </html>

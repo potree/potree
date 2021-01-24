@@ -10,7 +10,6 @@
 
 		{"thumb": "thumbnails/toolbar.jpg", "label": "Toolbar", "url": "toolbar.html"},
 		{"thumb": "thumbnails/matcap.jpg", "label": "Matcap", "url": "matcap.html"},
-		{"thumb": "thumbnails/vr.jpg", "label": "Virtual Reality", "url": "vr.html"},
 		{"thumb": "thumbnails/heidentor.png", "label": "Heidentor", "url": "heidentor.html"},
 		{"thumb": "thumbnails/lion.png", "label": "Lion", "url": "lion.html"},
 		{"thumb": "thumbnails/lion_las.png", "label": "Lion LAS", "url": "lion_las.html"},
@@ -40,6 +39,13 @@
 		{"thumb": "thumbnails/custom_sidebar_section.png", "label": "Custom Sidebar Section", "url": "custom_sidebar_section.html"},
 		{"thumb": "thumbnails/embedded_iframe.png", "label": "Embedded Iframe", "url": "embedded_iframe.html"},
 		{"thumb": "thumbnails/gradient_colors.png", "label": "Gradient Colors", "url": "gradient_colors.html"}
+	],
+	"VR": [
+		{"thumb": "thumbnails/heidentor.jpg", "label": "Heidentor", "url": "vr_heidentor.html"},
+		{"thumb": "thumbnails/eclepens.jpg", "label": "Eclepens", "url": "vr_eclepens.html"},
+		{"thumb": "thumbnails/ca13.png", "label": "Morro Bay", "url": "vr_morro_bay.html"},
+		{"thumb": "thumbnails/lion.png", "label": "Lion", "url": "vr_lion.html"},
+		{"thumb": "thumbnails/dechen_cave.jpg", "label": "Dechen Cave", "url": "vr_dechen_cave.html"}
 	],
 	"showcase": [
 		{"thumb": "thumbnails/matterhorn.jpg", "label": "Matterhorn", "url": "showcase/matterhorn.html"},

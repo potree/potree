@@ -471,10 +471,10 @@ export class VRControls extends EventDispatcher{
 		let node = new THREE.Object3D("vr menu");
 
 		// let nSlider = this.createSlider("speed", 0, 1);
-		let nInfo = this.createInfo();
+		// let nInfo = this.createInfo();
 
-		// node.add(nSlider);
-		node.add(nInfo);
+		// // node.add(nSlider);
+		// node.add(nInfo);
 
 		// {
 		// 	node.rotation.set(-1.5, 0, 0)
@@ -487,11 +487,11 @@ export class VRControls extends EventDispatcher{
 		// 	// controller.add(node);
 		// }
 
-		node.position.set(-0.3, 1.2, 0.2);
-		node.scale.set(0.3, 0.2, 0.3);
-		node.lookAt(new THREE.Vector3(0, 1.5, 0.1));
+		// node.position.set(-0.3, 1.2, 0.2);
+		// node.scale.set(0.3, 0.2, 0.3);
+		// node.lookAt(new THREE.Vector3(0, 1.5, 0.1));
 
-		this.viewer.sceneVR.add(node);
+		// this.viewer.sceneVR.add(node);
 
 		this.menu = node;
 

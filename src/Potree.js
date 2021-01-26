@@ -90,8 +90,8 @@ export const workerPool = new WorkerPool();
 
 export const version = {
 	major: 1,
-	minor: 7,
-	suffix: '.1'
+	minor: 8,
+	suffix: '.0'
 };
 
 export let lru = new LRU();

@@ -1,5 +1,5 @@
 
-
+import * as THREE from "../../../libs/three.js/build/three.module.js";
 import {Utils} from "../../utils.js";
 import {PointCloudTree} from "../../PointCloudTree.js";
 import {Annotation} from "../../Annotation.js";
@@ -448,20 +448,23 @@ export class PropertiesPanel{
 						selectedRange = [...attribute.range];
 					}
 
-					panel.find('#sldExtraRange').slider({
-						range: true,
-						min: min, 
-						max: max, 
-						step: 0.01,
-						values: selectedRange,
-						slide: (event, ui) => {
-							let [a, b] = ui.values;
+					let minMaxAreNumbers = typeof min === "number" && typeof max === "number";
 
-							material.setRange(attribute.name, [a, b]);
-						}
-					});
+					if(minMaxAreNumbers){
+						panel.find('#sldExtraRange').slider({
+							range: true,
+							min: min, 
+							max: max, 
+							step: 0.01,
+							values: selectedRange,
+							slide: (event, ui) => {
+								let [a, b] = ui.values;
 
-					// material.extraRange = [min, max];
+								material.setRange(attribute.name, [a, b]);
+							}
+						});
+					}
+
 				}
 
 				let blockWeights = $('#materials\\.composite_weight_container');
@@ -774,14 +777,15 @@ export class PropertiesPanel{
 				
 				let range = material.getRange(attributeName);
 
-				// currently only supporting scalar ranges.
-				// rgba, normals, positions, etc have vector ranges, however
-				if(typeof range !== "number"){
-					return;
-				}
-
 				if(range == null){
 					range = attribute.range;
+				}
+
+				// currently only supporting scalar ranges.
+				// rgba, normals, positions, etc have vector ranges, however
+				let isValidRange = (typeof range[0] === "number") && (typeof range[1] === "number");
+				if(!isValidRange){
+					return;
 				}
 
 				if(range){

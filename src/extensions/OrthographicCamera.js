@@ -1,4 +1,6 @@
 
+import * as THREE from "../../libs/three.js/build/three.module.js";
+
 THREE.OrthographicCamera.prototype.zoomTo = function( node, factor = 1){
 
 	if ( !node.geometry && !node.boundingBox) {

@@ -5,12 +5,15 @@
 * Potree is a free open-source WebGL based point cloud renderer for large point clouds. It is based on the [TU Wien Scanopy project](https://www.cg.tuwien.ac.at/research/projects/Scanopy/) and research projects [Harvest4D](https://harvest4d.org/), [GCD Doctoral College](https://gcd.tuwien.ac.at/) and [Superhumans](https://www.cg.tuwien.ac.at/research/projects/Superhumans/).
 * Newest information and work in progress is usually available on [twitter](https://twitter.com/m_schuetz)
 * Contact: Markus Schütz (mschuetz@potree.org)
-* Reference: [Potree: Rendering Large Point Clouds in Web Browsers](https://www.cg.tuwien.ac.at/research/publications/2016/SCHUETZ-2016-POT/SCHUETZ-2016-POT-thesis.pdf)
+* References: 
+    * [Potree: Rendering Large Point Clouds in Web Browsers](https://www.cg.tuwien.ac.at/research/publications/2016/SCHUETZ-2016-POT/SCHUETZ-2016-POT-thesis.pdf) (2016)
+    * [Fast Out-of-Core Octree Generation for Massive Point Clouds](https://www.cg.tuwien.ac.at/research/publications/2020/SCHUETZ-2020-MPC/) (2020)
+    
 <a href="http://potree.org/wp/demo/" target="_blank"> ![](./docs/images/potree_screens.png) </a>
 
 # Getting Started
 
-### Install
+### Install on your PC
 
 Install [node.js](http://nodejs.org/)
 
@@ -20,7 +23,7 @@ Install dependencies, as specified in package.json, and create a build in ./buil
 npm install
 ```
 
-### Run
+### Run on your PC
 
 Use the `npm start` command to 
 
@@ -29,6 +32,11 @@ Use the `npm start` command to
 * start a web server at localhost:1234. 
 
 Go to http://localhost:1234/examples/ to test the examples.
+
+### Deploy to a server
+
+* Simply upload the Potree folderm with all your point clouds, the build directory, and your html files to a web server.
+* It is not required to install node.js on your webserver. All you need is to host your files online. 
 
 ### Convert Point Clouds to Potree Format
 
@@ -94,8 +102,8 @@ Copy the converted directory into &lt;potreeDirectory&gt;/pointclouds/data_conve
 				<img src="examples/thumbnails/matcap.jpg" width="100%" />
 			</a>
 		</td><td>
-			<a href="http://potree.org/potree/examples/vr.html" target="_blank">
-				<img src="examples/thumbnails/vr.jpg" width="100%" />
+			<a href="https://potree.org/potree/examples/vr_heidentor.html" target="_blank">
+				<img src="examples/thumbnails/heidentor.jpg" width="100%" />
 			</a>
 		</td><td>
 			<a href="http://potree.org/potree/examples/heidentor.html" target="_blank">
@@ -224,6 +232,37 @@ Copy the converted directory into &lt;potreeDirectory&gt;/pointclouds/data_conve
 	</tr>
 </table>
 </details>
+
+# VR
+
+<table>
+	<tr>
+		<td>
+			<a href="https://potree.org/potree/examples/vr_heidentor.html" target="_blank">
+				<img src="examples/thumbnails/heidentor.jpg" width="100%" />
+			</a>
+		</td><td>
+			<a href="https://potree.org/potree/examples/vr_eclepens.html" target="_blank">
+				<img src="examples/thumbnails/eclepens.jpg" width="100%" />
+			</a>
+		</td><td>
+			<a href="https://potree.org/potree/examples/vr_morro_bay.html" target="_blank">
+				<img src="examples/thumbnails/ca13.png" width="100%" />
+			</a>
+		</td><td>
+			<a href="https://potree.org/potree/examples/vr_lion.html" target="_blank">
+				<img src="examples/thumbnails/lion.png" width="100%" />
+			</a>
+		</td><td>
+			<a href="https://potree.org/potree/examples/vr_dechen_cave.html" target="_blank">
+				<img src="examples/thumbnails/dechen_cave.jpg" width="100%" />
+			</a>
+		</td>
+	</tr>
+	<tr>
+		<th>Heidentor</th><th>Eclepens</th><th>Morro Bay</th><th>Lion</th><th>Dechen Cave</th>
+	</tr>
+</table>
 
 # Showcase
 
@@ -360,10 +399,16 @@ Copy the converted directory into &lt;potreeDirectory&gt;/pointclouds/data_conve
 
 Potree is funded by a combination of research projects, companies and institutions. 
 
+Research projects who's funding contributes to Potree:
+
 <table>
 	<tr>
 		<th>Project Name</th>
 		<th>Funding Agency</th>
+	</tr>
+	<tr>
+		<td><a href="https://projekte.ffg.at/projekt/3851914">LargeClouds2BIM</a></td>
+		<td><a href="https://www.ffg.at/">FFG</a></td>
 	</tr>
 	<tr>
 		<td><a href="https://harvest4d.org/">Harvest4D</a></td>
@@ -419,6 +464,12 @@ We would like to thank our sponsors for their financial contributions that keep 
 			€ 5,000+
 		</th>
 		<td>
+			<a href="https://biology.anu.edu.au/research/facilities/australian-plant-phenomics-facility-anu">
+				<img src="docs/sponsors/APPF full logo.png" height="70"/> &nbsp;
+			</a>
+			<a href="https://www.limit-addict.fr/">
+				<img src="docs/sponsors/limitaddict.png" height="45"/>
+			</a>
 			<a href="http://georepublic.info">
 				<img src="docs/sponsors/georepublic.png" height="45"/>
 			</a>
@@ -430,9 +481,19 @@ We would like to thank our sponsors for their financial contributions that keep 
 			€ 1,000+
 		</th>
 		<td>
-			<a href="https://biology.anu.edu.au/research/facilities/australian-plant-phenomics-facility-anu">
-				<img src="docs/sponsors/APPF full logo.png" height="60"/> &nbsp;
+			<a href="https://www.eventart.at/">
+				<img src="docs/sponsors/eventart.png" height="55"/> &nbsp;
 			</a>
+			<a href="https://www.geodelta.com/">
+				<img src="docs/sponsors/geodelta.png" height="35"/> &nbsp;
+			</a>
+			<a href="https://www.e-cassini.fr/">
+				<img src="docs/sponsors/e_cassini.jpg" height="70"/> &nbsp;
+			</a>
+			<a href="https://www.sogelink.fr/">
+				<img src="docs/sponsors/SOGELINK_SO-EASY.png" height="40"/> &nbsp;
+			</a>
+			<b>Data-viewer</b>
 			<a href="http://www.helimap.com/">
 				<img src="docs/sponsors/helimap.gif" height="60"/> &nbsp;
 			</a>

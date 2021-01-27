@@ -1,4 +1,5 @@
 
+import * as THREE from "../../libs/three.js/build/three.module.js";
 import {PointCloudSM} from "../utils/PointCloudSM.js";
 import {EyeDomeLightingMaterial} from "../materials/EyeDomeLightingMaterial.js";
 import {SphereVolume} from "../utils/Volume.js";
@@ -177,7 +178,7 @@ export class EDLRenderer{
 			}
 
 			viewer.shadowTestCam.updateMatrixWorld();
-			viewer.shadowTestCam.matrixWorldInverse.getInverse(viewer.shadowTestCam.matrixWorld);
+			viewer.shadowTestCam.matrixWorldInverse.copy(viewer.shadowTestCam.matrixWorld).invert();
 			viewer.shadowTestCam.updateProjectionMatrix();
 		}
 
@@ -187,8 +188,9 @@ export class EDLRenderer{
 		this.initEDL();
 
 		const viewer = this.viewer;
-		const camera = params.camera ? params.camera : viewer.scene.getActiveCamera();
+		let camera = params.camera ? params.camera : viewer.scene.getActiveCamera();
 		const {width, height} = this.viewer.renderer.getSize(new THREE.Vector2());
+
 
 		viewer.dispatchEvent({type: "render.pass.begin",viewer: viewer});
 		
@@ -208,7 +210,7 @@ export class EDLRenderer{
 
 		let lights = [];
 		viewer.scene.scene.traverse(node => {
-			if(node instanceof THREE.SpotLight){
+			if(node.type === "SpotLight"){
 				lights.push(node);
 			}
 		});
@@ -217,6 +219,10 @@ export class EDLRenderer{
 			viewer.skybox.camera.rotation.copy(viewer.scene.cameraP.rotation);
 			viewer.skybox.camera.fov = viewer.scene.cameraP.fov;
 			viewer.skybox.camera.aspect = viewer.scene.cameraP.aspect;
+
+			viewer.skybox.parent.rotation.x = 0;
+			viewer.skybox.parent.updateMatrixWorld();
+
 			viewer.skybox.camera.updateProjectionMatrix();
 			viewer.renderer.render(viewer.skybox.scene, viewer.skybox.camera);
 		} else if (viewer.background === 'gradient') {
@@ -239,7 +245,7 @@ export class EDLRenderer{
 				material.screenHeight = height;
 				material.uniforms.visibleNodes.value = pointcloud.material.visibleNodesTexture;
 				material.uniforms.octreeSize.value = octreeSize;
-				material.spacing = pointcloud.pcoGeometry.spacing * Math.max(pointcloud.scale.x, pointcloud.scale.y, pointcloud.scale.z);
+				material.spacing = pointcloud.pcoGeometry.spacing; // * Math.max(pointcloud.scale.x, pointcloud.scale.y, pointcloud.scale.z);
 			}
 			
 			// TODO adapt to multiple lights
@@ -252,6 +258,30 @@ export class EDLRenderer{
 					transparent: false,
 				});
 			}else{
+
+				
+				// let test = camera.clone();
+				// test.matrixAutoUpdate = false;
+
+				// //test.updateMatrixWorld = () => {};
+
+				// let mat = new THREE.Matrix4().set(
+				// 	1, 0, 0, 0,
+				// 	0, 0, 1, 0,
+				// 	0, -1, 0, 0,
+				// 	0, 0, 0, 1,
+				// );
+				// mat.invert()
+
+				// test.matrix.multiplyMatrices(mat, test.matrix);
+				// test.updateMatrixWorld();
+
+				//test.matrixWorld.multiplyMatrices(mat, test.matrixWorld);
+				//test.matrixWorld.multiply(mat);
+				//test.matrixWorldInverse.invert(test.matrixWorld);
+				//test.matrixWorldInverse.multiplyMatrices(test.matrixWorldInverse, mat);
+				
+
 				viewer.pRenderer.render(viewer.scene.scenePointCloud, camera, this.rtEDL, {
 					clipSpheres: viewer.scene.volumes.filter(v => (v instanceof SphereVolume)),
 					transparent: false,

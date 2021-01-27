@@ -1,4 +1,5 @@
 
+import * as THREE from "../libs/three.js/build/three.module.js";
 import {XHRFactory} from "./XHRFactory.js";
 import {Volume} from "./utils/Volume.js";
 import {Profile} from "./utils/Profile.js";
@@ -31,7 +32,7 @@ export class Utils {
 	}
 
 	static toString (value) {
-		if (value instanceof THREE.Vector3) {
+		if (value.x != null) {
 			return value.x.toFixed(2) + ', ' + value.y.toFixed(2) + ', ' + value.z.toFixed(2);
 		} else {
 			return '' + value + '';
@@ -67,6 +68,8 @@ export class Utils {
 		sphere.position.copy(position);
 		sphere.scale.set(scale, scale, scale);
 		parent.add(sphere);
+
+		return sphere;
 	}
 
 	static debugLine(parent, start, end, color){
@@ -83,6 +86,17 @@ export class Utils {
 		tl.position.copy(start);
 
 		parent.add(tl);
+
+		let line = {
+			node: tl,
+			set: (start, end) => {
+				geometry.vertices[0].copy(start);
+				geometry.vertices[1].copy(end);
+				geometry.verticesNeedUpdate = true;
+			},
+		};
+
+		return line;
 	}
 
 	static debugCircle(parent, center, radius, normal, color){
@@ -267,6 +281,8 @@ export class Utils {
 	}
 
 	static loadSkybox (path) {
+		let parent = new THREE.Object3D("skybox_root");
+
 		let camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 100000);
 		camera.up.set(0, 0, 1);
 		let scene = new THREE.Scene();
@@ -306,15 +322,20 @@ export class Utils {
 			}
 		}
 
-		let skyGeometry = new THREE.CubeGeometry(5000, 5000, 5000);
+		let skyGeometry = new THREE.CubeGeometry(700, 700, 700);
 		let skybox = new THREE.Mesh(skyGeometry, materialArray);
 
 		scene.add(skybox);
 
+		scene.traverse(n => n.frustumCulled = false);
+
 		// z up
 		scene.rotation.x = Math.PI / 2;
 
-		return {'camera': camera, 'scene': scene};
+		parent.children.push(camera);
+		camera.parent = parent;
+
+		return {camera, scene, parent};
 	};
 
 	static createGrid (width, length, spacing, color) {
@@ -1059,7 +1080,7 @@ export class Utils {
 
 Utils.screenPass = new function () {
 	this.screenScene = new THREE.Scene();
-	this.screenQuad = new THREE.Mesh(new THREE.PlaneBufferGeometry(2, 2, 0));
+	this.screenQuad = new THREE.Mesh(new THREE.PlaneBufferGeometry(2, 2, 1));
 	this.screenQuad.material.depthTest = true;
 	this.screenQuad.material.depthWrite = true;
 	this.screenQuad.material.transparent = true;

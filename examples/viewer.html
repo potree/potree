@@ -18,8 +18,8 @@
 	<script src="../libs/jquery/jquery-3.1.1.min.js"></script>
 	<script src="../libs/spectrum/spectrum.js"></script>
 	<script src="../libs/jquery-ui/jquery-ui.min.js"></script>
-	<script src="../libs/three.js/build/three.min.js"></script>
-	<script src="../libs/three.js/extra/lines.js"></script>
+	
+	
 	<script src="../libs/other/BinaryHeap.js"></script>
 	<script src="../libs/tween/tween.min.js"></script>
 	<script src="../libs/d3/d3.js"></script>
@@ -38,14 +38,15 @@
 		<div id="potree_sidebar_container"> </div>
 	</div>
 	
-	<script>
-	
+	<script type="module">
+
 		window.viewer = new Potree.Viewer(document.getElementById("potree_render_area"));
 		
-		viewer.setEDLEnabled(true);
+		viewer.setEDLEnabled(false);
 		viewer.setFOV(60);
-		viewer.setPointBudget(1*1000*1000);
+		viewer.setPointBudget(1_000_000);
 		viewer.loadSettingsFromURL();
+		viewer.setBackground("skybox");
 		
 		viewer.setDescription("Point cloud courtesy of <a target='_blank' href='https://www.sigeom.ch/'>sigeom sa</a>");
 		
@@ -68,11 +69,13 @@
 			
 			scene.addPointCloud(pointcloud);
 			
-			//scene.view.position.set(589974.341, 231698.397, 986.146);
-			//scene.view.lookAt(new THREE.Vector3(589851.587, 231428.213, 715.634));
 			viewer.fitToScreen();
+			// scene.view.setView(
+			// 	[589974.341, 231698.397, 986.146],
+			// 	[589851.587, 231428.213, 715.634],
+			// );
 		});
-		
+
 	</script>
 	
 	

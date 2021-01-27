@@ -1,4 +1,6 @@
 
+import * as THREE from "../../libs/three.js/build/three.module.js";
+
 export class NavigationCube extends THREE.Object3D {
 
 	constructor(viewer){

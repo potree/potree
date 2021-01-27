@@ -1,4 +1,5 @@
 
+import * as THREE from "../../libs/three.js/build/three.module.js";
 import {TextSprite} from "../TextSprite.js";
 
 export class Volume extends THREE.Object3D {

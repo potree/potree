@@ -1,5 +1,5 @@
 
-
+import * as THREE from "../../libs/three.js/build/three.module.js";
 import {Utils} from "../utils.js";
 import {Points} from "../Points.js";
 import {CSVExporter} from "../exporter/CSVExporter.js";
@@ -117,7 +117,7 @@ class ProfileFakeOctree extends PointCloudTree{
 				this.currentBatch.geometry.computeBoundingBox();
 				this.currentBatch.geometry.computeBoundingSphere();
 
-				this.currentBatch = this.createNewBatch();
+				this.currentBatch = this.createNewBatch(data);
 				updateRange = {
 					start: 0,
 					count: 0
@@ -197,7 +197,7 @@ class ProfileFakeOctree extends PointCloudTree{
 				range: [0, 1],
 			};
 
-			geometry.addAttribute(attributeName, bufferAttribute);
+			geometry.setAttribute(attributeName, bufferAttribute);
 		}
 
 		geometry.drawRange.start = 0;
@@ -631,14 +631,17 @@ export class ProfileWindow extends EventDispatcher {
 		{
 			let gl = this.renderer.getContext();
 
-			let extVAO = gl.getExtension('OES_vertex_array_object');
+			if(gl.createVertexArray == null){
+				let extVAO = gl.getExtension('OES_vertex_array_object');
 
-			if(!extVAO){
-				throw new Error("OES_vertex_array_object extension not supported");
+				if(!extVAO){
+					throw new Error("OES_vertex_array_object extension not supported");
+				}
+
+				gl.createVertexArray = extVAO.createVertexArrayOES.bind(extVAO);
+				gl.bindVertexArray = extVAO.bindVertexArrayOES.bind(extVAO);
 			}
-
-			gl.createVertexArray = extVAO.createVertexArrayOES.bind(extVAO);
-			gl.bindVertexArray = extVAO.bindVertexArrayOES.bind(extVAO);
+			
 		}
 
 		this.camera = new THREE.OrthographicCamera(-1000, 1000, 1000, -1000, -1000, 1000);

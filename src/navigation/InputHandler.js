@@ -4,7 +4,7 @@
  *
  */
 
-
+import * as THREE from "../../libs/three.js/build/three.module.js";
 import {KeyCodes} from "../KeyCodes.js";
 import {Utils} from "../utils.js";
 import {EventDispatcher} from "../EventDispatcher.js";
@@ -673,17 +673,11 @@ export class InputHandler extends EventDispatcher {
 		
 		let raycaster = new THREE.Raycaster();
 		raycaster.ray.set(ray.origin, ray.direction);
-		raycaster.linePrecision = 0.2;
+		raycaster.params.Line.threshold = 0.2;
 
 		let intersections = raycaster.intersectObjects(interactables.filter(o => o.visible), false);
 
 		return intersections;
-
-		// if(intersections.length > 0){
-		//	return intersections[0];
-		// }else{
-		//	return null;
-		// }
 	}
 
 	setScene (scene) {

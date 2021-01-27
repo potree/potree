@@ -4,10 +4,7 @@
 	<meta charset="utf-8">
 	<meta name="description" content="">
 	<meta name="author" content="">
-	<!-- <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no"> -->
-	<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-capable" content="yes">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 	<title>Potree Viewer</title>
 
 	<link rel="stylesheet" type="text/css" href="../build/potree/potree.css">
@@ -21,8 +18,8 @@
 	<script src="../libs/jquery/jquery-3.1.1.min.js"></script>
 	<script src="../libs/spectrum/spectrum.js"></script>
 	<script src="../libs/jquery-ui/jquery-ui.min.js"></script>
-	<script src="../libs/three.js/build/three.min.js"></script>
-	<script src="../libs/three.js/extra/lines.js"></script>
+	
+	
 	<script src="../libs/other/BinaryHeap.js"></script>
 	<script src="../libs/tween/tween.min.js"></script>
 	<script src="../libs/d3/d3.js"></script>
@@ -32,7 +29,6 @@
 	<script src="../libs/jstree/jstree.js"></script>
 	<script src="../build/potree/potree.js"></script>
 	<script src="../libs/plasio/js/laslaz.js"></script>
-	<script src="../libs/other/OBJLoader.js"></script>
 	
 	<!-- INCLUDE ADDITIONAL DEPENDENCIES HERE -->
 	<!-- INCLUDE SETTINGS HERE -->
@@ -42,93 +38,51 @@
 		<div id="potree_sidebar_container"> </div>
 	</div>
 	
-	<script>
-	
+	<script type="module">
+
 		window.viewer = new Potree.Viewer(document.getElementById("potree_render_area"));
 		
 		viewer.setEDLEnabled(true);
 		viewer.setFOV(60);
-		viewer.setPointBudget(3 * 1000 * 1000);
+		viewer.setPointBudget(1_000_000);
 		viewer.loadSettingsFromURL();
+		viewer.setBackground("skybox");
+		
+		viewer.setDescription(`Point cloud of <a href="http://www.dechenhoehle.de/" target="_blank">Dechen-Cave, Iserlohn</a>. Courtesy of <a href="http://lrg.geog.uni-heidelberg.de" target="_blank">Heidelberg University, LiDAR Research Group (LRG)</a><br>
+			<i style="font-size: small">
+			H&auml;mmerle, M., H&ouml;fle, B., Fuchs, J., Schr&ouml;der-Ritzrau, A., Vollweiler, N. & Frank, N. (2014): <a href="http://lrg.geog.uni-heidelberg.de/dechencave/" target="_blank">Comparison of Kinect and Terrestrial LiDAR Capturing Natural Karst Cave 3D Objects</a>. IEEE Geoscience and Remote Sensing Letters, Vol. 11(11), pp 1896-1900, DOI:<a href="http://dx.doi.org/10.1109/LGRS.2014.2313599" target="_blank">10.1109/LGRS.2014.2313599</a>
+			</i>`);
 		
 		viewer.loadGUI(() => {
 			viewer.setLanguage('en');
 			$("#menu_tools").next().show();
 			$("#menu_clipping").next().show();
-			//viewer.toggleSidebar();
+			viewer.toggleSidebar();
 		});
 		
-		Potree.loadPointCloud("http://5.9.65.151/mschuetz/potree/resources/pointclouds/uni_heidelberg/dechen_cave/cloud.js", "Dechen Cave", function(e){
-			viewer.scene.addPointCloud(e.pointcloud);
-
-			e.pointcloud.position.set(-10, -15, -2);
-			e.pointcloud.scale.set(1, 1, 1);
+		// Load and add point cloud to scene
+		Potree.loadPointCloud("https://potree.org/pointclouds/dechen_cave/metadata.json", "Dechen Cave", e => {
+			let scene = viewer.scene;
+			let pointcloud = e.pointcloud;
 			
-			const material = e.pointcloud.material;
-
-			material.size = 0.4;
+			let material = pointcloud.material;
+			material.size = 0.7;
 			material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
-			material.rgbGamma = 0.35;
-			material.rgbBrightness = -0.26;
+			material.shape = Potree.PointShape.SQUARE;
+			material.activeAttributeName = "rgba";
+			material.rgbGamma = 0.67;
+			
+			scene.addPointCloud(pointcloud);
+			
+			// viewer.fitToScreen();
+			viewer.scene.view.setView(
+				[8.408, 12.242, 2.585],
+				[9.270, 12.767, 2.584],
+			);
 		});
 
-
-		{ // Load OBJ File
-			let manager = new THREE.LoadingManager();
-			
-			manager.onProgress = function ( item, loaded, total ) {
-				console.log( item, loaded, total );
-			};
-
-			let textureLoader = new THREE.TextureLoader( manager );
-			let texture = textureLoader.load(`${Potree.resourcePath}/textures/brick_pavement.jpg`);
-			let onProgress = function ( xhr ) {
-				if ( xhr.lengthComputable ) {
-					let percentComplete = xhr.loaded / xhr.total * 100;
-					console.log( Math.round(percentComplete, 2) + '% downloaded' );
-				}
-			};
-			texture.wrapS = THREE.RepeatWrapping;
-			texture.wrapT = THREE.RepeatWrapping;
-
-			let onError = function ( xhr ) {};
-			let loader = new THREE.OBJLoader( manager );
-			loader.load(`${Potree.resourcePath}/models/stanford_bunny_reduced.obj`, function ( object ) {
-				object.traverse( function ( child ) {
-					if ( child instanceof THREE.Mesh ) {
-						child.material.map = texture;
-					}
-				});
-
-				//object.position.set(589871.587, 231528.213, 725.634);
-				object.scale.multiplyScalar(3);
-				object.rotation.set(Math.PI / 2, Math.PI, 0)
-
-				viewer.scene.scene.add( object );
-			}, onProgress, onError );
-		}
-
-		{
-			const light1 = new THREE.PointLight( 0xffffff, 0.8); 
-			light1.position.set( 15, -15, 3 ); 
-			viewer.scene.scene.add(light1);
-
-			const light2 = new THREE.PointLight( 0xffffff, 0.8); 
-			light2.position.set( 0, 0, 3 ); 
-			viewer.scene.scene.add(light2);
-		}
-
-
 	</script>
-
-
 	
-	<div style="position: absolute; z-index: 10000; right: 10px; bottom: 10px;" 
-		onclick="viewer.toggleVR()">
-
-		<img src="../resources/icons/vr_button.svg" />
-
-	</div>
 	
   </body>
 </html>

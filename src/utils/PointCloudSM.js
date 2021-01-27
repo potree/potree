@@ -1,4 +1,6 @@
 
+import * as THREE from "../../libs/three.js/build/three.module.js";
+
 export class PointCloudSM{
 
 	constructor(potreeRenderer){
@@ -47,7 +49,7 @@ export class PointCloudSM{
 		this.camera.updateProjectionMatrix();
 		this.camera.updateMatrix();
 		this.camera.updateMatrixWorld();
-		this.camera.matrixWorldInverse.getInverse(this.camera.matrixWorld);
+		this.camera.matrixWorldInverse.copy(this.camera.matrixWorld).invert();
 	}
 
 	setSize(width, height){

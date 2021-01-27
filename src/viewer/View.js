@@ -1,3 +1,4 @@
+import * as THREE from "../../libs/three.js/build/three.module.js";
 
 export class View{
 	constructor () {
@@ -126,14 +127,14 @@ export class View{
 		let endPosition = null;
 		if(position instanceof Array){
 			endPosition = new THREE.Vector3(...position);
-		}else if(position instanceof THREE.Vector3){
+		}else if(position.x != null){
 			endPosition = position.clone();
 		}
 
 		let endTarget = null;
 		if(target instanceof Array){
 			endTarget = new THREE.Vector3(...target);
-		}else if(target instanceof THREE.Vector3){
+		}else if(target.x != null){
 			endTarget = target.clone();
 		}
 		

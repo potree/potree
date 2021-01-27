@@ -19,8 +19,6 @@
 	<script src="../libs/jquery/jquery-3.1.1.min.js"></script>
 	<script src="../libs/spectrum/spectrum.js"></script>
 	<script src="../libs/jquery-ui/jquery-ui.min.js"></script>
-	<script src="../libs/three.js/build/three.min.js"></script>
-	<script src="../libs/three.js/extra/lines.js"></script>
 	<script src="../libs/other/BinaryHeap.js"></script>
 	<script src="../libs/tween/tween.min.js"></script>
 	<script src="../libs/d3/d3.js"></script>
@@ -44,7 +42,10 @@
 	</div>
 
 
-<script>
+<script type="module">
+
+	import * as THREE from "../libs/three.js/build/three.module.js";
+	
 	window.cesiumViewer = new Cesium.Viewer('cesiumContainer', {
 		useDefaultRenderLoop: false,
 		animation: false,
@@ -76,7 +77,7 @@
 	});
 	potreeViewer.setEDLEnabled(true);
 	potreeViewer.setFOV(60);
-	potreeViewer.setPointBudget(4*1000*1000);
+	potreeViewer.setPointBudget(3_000_000);
 	potreeViewer.setMinNodeSize(50);
 	potreeViewer.loadSettingsFromURL();
 	potreeViewer.setBackground(null);
@@ -100,7 +101,6 @@
 		
 		scene.addPointCloud(e.pointcloud);
 		
-
 		e.pointcloud.position.set(569277.402752, 5400050.599046, 0);
 		e.pointcloud.rotation.set(0, 0, -0.035);
 
@@ -113,8 +113,6 @@
 		
 		scene.view.position.set(570975.577, 5398630.521, 1659.311);
 		scene.view.lookAt(570115.285, 5400866.092, 30.009);
-
-		Potree.measureTimings = true;
 
 		{
 			let aTownHall = new Potree.Annotation({
@@ -181,17 +179,17 @@
 				});
 
 				elTitle.find("span[name=low]").click( () => {
-					potreeViewer.setPointBudget(1 * 1000 * 1000);
+					potreeViewer.setPointBudget(1_000_000);
 					potreeViewer.useHQ = false;
 				});
 
 				elTitle.find("span[name=med]").click( () => {
-					potreeViewer.setPointBudget(3 * 1000 * 1000);
+					potreeViewer.setPointBudget(3_000_000);
 					potreeViewer.useHQ = false;
 				});
 
 				elTitle.find("span[name=high]").click( () => {
-					potreeViewer.setPointBudget(4 * 1000 * 1000);
+					potreeViewer.setPointBudget(4_000_000);
 					potreeViewer.useHQ = true;
 				});
 

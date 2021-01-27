@@ -1,4 +1,5 @@
 
+import * as THREE from "../../../libs/three.js/build/three.module.js";
 import {EventDispatcher} from "../../EventDispatcher.js";
 
  
@@ -199,7 +200,7 @@ export class OrientedImageControls extends EventDispatcher{
 
 		const proj = shearCam.projectionMatrix;
 		proj.multiply(mShear);
-		shearCam.projectionMatrixInverse.getInverse( proj );
+		shearCam.projectionMatrixInverse.copy(proj).invert();
 
 		let total = shearCam.projectionMatrix.elements.reduce( (a, i) => a + i, 0);
 

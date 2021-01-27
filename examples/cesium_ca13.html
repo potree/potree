@@ -9,7 +9,6 @@
 
 	<link rel="stylesheet" type="text/css" href="../build/potree/potree.css">
 	<link rel="stylesheet" type="text/css" href="../libs/jquery-ui/jquery-ui.min.css">
-
 	<link rel="stylesheet" type="text/css" href="../libs/openlayers3/ol.css">
 	<link rel="stylesheet" type="text/css" href="../libs/spectrum/spectrum.css">
 	<link rel="stylesheet" type="text/css" href="../libs/jstree/themes/mixed/style.css">
@@ -20,8 +19,6 @@
 	<script src="../libs/jquery/jquery-3.1.1.min.js"></script>
 	<script src="../libs/spectrum/spectrum.js"></script>
 	<script src="../libs/jquery-ui/jquery-ui.min.js"></script>
-	<script src="../libs/three.js/build/three.min.js"></script>
-	<script src="../libs/three.js/extra/lines.js"></script>
 	<script src="../libs/other/BinaryHeap.js"></script>
 	<script src="../libs/tween/tween.min.js"></script>
 	<script src="../libs/d3/d3.js"></script>
@@ -45,7 +42,10 @@
 	</div>
 
 
-<script>
+<script type="module">
+
+	import * as THREE from "../libs/three.js/build/three.module.js";
+
 	window.cesiumViewer = new Cesium.Viewer('cesiumContainer', {
 		useDefaultRenderLoop: false,
 		animation: false,
@@ -77,7 +77,7 @@
 	});
 	potreeViewer.setEDLEnabled(true);
 	potreeViewer.setFOV(60);
-	potreeViewer.setPointBudget(1000*1000);
+	potreeViewer.setPointBudget(1_000_000);
 	potreeViewer.setMinNodeSize(0);
 	potreeViewer.loadSettingsFromURL();
 	potreeViewer.setBackground(null);
@@ -91,16 +91,20 @@
 	});
 	
 	Potree.loadPointCloud("http://5.9.65.151/mschuetz/potree/resources/pointclouds/opentopography/CA13_1.4/cloud.js", "CA13", function(e){
-	//Potree.loadPointCloud("../pointclouds/vol_total/cloud.js", "sigeom.sa", e => {
-		potreeViewer.scene.addPointCloud(e.pointcloud);
-		//e.pointcloud.position.z = 0;
-		let material = e.pointcloud.material;
+
+		let pointcloud = e.pointcloud;
+		let scene = potreeViewer.scene;
+		let material = pointcloud.material;
+
+		scene.addPointCloud(pointcloud);
+
+		material.size = 1;
 		material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
 		
-		potreeViewer.scene.view.position.set(689429.64, 3877023.77, 42878.97);
-		potreeViewer.scene.view.lookAt(new THREE.Vector3(696072.86, 3916730.04, 82.04));
-
-		Potree.measureTimings = true;
+		potreeViewer.scene.view.setView(
+			[689429.64, 3877023.77, 42878.97],
+			[696072.86, 3916730.04, 82.04],
+		);
 
 		let pointcloudProjection = e.pointcloud.projection;
 		let mapProjection = proj4.defs("WGS84");
@@ -119,14 +123,12 @@
 
 		if(window.toMap !== undefined){
 
-			let camera = potreeViewer.scene.getActiveCamera();
+			{
+				let camera = potreeViewer.scene.getActiveCamera();
 
-			if(camera instanceof THREE.PerspectiveCamera){
-
-
-				let pPos		= new THREE.Vector3(0, 0, 0).applyMatrix4(camera.matrixWorld);
-				let pRight  = new THREE.Vector3(600, 0, 0).applyMatrix4(camera.matrixWorld);
-				let pUp		 = new THREE.Vector3(0, 600, 0).applyMatrix4(camera.matrixWorld);
+				let pPos = new THREE.Vector3(0, 0, 0).applyMatrix4(camera.matrixWorld);
+				let pRight = new THREE.Vector3(600, 0, 0).applyMatrix4(camera.matrixWorld);
+				let pUp = new THREE.Vector3(0, 600, 0).applyMatrix4(camera.matrixWorld);
 				let pTarget = potreeViewer.scene.view.getPivot();
 
 				let toCes = (pos) => {
@@ -166,10 +168,9 @@
 					cesiumViewer.camera.frustum.fov = fovx;
 				}
 
-				cesiumViewer.render();
-			}else{
-				
 			}
+
+			cesiumViewer.render();
 		}
 	}
 

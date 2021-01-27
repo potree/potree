@@ -668,6 +668,12 @@ float getPointSize(){
 	
 	float slope = tan(fov / 2.0);
 	float projFactor = -0.5 * uScreenHeight / (slope * vViewPosition.z);
+
+	float scale = length(
+		modelViewMatrix * vec4(0, 0, 0, 1) - 
+		modelViewMatrix * vec4(uOctreeSpacing, 0, 0, 1)
+	) / uOctreeSpacing;
+	projFactor = projFactor * scale;
 	
 	float r = uOctreeSpacing * 1.7;
 	vRadius = r;
@@ -685,23 +691,8 @@ float getPointSize(){
 			float worldSpaceSize = 1.0 * size * r / getPointSizeAttenuation();
 			pointSize = (worldSpaceSize / uOrthoWidth) * uScreenWidth;
 		} else {
-
-			// float leafSpacing = 0.122069092 * 8.0;
-			
-			// bool isLeafNode = getLOD() == 1000.0;
-			// if(isLeafNode){
-			// 	// pointSize = size * spacing * projFactor;
-
-			// 	float worldSpaceSize = size * leafSpacing;
-			// 	pointSize = worldSpaceSize * projFactor;
-			// }else{
-				float worldSpaceSize = 1.0 * size * r / getPointSizeAttenuation();
-
-				// minimum world space size
-				// worldSpaceSize = max(worldSpaceSize, leafSpacing);
-
-				pointSize = worldSpaceSize * projFactor;
-			// }
+			float worldSpaceSize = 1.0 * size * r / getPointSizeAttenuation();
+			pointSize = worldSpaceSize * projFactor;
 		}
 	#endif
 
@@ -874,13 +865,18 @@ void main() {
 	gl_Position = projectionMatrix * mvPosition;
 	vLogDepth = log2(-mvPosition.z);
 
+	//gl_Position = vec4(0.0, 0.0, 0.0, 1.0);
+	//gl_PointSize = 5.0;
+
 	// POINT SIZE
 	float pointSize = getPointSize();
+	//float pointSize = 2.0;
 	gl_PointSize = pointSize;
 	vPointSize = pointSize;
 
 	// COLOR
 	vColor = getColor();
+	// vColor = vec3(1.0, 0.0, 0.0);
 
 	//gl_Position = vec4(0.0, 0.0, 0.0, 1.0);
 	//gl_Position = vec4(position.xzy / 1000.0, 1.0 );

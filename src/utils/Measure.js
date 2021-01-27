@@ -1,16 +1,20 @@
 
+import * as THREE from "../../libs/three.js/build/three.module.js";
 import {TextSprite} from "../TextSprite.js";
 import {Utils} from "../utils.js";
+import {Line2} from "../../libs/three.js/lines/Line2.js";
+import {LineGeometry} from "../../libs/three.js/lines/LineGeometry.js";
+import {LineMaterial} from "../../libs/three.js/lines/LineMaterial.js";
 
 function createHeightLine(){
-	let lineGeometry = new THREE.LineGeometry();
+	let lineGeometry = new LineGeometry();
 
 	lineGeometry.setPositions([
 		0, 0, 0,
 		0, 0, 0,
 	]);
 
-	let lineMaterial = new THREE.LineMaterial({ 
+	let lineMaterial = new LineMaterial({ 
 		color: 0x00ff00, 
 		dashSize: 5, 
 		gapSize: 2,
@@ -19,7 +23,7 @@ function createHeightLine(){
 	});
 
 	lineMaterial.depthTest = false;
-	const heightEdge = new THREE.Line2(lineGeometry, lineMaterial);
+	const heightEdge = new Line2(lineGeometry, lineMaterial);
 	heightEdge.visible = false;
 
 	//this.add(this.heightEdge);
@@ -70,14 +74,14 @@ function createCircleRadiusLabel(){
 }
 
 function createCircleRadiusLine(){
-	const lineGeometry = new THREE.LineGeometry();
+	const lineGeometry = new LineGeometry();
 
 	lineGeometry.setPositions([
 		0, 0, 0,
 		0, 0, 0,
 	]);
 
-	const lineMaterial = new THREE.LineMaterial({ 
+	const lineMaterial = new LineMaterial({ 
 		color: 0xff0000, 
 		linewidth: 2, 
 		resolution:  new THREE.Vector2(1000, 1000),
@@ -87,7 +91,7 @@ function createCircleRadiusLine(){
 
 	lineMaterial.depthTest = false;
 
-	const circleRadiusLine = new THREE.Line2(lineGeometry, lineMaterial);
+	const circleRadiusLine = new Line2(lineGeometry, lineMaterial);
 	circleRadiusLine.visible = false;
 
 	return circleRadiusLine;
@@ -119,10 +123,10 @@ function createCircleLine(){
 		);
 	}
 
-	const geometry = new THREE.LineGeometry();
+	const geometry = new LineGeometry();
 	geometry.setPositions(coordinates);
 
-	const material = new THREE.LineMaterial({ 
+	const material = new LineMaterial({ 
 		color: 0xff0000, 
 		dashSize: 5, 
 		gapSize: 2,
@@ -132,7 +136,7 @@ function createCircleLine(){
 
 	material.depthTest = false;
 
-	const circleLine = new THREE.Line2(geometry, material);
+	const circleLine = new Line2(geometry, material);
 	circleLine.visible = false;
 	circleLine.computeLineDistances();
 
@@ -150,14 +154,14 @@ function createCircleCenter(){
 }
 
 function createLine(){
-	const geometry = new THREE.LineGeometry();
+	const geometry = new LineGeometry();
 
 	geometry.setPositions([
 		0, 0, 0,
 		0, 0, 0,
 	]);
 
-	const material = new THREE.LineMaterial({ 
+	const material = new LineMaterial({ 
 		color: 0xff0000, 
 		linewidth: 2, 
 		resolution:  new THREE.Vector2(1000, 1000),
@@ -167,7 +171,7 @@ function createLine(){
 
 	material.depthTest = false;
 
-	const line = new THREE.Line2(geometry, material);
+	const line = new Line2(geometry, material);
 
 	return line;
 }
@@ -199,10 +203,10 @@ function createCircle(){
 		);
 	}
 
-	const geometry = new THREE.LineGeometry();
+	const geometry = new LineGeometry();
 	geometry.setPositions(coordinates);
 
-	const material = new THREE.LineMaterial({ 
+	const material = new LineMaterial({ 
 		color: 0xff0000, 
 		dashSize: 5, 
 		gapSize: 2,
@@ -212,7 +216,7 @@ function createCircle(){
 
 	material.depthTest = false;
 
-	const line = new THREE.Line2(geometry, material);
+	const line = new Line2(geometry, material);
 	line.computeLineDistances();
 
 	return line;
@@ -339,7 +343,7 @@ export class Measure extends THREE.Object3D {
 	};
 
 	addMarker (point) {
-		if (point instanceof THREE.Vector3) {
+		if (point.x != null) {
 			point = {position: point};
 		}else if(point instanceof Array){
 			point = {position: new THREE.Vector3(...point)};
@@ -353,13 +357,13 @@ export class Measure extends THREE.Object3D {
 		this.spheres.push(sphere);
 
 		{ // edges
-			let lineGeometry = new THREE.LineGeometry();
+			let lineGeometry = new LineGeometry();
 			lineGeometry.setPositions( [
 					0, 0, 0,
 					0, 0, 0,
 			]);
 
-			let lineMaterial = new THREE.LineMaterial({
+			let lineMaterial = new LineMaterial({
 				color: 0xff0000, 
 				linewidth: 2, 
 				resolution:  new THREE.Vector2(1000, 1000),
@@ -367,7 +371,7 @@ export class Measure extends THREE.Object3D {
 
 			lineMaterial.depthTest = false;
 
-			let edge = new THREE.Line2(lineGeometry, lineMaterial);
+			let edge = new Line2(lineGeometry, lineMaterial);
 			edge.visible = true;
 
 			this.add(edge);
@@ -422,6 +426,14 @@ export class Measure extends THREE.Object3D {
 					let i = this.spheres.indexOf(e.drag.object);
 					if (i !== -1) {
 						let point = this.points[i];
+						
+						// loop through current keys and cleanup ones that will be orphaned
+						for (let key of Object.keys(point)) {
+							if (!I.point[key]) {
+								delete point[key];
+							}
+						}
+
 						for (let key of Object.keys(I.point).filter(e => e !== 'position')) {
 							point[key] = I.point[key];
 						}

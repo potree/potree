@@ -18,8 +18,8 @@
 	<script src="../libs/jquery/jquery-3.1.1.min.js"></script>
 	<script src="../libs/spectrum/spectrum.js"></script>
 	<script src="../libs/jquery-ui/jquery-ui.min.js"></script>
-	<script src="../libs/three.js/build/three.js"></script>
-	<script src="../libs/three.js/extra/lines.js"></script>
+	
+	
 	<script src="../libs/other/BinaryHeap.js"></script>
 	<script src="../libs/tween/tween.min.js"></script>
 	<script src="../libs/d3/d3.js"></script>
@@ -35,7 +35,9 @@
 		<div id="potree_sidebar_container"> </div>
 	</div>
 	
-	<script>
+	<script type="module">
+
+	import * as THREE from "../libs/three.js/build/three.module.js";
 	
 		window.viewer = new Potree.Viewer(document.getElementById("potree_render_area"));
 		
@@ -79,7 +81,9 @@
 	</script>
 
 
-	<script>
+	<script type="module">
+
+	import * as THREE from "../libs/three.js/build/three.module.js";
 
 		const cameraParamsPath = "http://5.9.65.151/mschuetz/potree/resources/pointclouds/helimap/epalinges/img_selected/IXM35_190522_nodistortion.xml";
 		const imageParamsPath = "http://5.9.65.151/mschuetz/potree/resources/pointclouds/helimap/epalinges/img_selected/Calib190522_MN95_NF2_cam_estim.txt";

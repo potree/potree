@@ -1,4 +1,5 @@
 
+import * as THREE from "../../libs/three.js/build/three.module.js";
 import {Measure} from "./Measure.js";
 import {Utils} from "../utils.js";
 import {CameraMode} from "../defines.js";
@@ -258,7 +259,7 @@ export class MeasuringTool extends EventDispatcher{
 			measure.lengthUnitDisplay = this.viewer.lengthUnitDisplay;
 			measure.update();
 
-			updateAzimuth(viewer, measure);
+			updateAzimuth(this.viewer, measure);
 
 			// spheres
 			for(let sphere of measure.spheres){

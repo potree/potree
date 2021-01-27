@@ -49,7 +49,6 @@
 	<script src="../libs/jquery/jquery-3.1.1.min.js"></script>
 	<script src="../libs/spectrum/spectrum.js"></script>
 	<script src="../libs/jquery-ui/jquery-ui.min.js"></script>
-	<script src="../libs/three.js/build/three.js"></script>
 	<script src="../libs/other/BinaryHeap.js"></script>
 	<script src="../libs/tween/tween.min.js"></script>
 	<script src="../libs/d3/d3.js"></script>
@@ -59,14 +58,8 @@
 	<script src="../libs/jstree/jstree.js"></script>
 	<script src="../build/potree/potree.js"></script>
 	<script src="../libs/plasio/js/laslaz.js"></script>
-
 	<script src='../libs/sql.js/sql-wasm.js'></script>
 	<script src='../libs/geopackage/geopackage.js'></script>
-	<script src="../libs/three.js/extra/lines/LineSegmentsGeometry.js"></script>
-	<script src="../libs/three.js/extra/lines/LineGeometry.js"></script>
-	<script src="../libs/three.js/extra/lines/LineMaterial.js"></script>
-	<script src="../libs/three.js/extra/lines/LineSegments2.js"></script>
-	<script src="../libs/three.js/extra/lines/Line2.js"></script>
 
 	<div class="potree_container" style="position: absolute; width: 100%; height: 100%; left: 0px; top: 0px; ">
 		<div id="potree_render_area">
@@ -75,7 +68,9 @@
 		<div id="potree_sidebar_container"> </div>
 	</div>
 	
-	<script>
+	<script type="module">
+
+	import * as THREE from "../libs/three.js/build/three.module.js";
 	
 		window.viewer = new Potree.Viewer(document.getElementById("potree_render_area"));
 		
@@ -116,7 +111,9 @@
 
 	</script>
 
-	<script>
+	<script type="module">
+
+	import * as THREE from "../libs/three.js/build/three.module.js";
 	
 	// 1: define html of toolbar first 
 	// 2: then populate with content and actions 
@@ -294,14 +291,14 @@
 	{ // POINT BUDGET
 		elToolbar.find('#sldPointBudget').slider({
 			value: viewer.getPointBudget(),
-			min: 100 * 1000,
-			max: 1 * 1000 * 1000,
-			step: 100 * 1000,
-			slide: (event, ui) => { this.viewer.setPointBudget(ui.value); }
+			min: 100_000,
+			max: 1_000_000,
+			step: 100_000,
+			slide: (event, ui) => { viewer.setPointBudget(ui.value); }
 		});
 
 		const onBudgetChange = () => {
-			let budget = (viewer.getPointBudget() / (1000 * 1000)).toFixed(1) + "M";
+			let budget = (viewer.getPointBudget() / (1000_000)).toFixed(1) + "M";
 			elToolbar.find('span[name=lblPointBudget]').html(budget);
 		};
 

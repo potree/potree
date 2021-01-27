@@ -1,5 +1,5 @@
 
-
+import * as THREE from "../../libs/three.js/build/three.module.js";
 import {NormalizationMaterial} from "../materials/NormalizationMaterial.js";
 import {NormalizationEDLMaterial} from "../materials/NormalizationEDLMaterial.js";
 import {PointCloudMaterial} from "../materials/PointCloudMaterial.js";
@@ -154,7 +154,7 @@ export class HQSplatRenderer{
 				depthMaterial.screenHeight = height;
 				depthMaterial.uniforms.visibleNodes.value = material.visibleNodesTexture;
 				depthMaterial.uniforms.octreeSize.value = octreeSize;
-				depthMaterial.spacing = pointcloud.pcoGeometry.spacing * Math.max(...pointcloud.scale.toArray());
+				depthMaterial.spacing = pointcloud.pcoGeometry.spacing; // * Math.max(...pointcloud.scale.toArray());
 				depthMaterial.classification = material.classification;
 				depthMaterial.uniforms.classificationLUT.value.image.data = material.uniforms.classificationLUT.value.image.data;
 				depthMaterial.classificationTexture.needsUpdate = true;
@@ -197,7 +197,7 @@ export class HQSplatRenderer{
 				attributeMaterial.shape = PointShape.CIRCLE;
 				attributeMaterial.uniforms.visibleNodes.value = material.visibleNodesTexture;
 				attributeMaterial.uniforms.octreeSize.value = octreeSize;
-				attributeMaterial.spacing = pointcloud.pcoGeometry.spacing * Math.max(...pointcloud.scale.toArray());
+				attributeMaterial.spacing = pointcloud.pcoGeometry.spacing; // * Math.max(...pointcloud.scale.toArray());
 				attributeMaterial.classification = material.classification;
 				attributeMaterial.uniforms.classificationLUT.value.image.data = material.uniforms.classificationLUT.value.image.data;
 				attributeMaterial.classificationTexture.needsUpdate = true;
@@ -262,6 +262,10 @@ export class HQSplatRenderer{
 			viewer.skybox.camera.rotation.copy(viewer.scene.cameraP.rotation);
 			viewer.skybox.camera.fov = viewer.scene.cameraP.fov;
 			viewer.skybox.camera.aspect = viewer.scene.cameraP.aspect;
+			
+			viewer.skybox.parent.rotation.x = 0;
+			viewer.skybox.parent.updateMatrixWorld();
+
 			viewer.skybox.camera.updateProjectionMatrix();
 			viewer.renderer.render(viewer.skybox.scene, viewer.skybox.camera);
 		} else if (viewer.background === 'gradient') {

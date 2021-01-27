@@ -18,8 +18,6 @@
 	<script src="../libs/jquery/jquery-3.1.1.min.js"></script>
 	<script src="../libs/spectrum/spectrum.js"></script>
 	<script src="../libs/jquery-ui/jquery-ui.min.js"></script>
-	<script src="../libs/three.js/build/three.min.js"></script>
-	<script src="../libs/three.js/extra/lines.js"></script>
 	<script src="../libs/other/BinaryHeap.js"></script>
 	<script src="../libs/tween/tween.min.js"></script>
 	<script src="../libs/d3/d3.js"></script>
@@ -38,13 +36,15 @@
 		<div id="potree_sidebar_container"> </div>
 	</div>
 	
-	<script>
+	<script type="module">
+
+		import * as THREE from "../libs/three.js/build/three.module.js";
 	
 		window.viewer = new Potree.Viewer(document.getElementById("potree_render_area"));
 		
 		viewer.setEDLEnabled(true);
 		viewer.setFOV(60);
-		viewer.setPointBudget(1*1000*1000);
+		viewer.setPointBudget(1_000_000);
 		viewer.loadSettingsFromURL();
 		
 		viewer.setDescription("Point cloud courtesy of <a target='_blank' href='https://www.sigeom.ch/'>sigeom sa</a>");
@@ -69,7 +69,7 @@
 				let measure = new Potree.Measure();
 				measure.closed = false;
 				measure.addMarker(new THREE.Vector3(589803.18, 231357.35, 745.38));
-				measure.addMarker(new THREE.Vector3(589795.74, 231323.42, 746.21));		
+				measure.addMarker(new THREE.Vector3(589795.74, 231323.42, 746.21));
 				measure.addMarker(new THREE.Vector3(589822.50, 231315.90, 744.45));
 				
 				scene.addMeasurement(measure);
@@ -82,7 +82,7 @@
 				measure.showAngles = true;
 				measure.showDistances = false;
 				measure.addMarker(new THREE.Vector3(589866.11, 231372.25, 737.41));
-				measure.addMarker(new THREE.Vector3(589842.15, 231366.82, 743.61));		
+				measure.addMarker(new THREE.Vector3(589842.15, 231366.82, 743.61));
 				measure.addMarker(new THREE.Vector3(589860.61, 231348.01, 740.33));
 				
 				scene.addMeasurement(measure);
@@ -106,7 +106,7 @@
 				measure.showDistances = false;
 				measure.showHeight = true;
 				measure.addMarker(new THREE.Vector3(589849.69, 231327.26, 766.32));
-				measure.addMarker(new THREE.Vector3(589840.96, 231329.53, 744.52));		
+				measure.addMarker(new THREE.Vector3(589840.96, 231329.53, 744.52));
 				
 				scene.addMeasurement(measure);
 			}

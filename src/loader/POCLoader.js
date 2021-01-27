@@ -1,5 +1,5 @@
 
-
+import * as THREE from "../../libs/three.js/build/three.module.js";
 import {PointCloudOctreeGeometry, PointCloudOctreeGeometryNode} from "../PointCloudOctreeGeometry.js";
 import {Version} from "../Version.js";
 import {XHRFactory} from "../XHRFactory.js";
@@ -17,6 +17,7 @@ function parseAttributes(cloudjs){
 		"RGBA": "rgba",
 		"INTENSITY": "intensity",
 		"CLASSIFICATION": "classification",
+		"GPS_TIME": "gps-time",
 	};
 
 	const replaceOldNames = (old) => {

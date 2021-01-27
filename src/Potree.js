@@ -32,7 +32,7 @@ export * from "./materials/NormalizationMaterial.js";
 export * from "./materials/PointCloudMaterial.js";
 
 export * from "./loader/POCLoader.js";
-export * from "./modules/Loader_1.8/OctreeLoader_1_8.js";
+export * from "./modules/loader/2.0/OctreeLoader.js";
 export * from "./loader/EptLoader.js";
 export * from "./loader/ept/BinaryLoader.js";
 export * from "./loader/ept/LaszipLoader.js";
@@ -67,20 +67,20 @@ export * from "./modules/OrientedImages/OrientedImages.js";
 export * from "./modules/Images360/Images360.js";
 export * from "./modules/CameraAnimation/CameraAnimation.js";
 
-export * from "./modules/Loader_1.8/OctreeLoader_1_8.js";
+export * from "./modules/loader/2.0/OctreeLoader.js";
 
 export {OrbitControls} from "./navigation/OrbitControls.js";
 export {FirstPersonControls} from "./navigation/FirstPersonControls.js";
 export {EarthControls} from "./navigation/EarthControls.js";
 export {DeviceOrientationControls} from "./navigation/DeviceOrientationControls.js";
-export {VRControlls} from "./navigation/VRControlls.js";
+export {VRControls} from "./navigation/VRControls.js";
 
 import "./extensions/OrthographicCamera.js";
 import "./extensions/PerspectiveCamera.js";
 import "./extensions/Ray.js";
 
 import {LRU} from "./LRU.js";
-import {OctreeLoader_1_8} from "./modules/Loader_1.8/OctreeLoader_1_8.js";
+import {OctreeLoader} from "./modules/loader/2.0/OctreeLoader.js";
 import {POCLoader} from "./loader/POCLoader.js";
 import {EptLoader} from "./loader/EptLoader.js";
 import {PointCloudOctree} from "./PointCloudOctree.js";
@@ -90,8 +90,8 @@ export const workerPool = new WorkerPool();
 
 export const version = {
 	major: 1,
-	minor: 7,
-	suffix: 'beta'
+	minor: 8,
+	suffix: '.0'
 };
 
 export let lru = new LRU();
@@ -162,7 +162,7 @@ export function loadPointCloud(path, name, callback){
 				}
 			});
 		} else if (path.indexOf('metadata.json') > 0) {
-			Potree.OctreeLoader_1_8.load(path).then(e => {
+			Potree.OctreeLoader.load(path).then(e => {
 				let geometry = e.geometry;
 
 				if(!geometry){
@@ -183,7 +183,7 @@ export function loadPointCloud(path, name, callback){
 				}
 			});
 
-			OctreeLoader_1_8.load(path, function (geometry) {
+			OctreeLoader.load(path, function (geometry) {
 				if (!geometry) {
 					//callback({type: 'loading_failed'});
 					console.error(new Error(`failed to load point cloud from URL: ${path}`));

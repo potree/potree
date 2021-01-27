@@ -1,4 +1,5 @@
 
+import * as THREE from "../../libs/three.js/build/three.module.js";
 import {ClipTask, ClipMethod, CameraMode, LengthUnits, ElevationGradientRepeat} from "../defines.js";
 import {Renderer} from "../PotreeRenderer.js";
 import {PotreeRenderer} from "./PotreeRenderer.js";
@@ -27,8 +28,10 @@ import {OrbitControls} from "../navigation/OrbitControls.js";
 import {FirstPersonControls} from "../navigation/FirstPersonControls.js";
 import {EarthControls} from "../navigation/EarthControls.js";
 import {DeviceOrientationControls} from "../navigation/DeviceOrientationControls.js";
+import {VRControls} from "../navigation/VRControls.js";
 import { EventDispatcher } from "../EventDispatcher.js";
 import { ClassificationScheme } from "../materials/ClassificationScheme.js";
+import { VRButton } from '../../libs/three.js/extra/VRButton.js';
 
 import JSON5 from "../../libs/json5-2.1.3/json5.mjs";
 
@@ -42,7 +45,6 @@ export class Viewer extends EventDispatcher{
 		this.guiLoaded = false;
 		this.guiLoadTasks = [];
 
-		this.vr = null;
 		this.onVrListeners = [];
 
 		this.messages = [];
@@ -76,6 +78,44 @@ export class Viewer extends EventDispatcher{
 					<div id="potree_annotation_container" 
 						style="position: absolute; z-index: 100000; width: 100%; height: 100%; pointer-events: none;"></div>`);
 				$(domElement).append(potreeAnnotationContainer);
+			}
+
+			if ($(domElement).find('#potree_quick_buttons').length === 0) {
+				let potreeMap = $(`
+					<div id="potree_quick_buttons" class="quick_buttons_container" style="">
+					</div>
+				`);
+
+				// {
+				// 	let imgMenuToggle = document.createElement('img');
+				// 	imgMenuToggle.src = new URL(Potree.resourcePath + '/icons/menu_button.svg').href;
+				// 	imgMenuToggle.onclick = this.toggleSidebar;
+				// 	// imgMenuToggle.classList.add('potree_menu_toggle');
+
+				// 	potreeMap.append(imgMenuToggle);
+				// }
+
+				// {
+				// 	let imgMenuToggle = document.createElement('img');
+				// 	imgMenuToggle.src = new URL(Potree.resourcePath + '/icons/menu_button.svg').href;
+				// 	imgMenuToggle.onclick = this.toggleSidebar;
+				// 	// imgMenuToggle.classList.add('potree_menu_toggle');
+
+				// 	potreeMap.append(imgMenuToggle);
+				// }
+
+				// {
+				// 	let imgMenuToggle = document.createElement('img');
+				// 	imgMenuToggle.src = new URL(Potree.resourcePath + '/icons/menu_button.svg').href;
+				// 	imgMenuToggle.onclick = this.toggleSidebar;
+				// 	// imgMenuToggle.classList.add('potree_menu_toggle');
+
+				// 	potreeMap.append(imgMenuToggle);
+				// }
+
+				
+
+				$(domElement).append(potreeMap);
 			}
 		}
 
@@ -124,6 +164,7 @@ export class Viewer extends EventDispatcher{
 		this.pRenderer = null;
 
 		this.scene = null;
+		this.sceneVR = null;
 		this.overlay = null;
 		this.overlayCamera = null;
 
@@ -140,8 +181,12 @@ export class Viewer extends EventDispatcher{
 		this.background = null;
 
 		this.initThree();
-		this.prepareVR();
-		this.initDragAndDrop();
+
+		if(args.noDragAndDrop){
+			
+		}else{
+			this.initDragAndDrop();
+		}
 
 		if(typeof Stats !== "undefined"){
 			this.stats = new Stats();
@@ -184,6 +229,23 @@ export class Viewer extends EventDispatcher{
 		
 
 		let scene = new Scene(this.renderer);
+		
+		{ // create VR scene
+			this.sceneVR = new THREE.Scene();
+
+			// let texture = new THREE.TextureLoader().load(`${Potree.resourcePath}/images/vr_controller_help.jpg`);
+
+			// let plane = new THREE.PlaneBufferGeometry(1, 1, 1, 1);
+			// let infoMaterial = new THREE.MeshBasicMaterial({map: texture});
+			// let infoNode = new THREE.Mesh(plane, infoMaterial);
+			// infoNode.position.set(-0.5, 1, 0);
+			// infoNode.scale.set(0.4, 0.3, 1);
+			// infoNode.lookAt(0, 1, 0)
+			// this.sceneVR.add(infoNode);
+
+			// window.infoNode = infoNode;
+		}
+
 		this.setScene(scene);
 
 		{
@@ -251,9 +313,11 @@ export class Viewer extends EventDispatcher{
 		}
 
 		// start rendering!
-		if(args.useDefaultRenderLoop === undefined || args.useDefaultRenderLoop === true){
-			requestAnimationFrame(this.loop.bind(this));
-		}
+		//if(args.useDefaultRenderLoop === undefined || args.useDefaultRenderLoop === true){
+			//requestAnimationFrame(this.loop.bind(this));
+		//}
+
+		this.renderer.setAnimationLoop(this.loop.bind(this));
 
 		this.loadGUI = this.loadGUI.bind(this);
 
@@ -374,7 +438,13 @@ export class Viewer extends EventDispatcher{
 	}
 
 	getControls () {
-		return this.controls;
+
+		if(this.renderer.xr.isPresenting){
+			return this.vrControls;
+		}else{
+			return this.controls;
+		}
+		
 	}
 
 	getMinNodeSize () {
@@ -532,7 +602,8 @@ export class Viewer extends EventDispatcher{
 	};
 
 	setEDLEnabled (value) {
-		value = Boolean(value);
+		value = Boolean(value) && Features.SHADER_EDL.isSupported();
+
 		if (this.useEDL !== value) {
 			this.useEDL = value;
 			this.dispatchEvent({'type': 'use_edl_changed', 'viewer': this});
@@ -1076,6 +1147,15 @@ export class Viewer extends EventDispatcher{
 			this.deviceControls.addEventListener('start', this.disableAnnotations.bind(this));
 			this.deviceControls.addEventListener('end', this.enableAnnotations.bind(this));
 		}
+
+		{ // create VR CONTROLS
+			this.vrControls = new VRControls(this);
+			this.vrControls.enabled = false;
+			this.vrControls.addEventListener('start', this.disableAnnotations.bind(this));
+			this.vrControls.addEventListener('end', this.enableAnnotations.bind(this));
+		}
+
+
 	};
 
 	toggleSidebar () {
@@ -1141,8 +1221,47 @@ export class Viewer extends EventDispatcher{
 			imgMapToggle.onclick = e => { this.toggleMap(); };
 			imgMapToggle.id = 'potree_map_toggle';
 
-			viewer.renderArea.insertBefore(imgMapToggle, viewer.renderArea.children[0]);
-			viewer.renderArea.insertBefore(imgMenuToggle, viewer.renderArea.children[0]);
+			
+
+			let elButtons = $("#potree_quick_buttons").get(0);
+
+			elButtons.append(imgMenuToggle);
+			elButtons.append(imgMapToggle);
+
+
+			VRButton.createButton(this.renderer).then(vrButton => {
+
+				if(vrButton == null){
+					console.log("VR not supported or active.");
+
+					return;
+				}
+
+				this.renderer.xr.enabled = true;
+
+				let element = vrButton.element;
+
+				element.style.position = "";
+				element.style.bottom = "";
+				element.style.left = "";
+				element.style.margin = "4px";
+				element.style.fontSize = "100%";
+				element.style.width = "2.5em";
+				element.style.height = "2.5em";
+				element.style.padding = "0";
+				element.style.textShadow = "black 2px 2px 2px";
+				element.style.display = "block";
+
+				elButtons.append(element);
+
+				vrButton.onStart(() => {
+					this.dispatchEvent({type: "vr_start"});
+				});
+
+				vrButton.onEnd(() => {
+					this.dispatchEvent({type: "vr_end"});
+				});
+			});
 
 			this.mapView = new MapView(this);
 			this.mapView.init();
@@ -1334,7 +1453,7 @@ export class Viewer extends EventDispatcher{
 		gl.getExtension('WEBGL_depth_texture');
 		gl.getExtension('WEBGL_color_buffer_float'); 	// Enable explicitly for more portability, EXT_color_buffer_float is the proper name in WebGL 2
 		
-		//if(gl instanceof WebGLRenderingContext){
+		if(gl.createVertexArray == null){
 			let extVAO = gl.getExtension('OES_vertex_array_object');
 
 			if(!extVAO){
@@ -1343,62 +1462,6 @@ export class Viewer extends EventDispatcher{
 
 			gl.createVertexArray = extVAO.createVertexArrayOES.bind(extVAO);
 			gl.bindVertexArray = extVAO.bindVertexArrayOES.bind(extVAO);
-		//}else if(gl instanceof WebGL2RenderingContext){
-		//	gl.getExtension("EXT_color_buffer_float");
-		//}
-		
-	}
-
-	onVr(callback){
-
-		if(this.vr){
-			callback();
-		}else{
-			this.onVrListeners.push(callback);
-		}
-
-	}
-
-	async prepareVR(){
-
-		if(!navigator.getVRDisplays){
-			console.info("browser does not support WebVR");
-
-			return false;
-		}
-
-		try{
-			let frameData = new VRFrameData();
-			let displays = await navigator.getVRDisplays();
-
-			if(displays.length == 0){
-				console.info("no VR display found");
-				return false;
-			}
-
-			let display = displays[displays.length - 1];
-			display.depthNear = 0.1;
-			display.depthFar = 10000.0;
-
-			if(!display.capabilities.canPresent){
-				// Not sure why canPresent would ever be false?
-				console.error("VR display canPresent === false");
-				return false;
-			}
-
-			this.vr = {
-				frameData: frameData,
-				display: display,
-				node: new THREE.Object3D(),
-			};
-
-			for(const listener of this.onVrListeners){
-				listener();
-			}
-		}catch(err){
-			console.error(err);
-
-			return false;
 		}
 		
 	}
@@ -1524,6 +1587,12 @@ export class Viewer extends EventDispatcher{
 
 		const material = pointcloud.material;
 
+		const attIntensity = pointcloud.getAttribute("intensity");
+		
+		if(attIntensity != null && material.intensityRange[0] === Infinity){
+			material.intensityRange = [...attIntensity.range];
+		}
+
 		// const attIntensity = pointcloud.getAttribute("intensity");
 		// if(attIntensity && material.intensityRange[0] === Infinity){
 		// 	material.intensityRange = [...attIntensity.range];
@@ -1545,6 +1614,11 @@ export class Viewer extends EventDispatcher{
 	update(delta, timestamp){
 
 		if(Potree.measureTimings) performance.mark("update-start");
+
+		this.dispatchEvent({
+			type: 'update_start',
+			delta: delta,
+			timestamp: timestamp});
 
 		
 		const scene = this.scene;
@@ -1698,15 +1772,16 @@ export class Viewer extends EventDispatcher{
 		
 		this.scene.cameraP.fov = this.fov;
 		
-		if (this.getControls() === this.deviceControls) {
+		let controls = this.getControls();
+		if (controls === this.deviceControls) {
 			this.controls.setScene(scene);
 			this.controls.update(delta);
 
 			this.scene.cameraP.position.copy(scene.view.position);
 			this.scene.cameraO.position.copy(scene.view.position);
-		} else if (this.controls !== null) {
-			this.controls.setScene(scene);
-			this.controls.update(delta);
+		} else if (controls !== null) {
+			controls.setScene(scene);
+			controls.update(delta);
 
 			if(typeof debugDisabled === "undefined" ){
 				this.scene.cameraP.position.copy(scene.view.position);
@@ -1723,12 +1798,12 @@ export class Viewer extends EventDispatcher{
 		
 		camera.updateMatrix();
 		camera.updateMatrixWorld();
-		camera.matrixWorldInverse.getInverse(camera.matrixWorld);
+		camera.matrixWorldInverse.copy(camera.matrixWorld).invert();
 
 		{
 			if(this._previousCamera === undefined){
 				this._previousCamera = this.scene.getActiveCamera().clone();
-				this._previousCamera.rotation.copy(this.scene.getActiveCamera());
+				this._previousCamera.rotation.copy(this.scene.getActiveCamera().rotation);
 			}
 
 			if(!this._previousCamera.matrixWorld.equals(camera.matrixWorld)){
@@ -1746,7 +1821,7 @@ export class Viewer extends EventDispatcher{
 			}
 
 			this._previousCamera = this.scene.getActiveCamera().clone();
-			this._previousCamera.rotation.copy(this.scene.getActiveCamera());
+			this._previousCamera.rotation.copy(this.scene.getActiveCamera().rotation);
 
 		}
 
@@ -1768,7 +1843,7 @@ export class Viewer extends EventDispatcher{
 			let clipBoxes = boxes.filter(degenerate).map( box => {
 				box.updateMatrixWorld();
 				
-				let boxInverse = new THREE.Matrix4().getInverse(box.matrixWorld);
+				let boxInverse = box.matrixWorld.clone().invert();
 				let boxPosition = box.getWorldPosition(new THREE.Vector3());
 
 				return {box: box, inverse: boxInverse, position: boxPosition};
@@ -1817,192 +1892,237 @@ export class Viewer extends EventDispatcher{
 			performance.measure("update", "update-start", "update-end");
 		}
 	}
+
+	getPRenderer(){
+		if(this.useHQ){
+			if (!this.hqRenderer) {
+				this.hqRenderer = new HQSplatRenderer(this);
+			}
+			this.hqRenderer.useEDL = this.useEDL;
+
+			return this.hqRenderer;
+		}else{
+			if (this.useEDL && Features.SHADER_EDL.isSupported()) {
+				if (!this.edlRenderer) {
+					this.edlRenderer = new EDLRenderer(this);
+				}
+
+				return this.edlRenderer;
+			} else {
+				if (!this.potreeRenderer) {
+					this.potreeRenderer = new PotreeRenderer(this);
+				}
+
+				return this.potreeRenderer;
+			}
+		}
+	}
+
+	renderVR(){
+
+		let renderer = this.renderer;
+
+		renderer.setClearColor(0x550000, 0);
+		renderer.clear();
+
+		let xr = renderer.xr;
+		let dbg = new THREE.PerspectiveCamera();
+		let xrCameras = xr.getCamera(dbg);
+
+		if(xrCameras.cameras.length !== 2){
+			return;
+		}
+
+		let makeCam = this.vrControls.getCamera.bind(this.vrControls);
+
+		{ // clear framebuffer
+			if(viewer.background === "skybox"){
+				renderer.setClearColor(0xff0000, 1);
+			}else if(viewer.background === "gradient"){
+				renderer.setClearColor(0x112233, 1);
+			}else if(viewer.background === "black"){
+				renderer.setClearColor(0x000000, 1);
+			}else if(viewer.background === "white"){
+				renderer.setClearColor(0xFFFFFF, 1);
+			}else{
+				renderer.setClearColor(0x000000, 0);
+			}
+
+			renderer.clear();
+		}
+
+		// render background
+		if(this.background === "skybox"){
+			let {skybox} = this;
+
+			let cam = makeCam();
+			skybox.camera.rotation.copy(cam.rotation);
+			skybox.camera.fov = cam.fov;
+			skybox.camera.aspect = cam.aspect;
+			
+			// let dbg = new THREE.Object3D();
+			let dbg = skybox.parent;
+			// dbg.up.set(0, 0, 1);
+			dbg.rotation.x = Math.PI / 2;
+
+			// skybox.camera.parent = dbg;
+			// dbg.children.push(skybox.camera);
+
+			dbg.updateMatrix();
+			dbg.updateMatrixWorld();
+
+			skybox.camera.updateMatrix();
+			skybox.camera.updateMatrixWorld();
+			skybox.camera.updateProjectionMatrix();
+
+			renderer.render(skybox.scene, skybox.camera);
+			// renderer.render(skybox.scene, cam);
+		}else if(this.background === "gradient"){
+			// renderer.render(this.scene.sceneBG, this.scene.cameraBG);
+		}
+
+		this.renderer.xr.getSession().updateRenderState({
+			depthNear: 0.1,
+			depthFar: 10000
+		});
+		
+		let cam = null;
+		let view = null;
+
+		{ // render world scene
+			cam = makeCam();
+			cam.position.z -= 0.8 * cam.scale.x;
+			cam.parent = null;
+			// cam.near = 0.05;
+			cam.near = viewer.scene.getActiveCamera().near;
+			cam.far = viewer.scene.getActiveCamera().far;
+			cam.updateMatrix();
+			cam.updateMatrixWorld();
+
+			this.scene.scene.updateMatrix();
+			this.scene.scene.updateMatrixWorld();
+			this.scene.scene.matrixAutoUpdate = false;
+
+			let camWorld = cam.matrixWorld.clone();
+			view = camWorld.clone().invert();
+			this.scene.scene.matrix.copy(view);
+			this.scene.scene.matrixWorld.copy(view);
+
+			cam.matrix.identity();
+			cam.matrixWorld.identity();
+			cam.matrixWorldInverse.identity();
+
+			renderer.render(this.scene.scene, cam);
+
+			this.scene.scene.matrixWorld.identity();
+
+		}
+		
+		for(let pointcloud of this.scene.pointclouds){
+
+			let viewport = xrCameras.cameras[0].viewport;
+
+			pointcloud.material.useEDL = false;
+			pointcloud.screenHeight = viewport.height;
+			pointcloud.screenWidth = viewport.width;
+
+			// automatically switch to paraboloids because they cause far less flickering in VR, 
+			// when point sizes are larger than around 2 pixels
+			// if(Features.SHADER_INTERPOLATION.isSupported()){
+			// 	pointcloud.material.shape = Potree.PointShape.PARABOLOID;
+			// }
+		}
+		
+		// render point clouds
+		for(let xrCamera of xrCameras.cameras){
+
+			let v = xrCamera.viewport;
+			renderer.setViewport(v.x, v.y, v.width, v.height);
+
+			// xrCamera.fov = 90;
+
+			{ // estimate VR fov
+				let proj = xrCamera.projectionMatrix;
+				let inv = proj.clone().invert();
+
+				let p1 = new THREE.Vector4(0, 1, -1, 1).applyMatrix4(inv);
+				let rad = p1.y
+				let fov = 180 * (rad / Math.PI);
+
+				xrCamera.fov = fov;
+			}
+
+			for(let pointcloud of this.scene.pointclouds){
+				const {material} = pointcloud;
+				material.useEDL = false;
+			}
+
+			let vrWorld = view.clone().invert();
+			vrWorld.multiply(xrCamera.matrixWorld);
+			let vrView = vrWorld.clone().invert();
+
+			this.pRenderer.render(this.scene.scenePointCloud, xrCamera, null, {
+				viewOverride: vrView,
+			});
+
+		}
+
+		{ // render VR scene
+			let cam = makeCam();
+			cam.parent = null;
+
+			renderer.render(this.sceneVR, cam);
+		}
+
+		renderer.resetState();
+
+	}
+
+	renderDefault(){
+		let pRenderer = this.getPRenderer();
+
+		{ // resize
+			const width = this.scaleFactor * this.renderArea.clientWidth;
+			const height = this.scaleFactor * this.renderArea.clientHeight;
+
+			this.renderer.setSize(width, height);
+			const pixelRatio = this.renderer.getPixelRatio();
+			const aspect = width / height;
+
+			const scene = this.scene;
+
+			scene.cameraP.aspect = aspect;
+			scene.cameraP.updateProjectionMatrix();
+
+			let frustumScale = this.scene.view.radius;
+			scene.cameraO.left = -frustumScale;
+			scene.cameraO.right = frustumScale;
+			scene.cameraO.top = frustumScale * 1 / aspect;
+			scene.cameraO.bottom = -frustumScale * 1 / aspect;
+			scene.cameraO.updateProjectionMatrix();
+
+			scene.cameraScreenSpace.top = 1/aspect;
+			scene.cameraScreenSpace.bottom = -1/aspect;
+			scene.cameraScreenSpace.updateProjectionMatrix();
+		}
+
+		pRenderer.clear();
+
+		pRenderer.render(this.renderer);
+		this.renderer.render(this.overlay, this.overlayCamera);
+	}
 	
 	render(){
 		if(Potree.measureTimings) performance.mark("render-start");
 
 		try{
 
-			let pRenderer = null;
-
-			if(this.useHQ){
-				if (!this.hqRenderer) {
-					this.hqRenderer = new HQSplatRenderer(this);
-				}
-				this.hqRenderer.useEDL = this.useEDL;
-				//this.hqRenderer.render(this.renderer);
-
-				pRenderer = this.hqRenderer;
-			}else{
-				if (this.useEDL && Features.SHADER_EDL.isSupported()) {
-					if (!this.edlRenderer) {
-						this.edlRenderer = new EDLRenderer(this);
-					}
-					//this.edlRenderer.render(this.renderer);
-					pRenderer = this.edlRenderer;
-				} else {
-					if (!this.potreeRenderer) {
-						this.potreeRenderer = new PotreeRenderer(this);
-					}
-					//this.potreeRenderer.render();
-					pRenderer = this.potreeRenderer;
-				}
-			}
-			
-			const vr = this.vr;
-			const vrActive = (vr && vr.display.isPresenting);
+			const vrActive = this.renderer.xr.isPresenting;
 
 			if(vrActive){
-
-				const {display, frameData} = vr;
-
-				const leftEye = display.getEyeParameters("left");
-				const rightEye = display.getEyeParameters("right");
-
-				let width = Math.max(leftEye.renderWidth, rightEye.renderWidth) * 2;
-				let height = Math.max(leftEye.renderHeight, rightEye.renderHeight);
-
-				// width *= 0.5;
-				// height *= 0.5;
-
-				this.renderer.setSize(width, height);
-
-				pRenderer.clear();
-
-				//const camera = new THREE.Camera();
-				viewer.scene.cameraMode = CameraMode.VR;
-				const camera = viewer.scene.getActiveCamera();
-				{
-					camera.near = display.depthNear;
-					camera.far = display.depthFar;
-					camera.projectionMatrix = new THREE.Matrix4();
-					camera.matrixWorldInverse = new THREE.Matrix4();
-					camera.matrixWorld = new THREE.Matrix4();
-					camera.updateProjectionMatrix =  () => {};
-					camera.updateMatrixWorld = () => {};
-					camera.fov = 60;
-				};
-
-				const flipWorld = new THREE.Matrix4().fromArray([
-					1, 0, 0, 0, 
-					0, 0, 1, 0, 
-					0, -1, 0, 0,
-					0, 0, 0, 1
-				]);
-				const flipView = new THREE.Matrix4().getInverse(flipWorld);
-
-				vr.node.updateMatrixWorld();
-
-				{// LEFT
-					camera.projectionMatrix.fromArray(frameData.leftProjectionMatrix);
-
-					const leftView = new THREE.Matrix4().fromArray(frameData.leftViewMatrix);
-					const view = new THREE.Matrix4().multiplyMatrices(leftView, flipView);
-					const world = new THREE.Matrix4().getInverse(view);
-
-					{
-						const tmp = new THREE.Matrix4().multiplyMatrices(vr.node.matrixWorld, world);
-						world.copy(tmp);
-						view.getInverse(world);
-					}
-
-					camera.matrixWorldInverse.copy(view);
-					camera.matrixWorld.copy(world);
-
-					const viewport = [0, 0, width / 2, height];
-
-					this.renderer.setViewport(...viewport);
-					pRenderer.render({camera: camera, viewport: viewport});
-					//this.renderer.render(this.overlay, this.overlayCamera);
-				}
-
-				{// RIGHT
-				
-					camera.projectionMatrix.fromArray(frameData.rightProjectionMatrix);
-
-					const rightView = new THREE.Matrix4().fromArray(frameData.rightViewMatrix);
-					const view = new THREE.Matrix4().multiplyMatrices(rightView, flipView);
-					const world = new THREE.Matrix4().getInverse(view);
-
-					{
-						const tmp = new THREE.Matrix4().multiplyMatrices(vr.node.matrixWorld, world);
-						world.copy(tmp);
-						view.getInverse(world);
-					}
-
-					camera.matrixWorldInverse.copy(view);
-					camera.matrixWorld.copy(world);
-
-					const viewport = [width / 2, 0, width / 2, height];
-
-					this.renderer.setViewport(...viewport);
-					pRenderer.clearTargets();
-					pRenderer.render({camera: camera, viewport: viewport, debug: 2});
-					//this.renderer.render(this.overlay, this.overlayCamera);
-				}
-
-				{ // CENTER
-
-					{ // central view matrix
-						// TODO this can't be right...can it?
-
-						const left = frameData.leftViewMatrix;
-						const right = frameData.rightViewMatrix
-
-						const centerView = new THREE.Matrix4();
-
-						for(let i = 0; i < centerView.elements.length; i++){
-							centerView.elements[i] = (left[i] + right[i]) / 2;
-						}
-
-						const view = new THREE.Matrix4().multiplyMatrices(centerView, flipView);
-						const world = new THREE.Matrix4().getInverse(view);
-
-						{
-							const tmp = new THREE.Matrix4().multiplyMatrices(vr.node.matrixWorld, world);
-							world.copy(tmp);
-							view.getInverse(world);
-						}
-
-						camera.matrixWorldInverse.copy(view);
-						camera.matrixWorld.copy(world);
-					}
-
-
-					camera.fov = leftEye.fieldOfView.upDegrees;
-				}
-
+				this.renderVR();
 			}else{
-
-				{ // resize
-					const width = this.scaleFactor * this.renderArea.clientWidth;
-					const height = this.scaleFactor * this.renderArea.clientHeight;
-
-					this.renderer.setSize(width, height);
-					const pixelRatio = this.renderer.getPixelRatio();
-					const aspect = width / height;
-
-					const scene = this.scene;
-
-					scene.cameraP.aspect = aspect;
-					scene.cameraP.updateProjectionMatrix();
-
-					let frustumScale = this.scene.view.radius;
-					scene.cameraO.left = -frustumScale;
-					scene.cameraO.right = frustumScale;
-					scene.cameraO.top = frustumScale * 1 / aspect;
-					scene.cameraO.bottom = -frustumScale * 1 / aspect;
-					scene.cameraO.updateProjectionMatrix();
-
-					scene.cameraScreenSpace.top = 1/aspect;
-					scene.cameraScreenSpace.bottom = -1/aspect;
-					scene.cameraScreenSpace.updateProjectionMatrix();
-				}
-
-				pRenderer.clear();
-
-				pRenderer.render(this.renderer);
-				this.renderer.render(this.overlay, this.overlayCamera);
+				this.renderDefault();
 			}
 
 		}catch(e){
@@ -2115,76 +2235,28 @@ export class Viewer extends EventDispatcher{
 		}
 	}
 
-	async toggleVR(){
-		const vrActive = (this.vr && this.vr.display.isPresenting);
-
-		if(vrActive){
-			this.stopVR();
-		}else{
-			this.startVR();
-		}
-	}
-
-	async startVR(){
-
-		if(this.vr === null){
-			return;
-		}
-
-		let canvas = this.renderer.domElement;
-		let display = this.vr.display;
-
-		try{
-			await display.requestPresent([{ source: canvas }]);
-		}catch(e){
-			console.error(e);
-			this.postError("requestPresent failed");
-			return;
-		}
-
-		//window.addEventListener('vrdisplaypresentchange', onVRPresentChange, false);
-		//window.addEventListener('vrdisplayactivate', onVRRequestPresent, false);
-		//window.addEventListener('vrdisplaydeactivate', onVRExitPresent, false);
-
-	}
-
-	async stopVR(){
-		// TODO shutdown VR
-	}
-
 	loop(timestamp){
 
 		if(this.stats){
 			this.stats.begin();
 		}
 
-		let queryAll;
 		if(Potree.measureTimings){
 			performance.mark("loop-start");
 		}
 
+		this.update(this.clock.getDelta(), timestamp);
+		this.render();
 
-		const vrActive = (this.vr && this.vr.display.isPresenting);
+		// let vrActive = viewer.renderer.xr.isPresenting;
+		// if(vrActive){
+		// 	this.update(this.clock.getDelta(), timestamp);
+		// 	this.render();
+		// }else{
 
-		if(vrActive){
-			const {display, frameData} = this.vr;
-
-			display.requestAnimationFrame(this.loop.bind(this));
-
-			display.getFrameData(frameData);
-
-			this.update(this.clock.getDelta(), timestamp);
-
-			this.render();
-
-			this.vr.display.submitFrame();
-		}else{
-			requestAnimationFrame(this.loop.bind(this));
-
-			this.update(this.clock.getDelta(), timestamp);
-
-			this.render();
-		}
+		// 	this.update(this.clock.getDelta(), timestamp);
+		// 	this.render();
+		// }
 
 
 		if(Potree.measureTimings){

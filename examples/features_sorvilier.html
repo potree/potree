@@ -18,8 +18,6 @@
 	<script src="../libs/jquery/jquery-3.1.1.min.js"></script>
 	<script src="../libs/spectrum/spectrum.js"></script>
 	<script src="../libs/jquery-ui/jquery-ui.min.js"></script>
-	<script src="../libs/three.js/build/three.min.js"></script>
-	<script src="../libs/three.js/extra/lines.js"></script>
 	<script src="../libs/other/BinaryHeap.js"></script>
 	<script src="../libs/tween/tween.min.js"></script>
 	<script src="../libs/d3/d3.js"></script>
@@ -29,8 +27,6 @@
 	<script src="../libs/jstree/jstree.js"></script>
 	<script src="../build/potree/potree.js"></script>
 	<script src="../libs/plasio/js/laslaz.js"></script>
-	<script src="../libs/other/OBJLoader.js"></script>
-	<script src="../libs/other/PLYLoader.js"></script>
 	
 	<!-- INCLUDE ADDITIONAL DEPENDENCIES HERE -->
 	<!-- INCLUDE SETTINGS HERE -->
@@ -40,13 +36,17 @@
 		<div id="potree_sidebar_container"> </div>
 	</div>
 	
-	<script>
+	<script type="module">
+
+		import * as THREE from "../libs/three.js/build/three.module.js";
+		import {PLYLoader} from "../libs/three.js/loaders/PLYLoader.js";
+		import {OBJLoader} from "../libs/three.js/loaders/OBJLoader.js";
 	
 		window.viewer = new Potree.Viewer(document.getElementById("potree_render_area"));
 		
 		viewer.setEDLEnabled(true);
 		viewer.setFOV(60);
-		viewer.setPointBudget(1*1000*1000);
+		viewer.setPointBudget(1_000_000);
 		viewer.loadSettingsFromURL();
 		
 		viewer.setDescription("Point cloud courtesy of <a target='_blank' href='https://www.sigeom.ch/'>sigeom sa</a>");
@@ -272,7 +272,7 @@
 			texture.wrapT = THREE.RepeatWrapping;
 
 			let onError = function ( xhr ) {};
-			let loader = new THREE.OBJLoader( manager );
+			let loader = new OBJLoader( manager );
 			loader.load(`${Potree.resourcePath}/models/stanford_bunny_reduced.obj`, function ( object ) {
 				object.traverse( function ( child ) {
 					if ( child instanceof THREE.Mesh ) {
@@ -306,7 +306,7 @@
 		}
 		
 		// Load untextured bunny from ply
-		var loader = new THREE.PLYLoader();
+		var loader = new PLYLoader();
 		loader.load( Potree.resourcePath + "/models/stanford_bunny_reduced.ply", (geometry) => {
 			geometry.computeVertexNormals();
 			

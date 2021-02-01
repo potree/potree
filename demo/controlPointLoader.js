@@ -28,6 +28,7 @@ async function loadControlPointsCallbackHelper (s3, bucket, name, animationEngin
 
     const controlPointLayer = new THREE.Group();
     controlPointLayer.name = getControlPointName(controlPointType);
+    controlPointLayer.visible = false;
     mesh.position.copy(offset)
     controlPointLayer.add(mesh);
 

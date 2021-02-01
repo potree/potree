@@ -33,6 +33,7 @@ async function loadRadarVisualizationCallbackHelper (radarVisualizationType) {
 
     const radarVisualizationLayer = new THREE.Group();
     radarVisualizationLayer.name = getRadarVisualizationName(radarVisualizationType);
+    radarVisualizationLayer.visible = false;
     mesh.position.copy(offset);
     radarVisualizationLayer.add(mesh);
 

@@ -167,7 +167,8 @@ export function addLoadRadarButton() {
 				let shaderMaterial = getShaderMaterial()
 				var material = new THREE.PointsMaterial({ size: 1.0 });
 				var mesh = new THREE.Points(geometry, shaderMaterial);
-				mesh.name = "radar";
+        mesh.name = "radar";
+        mesh.visible = false;
 				// debugger; //radar tracks added?
 				viewer.scene.scene.add(mesh);
 				viewer.scene.dispatchEvent({ "type": "sensor_layer_added", "sensorLayer": mesh });

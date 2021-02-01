@@ -202,6 +202,7 @@ window.detectionsLoaded = false;
       if (detectionGeometries != null) {
         let detectionLayer = new THREE.Group();
         detectionLayer.name = "Object Detections";
+        detectionLayer.visible = false;
         for (let ii = 0, len = detectionGeometries.bbox.length; ii < len; ii++) {
           detectionLayer.add(detectionGeometries.bbox[ii]);
         }

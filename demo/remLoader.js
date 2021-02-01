@@ -149,6 +149,7 @@ export async function loadRemCallback(s3, bucket, name, animationEngine) {
 	await loadRem(s3, bucket, name, remShaderMaterial, animationEngine, (sphereMeshes) => {
 		const remLayer = new THREE.Group();
     remLayer.name = "REM Control Points";
+    remLayer.visible = false;
     sphereMeshes.forEach(mesh => remLayer.add(mesh))
 
 		viewer.scene.scene.add(remLayer);

@@ -400,7 +400,7 @@ export async function loadLanesCallback(s3, bucket, name, callback) {
     callback();
   }
 
-  if (visualizationMode === "aptivLanes") {
+  if (visualizationMode === "customerLanes") {
     for (const s of [1, 2, 3]) {
       for (const d of ['EB', 'WB']) {
         for (const n of [1, 2, 3]) {

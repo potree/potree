@@ -35,7 +35,7 @@ export function createViewer() {
 		window.calibrationModeAvailable = calibrationModeAvailable;
 		document.getElementById("toggle_calibration_panels").style.display = window.calibrationModeAvailable ? "block" : "none";
 
-		if (visualizationMode == "aptivLanes") {
+		if (visualizationMode == "customerLanes") {
 			viewer.setCameraMode(Potree.CameraMode.ORTHOGRAPHIC);
 			viewer.scene.view.maxPitch = -Math.PI / 2;
 

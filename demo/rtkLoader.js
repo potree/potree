@@ -174,7 +174,7 @@ function animateRTK() {
 			let rtkPoint = state.pose.clone();
 			let vehicleOrientation = state.orient.clone();
 			vehicle.position.copy(rtkPoint);
-			if (visualizationMode == "aptivLanes") {
+			if (visualizationMode == "customerLanes") {
 				vehicle.position.add(new THREE.Vector3(0, 0, 1000));
 			}
 			applyRotation(vehicle, vehicleOrientation.x, vehicleOrientation.y, vehicleOrientation.z);

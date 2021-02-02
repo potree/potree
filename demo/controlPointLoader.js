@@ -12,7 +12,7 @@ export async function loadControlPointsCallback (s3, bucket, name, animationEngi
       // Remove prefix filepath
       file = file.split(/.*[\/|\\]/)[1];
       // Handle old naming and new naming schemas
-      if (file.includes('control_point_3_rtk_relative.fb') || file.includes('viz_Spheres3D_')) {
+      if (file.includes('control_point_3_rtk_relative.fb') || file.includes('viz_Spheres3D_') && getControlPointName(file)) {
         await loadControlPointsCallbackHelper(s3, bucket, name, animationEngine, file);
       }
     }

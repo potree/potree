@@ -265,6 +265,8 @@ function getControlPointColor (controlPointType) {
   const lowerCaseControlPoint = controlPointType.toLowerCase();
   if (lowerCaseControlPoint.includes("control_point_3_rtk_relative.fb")) {
     return new THREE.Color(0x00ffff);
+  } else if (lowerCaseControlPoint.includes("roadmap")) {
+    return new THREE.Color(0xff5555);
   } else if (lowerCaseControlPoint.includes("left")) {
     return new THREE.Color(0xffff00);
   } else if (lowerCaseControlPoint.includes("right")) {
@@ -298,14 +300,20 @@ function getControlPointName (controlPointType) {
   words = words.substring(13);
   words = words.split("_");
 
-  if (words.includes("LaneSense")) {
-    words = words.map(word => word === "LaneSense" ? "Lane Sense" : word);
+  const assessmentPrettyNames = {
+    "LaneSense": "Lane Sense",
+    "RoadMap": "Road Map",
+    "SPP": "Lane Polynomial"
+  };
+
+  // Replace first instance of assessment names with pretty names
+  const assessmentName = words.find(word => word in assessmentPrettyNames);
+  if (assessmentName) {
+    words[words.indexOf(assessmentName)] = assessmentPrettyNames[assessmentName];
   }
-  else {
-    // TODO: This is hacky, and should be changed when fork is private
-    if (words.length > 1) words[1] = "Lane Polynomial";
-    if (words.length > 3) words[3] = "";
-  }
+
+  // Remove SPP where necessary
+  words = words.map(word => word === "SPP" ? "" : word);
 
   words = words.join(" ");
   return words;

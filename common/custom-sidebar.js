@@ -24,6 +24,33 @@ export function updateSidebar(vizConfiguration) {
     return nodeID;
   }
 
+  const getSortedIndex = (nodes, text) => {
+    for (let i = 0; i < nodes.length; i++) {
+      if (nodes[i].textContent.localeCompare(text) > 0) {
+        return i;
+      }
+    }
+
+    return "last";
+  }
+
+  let createNodeSorted = (parent, text, icon, object) => {
+    let nodeID = tree.jstree('create_node', parent, {
+        "text": text,
+        "icon": icon,
+        "data": object
+      },
+      getSortedIndex(tree.jstree("get_children_dom", parent), text), false, false);
+
+    if(object.visible){
+      tree.jstree('check_node', nodeID);
+    }else{
+      tree.jstree('uncheck_node', nodeID);
+    }
+
+    return nodeID;
+  }
+
   const vehicleTree = tree.jstree('create_node', "#", { "text": "<b>Vehicle</b>", "id": "vehicleViz"}, "first", false, false);
   tree.jstree("check_node", vehicleTree);
   let onVehicleLayerAdded = (e) => {
@@ -64,7 +91,7 @@ export function updateSidebar(vizConfiguration) {
   let onSensorLayerAdded = (e) => {
     let sensorLayer = e.sensorLayer;
     let sensorIcon = `${Potree.resourcePath}/icons/cloud.svg`; // TODO Fix this
-    let node = createNode(sensorTree, sensorLayer.name, sensorIcon, sensorLayer);
+    let node = createNodeSorted(sensorTree, sensorLayer.name, sensorIcon, sensorLayer);
 
     sensorLayer.addEventListener("visibility_changed", () => {
       if(sensorLayer.visible){

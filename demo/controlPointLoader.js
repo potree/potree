@@ -266,7 +266,7 @@ function getControlPointColor (controlPointType) {
   if (lowerCaseControlPoint.includes("control_point_3_rtk_relative.fb")) {
     return new THREE.Color(0x00ffff);
   } else if (lowerCaseControlPoint.includes("roadmap")) {
-    return new THREE.Color(0xff5555);
+    return new THREE.Color(0xff6666);
   } else if (lowerCaseControlPoint.includes("left")) {
     return new THREE.Color(0xffff00);
   } else if (lowerCaseControlPoint.includes("right")) {

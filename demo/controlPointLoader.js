@@ -266,7 +266,7 @@ function getControlPointColor (controlPointType) {
   if (lowerCaseControlPoint.includes("control_point_3_rtk_relative.fb")) {
     return new THREE.Color(0x00ffff);
   } else if (lowerCaseControlPoint.includes("roadmodel")) {
-    return new THREE.Color(0x00ffc0);
+    return new THREE.Color(0x00c0ff);
   } else if (lowerCaseControlPoint.includes("left")) {
     return new THREE.Color(0xffff00);
   } else if (lowerCaseControlPoint.includes("right")) {

@@ -265,7 +265,7 @@ function getControlPointColor (controlPointType) {
   const lowerCaseControlPoint = controlPointType.toLowerCase();
   if (lowerCaseControlPoint.includes("control_point_3_rtk_relative.fb")) {
     return new THREE.Color(0x00ffff);
-  } else if (lowerCaseControlPoint.includes("roadmap")) {
+  } else if (lowerCaseControlPoint.includes("roadmodel")) {
     return new THREE.Color(0x00ffc0);
   } else if (lowerCaseControlPoint.includes("left")) {
     return new THREE.Color(0xffff00);
@@ -302,7 +302,7 @@ function getControlPointName (controlPointType) {
 
   const assessmentPrettyNames = {
     "LaneSense": "Lane Sense",
-    "RoadMap": "Road Map",
+    "RoadModel": "Road Model",
     "SPP": "Lane Polynomial"
   };
 

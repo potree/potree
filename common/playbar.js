@@ -468,8 +468,7 @@ function callUpdateLanesLambdaFunction (bucket, name, lane) {
   lambda.invoke({
     FunctionName: 'UpdateLanes:$LATEST',
     LogType: 'None',
-    Payload: JSON.stringify(payload),
-
+    Payload: JSON.stringify(payload)
   }, function (err, data) {
     if (err) {
       console.log(err, err.stack);

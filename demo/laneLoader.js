@@ -44,8 +44,7 @@ async function loadLanes(s3, bucket, name, fname, supplierNum, annotationMode, v
   }
 
   if (s3 && bucket && name) {
-    const request = s3.getObject({Bucket: bucket,
-                                  Key: laneFiles.objectName});
+    const request = s3.getObject({Bucket: bucket, Key: laneFiles.objectName, "ResponseCacheControl":"no-cache"});
     request.on("httpDownloadProgress", async (e) => {
       await updateLoadingBar(e.loaded/e.total*100)
     });

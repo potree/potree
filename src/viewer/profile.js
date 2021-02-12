@@ -658,16 +658,6 @@ export class ProfileWindow extends EventDispatcher {
 		this.pickSphere = new THREE.Mesh(sg, sm);
 		this.scene.add(this.pickSphere);
 
-		{
-			const sg = new THREE.SphereGeometry(2);
-			const sm = new THREE.MeshNormalMaterial();
-			const s = new THREE.Mesh(sg, sm);
-
-			s.position.set(589530.450, 231398.860, 769.735);
-
-			this.scene.add(s);
-		}
-
 		this.viewerPickSphere = new THREE.Mesh(sg, sm);
 	}
 

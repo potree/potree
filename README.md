@@ -481,6 +481,9 @@ We would like to thank our sponsors for their financial contributions that keep 
 			€ 1,000+
 		</th>
 		<td>
+			<a href="https://www.phoenixlidar.com/">
+				<img src="docs/sponsors/PhoenixLidar_Logo.jpg" height="45"/> &nbsp;
+			</a>
 			<a href="https://www.eventart.at/">
 				<img src="docs/sponsors/eventart.png" height="55"/> &nbsp;
 			</a>

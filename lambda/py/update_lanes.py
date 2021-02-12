@@ -117,7 +117,7 @@ def enumVector2VectorBuilderHelper(builder, numVals, nparray):
         builder.PrependByte(nparray[i])
     return builder.EndVector(numVals)
 
-def outputFlatbuffer(laneSegments, leftPointValidity, rightPointValidity, leftPointAnnotationStatus, rightPointAnnotationStatus):
+def buildFlatbuffer(laneSegments, leftPointValidity, rightPointValidity, leftPointAnnotationStatus = [], rightPointAnnotationStatus = []):
     temp_lanes = []
 
     for i in range(len(laneSegments)):
@@ -223,7 +223,7 @@ def getUpdatedSpine(input):
     name = input['name']
 
     laneSegments = getLinesFromJson(leftData, rightData, upsampleValue, verbose)
-    builder = outputFlatbuffer(laneSegments, input["leftPointValidity"], input["rightPointValidity"], ?, ?)
+    builder = buildFlatbuffer(laneSegments, input["leftPointValidity"], input["rightPointValidity"])
 
     create_original_lanes(region, bucket, name)
     write_buffer_to_s3(region, bucket, name, builder)
@@ -544,7 +544,7 @@ if __name__ == "__main__":
     right_validities = getDataFromJson(inputFileRightValidities)
     right_annotations = getDataFromJson(inputFileRightAnnotations)
 
-    builder = outputFlatbuffer(laneSegments, outputFile, left_validities, right_validities, left_annotations, right_annotations)
+    builder = buildFlatbuffer(laneSegments, outputFile, left_validities, right_validities, left_annotations, right_annotations)
     write_buffer(builder, outputFile)
 
     if (args.checkSpine):

@@ -138,8 +138,8 @@
 				// wait until this point cloud is loaded before processing the next one
 				let pointcloud = (await promises[i]).pointcloud;
 
-				viewer.scene.addPointCloud(pointcloud);
 				pointclouds[i].callback(pointcloud);
+				viewer.scene.addPointCloud(pointcloud);
 			}
 
 			

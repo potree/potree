@@ -31,7 +31,7 @@ def create_original_lanes(region, bucket, name):
         }
         # write file
         s3.copy(copy_source, bucket, '/'.join([name, '2_Truth', 'original-lanes.fb']))
-    
+
 def write_buffer_to_s3(region, bucket, name, builder):
     output_data = builder.Output()
     size = len(output_data).to_bytes(4, byteorder='little', signed=True)
@@ -180,7 +180,7 @@ def buildFlatbuffer(laneSegments, leftPointValidity, rightPointValidity, leftPoi
         temp_lanes.append(lane)
 
         return builder
-        
+
 def getXYZ(data):
     x = data['position']['x']
     y = data['position']['y']
@@ -216,11 +216,13 @@ def getUpdatedSpine(inputFileLeft, inputFileRight, upsampleValue, verbose):
 def getUpdatedSpine(input):
     leftData = input['left']
     rightData = input['right']
-    upsampleValue = input['upsampleValue']
-    verbose = input['verbose']
     region = input["region"]
     bucket = input['bucket']
     name = input['name']
+
+    # safe access field that may not be passed
+    upsampleValue = input.get('upsampleValue')
+    verbose = input.get('verbose')
 
     laneSegments = getLinesFromJson(leftData, rightData, upsampleValue, verbose)
     builder = buildFlatbuffer(laneSegments, input["leftPointValidity"], input["rightPointValidity"],input["leftPointAnnotationStatus"],input["rightPointAnnotationStatus"])

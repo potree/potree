@@ -21,6 +21,7 @@ export class Measure extends THREE.Object3D {
 
 		this.sphereGeometry = new THREE.SphereGeometry(0.4, 10, 10);
 		this.color = new THREE.Color(0xff0000);
+		this.invalidColor = new THREE.Color(0x555555);
 
 		// this.lengthUnit = {code: 'm'};
 
@@ -74,10 +75,10 @@ export class Measure extends THREE.Object3D {
 		this.add(this.areaLabel);
 	}
 
-	createSphereMaterial () {
+	createSphereMaterial (color) {
 		let sphereMaterial = new THREE.MeshLambertMaterial({
 			//shading: THREE.SmoothShading,
-			color: this.color,
+			color: color,
 			depthTest: false,
 			depthWrite: false}
 		);
@@ -85,7 +86,7 @@ export class Measure extends THREE.Object3D {
 		return sphereMaterial;
 	};
 
-	addMarker (point, callback) {
+	addMarker (point, callback, validity = 0) {
 		if (point instanceof THREE.Vector3) {
 			point = {position: point};
 		}else if(point instanceof Array){
@@ -94,7 +95,9 @@ export class Measure extends THREE.Object3D {
 		this.points.push(point);
 
 		// sphere
-		let sphere = new THREE.Mesh(this.sphereGeometry, this.createSphereMaterial());
+		const sphereMaterial = validity ? this.createSphereMaterial(this.invalidColor) : this.createSphereMaterial(this.color);
+		let sphere = new THREE.Mesh(this.sphereGeometry, sphereMaterial);
+		sphere.validity = validity;
 
 		this.add(sphere);
 		this.spheres.push(sphere);
@@ -208,6 +211,22 @@ export class Measure extends THREE.Object3D {
 							this.setMarker(ii, prevPoint);
 						}
 					});
+				} else if (window.truthAnnotationMode == 3 && window.usingInvalidLanesSchema) {
+					let i = this.spheres.indexOf(e.target);
+					if (i != -1) {
+						this.spheres[i].validity = 1;
+						this.update();
+					} else {
+						console.error("Clicked sphere not in list of spheres: ", e);
+					}
+				} else if (window.truthAnnotationMode == 4 && window.usingInvalidLanesSchema) {
+					let i = this.spheres.indexOf(e.target);
+					if (i != -1) {
+						this.spheres[i].validity = 0;
+						this.update();
+					} else {
+						console.error("Clicked sphere not in list of spheres: ", e);
+					}
 				}
 
 
@@ -376,7 +395,7 @@ export class Measure extends THREE.Object3D {
 
 			// spheres
 			sphere.position.copy(point.position);
-			sphere.material.color = this.color;
+			sphere.material.color = sphere.validity ? this.invalidColor : this.color;
 
 			{ // edges
 				let edge = this.edges[index];

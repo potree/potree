@@ -1550,7 +1550,7 @@ export class Viewer extends EventDispatcher{
 
 			// volumes with clipping enabled
 			//boxes.push(...this.scene.volumes.filter(v => (v.clip)));
-			boxes.push(...this.scene.volumes.filter(v => (v.clip && v instanceof BoxVolume)));
+			boxes.push(...this.scene.volumes.filter(v => (v.clip && v instanceof BoxVolume || v.clip && v.name === 'selected_lanes')));
 
 			// profile segments
 			for(let profile of this.scene.profiles){

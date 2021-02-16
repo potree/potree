@@ -227,6 +227,7 @@ export function createPlaybar () {
   document.getElementById("load_gaps_button").style.display = "none";
   document.getElementById("download_lanes_button").style.display = "none";
   document.getElementById("save_lanes_button").style.display = "none";
+  document.getElementById("select_lanes_button").style.display = "none";
 
   // original from radar.html
   document.getElementById("playbar_tmax").disabled = false;
@@ -234,7 +235,7 @@ export function createPlaybar () {
   document.getElementById("elevation_max").display = false;
   document.getElementById("elevation_min").disabled = false;
 
-  window.truthAnnotationMode = 0;	// 0: None, 1: Delete, 2: Add
+  window.truthAnnotationMode = 0;	// 0: None, 1: Delete, 2: Add, 3: Mark Invalid, 4: Mark Valid
   const annotationScreen = $(`<div id="annotationScreen"><p id="annotation-label">ANNOTATION MODE: <b id="annotation-mode-text"></b></p></div>`);
   $('body').prepend(annotationScreen);
   const div = document.getElementById("annotationScreen");
@@ -247,8 +248,12 @@ export function createPlaybar () {
         window.truthAnnotationMode = 2;
       } else if (e.code === "KeyS") {
         window.truthAnnotationMode = 1;
-      } else if (e.shiftKey) {
-        window.truthAnnotationMode = (window.truthAnnotationMode + 1) % 3;
+      } else if (e.code === "KeyI" && window.usingInvalidLanesSchema) {
+        window.truthAnnotationMode = 3;
+      } else if (e.code === "KeyV" && window.usingInvalidLanesSchema) {
+        window.truthAnnotationMode = 4;
+      }else if (e.shiftKey) {
+        window.truthAnnotationMode = (window.truthAnnotationMode + 1) % 5;
       }
 
       const div = document.getElementById("annotationScreen");
@@ -265,6 +270,14 @@ export function createPlaybar () {
         div.style.background = "green";
         div.style.opacity = 0.25;
         label.innerHTML = "ADD POINTS";
+      } else if (window.truthAnnotationMode === 3) {
+        div.style.background = "grey";
+        div.style.opacity = 0.25;
+        label.innerHTML = "MARK POINTS INVALID";
+      } else if (window.truthAnnotationMode === 4) {
+        div.style.background = "blue";
+        div.style.opacity = 0.2;
+        label.innerHTML = "MARK POINTS VALID";
       }
     }
   });
@@ -427,6 +440,7 @@ function saveLaneChanges () {
   if (laneLeftSegments === undefined) {
     const laneLeft = window.viewer.scene.scene.getChildByName("Lane Left");
     lane.left = laneLeft.points;
+    if (window.usingInvalidLanesSchema) lane.leftPointValidity = laneLeft.spheres.map(({validity}) => validity);
   } else {
     const polyline = laneLeftSegments.getFinalPoints();
     lane.left = polyline.points;
@@ -439,6 +453,7 @@ function saveLaneChanges () {
   if (laneRightSegments === undefined) {
     const laneRight = window.viewer.scene.scene.getChildByName("Lane Right");
     lane.right = laneRight.points;
+    if (window.usingInvalidLanesSchema) lane.rightPointValidity = laneRight.spheres.map(({validity}) => validity);;
   } else {
     const polyline = laneRightSegments.getFinalPoints();
     lane.right = polyline.points;

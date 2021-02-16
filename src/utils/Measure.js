@@ -212,7 +212,7 @@ export class Measure extends THREE.Object3D {
 						}
 					});
 				} else if (window.truthAnnotationMode == 3 && window.usingInvalidLanesSchema) {
-					let i = this.spheres.indexOf(e.target);
+					const i = this.spheres.indexOf(e.target);
 					if (i != -1) {
 						this.spheres[i].validity = 1;
 						this.update();
@@ -220,7 +220,7 @@ export class Measure extends THREE.Object3D {
 						console.error("Clicked sphere not in list of spheres: ", e);
 					}
 				} else if (window.truthAnnotationMode == 4 && window.usingInvalidLanesSchema) {
-					let i = this.spheres.indexOf(e.target);
+					const i = this.spheres.indexOf(e.target);
 					if (i != -1) {
 						this.spheres[i].validity = 0;
 						this.update();

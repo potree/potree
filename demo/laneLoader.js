@@ -641,8 +641,8 @@ export function addReloadLanesButton() {
     volume.addEventListener("mouseover", mouseover);
     volume.addEventListener("mouseleave", mouseleave);
 
-    let measurementsRoot = $("#jstree_scene").jstree().get_json("measurements");
-    let jsonNode = measurementsRoot.children.find(child => child.data.uuid === volume.uuid);
+    const measurementsRoot = $("#jstree_scene").jstree().get_json("measurements");
+    const jsonNode = measurementsRoot.children.find(child => child.data.uuid === volume.uuid);
     $.jstree.reference(jsonNode.id).deselect_all();
     $.jstree.reference(jsonNode.id).select_node(jsonNode.id);
   });

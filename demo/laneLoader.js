@@ -508,12 +508,20 @@ export function addReloadLanesButton() {
       let removeLanes = viewer.scene.scene.getChildByName("Lanes");
       while (removeLanes) {
         viewer.scene.scene.remove(removeLanes);
+        viewer.scene.dispatchEvent({
+          "type": "truth_layer_deleted",
+          "truthLayer": removeLanes
+        });
         removeLanes = viewer.scene.scene.getChildByName("Lanes");
         // TODO remove "Lanes" from sidebar
       }
       let removeInvalidLanes = viewer.scene.scene.getChildByName("Invalid Lanes");
       while (removeInvalidLanes) {
         viewer.scene.scene.remove(removeInvalidLanes);
+        viewer.scene.dispatchEvent({
+          "type": "truth_layer_deleted",
+          "truthLayer": removeInvalidLanes
+        });
         removeInvalidLanes = viewer.scene.scene.getChildByName("Invalid Lanes");
         // TODO remove "Lanes" from sidebar
       }

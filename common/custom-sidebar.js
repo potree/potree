@@ -85,6 +85,21 @@ export function updateSidebar(vizConfiguration) {
 	};
   window.viewer.scene.addEventListener("truth_layer_added", onTruthLayerAdded);
 
+  const onTruthLayerDeleted = (e) => {
+    const truthNodes = tree.jstree("get_children_dom", truthVizTree);
+    let nodeID;
+    for (let i = 0; i < truthNodes.length; i++) {
+      if (truthNodes[i].textContent === e.truthLayer.name) {
+        nodeID = truthNodes[i].id;
+        break;
+      }
+    }
+
+    if (nodeID) {
+      tree.jstree('delete_node', nodeID);
+    }
+  };
+  window.viewer.scene.addEventListener("truth_layer_deleted", onTruthLayerDeleted)
 
   const sensorTree = tree.jstree('create_node', "#", { "text": "<b>Sensor Readings</b>", "id": "sensorViz"}, "last", false, false);
   tree.jstree("check_node", sensorTree);

@@ -159,6 +159,7 @@ export function createPlaybar () {
         download(JSON.stringify(polyline.points, null, 2), "lane-left.json");
         download(JSON.stringify(polyline.pointValidities, null, 2), "lane-left-validities.json");
         download(JSON.stringify(polyline.pointAnnotations, null, 2), "lane-left-annotations.json");
+        if (window.usingInvalidLanesSchema) download(JSON.stringify(polyline.pointAnomalies, null, 2), "lane-left-anomalies.json");
       }
     } catch (e) {
       console.error("Couldn't download left lane vertices: ", e);
@@ -183,6 +184,7 @@ export function createPlaybar () {
         download(JSON.stringify(polyline.points, null, 2), "lane-right.json");
         download(JSON.stringify(polyline.pointValidities, null, 2), "lane-right-validities.json");
         download(JSON.stringify(polyline.pointAnnotations, null, 2), "lane-right-annotations.json");
+        if (window.usingInvalidLanesSchema) download(JSON.stringify(polyline.pointAnomalies, null, 2), "lane-right-anomalies.json");
       }
     } catch (e) {
       console.error("Couldn't download right lane vertices: ", e);
@@ -446,6 +448,7 @@ function saveLaneChanges () {
     lane.left = polyline.points;
     lane.leftPointValidity = polyline.pointValidities;
     lane.leftPointAnnotationStatus = polyline.pointAnnotations;
+    if (window.usingInvalidLanesSchema) lane.leftPointAnomaly = polyline.pointAnomalies;
   }
 
   // Right Lane Vertices:
@@ -453,12 +456,13 @@ function saveLaneChanges () {
   if (laneRightSegments === undefined) {
     const laneRight = window.viewer.scene.scene.getChildByName("Lane Right");
     lane.right = laneRight.points;
-    if (window.usingInvalidLanesSchema) lane.rightPointValidity = laneRight.spheres.map(({validity}) => validity);;
+    if (window.usingInvalidLanesSchema) lane.rightPointValidity = laneRight.spheres.map(({validity}) => validity);
   } else {
     const polyline = laneRightSegments.getFinalPoints();
     lane.right = polyline.points;
     lane.rightPointValidity = polyline.pointValidities;
     lane.rightPointAnnotationStatus = polyline.pointAnnotations;
+    if (window.usingInvalidLanesSchema) lane.rightPointAnomaly = polyline.pointAnomalies;
   }
   callUpdateLanesLambdaFunction(bucket, name, lane);
 }
@@ -479,6 +483,12 @@ function callUpdateLanesLambdaFunction (bucket, name, lane) {
     rightPointValidity: lane.rightPointValidity,
     rightPointAnnotationStatus: lane.rightPointAnnotationStatus
   };
+
+  if (window.usingInvalidLanesSchema) {
+    payload.leftPointAnomaly = lane.leftPointAnomaly;
+    payload.rightPointAnomaly = lane.rightPointAnomaly;
+  }
+
   const lambda = getLambda();
   lambda.invoke({
     FunctionName: 'UpdateLanes:$LATEST',

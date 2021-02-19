@@ -12,6 +12,7 @@ import Lane
 import Vec3
 import PointValidity
 import PointAnnotationStatus
+import PointAnomalyType
 import numpy as np
 from shapely.geometry import LineString, Point, MultiPoint, box
 from shapely.ops import nearest_points
@@ -89,6 +90,18 @@ def create_vector(builder, nparray, flag):
     elif flag == 'right_point_validities':
         Lane.LaneStartRightPointValidityVector(builder, numVals)
         return enumVector2VectorBuilderHelper(builder, numVals, nparray)
+    elif flag == 'create_left_point_anomalies':
+        Lane.LaneStartLeftPointAnomalyVector(builder, numVals)
+        return enumByte2VectorBuilderHelper(builder, numVals)
+    elif flag == 'create_right_point_anomalies':
+        Lane.LaneStartRightPointAnomalyVector(builder, numVals)
+        return enumByte2VectorBuilderHelper(builder, numVals)
+    elif flag == 'left_point_anomalies':
+        Lane.LaneStartLeftPointAnomalyVector(builder, numVals)
+        return enumVector2VectorBuilderHelper(builder, numVals, nparray)
+    elif flag == 'right_point_anomalies':
+        Lane.LaneStartRightPointAnomalyVector(builder, numVals)
+        return enumVector2VectorBuilderHelper(builder, numVals, nparray)
     elif flag == 'create_left_point_annotation_statuses':
         Lane.LaneStartLeftPointAnnotationStatusVector(builder, numVals)
         return enumByte2VectorBuilderHelper(builder, numVals, byte=1)
@@ -117,7 +130,7 @@ def enumVector2VectorBuilderHelper(builder, numVals, nparray):
         builder.PrependByte(nparray[i])
     return builder.EndVector(numVals)
 
-def buildFlatbuffer(laneSegments, leftPointValidity, rightPointValidity, leftPointAnnotationStatus, rightPointAnnotationStatus):
+def buildFlatbuffer(laneSegments, leftPointValidity, rightPointValidity, leftPointAnomaly, rightPointAnomaly, leftPointAnnotationStatus, rightPointAnnotationStatus):
     temp_lanes = []
 
     for i in range(len(laneSegments)):
@@ -152,6 +165,22 @@ def buildFlatbuffer(laneSegments, leftPointValidity, rightPointValidity, leftPoi
         else:
             right_point_validities = create_vector(builder, np.array(rightPointValidity), 'right_point_validities')
 
+        # left point anomaly
+        if not leftPointAnomaly is None and len(leftPointAnomaly) == 0:
+            left_point_anomalies = create_vector(builder, laneSegment['left'], 'create_left_point_anomalies')
+        elif not leftPointAnomaly is None:
+            left_point_anomalies = create_vector(builder, np.array(leftPointAnomaly), 'left_point_anomalies')
+        else:
+            left_point_anomalies = None
+
+        # right point anomaly
+        if not rightPointAnomaly is None and len(rightPointAnomaly) == 0:
+            right_point_anomalies = create_vector(builder, laneSegment['right'], 'create_right_point_anomalies')
+        elif not rightPointAnomaly is None:
+            right_point_anomalies = create_vector(builder, np.array(rightPointAnomaly), 'right_point_anomalies')
+        else:
+            right_point_anomalies = None
+
         # Start Lane:
         Lane.LaneStart(builder)
 
@@ -170,6 +199,13 @@ def buildFlatbuffer(laneSegments, leftPointValidity, rightPointValidity, leftPoi
         # Add PointValidity
         Lane.LaneAddLeftPointValidity(builder, left_point_validities)
         Lane.LaneAddRightPointValidity(builder, right_point_validities)
+
+        # Add PointAnomaly
+        if not left_point_anomalies is None:
+            Lane.LaneAddLeftPointAnomaly(builder, left_point_anomalies)
+
+        if not right_point_anomalies is None:
+            Lane.LaneAddRightPointAnomaly(builder, right_point_anomalies)
 
         # Add PointAnnotationStatus
         Lane.LaneAddLeftPointAnnotationStatus(builder, left_point_annotation_statuses)
@@ -220,12 +256,20 @@ def getUpdatedSpine(input):
     bucket = input['bucket']
     name = input['name']
 
+    left_point_anomalies = None
+    if 'leftPointAnomaly' in input:
+        left_point_anomalies = input['leftPointAnomaly']
+
+    right_point_anomalies = None
+    if 'rightPointAnomaly' in input:
+        right_point_anomalies = input['rightPointAnomaly']
+
     # safe access field that may not be passed
     upsampleValue = input.get('upsampleValue')
     verbose = input.get('verbose')
 
     laneSegments = getLinesFromJson(leftData, rightData, upsampleValue, verbose)
-    builder = buildFlatbuffer(laneSegments, input["leftPointValidity"], input["rightPointValidity"],input["leftPointAnnotationStatus"],input["rightPointAnnotationStatus"])
+    builder = buildFlatbuffer(laneSegments, input["leftPointValidity"], input["rightPointValidity"], left_point_anomalies, right_point_anomalies, input["leftPointAnnotationStatus"], input["rightPointAnnotationStatus"])
 
     create_original_lanes(region, bucket, name)
     write_buffer_to_s3(region, bucket, name, builder)
@@ -535,6 +579,8 @@ if __name__ == "__main__":
     inputFileRight = os.path.join(inputDir, "lane-right.json")
     inputFileLeftValidities = os.path.join(inputDir, "lane-left-validities.json")
     inputFileRightValidities = os.path.join(inputDir, "lane-right-validities.json")
+    inputFileLeftAnomalies = os.path.join(inputDir, "lane-left-anomalies.json")
+    inputFileRightAnomalies = os.path.join(inputDir, "lane-right-anomalies.json")
     inputFileLeftAnnotations = os.path.join(inputDir, "lane-left-annotations.json")
     inputFileRightAnnotations = os.path.join(inputDir, "lane-right-annotations.json")
     outputFile = os.path.join(outputDir, "lanes.fb")
@@ -546,7 +592,15 @@ if __name__ == "__main__":
     right_validities = getDataFromJson(inputFileRightValidities)
     right_annotations = getDataFromJson(inputFileRightAnnotations)
 
-    builder = buildFlatbuffer(laneSegments, outputFile, left_validities, right_validities, left_annotations, right_annotations)
+
+    left_anomalies = None
+    right_anomalies = None
+
+    if (os.path.exists(inputFileLeftAnomalies) and os.path.exists(inputFileRightAnomalies)):
+        left_anomalies = getDataFromJson(inputFileLeftAnomalies)
+        right_anomalies = getDataFromJson(inputFileRightAnomalies)
+
+    builder = buildFlatbuffer(laneSegments, outputFile, left_validities, right_validities, left_anomalies, right_anomalies, left_annotations, right_annotations)
     write_buffer(builder, outputFile)
 
     if (args.checkSpine):

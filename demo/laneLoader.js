@@ -144,7 +144,7 @@ async function createLaneGeometries (lanes, supplierNum, annotationMode, volumes
         }
       } else {
         geometryLeft.vertices.push(new THREE.Vector3(left.x(), left.y(), left.z()));
-        if (anomalyMode && lane.leftPointValidity(jj) === 1 || window.usingInvalidLanesSchema && lane.leftPointAnomaly(jj) === 1) {
+        if (anomalyMode && lane.leftPointValidity(jj) === 1 || window.usingInvalidLanesSchema && lane.leftPointAnomaly(jj) > 0) {
           leftAnomalies.push(new THREE.Vector3(left.x(), left.y(), left.z()));
         }
 
@@ -170,7 +170,7 @@ async function createLaneGeometries (lanes, supplierNum, annotationMode, volumes
         }
       } else {
         geometryRight.vertices.push(new THREE.Vector3(right.x(), right.y(), right.z()));
-        if (anomalyMode && lane.rightPointValidity(jj) === 1 || window.usingInvalidLanesSchema&& lane.rightPointAnomaly(jj) === 1) {
+        if (anomalyMode && lane.rightPointValidity(jj) === 1 || window.usingInvalidLanesSchema&& lane.rightPointAnomaly(jj) > 0) {
           rightAnomalies.push(new THREE.Vector3(right.x(), right.y(), right.z()));
         }
 

@@ -86,7 +86,7 @@ export class Measure extends THREE.Object3D {
 		return sphereMaterial;
 	};
 
-	addMarker (point, callback, validity = 0) {
+	addMarker (point, callback, anomalyType = 0, validity = 0) {
 		if (point instanceof THREE.Vector3) {
 			point = {position: point};
 		}else if(point instanceof Array){
@@ -98,6 +98,7 @@ export class Measure extends THREE.Object3D {
 		const sphereMaterial = validity ? this.createSphereMaterial(this.invalidColor) : this.createSphereMaterial(this.color);
 		let sphere = new THREE.Mesh(this.sphereGeometry, sphereMaterial);
 		sphere.validity = validity;
+		sphere.anomalyType = anomalyType;
 
 		this.add(sphere);
 		this.spheres.push(sphere);

@@ -442,7 +442,10 @@ function saveLaneChanges () {
   if (laneLeftSegments === undefined) {
     const laneLeft = window.viewer.scene.scene.getChildByName("Lane Left");
     lane.left = laneLeft.points;
-    if (window.usingInvalidLanesSchema) lane.leftPointValidity = laneLeft.spheres.map(({validity}) => validity);
+    if (window.usingInvalidLanesSchema) {
+      lane.leftPointValidity = laneLeft.spheres.map(({validity}) => validity);
+      lane.leftPointAnomaly = laneLeft.spheres.map(({validity, anomalyType}) => validity && anomalyType);
+    }
   } else {
     const polyline = laneLeftSegments.getFinalPoints();
     lane.left = polyline.points;
@@ -456,7 +459,10 @@ function saveLaneChanges () {
   if (laneRightSegments === undefined) {
     const laneRight = window.viewer.scene.scene.getChildByName("Lane Right");
     lane.right = laneRight.points;
-    if (window.usingInvalidLanesSchema) lane.rightPointValidity = laneRight.spheres.map(({validity}) => validity);
+    if (window.usingInvalidLanesSchema) {
+      lane.rightPointValidity = laneRight.spheres.map(({validity}) => validity);
+      lane.rightPointAnomaly = laneRight.spheres.map(({validity, anomalyType}) => validity && anomalyType);
+    }
   } else {
     const polyline = laneRightSegments.getFinalPoints();
     lane.right = polyline.points;

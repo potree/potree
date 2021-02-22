@@ -138,7 +138,7 @@ async function createLaneGeometries (lanes, supplierNum, annotationMode, volumes
       const left = lane.left(jj);
       if (annotationMode) {
         if (clonedBoxes.length === 0) {
-          laneLeft.addMarker(new THREE.Vector3(left.x(), left.y(), left.z()), null, window.usingInvalidLanesSchema && lane.leftPointValidity(jj));
+          laneLeft.addMarker(new THREE.Vector3(left.x(), left.y(), left.z()), null, window.usingInvalidLanesSchema && lane.leftPointAnomaly(jj), window.usingInvalidLanesSchema && lane.leftPointValidity(jj));
         } else {
           isContains = leftLaneSegments.updateSegments(clonedBoxes, isContains, left, lane.leftPointValidity(jj), window.usingInvalidLanesSchema && lane.leftPointAnomaly(jj), lane.leftPointAnnotationStatus(jj), jj, numVertices);
         }
@@ -164,13 +164,13 @@ async function createLaneGeometries (lanes, supplierNum, annotationMode, volumes
 
       if (annotationMode) {
         if (clonedBoxes.length === 0) {
-          laneRight.addMarker(new THREE.Vector3(right.x(), right.y(), right.z()), null, window.usingInvalidLanesSchema && lane.rightPointValidity(jj));
+          laneRight.addMarker(new THREE.Vector3(right.x(), right.y(), right.z()), null, window.usingInvalidLanesSchema && lane.rightPointAnomaly(jj), window.usingInvalidLanesSchema && lane.rightPointValidity(jj));
         } else {
           isContains = rightLaneSegments.updateSegments(clonedBoxes, isContains, right, lane.rightPointValidity(jj), window.usingInvalidLanesSchema && lane.rightPointAnomaly(jj), lane.rightPointAnnotationStatus(jj), jj, numVertices);
         }
       } else {
         geometryRight.vertices.push(new THREE.Vector3(right.x(), right.y(), right.z()));
-        if (anomalyMode && lane.rightPointValidity(jj) === 1 || window.usingInvalidLanesSchema&& lane.rightPointAnomaly(jj) > 0) {
+        if (anomalyMode && lane.rightPointValidity(jj) === 1 || window.usingInvalidLanesSchema && lane.rightPointAnomaly(jj) > 0) {
           rightAnomalies.push(new THREE.Vector3(right.x(), right.y(), right.z()));
         }
 

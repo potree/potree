@@ -48,9 +48,9 @@ export class LaneSegments extends THREE.Object3D {
     this.outAnnotations[this.outAnnotations.length-1].push({ pointAnnotation: pointAnnotation });
   };
 
-  addSegmentMarker(point, validity) {
+  addSegmentMarker(point, anomalyType, validity) {
     // call addMarker for latest measure object
-    this.segments[this.segments.length-1].addMarker(point, null, validity);
+    this.segments[this.segments.length-1].addMarker(point, null, anomalyType, validity);
   };
 
   getFinalPoints() {
@@ -77,7 +77,7 @@ export class LaneSegments extends THREE.Object3D {
       outPointValidities = this.outValiditiesHelper(si+1);
       finalPointValidities = finalPointValidities.concat(outPointValidities);
       // anomalies
-      const segmentAnomalies = window.usingInvalidLanesSchema && Array(this.segments[si].points.length).fill(0);
+      const segmentAnomalies = window.usingInvalidLanesSchema && this.segments[si].spheres.map(({validity, anomalyType}) => validity && anomalyType);
       finalPointAnomalies = finalPointAnomalies.concat(segmentAnomalies);
       outPointAnomalies = this.outAnomaliesHelper(si+1);
       finalPointAnomalies = finalPointAnomalies.concat(outPointAnomalies);
@@ -111,7 +111,7 @@ export class LaneSegments extends THREE.Object3D {
     }
 
     if (newIsContains) {
-      this.addSegmentMarker(new THREE.Vector3(point.x(), point.y(), point.z()), window.usingInvalidLanesSchema && pointValidity);
+      this.addSegmentMarker(new THREE.Vector3(point.x(), point.y(), point.z()), window.usingInvalidLanesSchema && pointAnomaly, window.usingInvalidLanesSchema && pointValidity);
     } else {
       this.incrementOffset(new THREE.Vector3(point.x(), point.y(), point.z()), pointValidity, pointAnomaly, pointAnnotation);
     }

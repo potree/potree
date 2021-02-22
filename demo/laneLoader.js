@@ -244,7 +244,7 @@ async function createLaneGeometries (lanes, supplierNum, annotationMode, volumes
 
         boxGeometry.applyMatrix( se3 );
         // TODO rotate boxGeometry.quaternion.setFromUnitVectors(axis, vector.clone().normalize());
-        if (validities && validities[ii - 1] && validities[ii]) {
+        if (validities && (validities[ii - 1] || validities[ii])) {
           invalidBoxes.merge(boxGeometry);
         }
         else {

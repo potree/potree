@@ -4,7 +4,9 @@ import {PointCloudTree, PointCloudTreeNode} from "./PointCloudTree.js";
 import {PointCloudOctreeGeometryNode} from "./PointCloudOctreeGeometry.js";
 import {Utils} from "./utils.js";
 import {PointCloudMaterial} from "./materials/PointCloudMaterial.js";
+import {Annotation} from "./Annotation.js";
 
+let scratchCenter = new THREE.Vector3();
 
 export class PointCloudOctreeNode extends PointCloudTreeNode {
 	constructor () {
@@ -98,7 +100,33 @@ export class PointCloudOctreeNode extends PointCloudTreeNode {
 	get name () {
 		return this.geometryNode.name;
 	}
-};
+
+	update(){
+		// update nameAnnotation
+
+		const pointCloud = this.pointcloud;
+
+		if(pointCloud.debugShowNodeName && !this.nameAnnotation){
+			const geometryNode = this.geometryNode;
+
+			const boundingBox = geometryNode.boundingBox;
+
+			const centroid = boundingBox.getCenter(scratchCenter);
+
+			centroid.applyMatrix4( pointCloud.matrixWorld );
+
+			this.nameAnnotation = new Annotation({
+				position:[centroid.x, centroid.y, centroid.z],
+				title: this.name,
+			});
+
+			this.nameAnnotation.forDebug = true;
+		}
+
+		if(this.nameAnnotation)
+			this.nameAnnotation.visible = pointCloud.debugShowNodeName;
+	}
+}
 
 export class PointCloudOctree extends PointCloudTree {
 	constructor (geometry, material) {

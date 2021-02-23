@@ -18,12 +18,12 @@ import {MOUSE} from "../defines.js";
 import {Utils} from "../utils.js";
 import {EventDispatcher} from "../EventDispatcher.js";
 
- 
+
 export class OrbitControls extends EventDispatcher{
-	
+
 	constructor(viewer){
 		super();
-		
+
 		this.viewer = viewer;
 		this.renderer = viewer.renderer;
 
@@ -156,10 +156,10 @@ export class OrbitControls extends EventDispatcher{
 		this.radiusDelta = 0;
 		this.panDelta.set(0, 0);
 	}
-	
+
 	zoomToLocation(mouse){
 		let camera = this.scene.getActiveCamera();
-		
+
 		let I = Utils.getMousePointCloudIntersection(
 			mouse,
 			camera,

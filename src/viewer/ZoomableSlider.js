@@ -48,8 +48,8 @@ export class ZoomableSlider{
 		let onMouseDown = (e) => {
 			e.preventDefault();
 
-			let value = (e.target === this.elLeft) ? 
-				this.chosenRange[0] : 
+			let value = (e.target === this.elLeft) ?
+				this.chosenRange[0] :
 				this.chosenRange[1];
 
 			dragStart = {
@@ -78,7 +78,7 @@ export class ZoomableSlider{
 
 			let newValue = dragStart.value + valueDelta;
 			newValue = Math.round(newValue / this.step) * this.step;
-			
+
 			let newRange;
 			if(dragStart.handle === this.elLeft){
 				 newRange = [newValue, this.chosenRange[1]];
@@ -106,9 +106,9 @@ export class ZoomableSlider{
 		let onWheel = (e) => {
 
 			e.preventDefault();
-			
+
 			let delta = Math.sign(e.deltaY);
-			
+
 			let zoom = 1;
 			if(delta < 0){
 				zoom = 0.8;
@@ -185,7 +185,7 @@ export class ZoomableSlider{
 		let normalizedRight = (chosenRange[1] - visibleRange[0]) / (visibleRange[1] - visibleRange[0]);
 		let pixelLeft = Math.round(normalizedLeft * pixelWidth) - elLeft.clientWidth / 2;
 		let pixelRight = Math.round(normalizedRight * pixelWidth) - elRight.clientWidth / 2;
-		
+
 		elLeft.style.left = `${pixelLeft}px`;
 		elRight.style.left = `${pixelRight}px`;
 		elStretch.style.left = `${(pixelRight + pixelLeft) / 2}px`;
@@ -223,5 +223,5 @@ export class ZoomableSlider{
 	change(callback){
 		this.changeCallbacks.push(callback);
 	}
-	
+
 };

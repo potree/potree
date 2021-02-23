@@ -79,11 +79,12 @@ export function createPlaybar () {
 
     const tmin = window.animationEngine.activeWindow.backward;
     const tmax = window.animationEngine.activeWindow.forward;
+    const tdiff = e.originalEvent.deltaY > 0 ? tmin || -0.05 : tmax || 0.05;
 
     const scalefactor = e.originalEvent.shiftKey ? 100 : 1;
 
     const lidarRange = window?.animationEngine?.timeRange;
-    const dt = Math.sign(e.originalEvent.deltaY) * (tmin - tmax) * scalefactor;
+    const dt = tdiff * scalefactor;
     const sliderange = Number(slider.attr("max")) - Number(slider.attr("min"));
     const stepY = sliderange * dt / lidarRange;
 

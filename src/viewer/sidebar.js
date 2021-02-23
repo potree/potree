@@ -434,7 +434,15 @@ export class Sidebar{
 		});
 
 		tree.on("uncheck_node.jstree", (e, data) => {
-			let object = data.node.data;
+			const object = data.node.data;
+
+			const uncheckChildren = (node) => {
+				node?.children?.forEach(child => {
+					tree.jstree("uncheck_node", child);
+					uncheckChildren(child.children);
+				});
+			}
+			uncheckChildren(data.node);
 
 			if(object){
 				object.visible = false;
@@ -442,7 +450,15 @@ export class Sidebar{
 		});
 
 		tree.on("check_node.jstree", (e, data) => {
-			let object = data.node.data;
+			const object = data.node.data;
+
+			const checkChildren = (node) => {
+				node?.children?.forEach(child => {
+					tree.jstree("check_node", child);
+					checkChildren(child.children);
+				});
+			}
+			checkChildren(data.node);
 
 			if(object){
 				object.visible = true;

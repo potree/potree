@@ -359,10 +359,10 @@ function createClonedBoxes (volumes) {
 }
 
 // Adds anomaly annotations
-function addAnnotations (laneGeometries) {
+function addAnnotations (sidebarName, laneGeometries) {
   const aRoot = viewer.scene.annotations;
   const aAnomalies = new Potree.Annotation({
-    title: 'Lane Anomalies',
+    title: sidebarName,
     position: null,
     collapseThreshold: 0
   });
@@ -434,14 +434,15 @@ function addLaneGeometries (laneGeometries, lanesLayer, invalidLanesLayer) {
   // add lane anomaly geometries
   if (laneGeometries.leftAnomalies.length !== 0 ||
     laneGeometries.rightAnomalies.length !== 0) {
-    addAnnotations(laneGeometries);
+    const sidebarName = lanesLayer.name.startsWith("Additional") ? "Additional Lane Anomalies" : "Lane Anomalies"
+    addAnnotations(sidebarName, laneGeometries);
   }
 }
 
 // Load Lanes Truth Data:
 export async function loadLanesCallback(s3, bucket, name, filename, callback) {
   let tmpSupplierNum;
-  tmpSupplierNum = -1;
+  tmpSupplierNum = filename ? 1 : -1;
   const laneGeometries = await loadLanes(s3, bucket, name, filename, tmpSupplierNum, window.annotateLanesModeActive, viewer.scene.volumes);
   // need to have Annoted Lanes layer, so that can have original and edited lanes layers
   const lanesLayer = new THREE.Group();

@@ -33,10 +33,12 @@ async function loadLanes(s3, bucket, name, fname, supplierNum, annotationMode, v
   }
 
   if (s3 && bucket && name) {
-    const request = s3.getObject({Bucket: bucket, Key: laneFiles.objectName, "ResponseCacheControl":"no-cache"});
+    const filePath = fname && name + "/2_Truth/" + fname || null;
+    const request = s3.getObject({Bucket: bucket, Key: filePath || laneFiles.objectName, "ResponseCacheControl":"no-cache"});
     request.on("httpDownloadProgress", async (e) => {
       await updateLoadingBar(e.loaded/e.total*100)
     });
+
     const data = await request.promise();
     incrementLoadingBarTotal("lanes downloaded")
     const schemaUrl = s3.getSignedUrl('getObject', {
@@ -46,6 +48,11 @@ async function loadLanes(s3, bucket, name, fname, supplierNum, annotationMode, v
     const FlatbufferModule = await import(schemaUrl);
     const laneGeometries = await parseLanes(data.Body.buffer, FlatbufferModule, resolvedSupplierNum, annotationMode, volumes);
     incrementLoadingBarTotal("lanes loaded")
+
+    if (callback) {
+      callback(laneGeometries);
+    }
+
     return laneGeometries;
   } else {
     const response = await fetch(laneFiles.objectName);
@@ -53,6 +60,11 @@ async function loadLanes(s3, bucket, name, fname, supplierNum, annotationMode, v
     const FlatbufferModule = await import(laneFiles.schemaFile);
     const laneGeometries = await parseLanes(await response.arrayBuffer(), FlatbufferModule, resolvedSupplierNum, annotationMode, volumes);
     incrementLoadingBarTotal("lanes loaded")
+
+    if (callback) {
+      callback(laneGeometries);
+    }
+
     return laneGeometries;
   }
 }
@@ -426,18 +438,17 @@ function addLaneGeometries (laneGeometries, lanesLayer, invalidLanesLayer) {
   }
 }
 
-
 // Load Lanes Truth Data:
-export async function loadLanesCallback(s3, bucket, name, callback) {
-  let filename, tmpSupplierNum;
+export async function loadLanesCallback(s3, bucket, name, filename, callback) {
+  let tmpSupplierNum;
   tmpSupplierNum = -1;
   const laneGeometries = await loadLanes(s3, bucket, name, filename, tmpSupplierNum, window.annotateLanesModeActive, viewer.scene.volumes);
   // need to have Annoted Lanes layer, so that can have original and edited lanes layers
   const lanesLayer = new THREE.Group();
-  lanesLayer.name = "Lanes";
+  lanesLayer.name = filename && "Additional Lanes" || "Lanes"
 
   const invalidLanesLayer = new THREE.Group();
-  invalidLanesLayer.name = "Invalid Lanes";
+  invalidLanesLayer.name = filename && "Additional Invalid Lanes" || "Invalid Lanes";
   invalidLanesLayer.visible = false;
 
   addLaneGeometries(laneGeometries, lanesLayer, invalidLanesLayer);
@@ -445,6 +456,7 @@ export async function loadLanesCallback(s3, bucket, name, callback) {
     "type": "truth_layer_added",
     "truthLayer": lanesLayer
   });
+
   if (callback) {
     callback();
   }
@@ -533,7 +545,7 @@ export function addReloadLanesButton() {
       reloadLanesButton.disabled = true;
       // prepare for progress tracking (currently only triggered on button click)
       resetProgressBars(2) // have to download & process/load lanes
-      loadLanesCallback(s3, bucket, name, () => {
+      loadLanesCallback(s3, bucket, name, null, () => {
         // TOGGLE BUTTON TEXT
         if (window.annotateLanesModeActive) {
           reload_lanes_button.innerText = "View Truth Lanes";

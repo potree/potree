@@ -20,7 +20,7 @@ import { addLoadGapsButton, gapDownloads } from "../demo/gapsLoader.js"
 import { addLoadRadarButton, radarDownloads } from "../demo/radarLoader.js"
 import { addDetectionButton, detectionDownloads } from "../demo/detectionLoader.js"
 import { PointAttributeNames } from "../src/loader/PointAttributes.js";
-import { setNumTasks } from "../common/overlay.js"
+import { resetProgressBars, setNumTasks } from "../common/overlay.js"
 import { loadControlPointsCallback } from "../demo/controlPointLoader.js"
 import { getFiles } from "../demo/loaderUtilities.js"
 
@@ -179,6 +179,18 @@ async function loadDataIntoDocument(filesTable) {
 			window.canEnableCalibrationPanels = false;
 			window.disableReason = "Do not have necessary calibration files to use calibration panels";
 		}
+
+
+		window.loadAdditionalLanes = async function (bucket, dataset, version, filename) {
+			const datasetPath = "Data/" + dataset + "¶" + version.toString().padStart(3, '0');
+
+			try {
+				resetProgressBars();
+				await loadLanesCallback(s3, bucket, datasetPath, filename);
+			} catch (e) {
+				console.error("Could not load Lanes: ", e);
+			}
+		};
 
 		// Load Lanes:
 		try {

@@ -437,10 +437,12 @@ export class Sidebar{
 			const object = data.node.data;
 
 			const uncheckChildren = (node) => {
-				node?.children?.forEach(child => {
-					tree.jstree("uncheck_node", child);
-					uncheckChildren(child.children);
-				});
+				if (node && node.children) {
+					node.children.forEach(child => {
+						tree.jstree("uncheck_node", child);
+						uncheckChildren(child.children);
+					});
+				}
 			}
 			uncheckChildren(data.node);
 

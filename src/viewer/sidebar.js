@@ -455,10 +455,12 @@ export class Sidebar{
 			const object = data.node.data;
 
 			const checkChildren = (node) => {
-				node?.children?.forEach(child => {
-					tree.jstree("check_node", child);
-					checkChildren(child.children);
-				});
+				if (node && node.children) {
+					node.children.forEach(child => {
+						tree.jstree("check_node", child);
+						checkChildren(child.children);
+					});
+				}
 			}
 			checkChildren(data.node);
 

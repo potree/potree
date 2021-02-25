@@ -195,6 +195,7 @@ async function createLaneGeometries (lanes, supplierNum, annotationMode, volumes
       }
     }
 
+    const spineValidities = [];
     for (let jj = 0, numVertices = lane.spineLength(); jj < numVertices; jj++) {
       // await calcLoaded(jj, numVertices)
       const spine = lane.spine(jj);
@@ -202,6 +203,19 @@ async function createLaneGeometries (lanes, supplierNum, annotationMode, volumes
         // laneSpine.addMarker(new THREE.Vector3(spine.x(), spine.y(), spine.z()));
       } else {
         geometrySpine.vertices.push(new THREE.Vector3(spine.x(), spine.y(), spine.z()));
+      }
+
+      // Spine points use the closest left lane point to determine validity
+      if (window.usingInvalidLanesSchema) {
+        const spinePoint = new THREE.Vector3(spine.x(), spine.y(), spine.z());
+        const closestLeftIndex = geometryLeft.vertices.reduce((acc, current, i) => {
+          return current.distanceTo(spinePoint) < geometryLeft.vertices[acc].distanceTo(spinePoint) ? i : acc;
+        }, 0);
+
+        spineValidities.push(leftValidities[closestLeftIndex])
+      }
+      else {
+        spineValidities.push(0);
       }
     }
 
@@ -215,7 +229,7 @@ async function createLaneGeometries (lanes, supplierNum, annotationMode, volumes
     const invalidSpineColor = 0x008800;
 
     await createBoxes(geometryLeft.vertices, material.left, leftValidities, invalidLaneColor);
-    await createBoxes(geometrySpine.vertices, material.spine, leftValidities, invalidSpineColor);
+    await createBoxes(geometrySpine.vertices, material.spine, spineValidities, invalidSpineColor);
     await createBoxes(geometryRight.vertices, material.right, rightValidities, invalidLaneColor);
 
     async function createBoxes(vertices, material, validities, invalidColor) {

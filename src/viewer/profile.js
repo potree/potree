@@ -1,5 +1,5 @@
 
-import * as THREE from "../../libs/three.js/build/three.module.js";
+import * as THREE from "three";
 import {Utils} from "../utils.js";
 import {Points} from "../Points.js";
 import {CSVExporter} from "../exporter/CSVExporter.js";

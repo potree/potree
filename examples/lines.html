@@ -38,10 +38,11 @@
 	
 	<script type="module">
 
-		import * as THREE from "../libs/three.js/build/three.module.js";
-		import {Line2} from "../libs/three.js/lines/Line2.js";
-		import {LineGeometry} from "../libs/three.js/lines/LineGeometry.js";
-		import {LineMaterial} from "../libs/three.js/lines/LineMaterial.js";
+		import * as THREE from "../node_modules/three/build/three.module.js";
+
+		import {Line2} from "../node_modules/three/examples/jsm/lines/Line2.js";
+		import {LineGeometry} from "../node_modules/three/examples/jsm/lines/LineGeometry.js";
+		import {LineMaterial} from "../node_modules/three/examples/jsm/lines/LineMaterial.js";
 	
 		window.viewer = new Potree.Viewer(document.getElementById("potree_render_area"));
 		

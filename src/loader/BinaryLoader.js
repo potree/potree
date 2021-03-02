@@ -18,7 +18,7 @@ export class BinaryLoader{
 		this.scale = scale;
 	}
 
-	load(node){
+	async load(node){
 		if (node.loaded) {
 			return;
 		}
@@ -30,7 +30,7 @@ export class BinaryLoader{
 		}
 
 		let xhr = XHRFactory.createXMLHttpRequest();
-		xhr.open('GET', url, true);
+	        xhr.open('GET', await node.signUrl(url), true);
 		xhr.responseType = 'arraybuffer';
 		xhr.overrideMimeType('text/plain; charset=x-user-defined');
 		xhr.onreadystatechange = () => {

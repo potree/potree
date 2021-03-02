@@ -128,11 +128,48 @@ let resourcePath = scriptPath + '/resources';
 export {scriptPath, resourcePath};
 
 
-export function loadPointCloud(path, name, callback){
+// Look for PotreeConverter 2.0 format first, then older format.
+export async function loadPotreeConverterPointCloud(path, name, signUrlArg) {
+        const signUrl = signUrlArg || function(x) {return x;};
+        const {geometry} = await OctreeLoader.load(path + '/metadata.json', signUrl);
+        if (geometry) {
+                let pointcloud = new PointCloudOctree(geometry);
+
+                let aPosition = pointcloud.getAttribute("position");
+
+                let material = pointcloud.material;
+                material.elevationRange = [
+                        aPosition.range[0][2],
+                        aPosition.range[1][2],
+                ];
+
+                pointcloud.name = name;
+                return {type: 'pointcloud_loaded', pointcloud: pointcloud};
+        } else {
+          return new Promise( resolve => {
+                POCLoader.load(path + '/cloud.js',
+                               signUrl,
+                               function (geometry) {
+                                       if (!geometry) {
+                                               console.error(new Error(`failed to load point cloud from URL: ${path}`));
+                                       } else {
+                                               let pointcloud = new PointCloudOctree(geometry);
+                                               pointcloud.name = name;
+                                               resolve({type: 'pointcloud_loaded', pointcloud: pointcloud});
+                                       }
+                               });
+          });
+        }
+};
+
+export function loadPointCloud(path, name, callback, signUrlArg) {
+        // Default signUrl to the identity function.
+        const signUrl = signUrlArg || function(x) {return x;};
 	let loaded = function(e){
 		e.pointcloud.name = name;
 		callback(e);
 	};
+
 
 	let promise = new Promise( resolve => {
 
@@ -140,7 +177,7 @@ export function loadPointCloud(path, name, callback){
 		if (!path){
 			// TODO: callback? comment? Hello? Bueller? Anyone?
 		} else if (path.indexOf('ept.json') > 0) {
-			EptLoader.load(path, function(geometry) {
+		        EptLoader.load(path, signUrl, function(geometry) {
 				if (!geometry) {
 					console.error(new Error(`failed to load point cloud from URL: ${path}`));
 				}
@@ -151,18 +188,20 @@ export function loadPointCloud(path, name, callback){
 				}
 			});
 		} else if (path.indexOf('cloud.js') > 0) {
-			POCLoader.load(path, function (geometry) {
-				if (!geometry) {
-					//callback({type: 'loading_failed'});
-					console.error(new Error(`failed to load point cloud from URL: ${path}`));
-				} else {
-					let pointcloud = new PointCloudOctree(geometry);
-					// loaded(pointcloud);
-					resolve({type: 'pointcloud_loaded', pointcloud: pointcloud});
-				}
-			});
+		        POCLoader.load(path,
+                                       signUrl,
+                                       function (geometry) {
+				         if (!geometry) {
+				           //callback({type: 'loading_failed'});
+				           console.error(new Error(`failed to load point cloud from URL: ${path}`));
+				         } else {
+				           let pointcloud = new PointCloudOctree(geometry);
+				           // loaded(pointcloud);
+				           resolve({type: 'pointcloud_loaded', pointcloud: pointcloud});
+				         }
+                                       });
 		} else if (path.indexOf('metadata.json') > 0) {
-			Potree.OctreeLoader.load(path).then(e => {
+		        OctreeLoader.load(path, signUrl).then(e => {
 				let geometry = e.geometry;
 
 				if(!geometry){
@@ -182,19 +221,8 @@ export function loadPointCloud(path, name, callback){
 					resolve({type: 'pointcloud_loaded', pointcloud: pointcloud});
 				}
 			});
-
-			OctreeLoader.load(path, function (geometry) {
-				if (!geometry) {
-					//callback({type: 'loading_failed'});
-					console.error(new Error(`failed to load point cloud from URL: ${path}`));
-				} else {
-					let pointcloud = new PointCloudOctree(geometry);
-					// loaded(pointcloud);
-					resolve({type: 'pointcloud_loaded', pointcloud: pointcloud});
-				}
-			});
 		} else if (path.indexOf('.vpc') > 0) {
-			PointCloudArena4DGeometry.load(path, function (geometry) {
+		        PointCloudArena4DGeometry.load(path, signUrl, function (geometry) {
 				if (!geometry) {
 					//callback({type: 'loading_failed'});
 					console.error(new Error(`failed to load point cloud from URL: ${path}`));

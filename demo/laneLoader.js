@@ -133,6 +133,8 @@ async function createLaneGeometries (lanes, supplierNum, annotationMode, volumes
     const leftValidities = [];
     const rightValidities = [];
 
+    const romanNumerals = ["I", "II"];
+
     // const calcLoaded = async (prog, total) => {
     //   // always update # stages compelete
     //   if (prog == total-1) {
@@ -156,8 +158,17 @@ async function createLaneGeometries (lanes, supplierNum, annotationMode, volumes
         }
       } else {
         geometryLeft.vertices.push(new THREE.Vector3(left.x(), left.y(), left.z()));
-        if (anomalyMode && lane.leftPointValidity(jj) === 1 || window.usingInvalidLanesSchema && lane.leftPointAnomaly(jj) > 0) {
-          leftAnomalies.push(new THREE.Vector3(left.x(), left.y(), left.z()));
+        if (anomalyMode && lane.leftPointValidity(jj) === 1) {
+          leftAnomalies.push({
+            "layer": "Lane Anomalies",
+            "position": new THREE.Vector3(left.x(), left.y(), left.z())
+          });
+        }
+        else if (window.usingInvalidLanesSchema && lane.leftPointAnomaly(jj) > 0) {
+          leftAnomalies.push({
+            "layer": "Type " + romanNumerals[lane.leftPointAnomaly(jj) - 1] + " Lane Anomalies",
+            "position": new THREE.Vector3(left.x(), left.y(), left.z())
+          });
         }
 
         if (window.usingInvalidLanesSchema) {
@@ -182,8 +193,17 @@ async function createLaneGeometries (lanes, supplierNum, annotationMode, volumes
         }
       } else {
         geometryRight.vertices.push(new THREE.Vector3(right.x(), right.y(), right.z()));
-        if (anomalyMode && lane.rightPointValidity(jj) === 1 || window.usingInvalidLanesSchema && lane.rightPointAnomaly(jj) > 0) {
-          rightAnomalies.push(new THREE.Vector3(right.x(), right.y(), right.z()));
+        if (anomalyMode && lane.rightPointValidity(jj) === 1) {
+          rightAnomalies.push({
+            "layer": "Lane Anomalies",
+            "position": new THREE.Vector3(right.x(), right.y(), right.z())
+          });
+        }
+        else if (window.usingInvalidLanesSchema && lane.rightPointAnomaly(jj) > 0) {
+          rightAnomalies.push({
+            "layer": "Type " + romanNumerals[lane.rightPointAnomaly(jj) - 1] + " Lane Anomalies",
+            "position": new THREE.Vector3(right.x(), right.y(), right.z())
+          });
         }
 
         if (window.usingInvalidLanesSchema) {
@@ -373,39 +393,53 @@ function createClonedBoxes (volumes) {
 }
 
 // Adds anomaly annotations
-function addAnnotations (sidebarName, laneGeometries) {
+function addAnnotations (laneGeometries) {
   const aRoot = viewer.scene.annotations;
-  const aAnomalies = new Potree.Annotation({
-    title: sidebarName,
-    position: null,
-    collapseThreshold: 0
+
+  const anomalyLayers = [];
+  [...laneGeometries.leftAnomalies, ...laneGeometries.rightAnomalies].forEach(({layer}) => {
+    if (!anomalyLayers.includes(layer)) {
+      anomalyLayers.push(layer);
+    }
   });
-  aAnomalies.visible = false;
-  aRoot.add(aAnomalies);
+  anomalyLayers.sort((a, b) => a.localeCompare(b));
 
-  if (laneGeometries.leftAnomalies.length !== 0) {
-    aAnomalies.position = laneGeometries.leftAnomalies[0];
-    const aLeft = new Potree.Annotation({
-      title: 'Left',
-      position: laneGeometries.leftAnomalies[0],
+  anomalyLayers.forEach(anomalyLayer => {
+    const leftAnomalies = laneGeometries.leftAnomalies.filter(({layer}) => layer === anomalyLayer).map(({position}) => position);
+    const rightAnomalies = laneGeometries.rightAnomalies.filter(({layer}) => layer === anomalyLayer).map(({position}) => position);
+
+    const aAnomalies = new Potree.Annotation({
+      title: anomalyLayer,
+      position: null,
       collapseThreshold: 0
     });
-    aAnomalies.children.push(aLeft);
-    aLeft.parent = aAnomalies;
-    populateAnomaliesHelper(aLeft, laneGeometries.leftAnomalies, 'Left');
-  }
+    aAnomalies.visible = false;
+    aRoot.add(aAnomalies);
 
-  if (laneGeometries.rightAnomalies.length !== 0) {
-    aAnomalies.position = laneGeometries.rightAnomalies[0];
-    const aRight = new Potree.Annotation({
-      title: 'Right',
-      position: laneGeometries.rightAnomalies[0],
-      collapseThreshold: 0
-    });
-    aAnomalies.children.push(aRight);
-    aRight.parent = aAnomalies;
-    populateAnomaliesHelper(aRight, laneGeometries.rightAnomalies, 'Right');
-  }
+    if (leftAnomalies.length !== 0) {
+      aAnomalies.position = leftAnomalies[0];
+      const aLeft = new Potree.Annotation({
+        title: 'Left',
+        position: leftAnomalies[0],
+        collapseThreshold: 0
+      });
+      aAnomalies.children.push(aLeft);
+      aLeft.parent = aAnomalies;
+      populateAnomaliesHelper(aLeft, leftAnomalies, 'Left');
+    }
+
+    if (rightAnomalies.length !== 0) {
+      aAnomalies.position = rightAnomalies[0];
+      const aRight = new Potree.Annotation({
+        title: 'Right',
+        position: rightAnomalies[0],
+        collapseThreshold: 0
+      });
+      aAnomalies.children.push(aRight);
+      aRight.parent = aAnomalies;
+      populateAnomaliesHelper(aRight, rightAnomalies, 'Right');
+    }
+  });
 }
 
 function populateAnomaliesHelper (annotation, anomalies, name) {
@@ -448,8 +482,7 @@ function addLaneGeometries (laneGeometries, lanesLayer, invalidLanesLayer) {
   // add lane anomaly geometries
   if (laneGeometries.leftAnomalies.length !== 0 ||
     laneGeometries.rightAnomalies.length !== 0) {
-    const sidebarName = lanesLayer.name.startsWith("Additional") ? "Additional Lane Anomalies" : "Lane Anomalies"
-    addAnnotations(sidebarName, laneGeometries);
+    addAnnotations(laneGeometries);
   }
 }
 

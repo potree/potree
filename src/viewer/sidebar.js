@@ -870,7 +870,7 @@ export class Sidebar{
 		{ // REMOVE CLIPPING TOOLS
 			clippingToolBar.append(this.createToolIcon(
 				Potree.resourcePath + "/icons/remove.svg",
-				"[title]tt.remove_all_measurement",
+				"[title]tt.remove_all_clipping_volumes",
 				() => {
 
 					this.viewer.scene.removeAllClipVolumes();
@@ -1240,7 +1240,8 @@ export class Sidebar{
 			["DE", "de"],
 			["JP", "jp"],
 			["ES", "es"],
-			["SE", "se"]
+			["SE", "se"],
+			["ZH", "zh"]
 		];
 
 		let elLanguages = $('#potree_languages');

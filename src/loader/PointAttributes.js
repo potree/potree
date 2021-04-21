@@ -118,17 +118,6 @@ export class PointAttributes{
 		this.vectors.push(vector);
 	}
 
-	hasColors(){
-		for (let name in this.attributes) {
-			let pointAttribute = this.attributes[name];
-			if (pointAttribute.name === PointAttributeNames.COLOR_PACKED) {
-				return true;
-			}
-		}
-
-		return false;
-	};
-
 	hasNormals(){
 		for (let name in this.attributes) {
 			let pointAttribute = this.attributes[name];

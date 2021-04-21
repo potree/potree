@@ -481,6 +481,9 @@ We would like to thank our sponsors for their financial contributions that keep 
 			€ 1,000+
 		</th>
 		<td>
+			<a href="http://scanx.com/">
+				<img src="docs/sponsors/scanx.jpg" height="33"/> &nbsp;
+			</a>
 			<a href="https://www.phoenixlidar.com/">
 				<img src="docs/sponsors/PhoenixLidar_Logo.jpg" height="45"/> &nbsp;
 			</a>

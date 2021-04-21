@@ -1074,17 +1074,6 @@ export class PointCloudMaterial extends THREE.RawShaderMaterial {
 		return texture; 
 	}
 
-	static generateMatcapTexture (matcap) {
-	var url = new URL(Potree.resourcePath + "/textures/matcap/" + matcap).href;
-	let texture = new THREE.TextureLoader().load( url );
-		texture.magFilter = texture.minFilter = THREE.LinearFilter; 
-		texture.needsUpdate = true;
-		// PotreeConverter_1.6_2018_07_29_windows_x64\PotreeConverter.exe autzen_xyzrgbXYZ_ascii.xyz -f xyzrgbXYZ -a RGB NORMAL -o autzen_xyzrgbXYZ_ascii_a -p index --overwrite
-		// Switch matcap texture on the fly : viewer.scene.pointclouds[0].material.matcap = 'matcap1.jpg'; 
-		// For non power of 2, use LinearFilter and dont generate mipmaps, For power of 2, use NearestFilter and generate mipmaps : matcap2.jpg 1 2 8 11 12 13
-		return texture; 
-	}
-
 	disableEvents(){
 		if(this._hiddenListeners === undefined){
 			this._hiddenListeners = this._listeners;

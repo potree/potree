@@ -1,7 +1,7 @@
 'use strict';
 import { Measure } from "../src/utils/Measure.js";
 import { LaneSegments } from "./LaneSegments.js"
-import { visualizationMode, comparisonDatasets, s3, bucket, name } from "../demo/paramLoader.js"
+import { visualizationMode, comparisonDatasets, s3, bucket, name, annotateAvailable } from "../demo/paramLoader.js"
 import { updateLoadingBar, incrementLoadingBarTotal, resetProgressBars } from "../common/overlay.js";
 import { getFbFileInfo } from "./loaderUtilities.js";
 import { VolumeTool } from "../src/utils/VolumeTool.js";
@@ -499,11 +499,13 @@ export async function loadLanesCallback(s3, bucket, name, filename, callback) {
   invalidLanesLayer.name = filename && "Additional Invalid Lanes" || "Invalid Lanes";
   invalidLanesLayer.visible = false;
 
-  addLaneGeometries(laneGeometries, lanesLayer, invalidLanesLayer);
-  viewer.scene.dispatchEvent({
-    "type": "truth_layer_added",
-    "truthLayer": lanesLayer
-  });
+  if (annotateAvailable) {
+    addLaneGeometries(laneGeometries, lanesLayer, invalidLanesLayer);
+    viewer.scene.dispatchEvent({
+      "type": "truth_layer_added",
+      "truthLayer": lanesLayer
+    });
+  }
 
   if (callback) {
     callback();

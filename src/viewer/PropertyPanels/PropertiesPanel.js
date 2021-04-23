@@ -395,11 +395,11 @@ export class PropertiesPanel{
 					blockColor.css('display', 'block');
 				} else if (selectedValue === 'Intensity') {
 					if (!material._defaultCompositeContrastChanged) {
-						window && window.velodyneType && window.velodyneType === 128 ? material.intensityContrast = 0.10 : material.intensityContrast = 0.0;
+						window && window.velodyneType && window.velodyneType === 128 ? material.intensityContrast = 0.0 : material.intensityContrast = 0.0;
 					}
 
 					if (!material._defaultCompositeBrightnessChanged) {
-						window && window.velodyneType && window.velodyneType === 128 ? material.intensityBrightness = 0.29 : material.intensityBrightness = 0.0;
+						window && window.velodyneType && window.velodyneType === 128 ? material.intensityBrightness = 0.15 : material.intensityBrightness = 0.0;
 					}
 
 					blockIntensity.css('display', 'block');

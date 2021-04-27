@@ -74,7 +74,7 @@ export class Images360 extends EventDispatcher{
 		});
 		viewer.inputHandler.addInputListener(this);
 
-		this.addEventListener("mousedown", () => {
+		this.addEventListener("mouseup", () => {
 			if(currentlyHovered){
 				this.focus(currentlyHovered.image360);
 			}
@@ -221,8 +221,19 @@ export class Images360 extends EventDispatcher{
 		// let tStart = performance.now();
 		raycaster.ray.copy(ray);
 		let intersections = raycaster.intersectObjects(this.node.children);
-
-		if(intersections.length === 0){
+		
+		// Make sure the drag is actually a drag, not just a click
+		let isDragging = false;
+		const { drag } = viewer.inputHandler;
+		if (drag) {
+			const dragThreshold = 10;
+			if (Math.abs(Math.hypot(drag.start.x - drag.end.x, drag.start.y - drag.end.y)) > dragThreshold) {
+				isDragging = true;
+			}
+		}
+		
+		// Don't highlight if no intersection or user is actually draggging
+		if(intersections.length === 0 || isDragging){
 			// label.visible = false;
 
 			return;

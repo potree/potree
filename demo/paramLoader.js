@@ -4,6 +4,9 @@
 export const isLocalDevelopment = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
 export const runLocalPointCloud = location.search === "" && isLocalDevelopment
 export const params = new URLSearchParams(location.search);
+export const hostUrl = params.get('hostUrl');
+export const dataset = params.get("dataset");
+export const version = params.get("version");
 export const bucket = params.get("bucket");
 export const region = params.get("region");
 export const names = JSON.parse(params.get("names"));
@@ -15,6 +18,7 @@ export const calibrationModeAvailable = params.get("calibrate") == "Calibrate" |
 export const accessKeyId = params.get("key1");
 export const secretAccessKey = params.get("key2");
 export const sessionToken = params.get("key3");
+export const userToken = params.get("userToken");
 export const fonts = JSON.parse(params.get("fonts"));
 export const theme = JSON.parse(params.get("theme")); // material-ui theme
 export let comparisonDatasets = [];

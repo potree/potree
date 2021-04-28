@@ -23,6 +23,17 @@ async function existsOrNull(path) {
     })
 }
 
+export const getFromRestApi = async (url) => {
+  const response = await fetch(url, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json'
+    }
+  });
+
+  return await response.json();
+}
+
 export const getFbFileInfo = async (datasetFiles, objNameMatch, objFolderMatch, schemaMatch, localObj, localSchema, exactMatch = false) =>
   {
     if (datasetFiles) {

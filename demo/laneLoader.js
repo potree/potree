@@ -470,7 +470,7 @@ function addLaneGeometries (laneGeometries, lanesLayer, invalidLanesLayer) {
 
   viewer.scene.scene.add(lanesLayer);
 
-  if (invalidLanesLayer.children.length > 0) {
+  if (invalidLanesLayer.children.length > 0 && annotateAvailable) {
     viewer.scene.scene.add(invalidLanesLayer);
 
     viewer.scene.dispatchEvent({

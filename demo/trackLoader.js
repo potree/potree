@@ -3,6 +3,7 @@
 // import { Flatbuffer } from "http://localhost:1234/schemas/GroundTruth_generated.js";
 import { updateLoadingBar, incrementLoadingBarTotal } from "../common/overlay.js";
 import { getFbFileInfo, removeFileExtension, indexOfClosestTimestamp } from "./loaderUtilities.js";
+import { annotateAvailable } from "./paramLoader.js";
 
 
 // sets local variable and returns so # files can be counted
@@ -384,7 +385,7 @@ async function loadTracksCallbackHelper (s3, bucket, name, trackShaderMaterial, 
 			"truthLayer": trackLayer
     });
 
-    if (anomalousTrackInfo.length > 0) {
+    if (anomalousTrackInfo.length > 0 && annotateAvailable) {
       viewer.scene.scene.add(anomalousTrackLayer);
       const e = new CustomEvent("truth_layer_added", { detail: anomalousTrackLayer, writable: true });
       viewer.scene.dispatchEvent({

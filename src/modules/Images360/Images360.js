@@ -47,7 +47,6 @@ export class Images360 extends EventDispatcher{
 
 		this.sphere = new THREE.Mesh(sgHigh, sm);
 		this.sphere.visible = false;
-		this.sphere.scale.set(1000, 1000, 1000);
 		this.node.add(this.sphere);
 		this._visible = true;
 		// this.node.add(label);
@@ -127,6 +126,7 @@ export class Images360 extends EventDispatcher{
 		this.sphere.visible = false;
 
 		this.load(image360).then( () => {
+			this.sphere.scale.set(1000,1000,1000);
 			this.sphere.visible = true;
 			this.sphere.material.map = image360.texture;
 			this.sphere.material.needsUpdate = true;
@@ -177,6 +177,7 @@ export class Images360 extends EventDispatcher{
 		this.sphere.material.map = null;
 		this.sphere.material.needsUpdate = true;
 		this.sphere.visible = false;
+		this.sphere.scale.set(0.1,0.1,0.1);
 
 		let pos = viewer.scene.view.position;
 		let target = viewer.scene.view.getPivot();

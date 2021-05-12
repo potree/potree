@@ -425,7 +425,7 @@ function addAnnotations (laneGeometries) {
       });
       aAnomalies.children.push(aLeft);
       aLeft.parent = aAnomalies;
-      populateAnomaliesHelper(aLeft, leftAnomalies, 'Left');
+      populateAnomaliesHelper(aLeft, leftAnomalies, 'Left', 0);
     }
 
     if (rightAnomalies.length !== 0) {
@@ -437,17 +437,84 @@ function addAnnotations (laneGeometries) {
       });
       aAnomalies.children.push(aRight);
       aRight.parent = aAnomalies;
-      populateAnomaliesHelper(aRight, rightAnomalies, 'Right');
+      populateAnomaliesHelper(aRight, rightAnomalies, 'Right', 0);
     }
   });
 }
 
-function populateAnomaliesHelper (annotation, anomalies, name) {
+// Adds anomaly annotations split into multiple layers
+function addAnnotationsSplit (laneGeometries, anomalyLayerSize) {
+  const aRoot = viewer.scene.annotations;
+
+  const anomalyLayers = [];
+  [...laneGeometries.leftAnomalies, ...laneGeometries.rightAnomalies].forEach(({layer}) => {
+    if (!anomalyLayers.includes(layer)) {
+      anomalyLayers.push(layer);
+    }
+  });
+  anomalyLayers.sort((a, b) => a.localeCompare(b));
+
+  anomalyLayers.forEach(anomalyLayer => {
+    const leftAnomalies = laneGeometries.leftAnomalies.filter(({layer}) => layer === anomalyLayer).map(({position}) => position);
+    const rightAnomalies = laneGeometries.rightAnomalies.filter(({layer}) => layer === anomalyLayer).map(({position}) => position);
+
+    const aAnomalies = new Potree.Annotation({
+      title: anomalyLayer,
+      position: null,
+      collapseThreshold: 0
+    });
+    aRoot.add(aAnomalies);
+
+    const leftLayer = new Potree.Annotation({
+      title: "Left",
+      position: null,
+      collapseThreshold: 0
+    });
+    aAnomalies.add(leftLayer);
+
+    for (let i = 0, len = leftAnomalies.length; i < len; i += anomalyLayerSize) {
+      aAnomalies.position = leftAnomalies[i];
+      leftLayer.position = leftAnomalies[i];
+      const aLeft = new Potree.Annotation({
+        title: `${i + 1} - ${Math.min(i + anomalyLayerSize, leftAnomalies.length)}`,
+        position: leftAnomalies[i],
+        collapseThreshold: 0
+      });
+      aLeft.visible = false;
+      leftLayer.children.push(aLeft);
+      aLeft.parent = leftLayer;
+      populateAnomaliesHelper(aLeft, leftAnomalies.slice(i, Math.min(i + anomalyLayerSize, leftAnomalies.length)), 'Left', i);
+    }
+
+    const rightLayer = new Potree.Annotation({
+      title: "Right",
+      position: null,
+      collapseThreshold: 0
+    });
+    aAnomalies.add(rightLayer);
+
+    for (let i = 0, len = Math.max(i + anomalyLayerSize, rightAnomalies.length); i < len; i += anomalyLayerSize) {
+      aAnomalies.position = rightAnomalies[i];
+      rightLayer.position = rightAnomalies[i];
+      const aRight = new Potree.Annotation({
+        title: `${i + 1} - ${Math.min(i + anomalyLayerSize, rightAnomalies.length)}`,
+        position: rightAnomalies[i],
+        collapseThreshold: 0
+      });
+      aRight.visible = false;
+      rightLayer.children.push(aRight);
+      aRight.parent = rightLayer;
+      populateAnomaliesHelper(aRight, rightAnomalies.slice(i, Math.min(i + anomalyLayerSize, rightAnomalies.length)), 'Right', i);
+    }
+  });
+}
+
+function populateAnomaliesHelper (annotation, anomalies, name, indexOffset) {
   const anomaliesArray = [];
   for (let ii = 0, len = anomalies.length; ii < len; ii++) {
     const point = anomalies[ii];
     const aAnomaly = new Potree.Annotation({
-      title: `${name} ${ii + 1}`,
+      title: `${name} ${ii + indexOffset + 1}`,
       position: point,
       cameraPosition: new THREE.Vector3(point.x, point.y, point.z + 20),
       cameraTarget: point
@@ -480,8 +547,11 @@ function addLaneGeometries (laneGeometries, lanesLayer, invalidLanesLayer) {
   }
 
   // add lane anomaly geometries
-  if (laneGeometries.leftAnomalies.length !== 0 ||
-    laneGeometries.rightAnomalies.length !== 0) {
+  const maxAnomalyLength = 500;
+  if (laneGeometries.leftAnomalies.length > maxAnomalyLength || laneGeometries.rightAnomalies.length > maxAnomalyLength) {
+    addAnnotationsSplit(laneGeometries, maxAnomalyLength);
+  }
+  else if (laneGeometries.leftAnomalies.length !== 0 || laneGeometries.rightAnomalies.length !== 0) {
     addAnnotations(laneGeometries);
   }
 }

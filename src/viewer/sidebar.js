@@ -436,15 +436,17 @@ export class Sidebar{
 		tree.on("uncheck_node.jstree", (e, data) => {
 			const object = data.node.data;
 
-			const uncheckChildren = (node) => {
-				if (node && node.children) {
-					node.children.forEach(child => {
-						tree.jstree("uncheck_node", child);
-						uncheckChildren(child.children);
-					});
+			if (data.node.id !== annotationsID && !data.node.parents.includes(annotationsID)) {
+				const uncheckChildren = (node) => {
+					if (node && node.children) {
+						node.children.forEach(child => {
+							tree.jstree("uncheck_node", child);
+							uncheckChildren(child.children);
+						});
+					}
 				}
+				uncheckChildren(data.node);
 			}
-			uncheckChildren(data.node);
 
 			if(object){
 				object.visible = false;
@@ -454,15 +456,17 @@ export class Sidebar{
 		tree.on("check_node.jstree", (e, data) => {
 			const object = data.node.data;
 
-			const checkChildren = (node) => {
-				if (node && node.children) {
-					node.children.forEach(child => {
-						tree.jstree("check_node", child);
-						checkChildren(child.children);
-					});
+			if (data.node.id !== annotationsID && !data.node.parents.includes(annotationsID)) {
+				const checkChildren = (node) => {
+					if (node && node.children) {
+						node.children.forEach(child => {
+							tree.jstree("check_node", child);
+							checkChildren(child.children);
+						});
+					}
 				}
+				checkChildren(data.node);
 			}
-			checkChildren(data.node);
 
 			if(object){
 				object.visible = true;

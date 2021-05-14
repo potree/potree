@@ -113,6 +113,8 @@ async function createLaneGeometries (lanes, supplierNum, annotationMode, volumes
   const all = [];
   const leftAnomalies = [];
   const rightAnomalies = [];
+  const leftInvalidAnnotations = [];
+  const rightInvalidAnnotations = [];
   let allBoxes = new THREE.Geometry();
   let invalidBoxes = new THREE.Geometry();
 
@@ -173,6 +175,17 @@ async function createLaneGeometries (lanes, supplierNum, annotationMode, volumes
 
         if (window.usingInvalidLanesSchema) {
           leftValidities.push(lane.leftPointValidity(jj));
+
+          if (lane.leftPointValidity(jj)) {
+            // If the end of an invalid region has been reached, mark the center of the region with an annotation
+            if (jj === lane.leftLength() - 1 || !lane.leftPointValidity(jj + 1)) {
+              const annotationPosition = lane.left(Math.floor((leftValidities.lastIndexOf(0) + jj + 1) / 2));
+              leftInvalidAnnotations.push({
+                "tag": "Invalid Lane",
+                "position": new THREE.Vector3(annotationPosition.x(), annotationPosition.y(), annotationPosition.z())
+              });
+            }
+          }
         }
         else {
           leftValidities.push(0);
@@ -208,6 +221,17 @@ async function createLaneGeometries (lanes, supplierNum, annotationMode, volumes
 
         if (window.usingInvalidLanesSchema) {
           rightValidities.push(lane.rightPointValidity(jj));
+
+          if (lane.rightPointValidity(jj)) {
+            // If the end of an invalid region has been reached, mark the center of the region with an annotation
+            if (jj === lane.rightLength() - 1 || !lane.rightPointValidity(jj + 1)) {
+              const annotationPosition = lane.right(Math.floor((rightValidities.lastIndexOf(0) + jj + 1) / 2));
+              rightInvalidAnnotations.push({
+                "tag": "Invalid Lane",
+                "position": new THREE.Vector3(annotationPosition.x(), annotationPosition.y(), annotationPosition.z())
+              });
+            }
+          }
         }
         else {
           rightValidities.push(0);
@@ -336,7 +360,9 @@ async function createLaneGeometries (lanes, supplierNum, annotationMode, volumes
   const output = {
     all: all,
     leftAnomalies: leftAnomalies,
-    rightAnomalies: rightAnomalies
+    rightAnomalies: rightAnomalies,
+    leftInvalidAnnotations,
+    rightInvalidAnnotations
   };
   return output;
 }
@@ -390,6 +416,69 @@ function createClonedBoxes (volumes) {
     }
   }
   return clonedBoxes;
+}
+
+// Adds invalid annotations
+function addInvalidAnnotations (laneGeometries) {
+  const { leftInvalidAnnotations, rightInvalidAnnotations } = laneGeometries;
+  const aRoot = viewer.scene.annotations;
+
+  const aInvalid = new Potree.Annotation({
+    title: 'Invalid Lanes',
+    position: null,
+    collapseThreshold: 0
+  });
+  aRoot.add(aInvalid);
+
+  if (leftInvalidAnnotations.length !== 0) {
+    aInvalid.position = leftInvalidAnnotations[0].position;
+    const aLeft = new Potree.Annotation({
+      title: 'Left',
+      position: leftInvalidAnnotations[0].position,
+      collapseThreshold: 0
+    });
+    aLeft.visible = false;
+    aInvalid.children.push(aLeft);
+    aLeft.parent = aInvalid;
+
+    const invalidArray = [];
+    for (let ii = 0, len = leftInvalidAnnotations.length; ii < len; ii++) {
+      const { tag, position } = leftInvalidAnnotations[ii];
+      const invalidAnnotation = new Potree.Annotation({
+        title: tag,
+        position,
+        cameraPosition: new THREE.Vector3(position.x, position.y, position.z + 20),
+        cameraTarget: position
+      });
+      invalidArray.push(invalidAnnotation);
+    }
+    aLeft.addMultiple(viewer.scene.annotations, invalidArray);
+  }
+
+  if (rightInvalidAnnotations.length !== 0) {
+    aInvalid.position = rightInvalidAnnotations[0].position;
+    const aRight = new Potree.Annotation({
+      title: 'Right',
+      position: rightInvalidAnnotations[0].position,
+      collapseThreshold: 0
+    });
+    aRight.visible = false;
+    aInvalid.children.push(aRight);
+    aRight.parent = aInvalid;
+
+    const invalidArray = [];
+    for (let ii = 0, len = rightInvalidAnnotations.length; ii < len; ii++) {
+      const { tag, position } = rightInvalidAnnotations[ii];
+      const invalidAnnotation = new Potree.Annotation({
+        title: tag,
+        position,
+        cameraPosition: new THREE.Vector3(position.x, position.y, position.z + 20),
+        cameraTarget: position
+      });
+      invalidArray.push(invalidAnnotation);
+    }
+    aRight.addMultiple(viewer.scene.annotations, invalidArray);
+  }
 }
 
 // Adds anomaly annotations
@@ -544,6 +633,10 @@ function addLaneGeometries (laneGeometries, lanesLayer, invalidLanesLayer) {
       "type": "truth_layer_added",
       "truthLayer": invalidLanesLayer
     });
+
+    if (laneGeometries.leftInvalidAnnotations.length !== 0 || laneGeometries.rightInvalidAnnotations.length !== 0) {
+      addInvalidAnnotations(laneGeometries);
+    }
   }
 
   // add lane anomaly geometries

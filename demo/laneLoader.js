@@ -481,6 +481,91 @@ function addInvalidAnnotations (laneGeometries) {
   }
 }
 
+// Adds invalid annotations split into multiple layers
+function addInvalidAnnotationsSplit (laneGeometries, invalidLayerSize) {
+  const { leftInvalidAnnotations, rightInvalidAnnotations } = laneGeometries;
+  const aRoot = viewer.scene.annotations;
+
+  const aInvalid = new Potree.Annotation({
+    title: 'Invalid Lanes',
+    position: null,
+    collapseThreshold: 0
+  });
+  aRoot.add(aInvalid);
+
+  if (leftInvalidAnnotations.length !== 0) {
+    aInvalid.position = leftInvalidAnnotations[0].position;
+    const leftLayer = new Potree.Annotation({
+      title: "Left",
+      position: null,
+      collapseThreshold: 0
+    });
+    aInvalid.add(leftLayer);
+
+    for (let i = 0, len = leftInvalidAnnotations.length; i < len; i += invalidLayerSize) {
+      aInvalid.position = leftInvalidAnnotations[i].position;
+      leftLayer.position = leftInvalidAnnotations[i].position;
+      const aLeft = new Potree.Annotation({
+        title: `${i + 1} - ${Math.min(i + invalidLayerSize, leftInvalidAnnotations.length)}`,
+        position: leftInvalidAnnotations[i].position,
+        collapseThreshold: 0
+      });
+      aLeft.visible = false;
+      leftLayer.children.push(aLeft);
+      aLeft.parent = leftLayer;
+
+      const invalidArray = [];
+      for (let ii = i, len = Math.min(i + invalidLayerSize, leftInvalidAnnotations.length); ii < len; ii++) {
+        const { tag, position } = leftInvalidAnnotations[ii];
+        const invalidAnnotation = new Potree.Annotation({
+          title: tag,
+          position,
+          cameraPosition: new THREE.Vector3(position.x, position.y, position.z + 20),
+          cameraTarget: position
+        });
+        invalidArray.push(invalidAnnotation);
+      }
+      aLeft.addMultiple(viewer.scene.annotations, invalidArray);
+    }
+  }
+
+  if (rightInvalidAnnotations.length !== 0) {
+    aInvalid.position = rightInvalidAnnotations[0].position;
+    const rightLayer = new Potree.Annotation({
+      title: "Right",
+      position: null,
+      collapseThreshold: 0
+    });
+    aInvalid.add(rightLayer);
+
+    for (let i = 0, len = rightInvalidAnnotations.length; i < len; i += invalidLayerSize) {
+      aInvalid.position = rightInvalidAnnotations[i].position;
+      rightLayer.position = rightInvalidAnnotations[i].position;
+      const aRight = new Potree.Annotation({
+        title: `${i + 1} - ${Math.min(i + invalidLayerSize, rightInvalidAnnotations.length)}`,
+        position: rightInvalidAnnotations[i].position,
+        collapseThreshold: 0
+      });
+      aRight.visible = false;
+      rightLayer.children.push(aRight);
+      aRight.parent = rightLayer;
+
+      const invalidArray = [];
+      for (let ii = i, len = Math.min(i + invalidLayerSize, rightInvalidAnnotations.length); ii < len; ii++) {
+        const { tag, position } = rightInvalidAnnotations[ii];
+        const invalidAnnotation = new Potree.Annotation({
+          title: tag,
+          position,
+          cameraPosition: new THREE.Vector3(position.x, position.y, position.z + 20),
+          cameraTarget: position
+        });
+        invalidArray.push(invalidAnnotation);
+      }
+      aRight.addMultiple(viewer.scene.annotations, invalidArray);
+    }
+  }
+}
+
 // Adds anomaly annotations
 function addAnnotations (laneGeometries) {
   const aRoot = viewer.scene.annotations;
@@ -625,6 +710,7 @@ function addLaneGeometries (laneGeometries, lanesLayer, invalidLanesLayer) {
   }
 
   viewer.scene.scene.add(lanesLayer);
+  const maxAnnotationLength = 500;
 
   if (invalidLanesLayer.children.length > 0 && annotateAvailable) {
     viewer.scene.scene.add(invalidLanesLayer);
@@ -634,15 +720,17 @@ function addLaneGeometries (laneGeometries, lanesLayer, invalidLanesLayer) {
       "truthLayer": invalidLanesLayer
     });
 
-    if (laneGeometries.leftInvalidAnnotations.length !== 0 || laneGeometries.rightInvalidAnnotations.length !== 0) {
+    if (laneGeometries.leftInvalidAnnotations.length > maxAnnotationLength || laneGeometries.rightInvalidAnnotations.length > maxAnnotationLength) {
+      addInvalidAnnotationsSplit(laneGeometries, maxAnnotationLength);
+    }
+    else if (laneGeometries.leftInvalidAnnotations.length !== 0 || laneGeometries.rightInvalidAnnotations.length !== 0) {
       addInvalidAnnotations(laneGeometries);
     }
   }
 
   // add lane anomaly geometries
-  const maxAnomalyLength = 500;
-  if (laneGeometries.leftAnomalies.length > maxAnomalyLength || laneGeometries.rightAnomalies.length > maxAnomalyLength) {
-    addAnnotationsSplit(laneGeometries, maxAnomalyLength);
+  if (laneGeometries.leftAnomalies.length > maxAnnotationLength || laneGeometries.rightAnomalies.length > maxAnnotationLength) {
+    addAnnotationsSplit(laneGeometries, maxAnnotationLength);
   }
   else if (laneGeometries.leftAnomalies.length !== 0 || laneGeometries.rightAnomalies.length !== 0) {
     addAnnotations(laneGeometries);

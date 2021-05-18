@@ -21,6 +21,7 @@ export const PointAttributeNames = {
 	RTK_POSE: 17,
 	RTK_ORIENT: 18,
 	DUAL_PLUS_CONFIDENCE: 19,
+	GEO_COORDINATES: 20,
 };
 
 
@@ -39,7 +40,8 @@ const PointAttributeTypes = {
 	DATA_TYPE_INT32: {ordinal: 6, size: 4},
 	DATA_TYPE_UINT32: {ordinal: 7, size: 4},
 	DATA_TYPE_INT64: {ordinal: 8, size: 8},
-	DATA_TYPE_UINT64: {ordinal: 9, size: 8}
+	DATA_TYPE_UINT64: {ordinal: 9, size: 8},
+	DATA_TYPE_DOUBLE: {ordinal: 10, size: 16}
 };
 
 let i = 0;
@@ -139,6 +141,10 @@ PointAttribute.RTK_ORIENT = new PointAttribute(
 PointAttribute.DUAL_PLUS_CONFIDENCE = new PointAttribute(
 	PointAttributeNames.DUAL_PLUS_CONFIDENCE,
 	PointAttributeTypes.DATA_TYPE_UINT16, 1);
+
+PointAttribute.GEO_COORDINATES = new PointAttribute(
+	PointAttributeNames.GEO_COORDINATES,
+	PointAttributeTypes.DATA_TYPE_DOUBLE, 2);
 
 export {PointAttribute};
 

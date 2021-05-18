@@ -383,6 +383,15 @@ Flatbuffer.RTK.Pose.getRootAsPose = function(bb, obj) {
 };
 
 /**
+ * @param {flatbuffers.ByteBuffer} bb
+ * @param {Flatbuffer.RTK.Pose=} obj
+ * @returns {Flatbuffer.RTK.Pose}
+ */
+Flatbuffer.RTK.Pose.getSizePrefixedRootAsPose = function(bb, obj) {
+  return (obj || new Flatbuffer.RTK.Pose).__init(bb.readInt32(bb.position()) + bb.position(), bb);
+};
+
+/**
  * @returns {number}
  */
 Flatbuffer.RTK.Pose.prototype.lat = function() {
@@ -863,6 +872,15 @@ Flatbuffer.RTK.Poses.getRootAsPoses = function(bb, obj) {
 };
 
 /**
+ * @param {flatbuffers.ByteBuffer} bb
+ * @param {Flatbuffer.RTK.Poses=} obj
+ * @returns {Flatbuffer.RTK.Poses}
+ */
+Flatbuffer.RTK.Poses.getSizePrefixedRootAsPoses = function(bb, obj) {
+  return (obj || new Flatbuffer.RTK.Poses).__init(bb.readInt32(bb.position()) + bb.position(), bb);
+};
+
+/**
  * @param {number} index
  * @param {Flatbuffer.RTK.Pose=} obj
  * @returns {Flatbuffer.RTK.Pose}
@@ -935,6 +953,14 @@ Flatbuffer.RTK.Poses.finishPosesBuffer = function(builder, offset) {
 
 /**
  * @param {flatbuffers.Builder} builder
+ * @param {flatbuffers.Offset} offset
+ */
+Flatbuffer.RTK.Poses.finishSizePrefixedPosesBuffer = function(builder, offset) {
+  builder.finish(offset, undefined, true);
+};
+
+/**
+ * @param {flatbuffers.Builder} builder
  * @param {flatbuffers.Offset} posesOffset
  * @returns {flatbuffers.Offset}
  */
@@ -976,6 +1002,15 @@ Flatbuffer.RTK.FullPose.prototype.__init = function(i, bb) {
  * @returns {Flatbuffer.RTK.FullPose}
  */
 Flatbuffer.RTK.FullPose.getRootAsFullPose = function(bb, obj) {
+  return (obj || new Flatbuffer.RTK.FullPose).__init(bb.readInt32(bb.position()) + bb.position(), bb);
+};
+
+/**
+ * @param {flatbuffers.ByteBuffer} bb
+ * @param {Flatbuffer.RTK.FullPose=} obj
+ * @returns {Flatbuffer.RTK.FullPose}
+ */
+Flatbuffer.RTK.FullPose.getSizePrefixedRootAsFullPose = function(bb, obj) {
   return (obj || new Flatbuffer.RTK.FullPose).__init(bb.readInt32(bb.position()) + bb.position(), bb);
 };
 

@@ -305,6 +305,16 @@ onmessage = function (event) {
 			}
 
 			attributeBuffers[pointAttribute.name] = { buffer: buff, attribute: pointAttribute };
+		} else if (pointAttribute.name === PointAttribute.GEO_COORDINATES.name) {
+			let buff = new ArrayBuffer(numPoints * 2);
+			let geoCoordinates = new Float32Array(buff);
+
+			for (let j = 0; j < numPoints; j++) {
+				let geoCords = cv.getUint16(inOffset + j * pointAttributes.byteSize);
+				geoCoordinates[j] = geoCords;
+			}
+
+			attributeBuffers[pointAttribute.name] = { buffer: buff, attribute: pointAttribute };
 		}
 		inOffset += pointAttribute.byteSize;
 	}

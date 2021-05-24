@@ -232,6 +232,13 @@ export class PropertiesPanel{
 						<div id="confidence_gradient_scheme_selection" style="display: flex"/>
 					</li>
 				</div>
+			
+				<div id="materials.geo_container">
+				<div class="divider">
+					<span>Dual Distance</span>
+				</div>
+			</div>
+
 
 				</ul>
 			</div>
@@ -336,7 +343,8 @@ export class PropertiesPanel{
 				'Dual Distance',
 				'Dual Reflectivity',
 				'Confidence',
-				'Composite'
+				'Composite',
+				'GeoCoordinates'
 			];
 
 			let attributeSelection = panel.find('#optMaterial');
@@ -359,6 +367,7 @@ export class PropertiesPanel{
 				let blockDualDistance = $('#materials\\.dual_distance_container');
 				let blockDualReflectivity = $('#materials\\.dual_reflectivity_container');
 				let blockConfidence = $('#materials\\.confidence_container');
+				let blockGeoCoords= $('#materials\\.geo_container');
 
 				blockIndex.css('display', 'none');
 				blockIntensity.css('display', 'none');
@@ -370,6 +379,7 @@ export class PropertiesPanel{
 				blockDualDistance.css('display', 'none');
 				blockDualReflectivity.css('display', 'none');
 				blockConfidence.css('display', 'none');
+				blockGeoCoords.css('display', 'none');
 
 				if (selectedValue === 'Composite') {
 					blockWeights.css('display', 'block');
@@ -413,6 +423,8 @@ export class PropertiesPanel{
 					blockDualReflectivity.css('display', 'block');
 				} else if (selectedValue === 'Confidence') {
 					blockConfidence.css('display', 'block');
+				} else if (selectedValue === 'GeoCoords') {
+					blockGeoCoords.css('display', 'block');
 				}
                                 window.animationEngine.updateTimeForAll();
 			};

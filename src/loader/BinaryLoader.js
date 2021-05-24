@@ -108,6 +108,8 @@ export class BinaryLoader{
 					geometry.addAttribute('dualDistance', new THREE.BufferAttribute(dualDistance, 1));
 					geometry.addAttribute('dualReflectivity', new THREE.BufferAttribute(dualReflectivity, 1));
 					geometry.addAttribute('confidence', new THREE.BufferAttribute(confidence, 1));
+				}  else if (parseInt(property) === PointAttributeNames.GEO_COORDINATES) {
+					geometry.addAttribute('geoCoordinates', new THREE.BufferAttribute(new Float32Array(buffer), 2, false));
 				}
 			}
 

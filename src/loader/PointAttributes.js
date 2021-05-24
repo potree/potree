@@ -40,8 +40,7 @@ const PointAttributeTypes = {
 	DATA_TYPE_INT32: {ordinal: 6, size: 4},
 	DATA_TYPE_UINT32: {ordinal: 7, size: 4},
 	DATA_TYPE_INT64: {ordinal: 8, size: 8},
-	DATA_TYPE_UINT64: {ordinal: 9, size: 8},
-	DATA_TYPE_DOUBLE: {ordinal: 10, size: 16}
+	DATA_TYPE_UINT64: {ordinal: 9, size: 8}
 };
 
 let i = 0;

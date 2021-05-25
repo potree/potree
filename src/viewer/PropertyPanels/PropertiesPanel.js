@@ -127,7 +127,6 @@ export class PropertiesPanel{
 					<li>Dual Distance: <span id="lblWeightDualDistance"></span> <div id="sldWeightDualDistance"></div>	</li>
 					<li>Dual Reflectivity: <span id="lblWeightDualReflectivity"></span> <div id="sldWeightDualReflectivity"></div>	</li>
 					<li>Confidence: <span id="lblWeightConfidence"></span> <div id="sldWeightConfidence"></div>	</li>
-					<li>GeoCoordinates: <span id="lblWeightGeoCoordinates"></span> <div id="sldWeightGeoCoordinates"></div>	</li>
 				</div>
 
 				<div id="materials.rgb_container">
@@ -233,12 +232,6 @@ export class PropertiesPanel{
 						<div id="confidence_gradient_scheme_selection" style="display: flex"/>
 					</li>
 				</div>
-			
-				<div id="materials.geocoordinates_container">
-				<div class="divider">
-					<span>GeoCoordinates</span>
-				</div>
-		    	</div>
 
 				</ul>
 			</div>
@@ -343,8 +336,7 @@ export class PropertiesPanel{
 				'Dual Distance',
 				'Dual Reflectivity',
 				'Confidence',
-				'Composite',
-				'GeoCoordinates'
+				'Composite'
 			];
 
 			let attributeSelection = panel.find('#optMaterial');
@@ -367,7 +359,6 @@ export class PropertiesPanel{
 				let blockDualDistance = $('#materials\\.dual_distance_container');
 				let blockDualReflectivity = $('#materials\\.dual_reflectivity_container');
 				let blockConfidence = $('#materials\\.confidence_container');
-				let blockGeoCoordinates= $('#materials\\.geo_container');
 
 				blockIndex.css('display', 'none');
 				blockIntensity.css('display', 'none');
@@ -379,7 +370,6 @@ export class PropertiesPanel{
 				blockDualDistance.css('display', 'none');
 				blockDualReflectivity.css('display', 'none');
 				blockConfidence.css('display', 'none');
-				blockGeoCoordinates.css('display', 'none');
 
 				if (selectedValue === 'Composite') {
 					blockWeights.css('display', 'block');
@@ -423,10 +413,8 @@ export class PropertiesPanel{
 					blockDualReflectivity.css('display', 'block');
 				} else if (selectedValue === 'Confidence') {
 					blockConfidence.css('display', 'block');
-				} else if (selectedValue === 'GeoCoordinates') {
-					blockGeoCoordinates.css('display', 'block');
-				}
-                                window.animationEngine.updateTimeForAll();
+				} 
+				window.animationEngine.updateTimeForAll();
 			};
 
 			attributeSelection.selectmenu({change: updateMaterialPanel});
@@ -602,12 +590,6 @@ export class PropertiesPanel{
 				value: material.weightConfidence,
 				min: 0, max: 1, step: 0.01,
 				slide: (event, ui) => {material.weightConfidence = ui.value}
-			});
-
-			panel.find('#sldWeightGeoCoordinates').slider({
-				value: material.weightGeoCoordinates,
-				min: 0, max: 1, step: 0.01,
-				slide: (event, ui) => {material.weightGeoCoordinates = ui.value}
 			});
 
 			panel.find(`#materials\\.color\\.picker`).spectrum({

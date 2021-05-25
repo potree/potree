@@ -413,7 +413,7 @@ export class PropertiesPanel{
 					blockDualReflectivity.css('display', 'block');
 				} else if (selectedValue === 'Confidence') {
 					blockConfidence.css('display', 'block');
-				} 
+				}
 				window.animationEngine.updateTimeForAll();
 			};
 

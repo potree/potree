@@ -1247,7 +1247,6 @@ export class Renderer {
 			shader.setUniform1f("wDualDistance", material.weightDualDistance);
 			shader.setUniform1f("wDualReflectivity", material.weightDualReflectivity);
 			shader.setUniform1f("wConfidence", material.weightConfidence);
-			shader.setUniform1f("wGeoCoordinates", material.geoCoordinates);
 
 			let vnWebGLTexture = this.textures.get(material.visibleNodesTexture);
 			shader.setUniform1i("visibleNodesTexture", currentTextureBindingPoint);

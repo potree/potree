@@ -732,6 +732,17 @@ vec3 getColor(vec4 correctedPosition){
 		color = getConfidence();
 	#endif
 
+	#if defined(clip_gps_enabled) && !defined(color_type_point_index)
+		float time = gpsTime + uGPSOffset;
+		vec2 range = uFilterGPSTimeClipRange;
+
+		if (!uExtrinsicsMode && time > range.x && time < range.y && uVisualizeTimeRange) { // favor this first
+			color.r = 1.0;
+			color.b = 0.0;
+			color.g = 0.0;
+		}
+	#endif
+
 	return color;
 }
 
@@ -863,12 +874,7 @@ void doClipping(vec4 correctedPosition){
 		//}
 
 		if (!uExtrinsicsMode) {
-			if (time > range.x && time < range.y && uVisualizeTimeRange) { // favor this first
-				vColor.r = 1.0;
-				vColor.b = 0.0;
-				vColor.g = 0.0;
-			}
-			else if (classification == 3.0) { // then, for non road class outside of the window
+			if (!(time > range.x && time < range.y && uVisualizeTimeRange) && classification == 3.0) {
 				gl_Position = vec4(100.0, 100.0, 100.0, 0.0);
 			}
 		} else {

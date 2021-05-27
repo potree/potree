@@ -21,7 +21,8 @@ export const PointAttributeNames = {
 	RTK_POSE: 17,
 	RTK_ORIENT: 18,
 	DUAL_PLUS_CONFIDENCE: 19,
-	GEO_COORDINATES: 20,
+	LATITUDE: 20,
+	LONGITUDE: 21
 };
 
 
@@ -141,9 +142,13 @@ PointAttribute.DUAL_PLUS_CONFIDENCE = new PointAttribute(
 	PointAttributeNames.DUAL_PLUS_CONFIDENCE,
 	PointAttributeTypes.DATA_TYPE_UINT16, 1);
 
-PointAttribute.GEO_COORDINATES = new PointAttribute(
-	PointAttributeNames.GEO_COORDINATES,
-	PointAttributeTypes.DATA_TYPE_DOUBLE, 2);
+PointAttribute.LATITUDE = new PointAttribute(
+	PointAttributeNames.LATITUDE,
+	PointAttributeTypes.DATA_TYPE_DOUBLE, 1);
+
+PointAttribute.LONGITUDE = new PointAttribute(
+		PointAttributeNames.LONGITUDE,
+		PointAttributeTypes.DATA_TYPE_DOUBLE, 1);
 
 export {PointAttribute};
 

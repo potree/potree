@@ -305,15 +305,24 @@ onmessage = function (event) {
 			}
 
 			attributeBuffers[pointAttribute.name] = { buffer: buff, attribute: pointAttribute };
-		}  else if (pointAttribute.name === PointAttribute.GEO_COORDINATES.name) {
-			let buff = new ArrayBuffer(numPoints * 4 * 2);
-			let geoCoordinates = new Float32Array(buff);
+		}  else if (pointAttribute.name === PointAttribute.LATITUDE.name) {
+			let buff = new ArrayBuffer(numPoints * 8);
+			let latitudes = new Float32Array(buff);
 
 			for (let j = 0; j < numPoints; j++) {
-				 latitude = cv.getFloat64(inOffset + j * pointAttributes.byteSize + 0,true);
-				 longitude = cv.getFloat64(inOffset + j * pointAttributes.byteSize + 8,true);
-				 geoCoordinates[2 * j + 0] = latitude;
-				 geoCoordinates[2 * j + 1] = longitude;
+				let latitude = cv.getFloat64(inOffset + j * pointAttributes.byteSize);
+				 latitudes[j] = latitude;
+			}
+
+			attributeBuffers[pointAttribute.name] = { buffer: buff, attribute: pointAttribute };
+		}
+		else if (pointAttribute.name === PointAttribute.LONGITUDE.name) {
+			let buff = new ArrayBuffer(numPoints * 8);
+			let longitudes = new Float32Array(buff);
+
+			for (let j = 0; j < numPoints; j++) {
+				let longitude = cv.getFloat64(inOffset + j * pointAttributes.byteSize);
+				 longitudes[j] = longitude;
 			}
 
 			attributeBuffers[pointAttribute.name] = { buffer: buff, attribute: pointAttribute };

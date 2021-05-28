@@ -114,6 +114,9 @@ export class BinaryLoader{
 				} else if (parseInt(property) === PointAttributeNames.LONGITUDE) {
 					let bufferAttribute = new THREE.BufferAttribute(new Float32Array(buffer), 1,false);
 					geometry.addAttribute('longitude', bufferAttribute);
+				} else if (parseInt(property) === PointAttributeNames.ALTITUDE) {
+					geometry.addAttribute('altitude', new THREE.BufferAttribute(new Float32Array(buffer), 1));
+
 				}
 			}
 

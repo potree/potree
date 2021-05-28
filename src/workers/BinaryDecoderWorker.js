@@ -315,8 +315,7 @@ onmessage = function (event) {
 			}
 
 			attributeBuffers[pointAttribute.name] = { buffer: buff, attribute: pointAttribute };
-		}
-		else if (pointAttribute.name === PointAttribute.LONGITUDE.name) {
+		} else if (pointAttribute.name === PointAttribute.LONGITUDE.name) {
 			let buff = new ArrayBuffer(numPoints * 8);
 			let longitudes = new Float32Array(buff);
 
@@ -325,6 +324,16 @@ onmessage = function (event) {
 				 longitudes[j] = longitude;
 			}
 
+			attributeBuffers[pointAttribute.name] = { buffer: buff, attribute: pointAttribute };
+		} else if (pointAttribute.name === PointAttribute.ALTITUDE.name) {
+			let buff = new ArrayBuffer(numPoints * 8);
+			let altitudes = new Float32Array(buff);
+
+			for (let j = 0; j < numPoints; j++) {
+			let altitude = cv.getFloat64(inOffset + j * pointAttributes.byteSize, true);
+			
+				altitudes[j] = altitude;
+			}
 			attributeBuffers[pointAttribute.name] = { buffer: buff, attribute: pointAttribute };
 		}
 		inOffset += pointAttribute.byteSize;

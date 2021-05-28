@@ -153,7 +153,8 @@ let attributeLocations = {
 	"dualReflectivity": 14,
 	"confidence": 15,
 	"latitude":16,
-	"longitude":17
+	"longitude":17,
+	"altitude": 18
 };
 
 class Shader {

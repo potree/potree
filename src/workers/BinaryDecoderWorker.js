@@ -311,7 +311,7 @@ onmessage = function (event) {
 
 			for (let j = 0; j < numPoints; j++) {
 				let latitude = cv.getFloat64(inOffset + j * pointAttributes.byteSize);
-				 latitudes[j] = latitude;
+				latitudes[j] = latitude;
 			}
 
 			attributeBuffers[pointAttribute.name] = { buffer: buff, attribute: pointAttribute };
@@ -321,7 +321,7 @@ onmessage = function (event) {
 
 			for (let j = 0; j < numPoints; j++) {
 				let longitude = cv.getFloat64(inOffset + j * pointAttributes.byteSize);
-				 longitudes[j] = longitude;
+				longitudes[j] = longitude;
 			}
 
 			attributeBuffers[pointAttribute.name] = { buffer: buff, attribute: pointAttribute };
@@ -330,8 +330,7 @@ onmessage = function (event) {
 			let altitudes = new Float32Array(buff);
 
 			for (let j = 0; j < numPoints; j++) {
-			let altitude = cv.getFloat64(inOffset + j * pointAttributes.byteSize, true);
-			
+				let altitude = cv.getFloat64(inOffset + j * pointAttributes.byteSize, true);
 				altitudes[j] = altitude;
 			}
 			attributeBuffers[pointAttribute.name] = { buffer: buff, attribute: pointAttribute };

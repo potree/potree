@@ -148,12 +148,12 @@ PointAttribute.LATITUDE = new PointAttribute(
 	PointAttributeTypes.DATA_TYPE_DOUBLE, 1);
 
 PointAttribute.LONGITUDE = new PointAttribute(
-		PointAttributeNames.LONGITUDE,
-		PointAttributeTypes.DATA_TYPE_DOUBLE, 1);
+	PointAttributeNames.LONGITUDE,
+	PointAttributeTypes.DATA_TYPE_DOUBLE, 1);
 
 PointAttribute.ALTITUDE = new PointAttribute(
-			PointAttributeNames.ALTITUDE,
-			PointAttributeTypes.DATA_TYPE_DOUBLE, 1);
+	PointAttributeNames.ALTITUDE,
+	PointAttributeTypes.DATA_TYPE_DOUBLE, 1);
 
 export {PointAttribute};
 

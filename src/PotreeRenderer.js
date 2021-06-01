@@ -151,7 +151,10 @@ let attributeLocations = {
 	// "velo2rtkRPY": 16
 	"dualDistance": 13,
 	"dualReflectivity": 14,
-	"confidence": 15
+	"confidence": 15,
+	"latitude":16,
+	"longitude":17,
+	"altitude": 18
 };
 
 class Shader {

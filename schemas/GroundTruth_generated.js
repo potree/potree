@@ -26,10 +26,10 @@ Flatbuffer.GroundTruth.AssociationType = {
  * @enum {string}
  */
 Flatbuffer.GroundTruth.AssociationTypeName = {
-  0: 'ASSOCIATE',
-  1: 'PROPAGATE',
-  2: 'CREATE',
-  3: 'INVALID'
+  '0': 'ASSOCIATE',
+  '1': 'PROPAGATE',
+  '2': 'CREATE',
+  '3': 'INVALID'
 };
 
 /**
@@ -45,9 +45,41 @@ Flatbuffer.GroundTruth.TrackType = {
  * @enum {string}
  */
 Flatbuffer.GroundTruth.TrackTypeName = {
-  0: 'INITIALIZING',
-  1: 'TRACKING',
-  2: 'DRIFTING'
+  '0': 'INITIALIZING',
+  '1': 'TRACKING',
+  '2': 'DRIFTING'
+};
+
+/**
+ * @enum {number}
+ */
+Flatbuffer.GroundTruth.TrackAnomalyType = {
+  NOT_APPLICABLE: 0,
+  ASPECT_RATIO: 1,
+  TRACK_WIDTH: 2
+};
+
+/**
+ * @enum {string}
+ */
+Flatbuffer.GroundTruth.TrackAnomalyTypeName = {
+  '0': 'NOT_APPLICABLE',
+  '1': 'ASPECT_RATIO',
+  '2': 'TRACK_WIDTH'
+};
+
+/**
+ * @enum {number}
+ */
+Flatbuffer.GroundTruth.StateAnomalyType = {
+  NOT_APPLICABLE: 0
+};
+
+/**
+ * @enum {string}
+ */
+Flatbuffer.GroundTruth.StateAnomalyTypeName = {
+  '0': 'NOT_APPLICABLE'
 };
 
 /**
@@ -64,10 +96,10 @@ Flatbuffer.GroundTruth.LaneType = {
  * @enum {string}
  */
 Flatbuffer.GroundTruth.LaneTypeName = {
-  0: 'SOLID',
-  1: 'DASHED',
-  2: 'DOTTED',
-  3: 'UNKNOWN'
+  '0': 'SOLID',
+  '1': 'DASHED',
+  '2': 'DOTTED',
+  '3': 'UNKNOWN'
 };
 
 /**
@@ -82,8 +114,26 @@ Flatbuffer.GroundTruth.PointValidity = {
  * @enum {string}
  */
 Flatbuffer.GroundTruth.PointValidityName = {
-  0: 'VALID',
-  1: 'INVALID'
+  '0': 'VALID',
+  '1': 'INVALID'
+};
+
+/**
+ * @enum {number}
+ */
+Flatbuffer.GroundTruth.PointAnomalyType = {
+  NOT_APPLICABLE: 0,
+  TURN_RADIUS: 1,
+  CURVATURE: 2
+};
+
+/**
+ * @enum {string}
+ */
+Flatbuffer.GroundTruth.PointAnomalyTypeName = {
+  '0': 'NOT_APPLICABLE',
+  '1': 'TURN_RADIUS',
+  '2': 'CURVATURE'
 };
 
 /**
@@ -98,8 +148,8 @@ Flatbuffer.GroundTruth.PointAnnotationStatus = {
  * @enum {string}
  */
 Flatbuffer.GroundTruth.PointAnnotationStatusName = {
-  0: 'NOT_ANNOTATED',
-  1: 'ANNOTATED'
+  '0': 'NOT_ANNOTATED',
+  '1': 'ANNOTATED'
 };
 
 /**
@@ -116,10 +166,10 @@ Flatbuffer.GroundTruth.PointType = {
  * @enum {string}
  */
 Flatbuffer.GroundTruth.PointTypeName = {
-  0: 'UNKNOWN',
-  1: 'ROAD',
-  2: 'LANE',
-  3: 'NONROAD'
+  '0': 'UNKNOWN',
+  '1': 'ROAD',
+  '2': 'LANE',
+  '3': 'NONROAD'
 };
 
 /**
@@ -348,6 +398,15 @@ Flatbuffer.GroundTruth.Pose.getRootAsPose = function(bb, obj) {
 };
 
 /**
+ * @param {flatbuffers.ByteBuffer} bb
+ * @param {Flatbuffer.GroundTruth.Pose=} obj
+ * @returns {Flatbuffer.GroundTruth.Pose}
+ */
+Flatbuffer.GroundTruth.Pose.getSizePrefixedRootAsPose = function(bb, obj) {
+  return (obj || new Flatbuffer.GroundTruth.Pose).__init(bb.readInt32(bb.position()) + bb.position(), bb);
+};
+
+/**
  * @param {Flatbuffer.GroundTruth.Vec3=} obj
  * @returns {Flatbuffer.GroundTruth.Vec3|null}
  */
@@ -517,6 +576,15 @@ Flatbuffer.GroundTruth.Poses.getRootAsPoses = function(bb, obj) {
 };
 
 /**
+ * @param {flatbuffers.ByteBuffer} bb
+ * @param {Flatbuffer.GroundTruth.Poses=} obj
+ * @returns {Flatbuffer.GroundTruth.Poses}
+ */
+Flatbuffer.GroundTruth.Poses.getSizePrefixedRootAsPoses = function(bb, obj) {
+  return (obj || new Flatbuffer.GroundTruth.Poses).__init(bb.readInt32(bb.position()) + bb.position(), bb);
+};
+
+/**
  * @param {number} index
  * @param {Flatbuffer.GroundTruth.Pose=} obj
  * @returns {Flatbuffer.GroundTruth.Pose}
@@ -622,6 +690,15 @@ Flatbuffer.GroundTruth.TrackingError.prototype.__init = function(i, bb) {
  * @returns {Flatbuffer.GroundTruth.TrackingError}
  */
 Flatbuffer.GroundTruth.TrackingError.getRootAsTrackingError = function(bb, obj) {
+  return (obj || new Flatbuffer.GroundTruth.TrackingError).__init(bb.readInt32(bb.position()) + bb.position(), bb);
+};
+
+/**
+ * @param {flatbuffers.ByteBuffer} bb
+ * @param {Flatbuffer.GroundTruth.TrackingError=} obj
+ * @returns {Flatbuffer.GroundTruth.TrackingError}
+ */
+Flatbuffer.GroundTruth.TrackingError.getSizePrefixedRootAsTrackingError = function(bb, obj) {
   return (obj || new Flatbuffer.GroundTruth.TrackingError).__init(bb.readInt32(bb.position()) + bb.position(), bb);
 };
 
@@ -1016,6 +1093,15 @@ Flatbuffer.GroundTruth.State.getRootAsState = function(bb, obj) {
 };
 
 /**
+ * @param {flatbuffers.ByteBuffer} bb
+ * @param {Flatbuffer.GroundTruth.State=} obj
+ * @returns {Flatbuffer.GroundTruth.State}
+ */
+Flatbuffer.GroundTruth.State.getSizePrefixedRootAsState = function(bb, obj) {
+  return (obj || new Flatbuffer.GroundTruth.State).__init(bb.readInt32(bb.position()) + bb.position(), bb);
+};
+
+/**
  * @param {Flatbuffer.GroundTruth.Vec3=} obj
  * @returns {Flatbuffer.GroundTruth.Vec3|null}
  */
@@ -1242,10 +1328,42 @@ Flatbuffer.GroundTruth.State.prototype.egoOrientation = function(obj) {
 };
 
 /**
+ * @param {Flatbuffer.GroundTruth.Vec3=} obj
+ * @returns {Flatbuffer.GroundTruth.Vec3|null}
+ */
+Flatbuffer.GroundTruth.State.prototype.ocsVelocity = function(obj) {
+  var offset = this.bb.__offset(this.bb_pos, 30);
+  return offset ? (obj || new Flatbuffer.GroundTruth.Vec3).__init(this.bb_pos + offset, this.bb) : null;
+};
+
+/**
+ * @returns {Flatbuffer.GroundTruth.StateAnomalyType}
+ */
+Flatbuffer.GroundTruth.State.prototype.stateType = function() {
+  var offset = this.bb.__offset(this.bb_pos, 32);
+  return offset ? /** @type {Flatbuffer.GroundTruth.StateAnomalyType} */ (this.bb.readInt8(this.bb_pos + offset)) : Flatbuffer.GroundTruth.StateAnomalyType.NOT_APPLICABLE;
+};
+
+/**
+ * @param {Flatbuffer.GroundTruth.StateAnomalyType} value
+ * @returns {boolean}
+ */
+Flatbuffer.GroundTruth.State.prototype.mutate_stateType = function(value) {
+  var offset = this.bb.__offset(this.bb_pos, 32);
+
+  if (offset === 0) {
+    return false;
+  }
+
+  this.bb.writeInt8(this.bb_pos + offset, value);
+  return true;
+};
+
+/**
  * @param {flatbuffers.Builder} builder
  */
 Flatbuffer.GroundTruth.State.startState = function(builder) {
-  builder.startObject(13);
+  builder.startObject(15);
 };
 
 /**
@@ -1383,6 +1501,22 @@ Flatbuffer.GroundTruth.State.addEgoOrientation = function(builder, egoOrientatio
 
 /**
  * @param {flatbuffers.Builder} builder
+ * @param {flatbuffers.Offset} ocsVelocityOffset
+ */
+Flatbuffer.GroundTruth.State.addOcsVelocity = function(builder, ocsVelocityOffset) {
+  builder.addFieldStruct(13, ocsVelocityOffset, 0);
+};
+
+/**
+ * @param {flatbuffers.Builder} builder
+ * @param {Flatbuffer.GroundTruth.StateAnomalyType} stateType
+ */
+Flatbuffer.GroundTruth.State.addStateType = function(builder, stateType) {
+  builder.addFieldInt8(14, stateType, Flatbuffer.GroundTruth.StateAnomalyType.NOT_APPLICABLE);
+};
+
+/**
+ * @param {flatbuffers.Builder} builder
  * @returns {flatbuffers.Offset}
  */
 Flatbuffer.GroundTruth.State.endState = function(builder) {
@@ -1405,9 +1539,11 @@ Flatbuffer.GroundTruth.State.endState = function(builder) {
  * @param {flatbuffers.Offset} egoPositionOffset
  * @param {flatbuffers.Offset} egoVelocityOffset
  * @param {flatbuffers.Offset} egoOrientationOffset
+ * @param {flatbuffers.Offset} ocsVelocityOffset
+ * @param {Flatbuffer.GroundTruth.StateAnomalyType} stateType
  * @returns {flatbuffers.Offset}
  */
-Flatbuffer.GroundTruth.State.createState = function(builder, posOffset, timestamps, speed, yaw, bboxOffset, height, errorOffset, detectionIdsOffset, associationType, trackType, egoPositionOffset, egoVelocityOffset, egoOrientationOffset) {
+Flatbuffer.GroundTruth.State.createState = function(builder, posOffset, timestamps, speed, yaw, bboxOffset, height, errorOffset, detectionIdsOffset, associationType, trackType, egoPositionOffset, egoVelocityOffset, egoOrientationOffset, ocsVelocityOffset, stateType) {
   Flatbuffer.GroundTruth.State.startState(builder);
   Flatbuffer.GroundTruth.State.addPos(builder, posOffset);
   Flatbuffer.GroundTruth.State.addTimestamps(builder, timestamps);
@@ -1422,6 +1558,8 @@ Flatbuffer.GroundTruth.State.createState = function(builder, posOffset, timestam
   Flatbuffer.GroundTruth.State.addEgoPosition(builder, egoPositionOffset);
   Flatbuffer.GroundTruth.State.addEgoVelocity(builder, egoVelocityOffset);
   Flatbuffer.GroundTruth.State.addEgoOrientation(builder, egoOrientationOffset);
+  Flatbuffer.GroundTruth.State.addOcsVelocity(builder, ocsVelocityOffset);
+  Flatbuffer.GroundTruth.State.addStateType(builder, stateType);
   return Flatbuffer.GroundTruth.State.endState(builder);
 }
 
@@ -1457,6 +1595,15 @@ Flatbuffer.GroundTruth.Track.prototype.__init = function(i, bb) {
  * @returns {Flatbuffer.GroundTruth.Track}
  */
 Flatbuffer.GroundTruth.Track.getRootAsTrack = function(bb, obj) {
+  return (obj || new Flatbuffer.GroundTruth.Track).__init(bb.readInt32(bb.position()) + bb.position(), bb);
+};
+
+/**
+ * @param {flatbuffers.ByteBuffer} bb
+ * @param {Flatbuffer.GroundTruth.Track=} obj
+ * @returns {Flatbuffer.GroundTruth.Track}
+ */
+Flatbuffer.GroundTruth.Track.getSizePrefixedRootAsTrack = function(bb, obj) {
   return (obj || new Flatbuffer.GroundTruth.Track).__init(bb.readInt32(bb.position()) + bb.position(), bb);
 };
 
@@ -1502,10 +1649,33 @@ Flatbuffer.GroundTruth.Track.prototype.mutate_id = function(value) {
 };
 
 /**
+ * @returns {Flatbuffer.GroundTruth.TrackAnomalyType}
+ */
+Flatbuffer.GroundTruth.Track.prototype.trackType = function() {
+  var offset = this.bb.__offset(this.bb_pos, 8);
+  return offset ? /** @type {Flatbuffer.GroundTruth.TrackAnomalyType} */ (this.bb.readInt8(this.bb_pos + offset)) : Flatbuffer.GroundTruth.TrackAnomalyType.NOT_APPLICABLE;
+};
+
+/**
+ * @param {Flatbuffer.GroundTruth.TrackAnomalyType} value
+ * @returns {boolean}
+ */
+Flatbuffer.GroundTruth.Track.prototype.mutate_trackType = function(value) {
+  var offset = this.bb.__offset(this.bb_pos, 8);
+
+  if (offset === 0) {
+    return false;
+  }
+
+  this.bb.writeInt8(this.bb_pos + offset, value);
+  return true;
+};
+
+/**
  * @param {flatbuffers.Builder} builder
  */
 Flatbuffer.GroundTruth.Track.startTrack = function(builder) {
-  builder.startObject(2);
+  builder.startObject(3);
 };
 
 /**
@@ -1547,6 +1717,14 @@ Flatbuffer.GroundTruth.Track.addId = function(builder, id) {
 
 /**
  * @param {flatbuffers.Builder} builder
+ * @param {Flatbuffer.GroundTruth.TrackAnomalyType} trackType
+ */
+Flatbuffer.GroundTruth.Track.addTrackType = function(builder, trackType) {
+  builder.addFieldInt8(2, trackType, Flatbuffer.GroundTruth.TrackAnomalyType.NOT_APPLICABLE);
+};
+
+/**
+ * @param {flatbuffers.Builder} builder
  * @returns {flatbuffers.Offset}
  */
 Flatbuffer.GroundTruth.Track.endTrack = function(builder) {
@@ -1558,12 +1736,14 @@ Flatbuffer.GroundTruth.Track.endTrack = function(builder) {
  * @param {flatbuffers.Builder} builder
  * @param {flatbuffers.Offset} statesOffset
  * @param {number} id
+ * @param {Flatbuffer.GroundTruth.TrackAnomalyType} trackType
  * @returns {flatbuffers.Offset}
  */
-Flatbuffer.GroundTruth.Track.createTrack = function(builder, statesOffset, id) {
+Flatbuffer.GroundTruth.Track.createTrack = function(builder, statesOffset, id, trackType) {
   Flatbuffer.GroundTruth.Track.startTrack(builder);
   Flatbuffer.GroundTruth.Track.addStates(builder, statesOffset);
   Flatbuffer.GroundTruth.Track.addId(builder, id);
+  Flatbuffer.GroundTruth.Track.addTrackType(builder, trackType);
   return Flatbuffer.GroundTruth.Track.endTrack(builder);
 }
 
@@ -1599,6 +1779,15 @@ Flatbuffer.GroundTruth.Tracks.prototype.__init = function(i, bb) {
  * @returns {Flatbuffer.GroundTruth.Tracks}
  */
 Flatbuffer.GroundTruth.Tracks.getRootAsTracks = function(bb, obj) {
+  return (obj || new Flatbuffer.GroundTruth.Tracks).__init(bb.readInt32(bb.position()) + bb.position(), bb);
+};
+
+/**
+ * @param {flatbuffers.ByteBuffer} bb
+ * @param {Flatbuffer.GroundTruth.Tracks=} obj
+ * @returns {Flatbuffer.GroundTruth.Tracks}
+ */
+Flatbuffer.GroundTruth.Tracks.getSizePrefixedRootAsTracks = function(bb, obj) {
   return (obj || new Flatbuffer.GroundTruth.Tracks).__init(bb.readInt32(bb.position()) + bb.position(), bb);
 };
 
@@ -1708,6 +1897,15 @@ Flatbuffer.GroundTruth.Detection.prototype.__init = function(i, bb) {
  * @returns {Flatbuffer.GroundTruth.Detection}
  */
 Flatbuffer.GroundTruth.Detection.getRootAsDetection = function(bb, obj) {
+  return (obj || new Flatbuffer.GroundTruth.Detection).__init(bb.readInt32(bb.position()) + bb.position(), bb);
+};
+
+/**
+ * @param {flatbuffers.ByteBuffer} bb
+ * @param {Flatbuffer.GroundTruth.Detection=} obj
+ * @returns {Flatbuffer.GroundTruth.Detection}
+ */
+Flatbuffer.GroundTruth.Detection.getSizePrefixedRootAsDetection = function(bb, obj) {
   return (obj || new Flatbuffer.GroundTruth.Detection).__init(bb.readInt32(bb.position()) + bb.position(), bb);
 };
 
@@ -1989,6 +2187,15 @@ Flatbuffer.GroundTruth.Detections.getRootAsDetections = function(bb, obj) {
 };
 
 /**
+ * @param {flatbuffers.ByteBuffer} bb
+ * @param {Flatbuffer.GroundTruth.Detections=} obj
+ * @returns {Flatbuffer.GroundTruth.Detections}
+ */
+Flatbuffer.GroundTruth.Detections.getSizePrefixedRootAsDetections = function(bb, obj) {
+  return (obj || new Flatbuffer.GroundTruth.Detections).__init(bb.readInt32(bb.position()) + bb.position(), bb);
+};
+
+/**
  * @param {number} index
  * @param {Flatbuffer.GroundTruth.Detection=} obj
  * @returns {Flatbuffer.GroundTruth.Detection}
@@ -2094,6 +2301,15 @@ Flatbuffer.GroundTruth.Lane.prototype.__init = function(i, bb) {
  * @returns {Flatbuffer.GroundTruth.Lane}
  */
 Flatbuffer.GroundTruth.Lane.getRootAsLane = function(bb, obj) {
+  return (obj || new Flatbuffer.GroundTruth.Lane).__init(bb.readInt32(bb.position()) + bb.position(), bb);
+};
+
+/**
+ * @param {flatbuffers.ByteBuffer} bb
+ * @param {Flatbuffer.GroundTruth.Lane=} obj
+ * @returns {Flatbuffer.GroundTruth.Lane}
+ */
+Flatbuffer.GroundTruth.Lane.getSizePrefixedRootAsLane = function(bb, obj) {
   return (obj || new Flatbuffer.GroundTruth.Lane).__init(bb.readInt32(bb.position()) + bb.position(), bb);
 };
 
@@ -2350,10 +2566,60 @@ Flatbuffer.GroundTruth.Lane.prototype.rightPointAnnotationStatusArray = function
 };
 
 /**
+ * @param {number} index
+ * @returns {Flatbuffer.GroundTruth.PointAnomalyType}
+ */
+Flatbuffer.GroundTruth.Lane.prototype.leftPointAnomaly = function(index) {
+  var offset = this.bb.__offset(this.bb_pos, 26);
+  return offset ? /** @type {Flatbuffer.GroundTruth.PointAnomalyType} */ (this.bb.readInt8(this.bb.__vector(this.bb_pos + offset) + index)) : /** @type {Flatbuffer.GroundTruth.PointAnomalyType} */ (0);
+};
+
+/**
+ * @returns {number}
+ */
+Flatbuffer.GroundTruth.Lane.prototype.leftPointAnomalyLength = function() {
+  var offset = this.bb.__offset(this.bb_pos, 26);
+  return offset ? this.bb.__vector_len(this.bb_pos + offset) : 0;
+};
+
+/**
+ * @returns {Int8Array}
+ */
+Flatbuffer.GroundTruth.Lane.prototype.leftPointAnomalyArray = function() {
+  var offset = this.bb.__offset(this.bb_pos, 26);
+  return offset ? new Int8Array(this.bb.bytes().buffer, this.bb.bytes().byteOffset + this.bb.__vector(this.bb_pos + offset), this.bb.__vector_len(this.bb_pos + offset)) : null;
+};
+
+/**
+ * @param {number} index
+ * @returns {Flatbuffer.GroundTruth.PointAnomalyType}
+ */
+Flatbuffer.GroundTruth.Lane.prototype.rightPointAnomaly = function(index) {
+  var offset = this.bb.__offset(this.bb_pos, 28);
+  return offset ? /** @type {Flatbuffer.GroundTruth.PointAnomalyType} */ (this.bb.readInt8(this.bb.__vector(this.bb_pos + offset) + index)) : /** @type {Flatbuffer.GroundTruth.PointAnomalyType} */ (0);
+};
+
+/**
+ * @returns {number}
+ */
+Flatbuffer.GroundTruth.Lane.prototype.rightPointAnomalyLength = function() {
+  var offset = this.bb.__offset(this.bb_pos, 28);
+  return offset ? this.bb.__vector_len(this.bb_pos + offset) : 0;
+};
+
+/**
+ * @returns {Int8Array}
+ */
+Flatbuffer.GroundTruth.Lane.prototype.rightPointAnomalyArray = function() {
+  var offset = this.bb.__offset(this.bb_pos, 28);
+  return offset ? new Int8Array(this.bb.bytes().buffer, this.bb.bytes().byteOffset + this.bb.__vector(this.bb_pos + offset), this.bb.__vector_len(this.bb_pos + offset)) : null;
+};
+
+/**
  * @param {flatbuffers.Builder} builder
  */
 Flatbuffer.GroundTruth.Lane.startLane = function(builder) {
-  builder.startObject(11);
+  builder.startObject(13);
 };
 
 /**
@@ -2617,6 +2883,64 @@ Flatbuffer.GroundTruth.Lane.startRightPointAnnotationStatusVector = function(bui
 
 /**
  * @param {flatbuffers.Builder} builder
+ * @param {flatbuffers.Offset} leftPointAnomalyOffset
+ */
+Flatbuffer.GroundTruth.Lane.addLeftPointAnomaly = function(builder, leftPointAnomalyOffset) {
+  builder.addFieldOffset(11, leftPointAnomalyOffset, 0);
+};
+
+/**
+ * @param {flatbuffers.Builder} builder
+ * @param {Array.<Flatbuffer.GroundTruth.PointAnomalyType>} data
+ * @returns {flatbuffers.Offset}
+ */
+Flatbuffer.GroundTruth.Lane.createLeftPointAnomalyVector = function(builder, data) {
+  builder.startVector(1, data.length, 1);
+  for (var i = data.length - 1; i >= 0; i--) {
+    builder.addInt8(data[i]);
+  }
+  return builder.endVector();
+};
+
+/**
+ * @param {flatbuffers.Builder} builder
+ * @param {number} numElems
+ */
+Flatbuffer.GroundTruth.Lane.startLeftPointAnomalyVector = function(builder, numElems) {
+  builder.startVector(1, numElems, 1);
+};
+
+/**
+ * @param {flatbuffers.Builder} builder
+ * @param {flatbuffers.Offset} rightPointAnomalyOffset
+ */
+Flatbuffer.GroundTruth.Lane.addRightPointAnomaly = function(builder, rightPointAnomalyOffset) {
+  builder.addFieldOffset(12, rightPointAnomalyOffset, 0);
+};
+
+/**
+ * @param {flatbuffers.Builder} builder
+ * @param {Array.<Flatbuffer.GroundTruth.PointAnomalyType>} data
+ * @returns {flatbuffers.Offset}
+ */
+Flatbuffer.GroundTruth.Lane.createRightPointAnomalyVector = function(builder, data) {
+  builder.startVector(1, data.length, 1);
+  for (var i = data.length - 1; i >= 0; i--) {
+    builder.addInt8(data[i]);
+  }
+  return builder.endVector();
+};
+
+/**
+ * @param {flatbuffers.Builder} builder
+ * @param {number} numElems
+ */
+Flatbuffer.GroundTruth.Lane.startRightPointAnomalyVector = function(builder, numElems) {
+  builder.startVector(1, numElems, 1);
+};
+
+/**
+ * @param {flatbuffers.Builder} builder
  * @returns {flatbuffers.Offset}
  */
 Flatbuffer.GroundTruth.Lane.endLane = function(builder) {
@@ -2634,6 +2958,14 @@ Flatbuffer.GroundTruth.Lane.finishLaneBuffer = function(builder, offset) {
 
 /**
  * @param {flatbuffers.Builder} builder
+ * @param {flatbuffers.Offset} offset
+ */
+Flatbuffer.GroundTruth.Lane.finishSizePrefixedLaneBuffer = function(builder, offset) {
+  builder.finish(offset, undefined, true);
+};
+
+/**
+ * @param {flatbuffers.Builder} builder
  * @param {number} id
  * @param {flatbuffers.Offset} timestampOffset
  * @param {flatbuffers.Offset} leftOffset
@@ -2645,9 +2977,11 @@ Flatbuffer.GroundTruth.Lane.finishLaneBuffer = function(builder, offset) {
  * @param {flatbuffers.Offset} rightPointValidityOffset
  * @param {flatbuffers.Offset} leftPointAnnotationStatusOffset
  * @param {flatbuffers.Offset} rightPointAnnotationStatusOffset
+ * @param {flatbuffers.Offset} leftPointAnomalyOffset
+ * @param {flatbuffers.Offset} rightPointAnomalyOffset
  * @returns {flatbuffers.Offset}
  */
-Flatbuffer.GroundTruth.Lane.createLane = function(builder, id, timestampOffset, leftOffset, rightOffset, spineOffset, laneTypeLeftOffset, laneTypeRightOffset, leftPointValidityOffset, rightPointValidityOffset, leftPointAnnotationStatusOffset, rightPointAnnotationStatusOffset) {
+Flatbuffer.GroundTruth.Lane.createLane = function(builder, id, timestampOffset, leftOffset, rightOffset, spineOffset, laneTypeLeftOffset, laneTypeRightOffset, leftPointValidityOffset, rightPointValidityOffset, leftPointAnnotationStatusOffset, rightPointAnnotationStatusOffset, leftPointAnomalyOffset, rightPointAnomalyOffset) {
   Flatbuffer.GroundTruth.Lane.startLane(builder);
   Flatbuffer.GroundTruth.Lane.addId(builder, id);
   Flatbuffer.GroundTruth.Lane.addTimestamp(builder, timestampOffset);
@@ -2660,6 +2994,8 @@ Flatbuffer.GroundTruth.Lane.createLane = function(builder, id, timestampOffset, 
   Flatbuffer.GroundTruth.Lane.addRightPointValidity(builder, rightPointValidityOffset);
   Flatbuffer.GroundTruth.Lane.addLeftPointAnnotationStatus(builder, leftPointAnnotationStatusOffset);
   Flatbuffer.GroundTruth.Lane.addRightPointAnnotationStatus(builder, rightPointAnnotationStatusOffset);
+  Flatbuffer.GroundTruth.Lane.addLeftPointAnomaly(builder, leftPointAnomalyOffset);
+  Flatbuffer.GroundTruth.Lane.addRightPointAnomaly(builder, rightPointAnomalyOffset);
   return Flatbuffer.GroundTruth.Lane.endLane(builder);
 }
 
@@ -2695,6 +3031,15 @@ Flatbuffer.GroundTruth.Lanes.prototype.__init = function(i, bb) {
  * @returns {Flatbuffer.GroundTruth.Lanes}
  */
 Flatbuffer.GroundTruth.Lanes.getRootAsLanes = function(bb, obj) {
+  return (obj || new Flatbuffer.GroundTruth.Lanes).__init(bb.readInt32(bb.position()) + bb.position(), bb);
+};
+
+/**
+ * @param {flatbuffers.ByteBuffer} bb
+ * @param {Flatbuffer.GroundTruth.Lanes=} obj
+ * @returns {Flatbuffer.GroundTruth.Lanes}
+ */
+Flatbuffer.GroundTruth.Lanes.getSizePrefixedRootAsLanes = function(bb, obj) {
   return (obj || new Flatbuffer.GroundTruth.Lanes).__init(bb.readInt32(bb.position()) + bb.position(), bb);
 };
 
@@ -2804,6 +3149,15 @@ Flatbuffer.GroundTruth.LaneOrder.prototype.__init = function(i, bb) {
  * @returns {Flatbuffer.GroundTruth.LaneOrder}
  */
 Flatbuffer.GroundTruth.LaneOrder.getRootAsLaneOrder = function(bb, obj) {
+  return (obj || new Flatbuffer.GroundTruth.LaneOrder).__init(bb.readInt32(bb.position()) + bb.position(), bb);
+};
+
+/**
+ * @param {flatbuffers.ByteBuffer} bb
+ * @param {Flatbuffer.GroundTruth.LaneOrder=} obj
+ * @returns {Flatbuffer.GroundTruth.LaneOrder}
+ */
+Flatbuffer.GroundTruth.LaneOrder.getSizePrefixedRootAsLaneOrder = function(bb, obj) {
   return (obj || new Flatbuffer.GroundTruth.LaneOrder).__init(bb.readInt32(bb.position()) + bb.position(), bb);
 };
 
@@ -2953,6 +3307,15 @@ Flatbuffer.GroundTruth.LaneOrders.prototype.__init = function(i, bb) {
  * @returns {Flatbuffer.GroundTruth.LaneOrders}
  */
 Flatbuffer.GroundTruth.LaneOrders.getRootAsLaneOrders = function(bb, obj) {
+  return (obj || new Flatbuffer.GroundTruth.LaneOrders).__init(bb.readInt32(bb.position()) + bb.position(), bb);
+};
+
+/**
+ * @param {flatbuffers.ByteBuffer} bb
+ * @param {Flatbuffer.GroundTruth.LaneOrders=} obj
+ * @returns {Flatbuffer.GroundTruth.LaneOrders}
+ */
+Flatbuffer.GroundTruth.LaneOrders.getSizePrefixedRootAsLaneOrders = function(bb, obj) {
   return (obj || new Flatbuffer.GroundTruth.LaneOrders).__init(bb.readInt32(bb.position()) + bb.position(), bb);
 };
 
@@ -3245,6 +3608,15 @@ Flatbuffer.GroundTruth.Points.getRootAsPoints = function(bb, obj) {
 };
 
 /**
+ * @param {flatbuffers.ByteBuffer} bb
+ * @param {Flatbuffer.GroundTruth.Points=} obj
+ * @returns {Flatbuffer.GroundTruth.Points}
+ */
+Flatbuffer.GroundTruth.Points.getSizePrefixedRootAsPoints = function(bb, obj) {
+  return (obj || new Flatbuffer.GroundTruth.Points).__init(bb.readInt32(bb.position()) + bb.position(), bb);
+};
+
+/**
  * @param {number} index
  * @returns {number}
  */
@@ -3396,11 +3768,36 @@ Flatbuffer.GroundTruth.Points.prototype.ptTypeArray = function() {
 
 /**
  * @param {number} index
+ * @returns {number}
+ */
+Flatbuffer.GroundTruth.Points.prototype.dualPlusConfidence = function(index) {
+  var offset = this.bb.__offset(this.bb_pos, 16);
+  return offset ? this.bb.readUint16(this.bb.__vector(this.bb_pos + offset) + index * 2) : 0;
+};
+
+/**
+ * @returns {number}
+ */
+Flatbuffer.GroundTruth.Points.prototype.dualPlusConfidenceLength = function() {
+  var offset = this.bb.__offset(this.bb_pos, 16);
+  return offset ? this.bb.__vector_len(this.bb_pos + offset) : 0;
+};
+
+/**
+ * @returns {Uint16Array}
+ */
+Flatbuffer.GroundTruth.Points.prototype.dualPlusConfidenceArray = function() {
+  var offset = this.bb.__offset(this.bb_pos, 16);
+  return offset ? new Uint16Array(this.bb.bytes().buffer, this.bb.bytes().byteOffset + this.bb.__vector(this.bb_pos + offset), this.bb.__vector_len(this.bb_pos + offset)) : null;
+};
+
+/**
+ * @param {number} index
  * @param {Flatbuffer.GroundTruth.RtkPose=} obj
  * @returns {Flatbuffer.GroundTruth.RtkPose}
  */
 Flatbuffer.GroundTruth.Points.prototype.rtkPoses = function(index, obj) {
-  var offset = this.bb.__offset(this.bb_pos, 16);
+  var offset = this.bb.__offset(this.bb_pos, 18);
   return offset ? (obj || new Flatbuffer.GroundTruth.RtkPose).__init(this.bb.__vector(this.bb_pos + offset) + index * 48, this.bb) : null;
 };
 
@@ -3408,7 +3805,7 @@ Flatbuffer.GroundTruth.Points.prototype.rtkPoses = function(index, obj) {
  * @returns {number}
  */
 Flatbuffer.GroundTruth.Points.prototype.rtkPosesLength = function() {
-  var offset = this.bb.__offset(this.bb_pos, 16);
+  var offset = this.bb.__offset(this.bb_pos, 18);
   return offset ? this.bb.__vector_len(this.bb_pos + offset) : 0;
 };
 
@@ -3416,7 +3813,7 @@ Flatbuffer.GroundTruth.Points.prototype.rtkPosesLength = function() {
  * @param {flatbuffers.Builder} builder
  */
 Flatbuffer.GroundTruth.Points.startPoints = function(builder) {
-  builder.startObject(7);
+  builder.startObject(8);
 };
 
 /**
@@ -3595,10 +3992,39 @@ Flatbuffer.GroundTruth.Points.startPtTypeVector = function(builder, numElems) {
 
 /**
  * @param {flatbuffers.Builder} builder
+ * @param {flatbuffers.Offset} dualPlusConfidenceOffset
+ */
+Flatbuffer.GroundTruth.Points.addDualPlusConfidence = function(builder, dualPlusConfidenceOffset) {
+  builder.addFieldOffset(6, dualPlusConfidenceOffset, 0);
+};
+
+/**
+ * @param {flatbuffers.Builder} builder
+ * @param {Array.<number>} data
+ * @returns {flatbuffers.Offset}
+ */
+Flatbuffer.GroundTruth.Points.createDualPlusConfidenceVector = function(builder, data) {
+  builder.startVector(2, data.length, 2);
+  for (var i = data.length - 1; i >= 0; i--) {
+    builder.addInt16(data[i]);
+  }
+  return builder.endVector();
+};
+
+/**
+ * @param {flatbuffers.Builder} builder
+ * @param {number} numElems
+ */
+Flatbuffer.GroundTruth.Points.startDualPlusConfidenceVector = function(builder, numElems) {
+  builder.startVector(2, numElems, 2);
+};
+
+/**
+ * @param {flatbuffers.Builder} builder
  * @param {flatbuffers.Offset} rtkPosesOffset
  */
 Flatbuffer.GroundTruth.Points.addRtkPoses = function(builder, rtkPosesOffset) {
-  builder.addFieldOffset(6, rtkPosesOffset, 0);
+  builder.addFieldOffset(7, rtkPosesOffset, 0);
 };
 
 /**
@@ -3626,10 +4052,11 @@ Flatbuffer.GroundTruth.Points.endPoints = function(builder) {
  * @param {flatbuffers.Offset} intensityOffset
  * @param {flatbuffers.Offset} timestampOffset
  * @param {flatbuffers.Offset} ptTypeOffset
+ * @param {flatbuffers.Offset} dualPlusConfidenceOffset
  * @param {flatbuffers.Offset} rtkPosesOffset
  * @returns {flatbuffers.Offset}
  */
-Flatbuffer.GroundTruth.Points.createPoints = function(builder, xOffset, yOffset, zOffset, intensityOffset, timestampOffset, ptTypeOffset, rtkPosesOffset) {
+Flatbuffer.GroundTruth.Points.createPoints = function(builder, xOffset, yOffset, zOffset, intensityOffset, timestampOffset, ptTypeOffset, dualPlusConfidenceOffset, rtkPosesOffset) {
   Flatbuffer.GroundTruth.Points.startPoints(builder);
   Flatbuffer.GroundTruth.Points.addX(builder, xOffset);
   Flatbuffer.GroundTruth.Points.addY(builder, yOffset);
@@ -3637,6 +4064,7 @@ Flatbuffer.GroundTruth.Points.createPoints = function(builder, xOffset, yOffset,
   Flatbuffer.GroundTruth.Points.addIntensity(builder, intensityOffset);
   Flatbuffer.GroundTruth.Points.addTimestamp(builder, timestampOffset);
   Flatbuffer.GroundTruth.Points.addPtType(builder, ptTypeOffset);
+  Flatbuffer.GroundTruth.Points.addDualPlusConfidence(builder, dualPlusConfidenceOffset);
   Flatbuffer.GroundTruth.Points.addRtkPoses(builder, rtkPosesOffset);
   return Flatbuffer.GroundTruth.Points.endPoints(builder);
 }

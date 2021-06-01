@@ -33,17 +33,17 @@ Flatbuffer.ControllerDataLG.Mode = {
  * @enum {string}
  */
 Flatbuffer.ControllerDataLG.ModeName = {
-  0: 'INIT',
-  1: 'MANUAL',
-  2: 'LANE_CENTERING',
-  3: 'LEFT_ALC_STANDBY',
-  4: 'LEFT_ALC_PREDECISION',
-  5: 'LEFT_ALC_ACTION',
-  6: 'LEFT_ALC_LANEJUMP',
-  7: 'RIGHT_ALC_STANDBY',
-  8: 'RIGHT_ALC_PREDECISION',
-  9: 'RIGHT_ALC_ACTION',
-  10: 'RIGHT_ALC_LANEJUMP'
+  '0': 'INIT',
+  '1': 'MANUAL',
+  '2': 'LANE_CENTERING',
+  '3': 'LEFT_ALC_STANDBY',
+  '4': 'LEFT_ALC_PREDECISION',
+  '5': 'LEFT_ALC_ACTION',
+  '6': 'LEFT_ALC_LANEJUMP',
+  '7': 'RIGHT_ALC_STANDBY',
+  '8': 'RIGHT_ALC_PREDECISION',
+  '9': 'RIGHT_ALC_ACTION',
+  '10': 'RIGHT_ALC_LANEJUMP'
 };
 
 /**
@@ -64,14 +64,14 @@ Flatbuffer.ControllerDataLG.LaneType = {
  * @enum {string}
  */
 Flatbuffer.ControllerDataLG.LaneTypeName = {
-  0: 'WHITE_DASHED',
-  1: 'WHITE_DOUBLE_LANE_MARK_DASHED_ON_ONE_SIDE',
-  2: 'WHITE_SOLID',
-  3: 'UNDECIDED',
-  4: 'ROAD_EDGE',
-  5: 'YELLOW_DASHED',
-  6: 'YELLOW_DOUBLE_LANE_MARK_DASHED_ON_ONE_SIDE',
-  7: 'YELLOW_SOLID'
+  '0': 'WHITE_DASHED',
+  '1': 'WHITE_DOUBLE_LANE_MARK_DASHED_ON_ONE_SIDE',
+  '2': 'WHITE_SOLID',
+  '3': 'UNDECIDED',
+  '4': 'ROAD_EDGE',
+  '5': 'YELLOW_DASHED',
+  '6': 'YELLOW_DOUBLE_LANE_MARK_DASHED_ON_ONE_SIDE',
+  '7': 'YELLOW_SOLID'
 };
 
 /**
@@ -434,6 +434,15 @@ Flatbuffer.ControllerDataLG.ALCs.getRootAsALCs = function(bb, obj) {
 };
 
 /**
+ * @param {flatbuffers.ByteBuffer} bb
+ * @param {Flatbuffer.ControllerDataLG.ALCs=} obj
+ * @returns {Flatbuffer.ControllerDataLG.ALCs}
+ */
+Flatbuffer.ControllerDataLG.ALCs.getSizePrefixedRootAsALCs = function(bb, obj) {
+  return (obj || new Flatbuffer.ControllerDataLG.ALCs).__init(bb.readInt32(bb.position()) + bb.position(), bb);
+};
+
+/**
  * @param {number} index
  * @returns {number}
  */
@@ -590,6 +599,14 @@ Flatbuffer.ControllerDataLG.ALCs.endALCs = function(builder) {
  */
 Flatbuffer.ControllerDataLG.ALCs.finishALCsBuffer = function(builder, offset) {
   builder.finish(offset);
+};
+
+/**
+ * @param {flatbuffers.Builder} builder
+ * @param {flatbuffers.Offset} offset
+ */
+Flatbuffer.ControllerDataLG.ALCs.finishSizePrefixedALCsBuffer = function(builder, offset) {
+  builder.finish(offset, undefined, true);
 };
 
 /**

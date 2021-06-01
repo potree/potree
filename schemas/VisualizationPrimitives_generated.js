@@ -114,10 +114,40 @@ Flatbuffer.Primitives.Vec2.prototype.x = function() {
 };
 
 /**
+ * @param {number} value
+ * @returns {boolean}
+ */
+Flatbuffer.Primitives.Vec2.prototype.mutate_x = function(value) {
+  var offset = this.bb.__offset(this.bb_pos, 0);
+
+  if (offset === 0) {
+    return false;
+  }
+
+  this.bb.writeFloat64(this.bb_pos + offset, value);
+  return true;
+};
+
+/**
  * @returns {number}
  */
 Flatbuffer.Primitives.Vec2.prototype.y = function() {
   return this.bb.readFloat64(this.bb_pos + 8);
+};
+
+/**
+ * @param {number} value
+ * @returns {boolean}
+ */
+Flatbuffer.Primitives.Vec2.prototype.mutate_y = function(value) {
+  var offset = this.bb.__offset(this.bb_pos, 8);
+
+  if (offset === 0) {
+    return false;
+  }
+
+  this.bb.writeFloat64(this.bb_pos + offset, value);
+  return true;
 };
 
 /**
@@ -169,6 +199,21 @@ Flatbuffer.Primitives.Vec3.prototype.x = function() {
 };
 
 /**
+ * @param {number} value
+ * @returns {boolean}
+ */
+Flatbuffer.Primitives.Vec3.prototype.mutate_x = function(value) {
+  var offset = this.bb.__offset(this.bb_pos, 0);
+
+  if (offset === 0) {
+    return false;
+  }
+
+  this.bb.writeFloat64(this.bb_pos + offset, value);
+  return true;
+};
+
+/**
  * @returns {number}
  */
 Flatbuffer.Primitives.Vec3.prototype.y = function() {
@@ -176,10 +221,40 @@ Flatbuffer.Primitives.Vec3.prototype.y = function() {
 };
 
 /**
+ * @param {number} value
+ * @returns {boolean}
+ */
+Flatbuffer.Primitives.Vec3.prototype.mutate_y = function(value) {
+  var offset = this.bb.__offset(this.bb_pos, 8);
+
+  if (offset === 0) {
+    return false;
+  }
+
+  this.bb.writeFloat64(this.bb_pos + offset, value);
+  return true;
+};
+
+/**
  * @returns {number}
  */
 Flatbuffer.Primitives.Vec3.prototype.z = function() {
   return this.bb.readFloat64(this.bb_pos + 16);
+};
+
+/**
+ * @param {number} value
+ * @returns {boolean}
+ */
+Flatbuffer.Primitives.Vec3.prototype.mutate_z = function(value) {
+  var offset = this.bb.__offset(this.bb_pos, 16);
+
+  if (offset === 0) {
+    return false;
+  }
+
+  this.bb.writeFloat64(this.bb_pos + offset, value);
+  return true;
 };
 
 /**
@@ -233,10 +308,40 @@ Flatbuffer.Primitives.Vec4.prototype.x = function() {
 };
 
 /**
+ * @param {number} value
+ * @returns {boolean}
+ */
+Flatbuffer.Primitives.Vec4.prototype.mutate_x = function(value) {
+  var offset = this.bb.__offset(this.bb_pos, 0);
+
+  if (offset === 0) {
+    return false;
+  }
+
+  this.bb.writeFloat64(this.bb_pos + offset, value);
+  return true;
+};
+
+/**
  * @returns {number}
  */
 Flatbuffer.Primitives.Vec4.prototype.y = function() {
   return this.bb.readFloat64(this.bb_pos + 8);
+};
+
+/**
+ * @param {number} value
+ * @returns {boolean}
+ */
+Flatbuffer.Primitives.Vec4.prototype.mutate_y = function(value) {
+  var offset = this.bb.__offset(this.bb_pos, 8);
+
+  if (offset === 0) {
+    return false;
+  }
+
+  this.bb.writeFloat64(this.bb_pos + offset, value);
+  return true;
 };
 
 /**
@@ -247,10 +352,40 @@ Flatbuffer.Primitives.Vec4.prototype.z = function() {
 };
 
 /**
+ * @param {number} value
+ * @returns {boolean}
+ */
+Flatbuffer.Primitives.Vec4.prototype.mutate_z = function(value) {
+  var offset = this.bb.__offset(this.bb_pos, 16);
+
+  if (offset === 0) {
+    return false;
+  }
+
+  this.bb.writeFloat64(this.bb_pos + offset, value);
+  return true;
+};
+
+/**
  * @returns {number}
  */
 Flatbuffer.Primitives.Vec4.prototype.w = function() {
   return this.bb.readFloat64(this.bb_pos + 24);
+};
+
+/**
+ * @param {number} value
+ * @returns {boolean}
+ */
+Flatbuffer.Primitives.Vec4.prototype.mutate_w = function(value) {
+  var offset = this.bb.__offset(this.bb_pos, 24);
+
+  if (offset === 0) {
+    return false;
+  }
+
+  this.bb.writeFloat64(this.bb_pos + offset, value);
+  return true;
 };
 
 /**
@@ -306,10 +441,40 @@ Flatbuffer.Primitives.Color.prototype.r = function() {
 };
 
 /**
+ * @param {number} value
+ * @returns {boolean}
+ */
+Flatbuffer.Primitives.Color.prototype.mutate_r = function(value) {
+  var offset = this.bb.__offset(this.bb_pos, 0);
+
+  if (offset === 0) {
+    return false;
+  }
+
+  this.bb.writeUint8(this.bb_pos + offset, value);
+  return true;
+};
+
+/**
  * @returns {number}
  */
 Flatbuffer.Primitives.Color.prototype.g = function() {
   return this.bb.readUint8(this.bb_pos + 1);
+};
+
+/**
+ * @param {number} value
+ * @returns {boolean}
+ */
+Flatbuffer.Primitives.Color.prototype.mutate_g = function(value) {
+  var offset = this.bb.__offset(this.bb_pos, 1);
+
+  if (offset === 0) {
+    return false;
+  }
+
+  this.bb.writeUint8(this.bb_pos + offset, value);
+  return true;
 };
 
 /**
@@ -320,10 +485,40 @@ Flatbuffer.Primitives.Color.prototype.b = function() {
 };
 
 /**
+ * @param {number} value
+ * @returns {boolean}
+ */
+Flatbuffer.Primitives.Color.prototype.mutate_b = function(value) {
+  var offset = this.bb.__offset(this.bb_pos, 2);
+
+  if (offset === 0) {
+    return false;
+  }
+
+  this.bb.writeUint8(this.bb_pos + offset, value);
+  return true;
+};
+
+/**
  * @returns {number}
  */
 Flatbuffer.Primitives.Color.prototype.a = function() {
   return this.bb.readUint8(this.bb_pos + 3);
+};
+
+/**
+ * @param {number} value
+ * @returns {boolean}
+ */
+Flatbuffer.Primitives.Color.prototype.mutate_a = function(value) {
+  var offset = this.bb.__offset(this.bb_pos, 3);
+
+  if (offset === 0) {
+    return false;
+  }
+
+  this.bb.writeUint8(this.bb_pos + offset, value);
+  return true;
 };
 
 /**
@@ -395,6 +590,21 @@ Flatbuffer.Primitives.ObjectTimestamp.getSizePrefixedRootAsObjectTimestamp = fun
 Flatbuffer.Primitives.ObjectTimestamp.prototype.value = function() {
   var offset = this.bb.__offset(this.bb_pos, 4);
   return offset ? this.bb.readFloat64(this.bb_pos + offset) : 0.0;
+};
+
+/**
+ * @param {number} value
+ * @returns {boolean}
+ */
+Flatbuffer.Primitives.ObjectTimestamp.prototype.mutate_value = function(value) {
+  var offset = this.bb.__offset(this.bb_pos, 4);
+
+  if (offset === 0) {
+    return false;
+  }
+
+  this.bb.writeFloat64(this.bb_pos + offset, value);
+  return true;
 };
 
 /**
@@ -1007,6 +1217,21 @@ Flatbuffer.Primitives.HideAndShowAnimation.prototype.visibleWhenActive = functio
 };
 
 /**
+ * @param {boolean} value
+ * @returns {boolean}
+ */
+Flatbuffer.Primitives.HideAndShowAnimation.prototype.mutate_visibleWhenActive = function(value) {
+  var offset = this.bb.__offset(this.bb_pos, 8);
+
+  if (offset === 0) {
+    return false;
+  }
+
+  this.bb.writeInt8(this.bb_pos + offset, value);
+  return true;
+};
+
+/**
  * @returns {Flatbuffer.Primitives.ColorType}
  */
 Flatbuffer.Primitives.HideAndShowAnimation.prototype.colorType = function() {
@@ -1553,6 +1778,21 @@ Flatbuffer.Primitives.Sphere3D.prototype.radius = function() {
 };
 
 /**
+ * @param {number} value
+ * @returns {boolean}
+ */
+Flatbuffer.Primitives.Sphere3D.prototype.mutate_radius = function(value) {
+  var offset = this.bb.__offset(this.bb_pos, 6);
+
+  if (offset === 0) {
+    return false;
+  }
+
+  this.bb.writeFloat64(this.bb_pos + offset, value);
+  return true;
+};
+
+/**
  * @returns {Flatbuffer.Primitives.VisualizationType}
  */
 Flatbuffer.Primitives.Sphere3D.prototype.vizType = function() {
@@ -1575,6 +1815,21 @@ Flatbuffer.Primitives.Sphere3D.prototype.viz = function(obj) {
 Flatbuffer.Primitives.Sphere3D.prototype.timestamp = function() {
   var offset = this.bb.__offset(this.bb_pos, 12);
   return offset ? this.bb.readFloat64(this.bb_pos + offset) : 0.0;
+};
+
+/**
+ * @param {number} value
+ * @returns {boolean}
+ */
+Flatbuffer.Primitives.Sphere3D.prototype.mutate_timestamp = function(value) {
+  var offset = this.bb.__offset(this.bb_pos, 12);
+
+  if (offset === 0) {
+    return false;
+  }
+
+  this.bb.writeFloat64(this.bb_pos + offset, value);
+  return true;
 };
 
 /**
@@ -1857,6 +2112,21 @@ Flatbuffer.Primitives.PolyLine3D.prototype.viz = function(obj) {
 Flatbuffer.Primitives.PolyLine3D.prototype.widthForVisualization = function() {
   var offset = this.bb.__offset(this.bb_pos, 10);
   return offset ? this.bb.readFloat64(this.bb_pos + offset) : 1.0;
+};
+
+/**
+ * @param {number} value
+ * @returns {boolean}
+ */
+Flatbuffer.Primitives.PolyLine3D.prototype.mutate_widthForVisualization = function(value) {
+  var offset = this.bb.__offset(this.bb_pos, 10);
+
+  if (offset === 0) {
+    return false;
+  }
+
+  this.bb.writeFloat64(this.bb_pos + offset, value);
+  return true;
 };
 
 /**

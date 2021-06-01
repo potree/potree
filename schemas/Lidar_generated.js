@@ -375,7 +375,7 @@ Flatbuffer.LIDAR.Point.prototype.mutate_dualPlusConfidence = function(value) {
  * @returns {number}
  */
 Flatbuffer.LIDAR.Point.prototype.dualReturnMatching = function() {
-  return this.bb.readUint32(this.bb_pos + 44);
+  return this.bb.readInt32(this.bb_pos + 44);
 };
 
 /**
@@ -389,7 +389,7 @@ Flatbuffer.LIDAR.Point.prototype.mutate_dualReturnMatching = function(value) {
     return false;
   }
 
-  this.bb.writeUint32(this.bb_pos + offset, value);
+  this.bb.writeInt32(this.bb_pos + offset, value);
   return true;
 };
 
@@ -399,6 +399,50 @@ Flatbuffer.LIDAR.Point.prototype.mutate_dualReturnMatching = function(value) {
  */
 Flatbuffer.LIDAR.Point.prototype.rtkPose = function(obj) {
   return (obj || new Flatbuffer.LIDAR.RtkPose).__init(this.bb_pos + 48, this.bb);
+};
+
+/**
+ * @returns {number}
+ */
+Flatbuffer.LIDAR.Point.prototype.latitude = function() {
+  return this.bb.readFloat64(this.bb_pos + 96);
+};
+
+/**
+ * @param {number} value
+ * @returns {boolean}
+ */
+Flatbuffer.LIDAR.Point.prototype.mutate_latitude = function(value) {
+  var offset = this.bb.__offset(this.bb_pos, 96);
+
+  if (offset === 0) {
+    return false;
+  }
+
+  this.bb.writeFloat64(this.bb_pos + offset, value);
+  return true;
+};
+
+/**
+ * @returns {number}
+ */
+Flatbuffer.LIDAR.Point.prototype.longitude = function() {
+  return this.bb.readFloat64(this.bb_pos + 104);
+};
+
+/**
+ * @param {number} value
+ * @returns {boolean}
+ */
+Flatbuffer.LIDAR.Point.prototype.mutate_longitude = function(value) {
+  var offset = this.bb.__offset(this.bb_pos, 104);
+
+  if (offset === 0) {
+    return false;
+  }
+
+  this.bb.writeFloat64(this.bb_pos + offset, value);
+  return true;
 };
 
 /**
@@ -417,10 +461,14 @@ Flatbuffer.LIDAR.Point.prototype.rtkPose = function(obj) {
  * @param {number} rtkPose_roll
  * @param {number} rtkPose_pitch
  * @param {number} rtkPose_yaw
+ * @param {number} latitude
+ * @param {number} longitude
  * @returns {flatbuffers.Offset}
  */
-Flatbuffer.LIDAR.Point.createPoint = function(builder, x, y, z, intensity, timestamp, beamID, dualPlusConfidence, dualReturnMatching, rtkPose_x, rtkPose_y, rtkPose_z, rtkPose_roll, rtkPose_pitch, rtkPose_yaw) {
-  builder.prep(8, 96);
+Flatbuffer.LIDAR.Point.createPoint = function(builder, x, y, z, intensity, timestamp, beamID, dualPlusConfidence, dualReturnMatching, rtkPose_x, rtkPose_y, rtkPose_z, rtkPose_roll, rtkPose_pitch, rtkPose_yaw, latitude, longitude) {
+  builder.prep(8, 112);
+  builder.writeFloat64(longitude);
+  builder.writeFloat64(latitude);
   builder.prep(8, 48);
   builder.writeFloat64(rtkPose_yaw);
   builder.writeFloat64(rtkPose_pitch);
@@ -477,13 +525,22 @@ Flatbuffer.LIDAR.PointCloud.getRootAsPointCloud = function(bb, obj) {
 };
 
 /**
+ * @param {flatbuffers.ByteBuffer} bb
+ * @param {Flatbuffer.LIDAR.PointCloud=} obj
+ * @returns {Flatbuffer.LIDAR.PointCloud}
+ */
+Flatbuffer.LIDAR.PointCloud.getSizePrefixedRootAsPointCloud = function(bb, obj) {
+  return (obj || new Flatbuffer.LIDAR.PointCloud).__init(bb.readInt32(bb.position()) + bb.position(), bb);
+};
+
+/**
  * @param {number} index
  * @param {Flatbuffer.LIDAR.Point=} obj
  * @returns {Flatbuffer.LIDAR.Point}
  */
 Flatbuffer.LIDAR.PointCloud.prototype.points = function(index, obj) {
   var offset = this.bb.__offset(this.bb_pos, 4);
-  return offset ? (obj || new Flatbuffer.LIDAR.Point).__init(this.bb.__vector(this.bb_pos + offset) + index * 96, this.bb) : null;
+  return offset ? (obj || new Flatbuffer.LIDAR.Point).__init(this.bb.__vector(this.bb_pos + offset) + index * 112, this.bb) : null;
 };
 
 /**
@@ -514,7 +571,7 @@ Flatbuffer.LIDAR.PointCloud.addPoints = function(builder, pointsOffset) {
  * @param {number} numElems
  */
 Flatbuffer.LIDAR.PointCloud.startPointsVector = function(builder, numElems) {
-  builder.startVector(96, numElems, 8);
+  builder.startVector(112, numElems, 8);
 };
 
 /**
@@ -532,6 +589,14 @@ Flatbuffer.LIDAR.PointCloud.endPointCloud = function(builder) {
  */
 Flatbuffer.LIDAR.PointCloud.finishPointCloudBuffer = function(builder, offset) {
   builder.finish(offset);
+};
+
+/**
+ * @param {flatbuffers.Builder} builder
+ * @param {flatbuffers.Offset} offset
+ */
+Flatbuffer.LIDAR.PointCloud.finishSizePrefixedPointCloudBuffer = function(builder, offset) {
+  builder.finish(offset, undefined, true);
 };
 
 /**

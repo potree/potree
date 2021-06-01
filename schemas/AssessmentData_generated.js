@@ -48,6 +48,15 @@ Flatbuffer.AssessmentData.AssessmentData.getRootAsAssessmentData = function(bb, 
 };
 
 /**
+ * @param {flatbuffers.ByteBuffer} bb
+ * @param {Flatbuffer.AssessmentData.AssessmentData=} obj
+ * @returns {Flatbuffer.AssessmentData.AssessmentData}
+ */
+Flatbuffer.AssessmentData.AssessmentData.getSizePrefixedRootAsAssessmentData = function(bb, obj) {
+  return (obj || new Flatbuffer.AssessmentData.AssessmentData).__init(bb.readInt32(bb.position()) + bb.position(), bb);
+};
+
+/**
  * @param {flatbuffers.Encoding=} optionalEncoding
  * @returns {string|Uint8Array|null}
  */
@@ -219,7 +228,7 @@ Flatbuffer.AssessmentData.AssessmentData.prototype.distanceFromStartArray = func
  * @param {number} index
  * @returns {number}
  */
-Flatbuffer.AssessmentData.AssessmentData.prototype.translation60m = function(index) {
+Flatbuffer.AssessmentData.AssessmentData.prototype.latitudeCorresponding = function(index) {
   var offset = this.bb.__offset(this.bb_pos, 20);
   return offset ? this.bb.readFloat64(this.bb.__vector(this.bb_pos + offset) + index * 8) : 0;
 };
@@ -227,7 +236,7 @@ Flatbuffer.AssessmentData.AssessmentData.prototype.translation60m = function(ind
 /**
  * @returns {number}
  */
-Flatbuffer.AssessmentData.AssessmentData.prototype.translation60mLength = function() {
+Flatbuffer.AssessmentData.AssessmentData.prototype.latitudeCorrespondingLength = function() {
   var offset = this.bb.__offset(this.bb_pos, 20);
   return offset ? this.bb.__vector_len(this.bb_pos + offset) : 0;
 };
@@ -235,8 +244,58 @@ Flatbuffer.AssessmentData.AssessmentData.prototype.translation60mLength = functi
 /**
  * @returns {Float64Array}
  */
-Flatbuffer.AssessmentData.AssessmentData.prototype.translation60mArray = function() {
+Flatbuffer.AssessmentData.AssessmentData.prototype.latitudeCorrespondingArray = function() {
   var offset = this.bb.__offset(this.bb_pos, 20);
+  return offset ? new Float64Array(this.bb.bytes().buffer, this.bb.bytes().byteOffset + this.bb.__vector(this.bb_pos + offset), this.bb.__vector_len(this.bb_pos + offset)) : null;
+};
+
+/**
+ * @param {number} index
+ * @returns {number}
+ */
+Flatbuffer.AssessmentData.AssessmentData.prototype.longitudeCorresponding = function(index) {
+  var offset = this.bb.__offset(this.bb_pos, 22);
+  return offset ? this.bb.readFloat64(this.bb.__vector(this.bb_pos + offset) + index * 8) : 0;
+};
+
+/**
+ * @returns {number}
+ */
+Flatbuffer.AssessmentData.AssessmentData.prototype.longitudeCorrespondingLength = function() {
+  var offset = this.bb.__offset(this.bb_pos, 22);
+  return offset ? this.bb.__vector_len(this.bb_pos + offset) : 0;
+};
+
+/**
+ * @returns {Float64Array}
+ */
+Flatbuffer.AssessmentData.AssessmentData.prototype.longitudeCorrespondingArray = function() {
+  var offset = this.bb.__offset(this.bb_pos, 22);
+  return offset ? new Float64Array(this.bb.bytes().buffer, this.bb.bytes().byteOffset + this.bb.__vector(this.bb_pos + offset), this.bb.__vector_len(this.bb_pos + offset)) : null;
+};
+
+/**
+ * @param {number} index
+ * @returns {number}
+ */
+Flatbuffer.AssessmentData.AssessmentData.prototype.translation60m = function(index) {
+  var offset = this.bb.__offset(this.bb_pos, 24);
+  return offset ? this.bb.readFloat64(this.bb.__vector(this.bb_pos + offset) + index * 8) : 0;
+};
+
+/**
+ * @returns {number}
+ */
+Flatbuffer.AssessmentData.AssessmentData.prototype.translation60mLength = function() {
+  var offset = this.bb.__offset(this.bb_pos, 24);
+  return offset ? this.bb.__vector_len(this.bb_pos + offset) : 0;
+};
+
+/**
+ * @returns {Float64Array}
+ */
+Flatbuffer.AssessmentData.AssessmentData.prototype.translation60mArray = function() {
+  var offset = this.bb.__offset(this.bb_pos, 24);
   return offset ? new Float64Array(this.bb.bytes().buffer, this.bb.bytes().byteOffset + this.bb.__vector(this.bb_pos + offset), this.bb.__vector_len(this.bb_pos + offset)) : null;
 };
 
@@ -245,7 +304,7 @@ Flatbuffer.AssessmentData.AssessmentData.prototype.translation60mArray = functio
  * @returns {number}
  */
 Flatbuffer.AssessmentData.AssessmentData.prototype.rotation60m = function(index) {
-  var offset = this.bb.__offset(this.bb_pos, 22);
+  var offset = this.bb.__offset(this.bb_pos, 26);
   return offset ? this.bb.readFloat64(this.bb.__vector(this.bb_pos + offset) + index * 8) : 0;
 };
 
@@ -253,7 +312,7 @@ Flatbuffer.AssessmentData.AssessmentData.prototype.rotation60m = function(index)
  * @returns {number}
  */
 Flatbuffer.AssessmentData.AssessmentData.prototype.rotation60mLength = function() {
-  var offset = this.bb.__offset(this.bb_pos, 22);
+  var offset = this.bb.__offset(this.bb_pos, 26);
   return offset ? this.bb.__vector_len(this.bb_pos + offset) : 0;
 };
 
@@ -261,7 +320,7 @@ Flatbuffer.AssessmentData.AssessmentData.prototype.rotation60mLength = function(
  * @returns {Float64Array}
  */
 Flatbuffer.AssessmentData.AssessmentData.prototype.rotation60mArray = function() {
-  var offset = this.bb.__offset(this.bb_pos, 22);
+  var offset = this.bb.__offset(this.bb_pos, 26);
   return offset ? new Float64Array(this.bb.bytes().buffer, this.bb.bytes().byteOffset + this.bb.__vector(this.bb_pos + offset), this.bb.__vector_len(this.bb_pos + offset)) : null;
 };
 
@@ -270,7 +329,7 @@ Flatbuffer.AssessmentData.AssessmentData.prototype.rotation60mArray = function()
  * @returns {number}
  */
 Flatbuffer.AssessmentData.AssessmentData.prototype.distanceToReferenceUnlocalized60m = function(index) {
-  var offset = this.bb.__offset(this.bb_pos, 24);
+  var offset = this.bb.__offset(this.bb_pos, 28);
   return offset ? this.bb.readFloat64(this.bb.__vector(this.bb_pos + offset) + index * 8) : 0;
 };
 
@@ -278,7 +337,7 @@ Flatbuffer.AssessmentData.AssessmentData.prototype.distanceToReferenceUnlocalize
  * @returns {number}
  */
 Flatbuffer.AssessmentData.AssessmentData.prototype.distanceToReferenceUnlocalized60mLength = function() {
-  var offset = this.bb.__offset(this.bb_pos, 24);
+  var offset = this.bb.__offset(this.bb_pos, 28);
   return offset ? this.bb.__vector_len(this.bb_pos + offset) : 0;
 };
 
@@ -286,7 +345,7 @@ Flatbuffer.AssessmentData.AssessmentData.prototype.distanceToReferenceUnlocalize
  * @returns {Float64Array}
  */
 Flatbuffer.AssessmentData.AssessmentData.prototype.distanceToReferenceUnlocalized60mArray = function() {
-  var offset = this.bb.__offset(this.bb_pos, 24);
+  var offset = this.bb.__offset(this.bb_pos, 28);
   return offset ? new Float64Array(this.bb.bytes().buffer, this.bb.bytes().byteOffset + this.bb.__vector(this.bb_pos + offset), this.bb.__vector_len(this.bb_pos + offset)) : null;
 };
 
@@ -295,7 +354,7 @@ Flatbuffer.AssessmentData.AssessmentData.prototype.distanceToReferenceUnlocalize
  * @returns {number}
  */
 Flatbuffer.AssessmentData.AssessmentData.prototype.distanceToReferenceLocalized60m = function(index) {
-  var offset = this.bb.__offset(this.bb_pos, 26);
+  var offset = this.bb.__offset(this.bb_pos, 30);
   return offset ? this.bb.readFloat64(this.bb.__vector(this.bb_pos + offset) + index * 8) : 0;
 };
 
@@ -303,7 +362,7 @@ Flatbuffer.AssessmentData.AssessmentData.prototype.distanceToReferenceLocalized6
  * @returns {number}
  */
 Flatbuffer.AssessmentData.AssessmentData.prototype.distanceToReferenceLocalized60mLength = function() {
-  var offset = this.bb.__offset(this.bb_pos, 26);
+  var offset = this.bb.__offset(this.bb_pos, 30);
   return offset ? this.bb.__vector_len(this.bb_pos + offset) : 0;
 };
 
@@ -311,7 +370,7 @@ Flatbuffer.AssessmentData.AssessmentData.prototype.distanceToReferenceLocalized6
  * @returns {Float64Array}
  */
 Flatbuffer.AssessmentData.AssessmentData.prototype.distanceToReferenceLocalized60mArray = function() {
-  var offset = this.bb.__offset(this.bb_pos, 26);
+  var offset = this.bb.__offset(this.bb_pos, 30);
   return offset ? new Float64Array(this.bb.bytes().buffer, this.bb.bytes().byteOffset + this.bb.__vector(this.bb_pos + offset), this.bb.__vector_len(this.bb_pos + offset)) : null;
 };
 
@@ -320,7 +379,7 @@ Flatbuffer.AssessmentData.AssessmentData.prototype.distanceToReferenceLocalized6
  * @returns {number}
  */
 Flatbuffer.AssessmentData.AssessmentData.prototype.translation150m = function(index) {
-  var offset = this.bb.__offset(this.bb_pos, 28);
+  var offset = this.bb.__offset(this.bb_pos, 32);
   return offset ? this.bb.readFloat64(this.bb.__vector(this.bb_pos + offset) + index * 8) : 0;
 };
 
@@ -328,7 +387,7 @@ Flatbuffer.AssessmentData.AssessmentData.prototype.translation150m = function(in
  * @returns {number}
  */
 Flatbuffer.AssessmentData.AssessmentData.prototype.translation150mLength = function() {
-  var offset = this.bb.__offset(this.bb_pos, 28);
+  var offset = this.bb.__offset(this.bb_pos, 32);
   return offset ? this.bb.__vector_len(this.bb_pos + offset) : 0;
 };
 
@@ -336,7 +395,7 @@ Flatbuffer.AssessmentData.AssessmentData.prototype.translation150mLength = funct
  * @returns {Float64Array}
  */
 Flatbuffer.AssessmentData.AssessmentData.prototype.translation150mArray = function() {
-  var offset = this.bb.__offset(this.bb_pos, 28);
+  var offset = this.bb.__offset(this.bb_pos, 32);
   return offset ? new Float64Array(this.bb.bytes().buffer, this.bb.bytes().byteOffset + this.bb.__vector(this.bb_pos + offset), this.bb.__vector_len(this.bb_pos + offset)) : null;
 };
 
@@ -345,7 +404,7 @@ Flatbuffer.AssessmentData.AssessmentData.prototype.translation150mArray = functi
  * @returns {number}
  */
 Flatbuffer.AssessmentData.AssessmentData.prototype.rotation150m = function(index) {
-  var offset = this.bb.__offset(this.bb_pos, 30);
+  var offset = this.bb.__offset(this.bb_pos, 34);
   return offset ? this.bb.readFloat64(this.bb.__vector(this.bb_pos + offset) + index * 8) : 0;
 };
 
@@ -353,7 +412,7 @@ Flatbuffer.AssessmentData.AssessmentData.prototype.rotation150m = function(index
  * @returns {number}
  */
 Flatbuffer.AssessmentData.AssessmentData.prototype.rotation150mLength = function() {
-  var offset = this.bb.__offset(this.bb_pos, 30);
+  var offset = this.bb.__offset(this.bb_pos, 34);
   return offset ? this.bb.__vector_len(this.bb_pos + offset) : 0;
 };
 
@@ -361,7 +420,7 @@ Flatbuffer.AssessmentData.AssessmentData.prototype.rotation150mLength = function
  * @returns {Float64Array}
  */
 Flatbuffer.AssessmentData.AssessmentData.prototype.rotation150mArray = function() {
-  var offset = this.bb.__offset(this.bb_pos, 30);
+  var offset = this.bb.__offset(this.bb_pos, 34);
   return offset ? new Float64Array(this.bb.bytes().buffer, this.bb.bytes().byteOffset + this.bb.__vector(this.bb_pos + offset), this.bb.__vector_len(this.bb_pos + offset)) : null;
 };
 
@@ -370,7 +429,7 @@ Flatbuffer.AssessmentData.AssessmentData.prototype.rotation150mArray = function(
  * @returns {number}
  */
 Flatbuffer.AssessmentData.AssessmentData.prototype.distanceToReferenceUnlocalized150m = function(index) {
-  var offset = this.bb.__offset(this.bb_pos, 32);
+  var offset = this.bb.__offset(this.bb_pos, 36);
   return offset ? this.bb.readFloat64(this.bb.__vector(this.bb_pos + offset) + index * 8) : 0;
 };
 
@@ -378,7 +437,7 @@ Flatbuffer.AssessmentData.AssessmentData.prototype.distanceToReferenceUnlocalize
  * @returns {number}
  */
 Flatbuffer.AssessmentData.AssessmentData.prototype.distanceToReferenceUnlocalized150mLength = function() {
-  var offset = this.bb.__offset(this.bb_pos, 32);
+  var offset = this.bb.__offset(this.bb_pos, 36);
   return offset ? this.bb.__vector_len(this.bb_pos + offset) : 0;
 };
 
@@ -386,7 +445,7 @@ Flatbuffer.AssessmentData.AssessmentData.prototype.distanceToReferenceUnlocalize
  * @returns {Float64Array}
  */
 Flatbuffer.AssessmentData.AssessmentData.prototype.distanceToReferenceUnlocalized150mArray = function() {
-  var offset = this.bb.__offset(this.bb_pos, 32);
+  var offset = this.bb.__offset(this.bb_pos, 36);
   return offset ? new Float64Array(this.bb.bytes().buffer, this.bb.bytes().byteOffset + this.bb.__vector(this.bb_pos + offset), this.bb.__vector_len(this.bb_pos + offset)) : null;
 };
 
@@ -395,7 +454,7 @@ Flatbuffer.AssessmentData.AssessmentData.prototype.distanceToReferenceUnlocalize
  * @returns {number}
  */
 Flatbuffer.AssessmentData.AssessmentData.prototype.distanceToReferenceLocalized150m = function(index) {
-  var offset = this.bb.__offset(this.bb_pos, 34);
+  var offset = this.bb.__offset(this.bb_pos, 38);
   return offset ? this.bb.readFloat64(this.bb.__vector(this.bb_pos + offset) + index * 8) : 0;
 };
 
@@ -403,7 +462,7 @@ Flatbuffer.AssessmentData.AssessmentData.prototype.distanceToReferenceLocalized1
  * @returns {number}
  */
 Flatbuffer.AssessmentData.AssessmentData.prototype.distanceToReferenceLocalized150mLength = function() {
-  var offset = this.bb.__offset(this.bb_pos, 34);
+  var offset = this.bb.__offset(this.bb_pos, 38);
   return offset ? this.bb.__vector_len(this.bb_pos + offset) : 0;
 };
 
@@ -411,7 +470,7 @@ Flatbuffer.AssessmentData.AssessmentData.prototype.distanceToReferenceLocalized1
  * @returns {Float64Array}
  */
 Flatbuffer.AssessmentData.AssessmentData.prototype.distanceToReferenceLocalized150mArray = function() {
-  var offset = this.bb.__offset(this.bb_pos, 34);
+  var offset = this.bb.__offset(this.bb_pos, 38);
   return offset ? new Float64Array(this.bb.bytes().buffer, this.bb.bytes().byteOffset + this.bb.__vector(this.bb_pos + offset), this.bb.__vector_len(this.bb_pos + offset)) : null;
 };
 
@@ -419,7 +478,7 @@ Flatbuffer.AssessmentData.AssessmentData.prototype.distanceToReferenceLocalized1
  * @param {flatbuffers.Builder} builder
  */
 Flatbuffer.AssessmentData.AssessmentData.startAssessmentData = function(builder) {
-  builder.startObject(16);
+  builder.startObject(18);
 };
 
 /**
@@ -614,10 +673,68 @@ Flatbuffer.AssessmentData.AssessmentData.startDistanceFromStartVector = function
 
 /**
  * @param {flatbuffers.Builder} builder
+ * @param {flatbuffers.Offset} latitudeCorrespondingOffset
+ */
+Flatbuffer.AssessmentData.AssessmentData.addLatitudeCorresponding = function(builder, latitudeCorrespondingOffset) {
+  builder.addFieldOffset(8, latitudeCorrespondingOffset, 0);
+};
+
+/**
+ * @param {flatbuffers.Builder} builder
+ * @param {Array.<number>} data
+ * @returns {flatbuffers.Offset}
+ */
+Flatbuffer.AssessmentData.AssessmentData.createLatitudeCorrespondingVector = function(builder, data) {
+  builder.startVector(8, data.length, 8);
+  for (var i = data.length - 1; i >= 0; i--) {
+    builder.addFloat64(data[i]);
+  }
+  return builder.endVector();
+};
+
+/**
+ * @param {flatbuffers.Builder} builder
+ * @param {number} numElems
+ */
+Flatbuffer.AssessmentData.AssessmentData.startLatitudeCorrespondingVector = function(builder, numElems) {
+  builder.startVector(8, numElems, 8);
+};
+
+/**
+ * @param {flatbuffers.Builder} builder
+ * @param {flatbuffers.Offset} longitudeCorrespondingOffset
+ */
+Flatbuffer.AssessmentData.AssessmentData.addLongitudeCorresponding = function(builder, longitudeCorrespondingOffset) {
+  builder.addFieldOffset(9, longitudeCorrespondingOffset, 0);
+};
+
+/**
+ * @param {flatbuffers.Builder} builder
+ * @param {Array.<number>} data
+ * @returns {flatbuffers.Offset}
+ */
+Flatbuffer.AssessmentData.AssessmentData.createLongitudeCorrespondingVector = function(builder, data) {
+  builder.startVector(8, data.length, 8);
+  for (var i = data.length - 1; i >= 0; i--) {
+    builder.addFloat64(data[i]);
+  }
+  return builder.endVector();
+};
+
+/**
+ * @param {flatbuffers.Builder} builder
+ * @param {number} numElems
+ */
+Flatbuffer.AssessmentData.AssessmentData.startLongitudeCorrespondingVector = function(builder, numElems) {
+  builder.startVector(8, numElems, 8);
+};
+
+/**
+ * @param {flatbuffers.Builder} builder
  * @param {flatbuffers.Offset} translation60mOffset
  */
 Flatbuffer.AssessmentData.AssessmentData.addTranslation60m = function(builder, translation60mOffset) {
-  builder.addFieldOffset(8, translation60mOffset, 0);
+  builder.addFieldOffset(10, translation60mOffset, 0);
 };
 
 /**
@@ -646,7 +763,7 @@ Flatbuffer.AssessmentData.AssessmentData.startTranslation60mVector = function(bu
  * @param {flatbuffers.Offset} rotation60mOffset
  */
 Flatbuffer.AssessmentData.AssessmentData.addRotation60m = function(builder, rotation60mOffset) {
-  builder.addFieldOffset(9, rotation60mOffset, 0);
+  builder.addFieldOffset(11, rotation60mOffset, 0);
 };
 
 /**
@@ -675,7 +792,7 @@ Flatbuffer.AssessmentData.AssessmentData.startRotation60mVector = function(build
  * @param {flatbuffers.Offset} distanceToReferenceUnlocalized60mOffset
  */
 Flatbuffer.AssessmentData.AssessmentData.addDistanceToReferenceUnlocalized60m = function(builder, distanceToReferenceUnlocalized60mOffset) {
-  builder.addFieldOffset(10, distanceToReferenceUnlocalized60mOffset, 0);
+  builder.addFieldOffset(12, distanceToReferenceUnlocalized60mOffset, 0);
 };
 
 /**
@@ -704,7 +821,7 @@ Flatbuffer.AssessmentData.AssessmentData.startDistanceToReferenceUnlocalized60mV
  * @param {flatbuffers.Offset} distanceToReferenceLocalized60mOffset
  */
 Flatbuffer.AssessmentData.AssessmentData.addDistanceToReferenceLocalized60m = function(builder, distanceToReferenceLocalized60mOffset) {
-  builder.addFieldOffset(11, distanceToReferenceLocalized60mOffset, 0);
+  builder.addFieldOffset(13, distanceToReferenceLocalized60mOffset, 0);
 };
 
 /**
@@ -733,7 +850,7 @@ Flatbuffer.AssessmentData.AssessmentData.startDistanceToReferenceLocalized60mVec
  * @param {flatbuffers.Offset} translation150mOffset
  */
 Flatbuffer.AssessmentData.AssessmentData.addTranslation150m = function(builder, translation150mOffset) {
-  builder.addFieldOffset(12, translation150mOffset, 0);
+  builder.addFieldOffset(14, translation150mOffset, 0);
 };
 
 /**
@@ -762,7 +879,7 @@ Flatbuffer.AssessmentData.AssessmentData.startTranslation150mVector = function(b
  * @param {flatbuffers.Offset} rotation150mOffset
  */
 Flatbuffer.AssessmentData.AssessmentData.addRotation150m = function(builder, rotation150mOffset) {
-  builder.addFieldOffset(13, rotation150mOffset, 0);
+  builder.addFieldOffset(15, rotation150mOffset, 0);
 };
 
 /**
@@ -791,7 +908,7 @@ Flatbuffer.AssessmentData.AssessmentData.startRotation150mVector = function(buil
  * @param {flatbuffers.Offset} distanceToReferenceUnlocalized150mOffset
  */
 Flatbuffer.AssessmentData.AssessmentData.addDistanceToReferenceUnlocalized150m = function(builder, distanceToReferenceUnlocalized150mOffset) {
-  builder.addFieldOffset(14, distanceToReferenceUnlocalized150mOffset, 0);
+  builder.addFieldOffset(16, distanceToReferenceUnlocalized150mOffset, 0);
 };
 
 /**
@@ -820,7 +937,7 @@ Flatbuffer.AssessmentData.AssessmentData.startDistanceToReferenceUnlocalized150m
  * @param {flatbuffers.Offset} distanceToReferenceLocalized150mOffset
  */
 Flatbuffer.AssessmentData.AssessmentData.addDistanceToReferenceLocalized150m = function(builder, distanceToReferenceLocalized150mOffset) {
-  builder.addFieldOffset(15, distanceToReferenceLocalized150mOffset, 0);
+  builder.addFieldOffset(17, distanceToReferenceLocalized150mOffset, 0);
 };
 
 /**
@@ -863,6 +980,8 @@ Flatbuffer.AssessmentData.AssessmentData.endAssessmentData = function(builder) {
  * @param {flatbuffers.Offset} curvatureLocalizedOffset
  * @param {flatbuffers.Offset} distanceToReferenceOffset
  * @param {flatbuffers.Offset} distanceFromStartOffset
+ * @param {flatbuffers.Offset} latitudeCorrespondingOffset
+ * @param {flatbuffers.Offset} longitudeCorrespondingOffset
  * @param {flatbuffers.Offset} translation60mOffset
  * @param {flatbuffers.Offset} rotation60mOffset
  * @param {flatbuffers.Offset} distanceToReferenceUnlocalized60mOffset
@@ -873,7 +992,7 @@ Flatbuffer.AssessmentData.AssessmentData.endAssessmentData = function(builder) {
  * @param {flatbuffers.Offset} distanceToReferenceLocalized150mOffset
  * @returns {flatbuffers.Offset}
  */
-Flatbuffer.AssessmentData.AssessmentData.createAssessmentData = function(builder, supplierOffset, laneIdOffset, latitudeOffset, longitudeOffset, curvatureUnlocalizedOffset, curvatureLocalizedOffset, distanceToReferenceOffset, distanceFromStartOffset, translation60mOffset, rotation60mOffset, distanceToReferenceUnlocalized60mOffset, distanceToReferenceLocalized60mOffset, translation150mOffset, rotation150mOffset, distanceToReferenceUnlocalized150mOffset, distanceToReferenceLocalized150mOffset) {
+Flatbuffer.AssessmentData.AssessmentData.createAssessmentData = function(builder, supplierOffset, laneIdOffset, latitudeOffset, longitudeOffset, curvatureUnlocalizedOffset, curvatureLocalizedOffset, distanceToReferenceOffset, distanceFromStartOffset, latitudeCorrespondingOffset, longitudeCorrespondingOffset, translation60mOffset, rotation60mOffset, distanceToReferenceUnlocalized60mOffset, distanceToReferenceLocalized60mOffset, translation150mOffset, rotation150mOffset, distanceToReferenceUnlocalized150mOffset, distanceToReferenceLocalized150mOffset) {
   Flatbuffer.AssessmentData.AssessmentData.startAssessmentData(builder);
   Flatbuffer.AssessmentData.AssessmentData.addSupplier(builder, supplierOffset);
   Flatbuffer.AssessmentData.AssessmentData.addLaneId(builder, laneIdOffset);
@@ -883,6 +1002,8 @@ Flatbuffer.AssessmentData.AssessmentData.createAssessmentData = function(builder
   Flatbuffer.AssessmentData.AssessmentData.addCurvatureLocalized(builder, curvatureLocalizedOffset);
   Flatbuffer.AssessmentData.AssessmentData.addDistanceToReference(builder, distanceToReferenceOffset);
   Flatbuffer.AssessmentData.AssessmentData.addDistanceFromStart(builder, distanceFromStartOffset);
+  Flatbuffer.AssessmentData.AssessmentData.addLatitudeCorresponding(builder, latitudeCorrespondingOffset);
+  Flatbuffer.AssessmentData.AssessmentData.addLongitudeCorresponding(builder, longitudeCorrespondingOffset);
   Flatbuffer.AssessmentData.AssessmentData.addTranslation60m(builder, translation60mOffset);
   Flatbuffer.AssessmentData.AssessmentData.addRotation60m(builder, rotation60mOffset);
   Flatbuffer.AssessmentData.AssessmentData.addDistanceToReferenceUnlocalized60m(builder, distanceToReferenceUnlocalized60mOffset);

@@ -414,7 +414,7 @@ export class PropertiesPanel{
 				} else if (selectedValue === 'Confidence') {
 					blockConfidence.css('display', 'block');
 				}
-                                window.animationEngine.updateTimeForAll();
+				window.animationEngine.updateTimeForAll();
 			};
 
 			attributeSelection.selectmenu({change: updateMaterialPanel});

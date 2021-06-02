@@ -75,7 +75,7 @@ export class Utils {
 	static debugLine(parent, start, end, color){
 
 		let material = new THREE.LineBasicMaterial({ color: color }); 
-		let geometry = new THREE.Geometry();
+		let geometry = new THREE.BufferGeometry();
 
 		const p1 = new THREE.Vector3(0, 0, 0);
 		const p2 = end.clone().sub(start);
@@ -102,7 +102,7 @@ export class Utils {
 	static debugCircle(parent, center, radius, normal, color){
 		let material = new THREE.LineBasicMaterial({ color: color });
 
-		let geometry = new THREE.Geometry();
+		let geometry = new THREE.BufferGeometry();
 
 		let n = 32;
 		for(let i = 0; i <= n; i++){
@@ -322,7 +322,7 @@ export class Utils {
 			}
 		}
 
-		let skyGeometry = new THREE.CubeGeometry(700, 700, 700);
+		let skyGeometry = new THREE.BoxGeometry(700, 700, 700);
 		let skybox = new THREE.Mesh(skyGeometry, materialArray);
 
 		scene.add(skybox);
@@ -343,7 +343,7 @@ export class Utils {
 			color: color || 0x888888
 		});
 
-		let geometry = new THREE.Geometry();
+		let geometry = new THREE.BufferGeometry();
 		for (let i = 0; i <= length; i++) {
 			geometry.vertices.push(new THREE.Vector3(-(spacing * width) / 2, i * spacing - (spacing * length) / 2, 0));
 			geometry.vertices.push(new THREE.Vector3(+(spacing * width) / 2, i * spacing - (spacing * length) / 2, 0));

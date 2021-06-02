@@ -84,9 +84,17 @@ export class Profile extends THREE.Object3D{
 
 		// edges & boxes
 		if (this.points.length > 1) {
-			let lineGeometry = new THREE.Geometry();
-			lineGeometry.vertices.push(new THREE.Vector3(), new THREE.Vector3());
-			lineGeometry.colors.push(this.lineColor, this.lineColor, this.lineColor);
+			let lineGeometry = new THREE.BufferGeometry();
+
+			const vertices = [];
+			const colors = [];
+
+			vertices.push(0, 0, 0, 0, 0, 0);
+			lineGeometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
+
+			colors.push(this.lineColor, this.lineColor, this.lineColor);
+			lineGeometry.setAttribute( 'color', new THREE.Float32BufferAttribute( colors, 3 ) );
+
 			let lineMaterial = new THREE.LineBasicMaterial({
 				vertexColors: THREE.VertexColors,
 				linewidth: 2,
@@ -253,13 +261,15 @@ export class Profile extends THREE.Object3D{
 			}
 
 			if (leftEdge) {
-				leftEdge.geometry.vertices[1].copy(point);
+				const vertices = leftEdge.geometry.getAttribute('position').array;
+				point.toArray(vertices, 3);
 				leftEdge.geometry.verticesNeedUpdate = true;
 				leftEdge.geometry.computeBoundingSphere();
 			}
 
 			if (rightEdge) {
-				rightEdge.geometry.vertices[0].copy(point);
+				const vertices = rightEdge.geometry.getAttribute('position').array;
+				point.toArray(vertices);
 				rightEdge.geometry.verticesNeedUpdate = true;
 				rightEdge.geometry.computeBoundingSphere();
 			}

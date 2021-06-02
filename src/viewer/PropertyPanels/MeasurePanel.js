@@ -62,10 +62,10 @@ export class MeasurePanel{
 		let elTable = $('<table class="measurement_value_table"></table>');
 
 		let point = this.measurement.points[0];
-		
+
 		for(let attributeName of Object.keys(point)){
 			if(attributeName === "position"){
-			
+
 			}else if(attributeName === "color"){
 				let color = point.color;
 				let text = color.join(', ');
@@ -82,7 +82,7 @@ export class MeasurePanel{
 
 				elTable.append($(`
 					<tr>
-						<td>${attributeName}</td>
+						<td>${attributeName === 'gpsTime' && 'utcTime' || attributeName}</td>
 						<td>${text}</td>
 					</tr>
 				`));

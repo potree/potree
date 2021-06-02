@@ -72,15 +72,15 @@ export class Utils {
 	}
 
 	static debugLine(parent, start, end, color){
-		let material = new THREE.LineBasicMaterial({ color: color }); 
-		let geometry = new THREE.Geometry(); 
-		geometry.vertices.push( start, end); 
-		let tl = new THREE.Line( geometry, material ); 
+		let material = new THREE.LineBasicMaterial({ color: color });
+		let geometry = new THREE.Geometry();
+		geometry.vertices.push( start, end);
+		let tl = new THREE.Line( geometry, material );
 		parent.add(tl);
 	}
 
 	static debugBox(parent, box, transform = new THREE.Matrix4(), color = 0xFFFF00){
-		
+
 		let vertices = [
 			[box.min.x, box.min.y, box.min.z],
 			[box.min.x, box.min.y, box.max.z],
@@ -338,9 +338,9 @@ export class Utils {
 	}
 
 	static getMousePointCloudIntersection (mouse, camera, viewer, pointclouds, params = {}) {
-		
+
 		let renderer = viewer.renderer;
-		
+
 		let nmouse = {
 			x: (mouse.x / renderer.domElement.clientWidth) * 2 - 1,
 			y: -(mouse.y / renderer.domElement.clientHeight) * 2 + 1
@@ -363,10 +363,10 @@ export class Utils {
 		let closestDistance = Infinity;
 		let closestIntersection = null;
 		let closestPoint = null;
-		
+
 		for(let pointcloud of pointclouds){
 			let point = pointcloud.pick(viewer, camera, ray, pickParams);
-			
+
 			if(!point){
 				continue;
 			}
@@ -529,8 +529,8 @@ export class Utils {
 		p2.y = (p2.y + 1.0) * 0.5 * screenHeight;
 		return p1.distanceTo(p2);
 	}
-		
-		
+
+
 	static topView(camera, node){
 		camera.position.set(0, 1, 0);
 		camera.rotation.set(-Math.PI / 2, 0, 0);
@@ -756,7 +756,7 @@ export class Utils {
 			return PointColorType.RGB_HEIGHT;
 		} else if (materialName === 'Composite') {
 			return PointColorType.COMPOSITE;
-		} else if (materialName === 'GPS Time') {
+		} else if (materialName === 'UTC Time') {
 			return PointColorType.GPS_TIME;
 		} else if (materialName === 'Dual Distance') {
 			return PointColorType.DUAL_DISTANCE;
@@ -798,7 +798,7 @@ export class Utils {
 		} else if (materialID === PointColorType.COMPOSITE) {
 			return 'Composite';
 		} else if (materialID === PointColorType.GPS_TIME) {
-			return 'GPS Time';
+			return 'UTC Time';
 		} else if (materialID === PointColorType.DUAL_DISTANCE) {
 			return 'Dual Distance';
 		} else if (materialID === PointColorType.DUAL_REFLECTIVITY) {

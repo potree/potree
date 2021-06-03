@@ -45,7 +45,7 @@
 		"remove_all_clipping_volumes": "Remove all clipping volumes"
 	},
 	"appearance": {
-		"nb_max_pts": "Point budget", 
+		"nb_max_pts": "Point budget",
 		"point_size": "Point size",
 		"point_opacity": "Opacity",
 		"field_view": "Field of view",
@@ -74,7 +74,7 @@
 	"annotations": {
 		"show3D": "show in 3D",
 		"showMap": "show on map"
-	}, 
+	},
 	"profile": {
 		"nb_points": "Number of Points",
 		"title": "Height profile",
@@ -90,7 +90,7 @@
 		"number_of_returns": "Number of Returns",
 		"gps_min": "min",
 		"gps_max": "max",
-		"gps_time": "GPS Time"
+		"gps_time": "UTC Time"
 	},
 	"settings": {
 		"language": "Language"

@@ -199,7 +199,7 @@ export class PropertiesPanel{
 
 				<div id="materials.gpstime_container">
 					<div class="divider">
-						<span>GPS Time</span>
+						<span>UTC Time</span>
 					</div>
 
 				</div>
@@ -330,7 +330,7 @@ export class PropertiesPanel{
 				'Classification',
 				'Return Number',
 				'Source',
-				'GPS Time',
+				'UTC Time',
 				'Index',
 				'Level of Detail',
 				'Dual Distance',

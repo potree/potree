@@ -184,8 +184,17 @@ export class Measure extends THREE.Object3D {
 				}
 			};
 
-			let mouseover = (e) => e.object.material.emissive.setHex(0x888888);
-			let mouseleave = (e) => e.object.material.emissive.setHex(0x000000);
+			const mouseover = (e) => {
+				e.object.material.opacity = 0.5;
+				e.object.material.transparent = true;
+				e.object.material.emissive.setHex(0x888888);
+			}
+
+			const mouseleave = (e) => {
+				e.object.material.opacity = 1;
+				e.object.material.transparent = false;
+				e.object.material.emissive.setHex(0x000000);
+			}
 
 			sphere.addEventListener('drag', drag);
 			sphere.addEventListener('drop', drop);

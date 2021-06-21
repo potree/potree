@@ -75,7 +75,7 @@ export class Images360 extends EventDispatcher{
 		viewer.inputHandler.addInputListener(this);
 
 		this.addEventListener("mousedown", () => {
-			if(currentlyHovered){
+			if(currentlyHovered && currentlyHovered.image360){
 				this.focus(currentlyHovered.image360);
 			}
 		});

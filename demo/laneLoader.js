@@ -639,46 +639,50 @@ function addAnnotationsSplit (laneGeometries, anomalyLayerSize) {
     });
     aRoot.add(aAnomalies);
 
-    const leftLayer = new Potree.Annotation({
-      title: "Left",
-      position: null,
-      collapseThreshold: 0
-    });
-    aAnomalies.add(leftLayer);
-
-    for (let i = 0, len = leftAnomalies.length; i < len; i += anomalyLayerSize) {
-      aAnomalies.position = leftAnomalies[i];
-      leftLayer.position = leftAnomalies[i];
-      const aLeft = new Potree.Annotation({
-        title: `${i + 1} - ${Math.min(i + anomalyLayerSize, leftAnomalies.length)}`,
-        position: leftAnomalies[i],
+    if (leftAnomalies.length > 0) {
+      const leftLayer = new Potree.Annotation({
+        title: "Left",
+        position: null,
         collapseThreshold: 0
       });
-      aLeft.visible = false;
-      leftLayer.children.push(aLeft);
-      aLeft.parent = leftLayer;
-      populateAnomaliesHelper(aLeft, leftAnomalies.slice(i, Math.min(i + anomalyLayerSize, leftAnomalies.length)), 'Left', i);
+      aAnomalies.add(leftLayer);
+
+      for (let i = 0, len = leftAnomalies.length; i < len; i += anomalyLayerSize) {
+        aAnomalies.position = leftAnomalies[i];
+        leftLayer.position = leftAnomalies[i];
+        const aLeft = new Potree.Annotation({
+          title: `${i + 1} - ${Math.min(i + anomalyLayerSize, leftAnomalies.length)}`,
+          position: leftAnomalies[i],
+          collapseThreshold: 0
+        });
+        aLeft.visible = false;
+        leftLayer.children.push(aLeft);
+        aLeft.parent = leftLayer;
+        populateAnomaliesHelper(aLeft, leftAnomalies.slice(i, Math.min(i + anomalyLayerSize, leftAnomalies.length)), 'Left', i);
+      }
     }
 
-    const rightLayer = new Potree.Annotation({
-      title: "Right",
-      position: null,
-      collapseThreshold: 0
-    });
-    aAnomalies.add(rightLayer);
-
-    for (let i = 0, len = Math.max(i + anomalyLayerSize, rightAnomalies.length); i < len; i += anomalyLayerSize) {
-      aAnomalies.position = rightAnomalies[i];
-      rightLayer.position = rightAnomalies[i];
-      const aRight = new Potree.Annotation({
-        title: `${i + 1} - ${Math.min(i + anomalyLayerSize, rightAnomalies.length)}`,
-        position: rightAnomalies[i],
+    if (rightAnomalies.length > 0) {
+      const rightLayer = new Potree.Annotation({
+        title: "Right",
+        position: null,
         collapseThreshold: 0
       });
-      aRight.visible = false;
-      rightLayer.children.push(aRight);
-      aRight.parent = rightLayer;
-      populateAnomaliesHelper(aRight, rightAnomalies.slice(i, Math.min(i + anomalyLayerSize, rightAnomalies.length)), 'Right', i);
+      aAnomalies.add(rightLayer);
+
+      for (let i = 0, len = Math.max(i + anomalyLayerSize, rightAnomalies.length); i < len; i += anomalyLayerSize) {
+        aAnomalies.position = rightAnomalies[i];
+        rightLayer.position = rightAnomalies[i];
+        const aRight = new Potree.Annotation({
+          title: `${i + 1} - ${Math.min(i + anomalyLayerSize, rightAnomalies.length)}`,
+          position: rightAnomalies[i],
+          collapseThreshold: 0
+        });
+        aRight.visible = false;
+        rightLayer.children.push(aRight);
+        aRight.parent = rightLayer;
+        populateAnomaliesHelper(aRight, rightAnomalies.slice(i, Math.min(i + anomalyLayerSize, rightAnomalies.length)), 'Right', i);
+      }
     }
   });
 }

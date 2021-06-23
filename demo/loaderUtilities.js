@@ -37,7 +37,7 @@ export const getFromRestApi = async (url) => {
 export const getFbFileInfo = async (datasetFiles, objNameMatch, objFolderMatch, schemaMatch, localObj, localSchema, exactMatch = false) =>
   {
     if (datasetFiles) {
-      const objectName = datasetFiles.filter(path => exactMatch ? path.split("/")[path.split("/").length - 1] === objNameMatch : path.endsWith(objNameMatch) && path.includes(objFolderMatch))[0];
+      const objectName = datasetFiles.filter(path => exactMatch ? path.endsWith(objFolderMatch.concat('/', objNameMatch)) : path.endsWith(objNameMatch) && path.includes(objFolderMatch))[0];
       const schemaFile = datasetFiles.filter(path => path.endsWith(schemaMatch))[0];
       const fileCount = datasetFiles.filter(path => exactMatch ? path.split("/")[path.split("/").length - 1] === objNameMatch : path.endsWith(objNameMatch) && path.includes(objFolderMatch))?.length;
       return objectName && schemaFile && {objectName, schemaFile, fileCount};

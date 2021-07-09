@@ -4,7 +4,7 @@
 export const isLocalDevelopment = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
 export const runLocalPointCloud = location.search === "" && isLocalDevelopment
 export const params = new URLSearchParams(location.search);
-export const hostUrl = params.get('hostUrl');
+export const hostUrl = params.get("hostUrl");
 export const dataset = params.get("dataset");
 export const version = params.get("version");
 export const bucket = params.get("bucket");

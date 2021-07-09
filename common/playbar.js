@@ -1,7 +1,8 @@
 'use strict';
 
-import { bucket, name, getLambda, getAWSCredentials } from "../demo/paramLoader.js";
+import { dataset, version, hostUrl, userToken, bucket, name, getLambda, getAWSCredentials } from "../demo/paramLoader.js";
 import { resetProgressBars, incrementLoadingBarTotal } from "../common/overlay.js";
+import { setRestApi, getFromRestApi } from "../demo/loaderUtilities.js";
 
 const numberOrZero = (string) => {
   const value = Number(string);
@@ -128,6 +129,16 @@ export function createPlaybar () {
       }
     }
   });
+
+  playbarhtml.find("#toggle_lanes_button").click(function () {
+    const checkAssessmentUrl = `${hostUrl}get-assessment-status?dataset=${encodeURIComponent(dataset)}&bucket=${encodeURIComponent(bucket)}&version=${encodeURIComponent(parseInt(version))}&userToken=${encodeURIComponent(userToken)}`;
+    const status = getFromRestApi(checkAssessmentUrl);
+    console.log("Host URL: " + checkAssessmentUrl);
+    console.log("User Token: " + userToken);
+    const updateAssessmentUrl = `${hostUrl}update-assessment-status?dataset=${encodeURIComponent(dataset)}&bucket=${encodeURIComponent(bucket)}&version=${encodeURIComponent(parseInt(version))}&status=${status == 0 ? 1 : 0}&userToken=${(encodeURIComponent(userToken))}`;
+    setRestApi(updateAssessmentUrl);
+    console.log("Toggled");
+  })
 
   playbarhtml.find("#download_lanes_button").click(function () {
     function download (text, filename) {

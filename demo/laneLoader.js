@@ -754,7 +754,7 @@ export async function loadLanesCallback(s3, bucket, name, filename, callback) {
   invalidLanesLayer.name = filename && "Additional Invalid Lanes" || "Invalid Lanes";
   invalidLanesLayer.visible = false;
 
-  const assessmentStatusUrl = `${hostUrl}/get-assessment-status?dataset=${encodeURIComponent(dataset)}&bucket=${encodeURIComponent(bucket)}&version=${encodeURIComponent(parseInt(version))}&userToken=${encodeURIComponent(userToken)}`;
+  const assessmentStatusUrl = `${hostUrl}get-assessment-status?dataset=${encodeURIComponent(dataset)}&bucket=${encodeURIComponent(bucket)}&version=${encodeURIComponent(parseInt(version))}&userToken=${encodeURIComponent(userToken)}`;
   const assessmentStatus = await getFromRestApi(assessmentStatusUrl);
 
   if (assessmentStatus || annotateAvailable) {
@@ -860,11 +860,13 @@ export function addReloadLanesButton() {
           document.getElementById("download_lanes_button").style.display = "block";
           document.getElementById("save_lanes_button").style.display = "block";
           document.getElementById("select_lanes_button").style.display = "block";
+          document.getElementById("toggle_lanes_button").style.display = "block";
         } else {
           reload_lanes_button.innerText = "Annotate Truth Lanes";
           document.getElementById("download_lanes_button").style.display = "none";
           document.getElementById("save_lanes_button").style.display = "none";
           document.getElementById("select_lanes_button").style.display = "none";
+          document.getElementById("toggle_lanes_button").style.display = "none";
 
           viewer.scene.volumes.filter(({name}) => name === "selected_lanes").forEach(volume => viewer.scene.removeVolume(volume));
         }

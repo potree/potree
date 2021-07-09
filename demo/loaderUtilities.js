@@ -34,6 +34,15 @@ export const getFromRestApi = async (url) => {
   return await response.json();
 }
 
+export const setRestApi = async (url) => {
+  await fetch(url, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    }
+  })
+}
+
 export const getFbFileInfo = async (datasetFiles, objNameMatch, objFolderMatch, schemaMatch, localObj, localSchema, exactMatch = false) =>
   {
     if (datasetFiles) {

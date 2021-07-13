@@ -3,7 +3,8 @@
 // this file is intended to call every other function in order to get potree to load
 import {
 	runLocalPointCloud, bucket, name, annotateAvailable, s3,
-	getShaderMaterial, getTrackShaderMaterial, defaultTimeRange
+	getShaderMaterial, getTrackShaderMaterial, defaultTimeRange,
+	dataset, version, userToken, hostUrl
 } from "../demo/paramLoader.js"
 import { createViewer } from "../demo/viewer.js"
 import { AnimationEngine } from "../demo/animationEngine.js"
@@ -22,7 +23,7 @@ import { addDetectionButton, detectionDownloads } from "../demo/detectionLoader.
 import { PointAttributeNames } from "../src/loader/PointAttributes.js";
 import { resetProgressBars, setNumTasks } from "../common/overlay.js"
 import { loadControlPointsCallback } from "../demo/controlPointLoader.js"
-import { getFiles } from "../demo/loaderUtilities.js"
+import { getFiles, getFromRestApi } from "../demo/loaderUtilities.js"
 
 
 function canUseCalibrationPanels(attributes) {
@@ -100,6 +101,11 @@ export async function loadPotree() {
 
   // now that animation engine has been created, can add event listeners
   createPlaybar();
+
+  // Initialize lane ready/unready button with correct database status
+  document.getElementById("toggle_lanes_button").innerText =
+  (await getFromRestApi(`${hostUrl}get-assessment-status?dataset=${encodeURIComponent(dataset)}&bucket=${encodeURIComponent(bucket)}&version=${encodeURIComponent(parseInt(version))}&userToken=${encodeURIComponent(userToken)}`)
+   == 0 ? "Ready \nLanes" : "Unready \nLanes");
 
   // get files
   const files = await getFiles(s3, bucket, name)

@@ -3,6 +3,7 @@
 import { visualizationMode, annotateAvailable, downloadLanesAvailable,
 	calibrationModeAvailable} from "../demo/paramLoader.js"
 import { updateSidebar, togglePointClass } from "../common/custom-sidebar.js"
+import { getFromRestApi } from "../demo/loaderUtilities.js";
 
 export function createViewer() {
 	const viewer = new Potree.Viewer(document.getElementById("potree_render_area"));
@@ -59,6 +60,9 @@ export function createViewer() {
 
 				let annotateTracksButton = document.getElementById("annotate_tracks_button");
 				annotateTracksButton.parentNode.removeChild(annotateTracksButton);
+
+				let toggleLanesButton = document.getElementById("toggle_lanes_button");
+				toggleLanesButton.parentNode.removeChild(toggleLanesButton);
 			}
 		}
 	});

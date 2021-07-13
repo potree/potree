@@ -860,13 +860,11 @@ export function addReloadLanesButton() {
           document.getElementById("download_lanes_button").style.display = "block";
           document.getElementById("save_lanes_button").style.display = "block";
           document.getElementById("select_lanes_button").style.display = "block";
-          document.getElementById("toggle_lanes_button").style.display = "block";
         } else {
           reload_lanes_button.innerText = "Annotate Truth Lanes";
           document.getElementById("download_lanes_button").style.display = "none";
           document.getElementById("save_lanes_button").style.display = "none";
           document.getElementById("select_lanes_button").style.display = "none";
-          document.getElementById("toggle_lanes_button").style.display = "none";
 
           viewer.scene.volumes.filter(({name}) => name === "selected_lanes").forEach(volume => viewer.scene.removeVolume(volume));
         }

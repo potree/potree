@@ -71,6 +71,8 @@ export function createPlaybar () {
     updateTimeWindow();
   }
 
+
+
   // Make sure to call updateTimeWindow with disable false
   playbarhtml.find("#myRange").on('input', () => updateTimeWindow());
 
@@ -130,15 +132,11 @@ export function createPlaybar () {
     }
   });
 
-  playbarhtml.find("#toggle_lanes_button").click(function () {
-    const checkAssessmentUrl = `${hostUrl}get-assessment-status?dataset=${encodeURIComponent(dataset)}&bucket=${encodeURIComponent(bucket)}&version=${encodeURIComponent(parseInt(version))}&userToken=${encodeURIComponent(userToken)}`;
-    const status = getFromRestApi(checkAssessmentUrl);
-    console.log("Host URL: " + checkAssessmentUrl);
-    console.log("User Token: " + userToken);
-    const updateAssessmentUrl = `${hostUrl}update-assessment-status?dataset=${encodeURIComponent(dataset)}&bucket=${encodeURIComponent(bucket)}&version=${encodeURIComponent(parseInt(version))}&status=${status == 0 ? 1 : 0}&userToken=${(encodeURIComponent(userToken))}`;
-    setRestApi(updateAssessmentUrl);
-    console.log("Toggled");
-  })
+  playbarhtml.find("#toggle_lanes_button").click(async function () {
+    const toggleAssessmentUrl = `${hostUrl}toggle-assessment-status?dataset=${encodeURIComponent(dataset)}&bucket=${encodeURIComponent(bucket)}&version=${encodeURIComponent(parseInt(version))}&userToken=${encodeURIComponent(userToken)}`;
+    const status = await setRestApi(toggleAssessmentUrl);
+    document.getElementById("toggle_lanes_button").innerText = (status == 1 ? "Unready \nLanes" : "Ready \nLanes");
+  });
 
   playbarhtml.find("#download_lanes_button").click(function () {
     function download (text, filename) {

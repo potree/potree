@@ -481,6 +481,9 @@ We would like to thank our sponsors for their financial contributions that keep 
 			€ 1,000+
 		</th>
 		<td>
+			<a href="https://www.unstruk.com/">
+				<img src="docs/sponsors/unstruk.png" height="33"/> &nbsp;
+			</a>
 			<a href="http://scanx.com/">
 				<img src="docs/sponsors/scanx.jpg" height="33"/> &nbsp;
 			</a>

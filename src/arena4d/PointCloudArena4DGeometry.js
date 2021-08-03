@@ -74,7 +74,7 @@ Potree.PointCloudArena4DGeometryNode = class PointCloudArena4DGeometryNode{
 
 		let url = this.pcoGeometry.url + '?node=' + this.number;
 		let xhr = Potree.XHRFactory.createXMLHttpRequest();
-		xhr.open('GET', url, true);
+	        xhr.open('GET', await this.pcoGeometry.signUrl(url), true);
 		xhr.responseType = 'arraybuffer';
 
 		let node = this;
@@ -187,16 +187,17 @@ Potree.PointCloudArena4DGeometryNode = class PointCloudArena4DGeometryNode{
 
 Potree.PointCloudArena4DGeometry = class PointCloudArena4DGeometry extends EventDispatcher{
 
-	constructor(){
+        constructor(url, signUrl){
 		super();
 
+		this.url = url;
+		this.signUrl = signUrl;
 		this.numPoints = 0;
 		this.version = 0;
 		this.boundingBox = null;
 		this.numNodes = 0;
 		this.name = null;
 		this.provider = null;
-		this.url = null;
 		this.root = null;
 		this.levels = 0;
 		this._spacing = null;
@@ -206,9 +207,9 @@ Potree.PointCloudArena4DGeometry = class PointCloudArena4DGeometry extends Event
 		]);
 	}
 
-	static load(url, callback) {
+        static async load(url, signUrl, callback) {
 		let xhr = Potree.XHRFactory.createXMLHttpRequest();
-		xhr.open('GET', url + '?info', true);
+	        xhr.open('GET', await signUrl(url + '?info'), true);
 
 		xhr.onreadystatechange = function () {
 			try {
@@ -216,7 +217,6 @@ Potree.PointCloudArena4DGeometry = class PointCloudArena4DGeometry extends Event
 					let response = JSON.parse(xhr.responseText);
 
 					let geometry = new Potree.PointCloudArena4DGeometry();
-					geometry.url = url;
 					geometry.name = response.Name;
 					geometry.provider = response.Provider;
 					geometry.numNodes = response.Nodes;
@@ -255,10 +255,10 @@ Potree.PointCloudArena4DGeometry = class PointCloudArena4DGeometry extends Event
 		xhr.send(null);
 	};
 
-	loadHierarchy(){
+	async loadHierarchy(){
 		let url = this.url + '?tree';
 		let xhr = Potree.XHRFactory.createXMLHttpRequest();
-		xhr.open('GET', url, true);
+	        xhr.open('GET', await this.signUrl(url), true);
 		xhr.responseType = 'arraybuffer';
 
 		xhr.onreadystatechange = () => {

@@ -7,8 +7,9 @@ import {Utils} from "./utils.js";
 
 export class PointCloudOctreeGeometry{
 
-	constructor(){
-		this.url = null;
+        constructor(url, signUrl){
+	        this.url = url;
+                this.signUrl = signUrl;
 		this.octreeDir = null;
 		this.spacing = 0;
 		this.boundingBox = null;
@@ -18,7 +19,7 @@ export class PointCloudOctreeGeometry{
 		this.hierarchyStepSize = -1;
 		this.loader = null;
 	}
-	
+
 }
 
 export class PointCloudOctreeGeometryNode extends PointCloudTreeNode{
@@ -96,6 +97,10 @@ export class PointCloudOctreeGeometryNode extends PointCloudTreeNode{
 		return url;
 	}
 
+        signUrl(url){
+                return this.pcoGeometry.signUrl(url);
+        }
+
 	getHierarchyPath(){
 		let path = 'r/';
 
@@ -141,7 +146,7 @@ export class PointCloudOctreeGeometryNode extends PointCloudTreeNode{
 		this.pcoGeometry.loader.load(this);
 	}
 
-	loadHierachyThenPoints(){
+	async loadHierachyThenPoints(){
 		let node = this;
 
 		// load hierarchy
@@ -222,7 +227,7 @@ export class PointCloudOctreeGeometryNode extends PointCloudTreeNode{
 			let hurl = node.pcoGeometry.octreeDir + '/' + node.getHierarchyPath() + '/' + node.name + '.hrc';
 
 			let xhr = XHRFactory.createXMLHttpRequest();
-			xhr.open('GET', hurl, true);
+		        xhr.open('GET', await node.pcoGeometry.signUrl(hurl), true);
 			xhr.responseType = 'arraybuffer';
 			xhr.overrideMimeType('text/plain; charset=x-user-defined');
 			xhr.onreadystatechange = () => {
@@ -255,7 +260,7 @@ export class PointCloudOctreeGeometryNode extends PointCloudTreeNode{
 			this.loaded = false;
 
 			this.dispatchEvent( { type: 'dispose' } );
-			
+
 			for (let i = 0; i < this.oneTimeDisposeHandlers.length; i++) {
 				let handler = this.oneTimeDisposeHandlers[i];
 				handler();
@@ -263,7 +268,7 @@ export class PointCloudOctreeGeometryNode extends PointCloudTreeNode{
 			this.oneTimeDisposeHandlers = [];
 		}
 	}
-	
+
 }
 
 PointCloudOctreeGeometryNode.IDCount = 0;

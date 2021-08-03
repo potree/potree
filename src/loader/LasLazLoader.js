@@ -29,7 +29,7 @@ export class LasLazLoader {
 
 	}
 
-	load (node) {
+	async load (node) {
 		if (node.loaded) {
 			return;
 		}
@@ -41,7 +41,7 @@ export class LasLazLoader {
 		}
 
 		let xhr = XHRFactory.createXMLHttpRequest();
-		xhr.open('GET', url, true);
+	        xhr.open('GET', await node.signUrl(url), true);
 		xhr.responseType = 'arraybuffer';
 		xhr.overrideMimeType('text/plain; charset=x-user-defined');
 		xhr.onreadystatechange = () => {

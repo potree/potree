@@ -487,11 +487,11 @@ export class Sidebar{
 				let dir = object.camera.getWorldDirection(new THREE.Vector3());
 				let target;
 
-				if(object.camera instanceof THREE.OrthographicCamera){
+				if(object.camera.isOrthographicCamera){
 					dir.multiplyScalar(object.camera.right)
 					target = new THREE.Vector3().addVectors(object.camera.position, dir);
 					this.viewer.setCameraMode(CameraMode.ORTHOGRAPHIC);
-				}else if(object.camera instanceof THREE.PerspectiveCamera){
+				}else if(object.camera.isPerspectiveCamera){
 					dir.multiplyScalar(this.viewer.scene.view.radius);
 					target = new THREE.Vector3().addVectors(object.camera.position, dir);
 					this.viewer.setCameraMode(CameraMode.PERSPECTIVE);

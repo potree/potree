@@ -20,6 +20,7 @@ export class BinaryLoader{
 
 	load(node){
 		if (node.loaded) {
+			Potree.numNodesLoading--;
 			return;
 		}
 
@@ -39,6 +40,7 @@ export class BinaryLoader{
 					let buffer = xhr.response;
 					this.parse(node, buffer);
 				} else {
+					Potree.numNodesLoading--;
 					//console.error(`Failed to load file! HTTP status: ${xhr.status}, file: ${url}`);
 					throw new Error(`Failed to load file! HTTP status: ${xhr.status}, file: ${url}`);
 				}

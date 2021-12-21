@@ -533,6 +533,8 @@ export class Measure extends THREE.Object3D {
 			let p1 = this.points[i].position;
 			let p2 = this.points[j].position;
 			area += (p2.x + p1.x) * (p1.y - p2.y);
+			area += (p2.y + p1.y) * (p1.z - p2.z);
+			area += (p2.z + p1.z) * (p1.x - p2.x);
 			j = i;
 		}
 

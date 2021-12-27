@@ -1,0 +1,69 @@
+{
+    "tb": {
+        "navigation_opt": "Navigation",
+        "rendering_opt": "Aussehen",
+        "tools_opt": "Tools",
+        "measurments_opt": "Messungen",
+        "clipping_opt": "Clipping",
+        "materials_opt": "Materials",
+        "scene_opt": "Szene",
+        "classification_filter_opt": "Klassifizierung  Filter",
+        "parameters_opt": "Weitere Einstellungen",
+        "about_opt": "Über Potree"
+    },
+    "tt": {
+        "angle_measurement": "Winkelmessung",
+        "distance_measurement": "Abstandsmessung",
+        "area_measurement": "Flächenmessung",
+        "volume_measurement": "Volumenmessung",
+        "height_profile": "Höhenprofil",
+        "clip_volume": "Volume clip",
+        "clip_polygon": "Polygon clip",
+        "clip_plane_x": "Clipebene auf x-Achse",
+        "clip_plane_y": "Clipebene auf y-Achse",
+        "clip_plane_z": "Clipebene auf z-Achse",
+        "remove_all_measurement": "Alle Messungen entfernen",
+        "left_view_control": "Linke Seite",
+        "front_view_control": "Vorderseite",
+        "top_view_control": "Draufsicht",
+        "focus_control": "Volle Ausdehnung",
+        "orbit_control": "Orbit Kontrolle ",
+        "flight_control": "Fly Kontrolle",
+        "earth_control": "Earth Kontrolle",
+        "perspective_camera_control": "Perspektivische Kamera",
+        "orthographic_camera_control": "Orthografische Kamera",
+        "navigation_cube_control": "Navigationswürfel",
+        "remove_all_clipping_volumes": "Alle Clipvolumen entfernen"
+    },
+    "appearance": {
+        "nb_max_pts": "Max Punkte", 
+        "point_size": "Punktgrösse",
+        "point_opacity": "Deckkraft",
+        "field_view": "Sichtfeld",
+        "point_size_type": "Punktgrösse",
+        "point_material": "Materials",
+        "elevation_range": "Elevation Bereich",
+        "point_quality": "Qualität",
+		"point_shape": "Form",
+        "edl_radius": "Radius",
+        "edl_strength": "Stärke",
+        "edl_enable": "Ein",
+        "min_node_size": "Min Knotengrösse",
+        "clip_mode": "Clip-Modus",
+        "move_speed": "Speed",
+        "skybox": "Sky",
+        "bottom_lock": "Halten über dem Boden",
+        "box": "Box",
+        "length_unit": "Lenght unit",
+        "freeze": "Lock view",
+        "language": "Sprache"
+    },
+    "profile": {
+        "nb_points": "Punkt number",
+        "title": "Höhenprofil",
+        "save": "Speichern"
+    },
+    "settings": {
+        "language": "Sprache"
+    }
+}

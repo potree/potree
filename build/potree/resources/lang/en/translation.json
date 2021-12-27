@@ -1,0 +1,106 @@
+{
+	"tb": {
+		"navigation_opt": "Navigation",
+		"rendering_opt": "Appearance",
+		"tools_opt": "Tools",
+		"measurments_opt": "Measurements",
+		"clipping_opt": "Clipping",
+		"annotations_opt": "Annotations",
+		"materials_opt": "Materials",
+		"scene_opt": "Scene",
+		"classification_filter_opt": "Classification filter",
+		"filters_opt": "Filters",
+		"parameters_opt": "Other settings",
+		"about_opt": "About"
+	},
+	"tt": {
+		"angle_measurement": "Angle measurement",
+		"point_measurement": "Point measurement",
+		"distance_measurement": "Distance measurement",
+		"height_measurement": "Height measurement",
+		"circle_measurement": "Circle measurement",
+		"area_measurement": "Area measurement",
+		"volume_measurement": "Volume measurement",
+		"height_profile": "Height profile",
+		"annotation": "Annotation",
+		"clip_volume": "Volume clip",
+		"clip_polygon": "Polygon clip",
+		"screen_clip_box": "Draw a selection box. Requires you to be in orthographic camera mode!",
+		"clip_plane_x": "Clip plane on x axis",
+		"clip_plane_y": "Clip plane on y axis",
+		"clip_plane_z": "Clip plane on z axis",
+		"remove_all_measurement": "Remove all measurements",
+		"left_view_control": "Left view",
+		"right_view_control": "Righ view",
+		"front_view_control": "Front view",
+		"back_view_control": "Back view",
+		"top_view_control": "Top view",
+		"bottom_view_control": "Bottom view",
+		"focus_control": "Full extent",
+		"orbit_control": "Orbit control",
+		"flight_control": "Fly control",
+		"heli_control": "Helicopter control",
+		"earth_control": "Earth control",
+		"perspective_camera_control": "Perspective camera",
+		"orthographic_camera_control": "Orthographic camera",
+		"navigation_cube_control": "Navigation cube",
+		"remove_all_clipping_volumes": "Remove all clipping volumes",
+		"compass": "Compass",
+		"camera_animation": "Camera Animation"
+	},
+	"appearance": {
+		"nb_max_pts": "Point budget", 
+		"point_size": "Point size",
+		"min_point_size": "Minimum size",
+		"point_opacity": "Opacity",
+		"field_view": "Field of view",
+		"point_size_type": "Point sizing",
+		"point_material": "Materials",
+		"elevation_range": "Elevation range",
+		"extra_range": "Scalar range",
+		"point_quality": "Quality",
+		"point_shape": "Shape",
+		"edl_radius": "Radius",
+		"edl_strength": "Strength",
+		"edl_opacity": "Opacity",
+		"edl_enable": "Enable",
+		"min_node_size": "Min node size",
+		"clip_mode": "Clip mode",
+		"move_speed": "Speed",
+		"skybox": "Sky",
+		"bottom_lock": "Keep above ground",
+		"box": "Box",
+		"length_unit": "Length unit",
+		"freeze": "Lock view",
+		"language": "Language",
+		"backface_culling": "Backface Culling"
+	},
+	"measurements": {
+		"clip": "clip",
+		"show": "show volume"
+	},
+	"annotations": {
+		"show3D": "show in 3D",
+		"showMap": "show on map"
+	}, 
+	"profile": {
+		"nb_points": "Number of Points",
+		"title": "Height profile",
+		"save_las": "Save LAS(3D)",
+		"save_ortho": "Save CSV(2D)"
+	},
+	"scene": {
+		"camera_position": "Camera Position",
+		"camera_target": "Camera Target"
+	},
+	"filters": {
+		"return_number": "Return Number",
+		"number_of_returns": "Number of Returns",
+		"gps_min": "min",
+		"gps_max": "max",
+		"gps_time": "GPS Time"
+	},
+	"settings": {
+		"language": "Language"
+	}
+}

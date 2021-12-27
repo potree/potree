@@ -1,7 +1,7 @@
 
 
 
-https://geostarters.github.io/potree/exemples/index.html
+https://geostarters.github.io/potree/examples/index.html
 
 # About
 

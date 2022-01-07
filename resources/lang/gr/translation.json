@@ -1,0 +1,106 @@
+{
+	"tb": {
+		"navigation_opt": "Πλοήγηση",
+		"rendering_opt": "Εμφάνιση",
+		"tools_opt": "Εργαλεία",
+		"measurments_opt": "Μετρήσεις",
+		"clipping_opt": "Τεμαχισμός (Clip)",
+		"annotations_opt": "Σχόλια",
+		"materials_opt": "Υλικά",
+		"scene_opt": "Σκηνή",
+		"classification_filter_opt": "Φίλτρα Κατηγοριοποίησης",
+		"filters_opt": "Φίλτρα",
+		"parameters_opt": "Άλλες Ρυθμίσεις",
+		"about_opt": "Σχετικά με το Potree"
+	},
+	"tt": {
+		"angle_measurement": "Μέτρηση Γωνίας",
+		"point_measurement": "Μέτρηση Σημείου",
+		"distance_measurement": "Μέτρηση Απόστασης",
+		"height_measurement": "Μέτρηση Ύψους",
+		"circle_measurement": "Μέτρηση Κύκλου",
+		"area_measurement": "Μέτρηση Εμβαδού",
+		"volume_measurement": "Μέτρηση Όγκου",
+		"height_profile": "Μηκοτομή",
+		"annotation": "Σχόλιο (annotation)",
+		"clip_volume": "Τεμαχισμός Όγκου",
+		"clip_polygon": "Τεμαχισμός με πολύγωνο",
+		"screen_clip_box": "Σχεδιάστε ένα τεμάχιο επιλογής. Πρέπει να βρίσκεστε σε λειτουργία ορθογραφικής κάμερας!",
+		"clip_plane_x": "Τομή του επιπέδου επί του άξονα x",
+		"clip_plane_y": "Τομή του επιπέδου επί του άξονα y",
+		"clip_plane_z": "Τομή του επιπέδου επί του άξονα z",
+		"remove_all_measurement": "Διαγραφή όλων των μετρήσεων",
+		"left_view_control": "Αριστερή όψη",
+		"right_view_control": "Δεξιά όψη",
+		"front_view_control": "Εμπρόσθια όψη",
+		"back_view_control": "Οπίσθια όψη",
+		"top_view_control": "Κάτοψη",
+		"bottom_view_control": "Άνοψη",
+		"focus_control": "Εστίαση στην έκταση της σκηνής",
+		"orbit_control": "Ρύθμιση τροχιάς",
+		"flight_control": "Ρύθμιση πτήσης",
+		"heli_control": "Ρύθμιση ελικοπτέρου",
+		"earth_control": "Γήινη ρύθμιση",
+		"perspective_camera_control": "Προοπτική κάμερα",
+		"orthographic_camera_control": "Ορθογραφική κάμερα",
+		"navigation_cube_control": "Κύβος προσανατολισμού",
+		"remove_all_clipping_volumes": "Διαγραφή όλων των όγκων τεμαχισμού",
+		"compass": "Πυξίδα",
+		"camera_animation": "Camera Animation"
+	},
+	"appearance": {
+		"nb_max_pts": "Πλήθος σημείων", 
+		"point_size": "Διαστάσεις σημείων",
+		"min_point_size": "Ελάχιστες διαστάσεις σημείων",
+		"point_opacity": "Διαφάνεια",
+		"field_view": "Οπτικό Πεδίο",
+		"point_size_type": "Διαστασιολόγηση σημείων",
+		"point_material": "Υλικά",
+		"elevation_range": "Υψομετρικό εύρος",
+		"extra_range": "Αριθμητικό εύρος",
+		"point_quality": "Ποιότητα σημείων",
+		"point_shape": "Σχήμα",
+		"edl_radius": "Ακτίνα",
+		"edl_strength": "Strength",
+		"edl_opacity": "Διαφάνεια",
+		"edl_enable": "Ενεργοποίηση",
+		"min_node_size": "Ελάχιστο μέγεθος κόμβου",
+		"clip_mode": "Λειτουργία τεμαχισμού (clip)",
+		"move_speed": "Ταχύτητα",
+		"skybox": "Ουρανός",
+		"bottom_lock": "Κλείδωμα πάνω από το έδαφος",
+		"box": "Box",
+		"length_unit": "Μονάδα μήκους",
+		"freeze": "Κλείδωμα προβολής",
+		"language": "Γλώσσα",
+		"backface_culling": "Backface Culling"
+	},
+	"measurements": {
+		"clip": "Τεμαχισμός (Clip)",
+		"show": "προβολή όγκου"
+	},
+	"annotations": {
+		"show3D": "προβολή σε 3D",
+		"showMap": "προβολή στον χάρτη"
+	}, 
+	"profile": {
+		"nb_points": "Πλήθος σημείων",
+		"title": "Υψομετρικό Προφίλ",
+		"save_las": "Αποθήκευση LAS(3D)",
+		"save_ortho": "Αποθήκευση CSV(2D)"
+	},
+	"scene": {
+		"camera_position": "Θέση Κάμερας",
+		"camera_target": "Στόχευση Κάμερας"
+	},
+	"filters": {
+		"return_number": "Αριθμός Επιστροφής (Return Number)",
+		"number_of_returns": "Πλήθος Επιστροφών",
+		"gps_min": "min",
+		"gps_max": "max",
+		"gps_time": "Χρόνος GPS"
+	},
+	"settings": {
+		"language": "Γλώσσα"
+	}
+}

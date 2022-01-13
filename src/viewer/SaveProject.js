@@ -27,6 +27,7 @@ function createPointcloudData(pointcloud) {
 	}
 
 	let pointSizeTypeName = Object.entries(Potree.PointSizeType).find(e => e[1] === material.pointSizeType)[0];
+	let pointShapeName = Object.entries(Potree.PointShape).find(e => e[1] === material.shape)[0];
 
 	let jsonMaterial = {
 		activeAttributeName: material.activeAttributeName,
@@ -34,6 +35,7 @@ function createPointcloudData(pointcloud) {
 		size: material.size,
 		minSize: material.minSize,
 		pointSizeType: pointSizeTypeName,
+		pointShape: pointShapeName,
 		matcap: material.matcap,
 	};
 
@@ -187,6 +189,10 @@ function createAnnotationsData(viewer){
 }
 
 function createSettingsData(viewer){
+
+	const clipMethodName = Object.entries(Potree.ClipMethod).find(e => e[1] === viewer.getClipMethod())[0];
+	const clipTaskName = Object.entries(Potree.ClipTask).find(e => e[1] === viewer.getClipTask())[0];
+
 	return {
 		pointBudget: viewer.getPointBudget(),
 		fov: viewer.getFOV(),
@@ -194,6 +200,8 @@ function createSettingsData(viewer){
 		edlRadius: viewer.getEDLRadius(),
 		edlStrength: viewer.getEDLStrength(),
 		background: viewer.getBackground(),
+		clipMethod: clipMethodName,
+		clipTask: clipTaskName,
 		minNodeSize: viewer.getMinNodeSize(),
 		showBoundingBoxes: viewer.getShowBoundingBox(),
 	};

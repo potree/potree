@@ -4,7 +4,7 @@ import {Annotation} from "../Annotation.js";
 import {Measure} from "../utils/Measure.js";
 import {CameraAnimation} from "../modules/CameraAnimation/CameraAnimation.js";
 import {Utils} from "../utils.js";
-import {PointSizeType} from "../defines.js";
+import {PointSizeType, PointShape, ClipTask, ClipMethod} from "../defines.js";
 
 function loadPointCloud(viewer, data){
 
@@ -40,6 +40,10 @@ function loadPointCloud(viewer, data){
 
 			if(data.material.pointSizeType != null){
 				target.pointSizeType = PointSizeType[data.material.pointSizeType];
+			}
+
+			if(data.material.pointShape != null){
+				target.shape = PointShape[data.material.pointShape];
 			}
 
 			if(data.material.matcap != null){
@@ -211,6 +215,12 @@ function loadSettings(viewer, data){
 	viewer.setEDLRadius(data.edlRadius);
 	viewer.setEDLStrength(data.edlStrength);
 	viewer.setBackground(data.background);
+	if (data.clipTask) {
+		viewer.setClipTask(ClipTask[data.clipTask]);
+	}
+	if (data.clipMethod) {
+		viewer.setClipMethod(ClipMethod[data.clipMethod]);
+	}
 	viewer.setMinNodeSize(data.minNodeSize);
 	viewer.setShowBoundingBox(data.showBoundingBoxes);
 }

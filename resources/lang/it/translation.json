@@ -40,7 +40,7 @@
 		"orbit_control": "Orbita",
 		"flight_control": "Volo",
 		"heli_control": "Elicottero",
-		"earth_control": "Terra",
+		"earth_control": "Earth",
 		"perspective_camera_control": "Visualizzazione Prospettica",
 		"orthographic_camera_control": "Visualizzazione Ortografica",
 		"navigation_cube_control": "Cubo di Navigazione",

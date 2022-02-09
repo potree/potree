@@ -119,7 +119,7 @@ onmessage = function (event) {
 						| (dealign24b(((mc_3 >>> 24) | (mc_2 << 8)) >>> 2) << 8)
 						
 
-				if(mc_1 != 0 || mc_2 != 0){
+				if(mc_1 != 0 || mc_0 != 0){
 					X = X | (dealign24b((mc_1 & 0x00FFFFFF) >>> 0) << 16)
 						| (dealign24b(((mc_1 >>> 24) | (mc_0 << 8)) >>> 0) << 24);
 

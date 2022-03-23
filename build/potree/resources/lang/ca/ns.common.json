@@ -1,0 +1,7 @@
+{
+	"simple_ca": "ok_from_common_ca",
+	"test": {
+		"simple_ca": "ok_from_common_ca",
+		"fallback_ca": "ok_from_common_ca-fallback"
+	}
+}

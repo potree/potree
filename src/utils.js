@@ -545,7 +545,7 @@ export class Utils {
 			x: (mouse.x / width) * 2 - 1,
 			y: -(mouse.y / height) * 2 + 1
 		};
-
+        
 		let vector = new THREE.Vector3(normalizedMouse.x, normalizedMouse.y, 0.5);
 		let origin = camera.position.clone();
 		vector.unproject(camera);

@@ -56,7 +56,7 @@ export class EarthControls extends EventDispatcher {
 
 			if (e.drag.mouse === MOUSE.LEFT) {
 
-				let ray = Utils.mouseToRay(mouse, camera, domElement.clientWidth, domElement.clientHeight);
+				let ray = Utils.mouseToRay(mouse, camera, domElement.clientWidth, domElement.clientHeight);  //返回一个射线
 				let plane = new THREE.Plane().setFromNormalAndCoplanarPoint(
 					new THREE.Vector3(0, 0, 1),
 					this.pivot);

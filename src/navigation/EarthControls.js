@@ -52,12 +52,12 @@ export class EarthControls extends EventDispatcher {
 
 			// let camera = this.viewer.scene.camera;
 			let mouse = e.drag.end;
-			let domElement = this.viewer.renderer.domElement;
+			let domElement = this.viewer.renderer.domElement; //画布而非容器，应代表整个页面；可尝试看看是不是都不在动
 
-			if (e.drag.mouse === MOUSE.LEFT) {
+			if (e.drag.mouse === MOUSE.LEFT) { //左键是平移
 
-				let ray = Utils.mouseToRay(mouse, camera, domElement.clientWidth, domElement.clientHeight);  //返回一个射线
-				let plane = new THREE.Plane().setFromNormalAndCoplanarPoint(
+				let ray = Utils.mouseToRay(mouse, camera, domElement.clientWidth, domElement.clientHeight);  //返回一个射线；鼠标点击处三维坐标与相机位置处的方向向量
+				let plane = new THREE.Plane().setFromNormalAndCoplanarPoint( //通过平面上一点以及法线创建平面
 					new THREE.Vector3(0, 0, 1),
 					this.pivot);
 

@@ -61,14 +61,15 @@ export class EarthControls extends EventDispatcher {
 					new THREE.Vector3(0, 0, 1),
 					this.pivot);
 
-				let distanceToPlane = ray.distanceToPlane(plane);
+				let distanceToPlane = ray.distanceToPlane(plane);  //获取射线原点（origin）到平面（Plane）之间的距离；射线方向？垂线方向？
 
 				if (distanceToPlane > 0) {
-					let I = new THREE.Vector3().addVectors(
-						camStart.position,
-						ray.direction.clone().multiplyScalar(distanceToPlane));
-
+					let I = new THREE.Vector3().addVectors( //将该向量设置成a+b
+						camStart.position,  //this.camStart = this.scene.getActiveCamera().clone();
+						ray.direction.clone().multiplyScalar(distanceToPlane));//direction是经过标准化的方向向量，方向向量乘以标量
+                    //返回的结果I是由相机位置加相机到垂面距离的向量，得出的结果应该是
 					let movedBy = new THREE.Vector3().subVectors(
+						//subVectors是a-b，设置了新的相机点？
 						I, this.pivot);
 
 					let newCamPos = camStart.position.clone().sub(movedBy);
@@ -122,7 +123,7 @@ export class EarthControls extends EventDispatcher {
 				this.viewer, 
 				this.scene.pointclouds, 
 				{pickClipped: false});
-
+            //获取鼠标与点云交点；待细看
 			if (I) {
 				this.pivot = I.location;
 				this.camStart = this.scene.getActiveCamera().clone();

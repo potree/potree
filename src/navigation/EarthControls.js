@@ -57,11 +57,13 @@ export class EarthControls extends EventDispatcher {
 			if (e.drag.mouse === MOUSE.LEFT) { //左键是平移
 
 				let ray = Utils.mouseToRay(mouse, camera, domElement.clientWidth, domElement.clientHeight);  //返回一个射线；鼠标点击处三维坐标与相机位置处的方向向量
+				
+				//原点是相机位置，指向鼠标点击处
 				let plane = new THREE.Plane().setFromNormalAndCoplanarPoint( //通过平面上一点以及法线创建平面
 					new THREE.Vector3(0, 0, 1),
 					this.pivot);
-
-				let distanceToPlane = ray.distanceToPlane(plane);  //获取射线原点（origin）到平面（Plane）之间的距离；射线方向？垂线方向？
+                //pivot应理解为鼠标按下处与点云的交点，移动过程中保持不变
+				let distanceToPlane = ray.distanceToPlane(plane);  //获取射线原点（origin）到平面（Plane）之间的距离；这个可能是按射线距离
 
 				if (distanceToPlane > 0) {
 					let I = new THREE.Vector3().addVectors( //将该向量设置成a+b
@@ -71,8 +73,8 @@ export class EarthControls extends EventDispatcher {
 					let movedBy = new THREE.Vector3().subVectors(
 						//subVectors是a-b，设置了新的相机点？
 						I, this.pivot);
-
-					let newCamPos = camStart.position.clone().sub(movedBy);
+ 
+					let newCamPos = camStart.position.clone().sub(movedBy); //sub，从该向量处减取括号内向量
 
 					view.position.copy(newCamPos);
 
@@ -82,7 +84,7 @@ export class EarthControls extends EventDispatcher {
 						let speed = view.radius / 2.5;
 						this.viewer.setMoveSpeed(speed);
 					}
-				}
+				} //计算鼠标移动前与点云交点处z平面，与移动后在此平面上的射线距离，平移相机，过程中保证z不变
 			} else if (e.drag.mouse === MOUSE.RIGHT) {
 				let ndrag = {
 					x: e.drag.lastDrag.x / this.renderer.domElement.clientWidth,

@@ -6,7 +6,7 @@
 
 export class DXFProfileExporter {
 
-	static toXYZ(points) {
+	static toXYZ(points, flatten = false) {
 
 		/*
 		points: {
@@ -35,18 +35,23 @@ export class DXFProfileExporter {
 		for (let pIx = 0; pIx < points.numPoints; pIx++) {
 
 			const poMileage = pMileage[pIx];
-			// const poCoordX  = pCoords[ ((pIx * 3) + 0) ];
-			// const poCoordY  = pCoords[ ((pIx * 3) + 1) ];
+			const poCoordX  = pCoords[ ((pIx * 3) + 0) ];
+			const poCoordY  = pCoords[ ((pIx * 3) + 1) ];
 			const poCoordZ  = pCoords[ ((pIx * 3) + 2) ];
 			// const poColorR  = pColor[ ((pIx * 4) + 0) ];
 			// const poColorG  = pColor[ ((pIx * 4) + 1) ];
 			// const poColorB  = pColor[ ((pIx * 4) + 2) ];
 			// const poColorA  = pColor[ ((pIx * 4) + 3) ];
 
-
-			pointsXYZ.x.push(poMileage);
-			pointsXYZ.y.push(0);
-			pointsXYZ.z.push(poCoordZ);
+			if (flatten === true) {
+				pointsXYZ.x.push(poMileage);
+				pointsXYZ.y.push(0);
+				pointsXYZ.z.push(poCoordZ);
+			} else {
+				pointsXYZ.x.push(poCoordX);
+				pointsXYZ.y.push(poCoordY);
+				pointsXYZ.z.push(poCoordZ);
+			}
 
 		}
 
@@ -72,9 +77,9 @@ ${z}
 		return dxfSection;
 	}
 
-	static toString(points) {
+	static toString(points, flatten = false) {
 
-		const pCloud = DXFProfileExporter.toXYZ(points);
+		const pCloud = DXFProfileExporter.toXYZ(points, flatten);
 
 		const minX = Math.min(...pCloud.x);
 		const minY = Math.min(...pCloud.y);

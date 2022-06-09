@@ -263,8 +263,11 @@ export class ProfileWindow extends EventDispatcher {
 		let backwardIcon = `${exports.resourcePath}/icons/arrow_down.svg`;
 		$('#potree_profile_move_backward').attr('src', backwardIcon);
 
-		let dxfIcon = `${exports.resourcePath}/icons/file_dxf_2d.svg`;
-		$('#potree_download_dxf_icon').attr('src', dxfIcon);
+		let dxf2DIcon = `${exports.resourcePath}/icons/file_dxf_2d.svg`;
+		$('#potree_download_dxf2D_icon').attr('src', dxf2DIcon);
+
+		let dxf3DIcon = `${exports.resourcePath}/icons/file_dxf_3d.svg`;
+		$('#potree_download_dxf3D_icon').attr('src', dxf3DIcon);
 
 		let csvIcon = `${exports.resourcePath}/icons/file_csv_2d.svg`;
 		$('#potree_download_csv_icon').attr('src', csvIcon);
@@ -503,14 +506,24 @@ export class ProfileWindow extends EventDispatcher {
 			return points;
 		};
 
-		$('#potree_download_dxf_icon').click(() => {
+		$('#potree_download_dxf2D_icon').click(() => {
+			
+			const points = getProfilePoints();
+
+			const string = DXFProfileExporter.toString(points, true);
+
+			const blob = new Blob([string], {type: "text/string"});
+			$('#potree_download_profile_dxf2D_link').attr('href', URL.createObjectURL(blob));
+		});
+
+		$('#potree_download_dxf3D_icon').click(() => {
 			
 			const points = getProfilePoints();
 
 			const string = DXFProfileExporter.toString(points);
 
 			const blob = new Blob([string], {type: "text/string"});
-			$('#potree_download_profile_dxf_link').attr('href', URL.createObjectURL(blob));
+			$('#potree_download_profile_dxf3D_link').attr('href', URL.createObjectURL(blob));
 		});
 
 		$('#potree_download_csv_icon').click(() => {

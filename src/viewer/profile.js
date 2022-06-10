@@ -485,19 +485,25 @@ export class ProfileWindow extends EventDispatcher {
 			this.hide();
 		});
 
-		let getProfilePoints = () => {
+		let getProfilePoints = (truePosition) => {
 			let points = new Points();
 			
 			for(let [pointcloud, entry] of this.pointclouds){
 				for(let pointSet of entry.points){
 
 					let originPos = pointSet.data.position;
-					let trueElevationPosition = new Float32Array(originPos);
+					let truePointPosition = new Float64Array(originPos);
 					for(let i = 0; i < pointSet.numPoints; i++){
-						trueElevationPosition[3 * i + 2] += pointcloud.position.z;
+
+						if (truePosition === true) {
+							truePointPosition[3 * i + 0] += pointcloud.position.x;
+							truePointPosition[3 * i + 1] += pointcloud.position.y;
+						}
+
+						truePointPosition[3 * i + 2] += pointcloud.position.z;
 					}
 
-					pointSet.data.position = trueElevationPosition;
+					pointSet.data.position = truePointPosition;
 					points.add(pointSet);
 					pointSet.data.position = originPos;
 				}
@@ -518,7 +524,7 @@ export class ProfileWindow extends EventDispatcher {
 
 		$('#potree_download_dxf3D_icon').click(() => {
 			
-			const points = getProfilePoints();
+			const points = getProfilePoints(true);
 
 			const string = DXFProfileExporter.toString(points);
 
@@ -528,7 +534,7 @@ export class ProfileWindow extends EventDispatcher {
 
 		$('#potree_download_csv_icon').click(() => {
 			
-			let points = getProfilePoints();
+			let points = getProfilePoints(true);
 
 			let string = CSVExporter.toString(points);
 
@@ -538,7 +544,7 @@ export class ProfileWindow extends EventDispatcher {
 
 		$('#potree_download_las_icon').click(() => {
 
-			let points = getProfilePoints();
+			let points = getProfilePoints(true);
 
 			let buffer = LASExporter.toLAS(points);
 

@@ -367,7 +367,7 @@ export class PointCloudOctree extends PointCloudTree {
 
 			let density = node.geometryNode.density;
 			
-			if(typeof density === "number"){
+			if(typeof density === "number" && !Number.isNaN(density)){
 				let lodOffset = Math.log2(density) / 2 - 1.5;
 
 				let offsetUint8 = (lodOffset + 10) * 10;

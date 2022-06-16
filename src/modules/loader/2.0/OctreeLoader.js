@@ -192,6 +192,13 @@ export class NodeLoader{
 				current.byteSize = byteSize;
 				current.numPoints = numPoints;
 			}
+
+			if(current.byteSize === 0n){
+				// workaround for issue #1125
+				// some inner nodes erroneously report >0 points even though have 0 points
+				// however, they still report a byteSize of 0, so based on that we now set node.numPoints to 0
+				current.numPoints = 0;
+			}
 			
 			current.nodeType = type;
 

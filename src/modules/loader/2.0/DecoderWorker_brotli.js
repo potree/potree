@@ -58,7 +58,7 @@ onmessage = function (event) {
 	let tStart = performance.now();
 
 	let buffer; 
-	if(numPoints == 0){
+	if(numPoints === 0){
 		buffer = {buffer: new ArrayBuffer(0)};
 	}else{
 		try{

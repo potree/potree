@@ -1349,14 +1349,14 @@ export class Viewer extends EventDispatcher{
 
 				const file = item.getAsFile();
 
-				const isJson = file.name.toLowerCase().endsWith(".json");
+				const isJson5 = file.name.toLowerCase().endsWith(".json5");
 				const isGeoPackage = file.name.toLowerCase().endsWith(".gpkg");
 
-				if(isJson){
+				if(isJson5){
 					try{
 
 						const text = await file.text();
-						const json = JSON.parse(text);
+						const json = JSON5.parse(text);
 
 						if(json.type === "Potree"){
 							Potree.loadProject(viewer, json);

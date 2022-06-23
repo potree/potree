@@ -24,6 +24,12 @@ export class DXFProfileExporter {
 			x: [],
 			y: [],
 			z: [],
+			minX:  Number.MAX_VALUE,
+			minY:  Number.MAX_VALUE,
+			minZ:  Number.MAX_VALUE,
+			maxX: -Number.MAX_VALUE,
+			maxY: -Number.MAX_VALUE,
+			maxZ: -Number.MAX_VALUE,
 			numPoints: 0
 		};
 
@@ -44,15 +50,45 @@ export class DXFProfileExporter {
 			// const poColorA  = pColor[ ((pIx * 4) + 3) ];
 
 			if (flatten === true) {
+
 				pointsXYZ.x.push(poMileage);
 				pointsXYZ.y.push(0);
 				pointsXYZ.z.push(poCoordZ);
+
+				// Get boundaries X
+				if (pointsXYZ.maxX < poMileage) pointsXYZ.maxX = poMileage;
+				if (pointsXYZ.minX > poMileage) pointsXYZ.minX = poMileage;
+
+				// Get boundaries Z
+				if (pointsXYZ.maxZ < poCoordZ) pointsXYZ.maxZ = poCoordZ;
+				if (pointsXYZ.minZ > poCoordZ) pointsXYZ.minZ = poCoordZ;
+
 			} else {
+
 				pointsXYZ.x.push(poCoordX);
 				pointsXYZ.y.push(poCoordY);
 				pointsXYZ.z.push(poCoordZ);
+
+				// Get boundaries X
+				if (pointsXYZ.maxX < poCoordX) pointsXYZ.maxX = poCoordX;
+				if (pointsXYZ.minX > poCoordX) pointsXYZ.minX = poCoordX;
+
+				// Get boundaries Y
+				if (pointsXYZ.maxY < poCoordY) pointsXYZ.maxY = poCoordY;
+				if (pointsXYZ.minY > poCoordY) pointsXYZ.minY = poCoordY;
+
+				// Get boundaries Z
+				if (pointsXYZ.maxZ < poCoordZ) pointsXYZ.maxZ = poCoordZ;
+				if (pointsXYZ.minZ > poCoordZ) pointsXYZ.minZ = poCoordZ;
+
 			}
 
+		}
+
+		if (flatten === true) {
+			// Set boundaries Y
+			pointsXYZ.maxY = 0;
+			pointsXYZ.minY = 0;
 		}
 
 		pointsXYZ.numPoints = points.numPoints;
@@ -81,15 +117,6 @@ ${z}
 
 		const pCloud = DXFProfileExporter.toXYZ(points, flatten);
 
-		const minX = Math.min(...pCloud.x);
-		const minY = Math.min(...pCloud.y);
-		const minZ = Math.min(...pCloud.z);
-
-		const maxX = Math.max(...pCloud.x);
-		const maxY = Math.max(...pCloud.y);
-		const maxZ = Math.max(...pCloud.z);
-
-
 		const dxfHeader = `999
 DXF created from potree
 0
@@ -111,19 +138,19 @@ $INSBASE
 9
 $EXTMIN
 10
-${minX}
+${pCloud.minX}
 20
-${minY}
+${pCloud.minY}
 30
-${minZ}
+${pCloud.minZ}
 9
 $EXTMAX
 10
-${maxX}
+${pCloud.maxX}
 20
-${maxY}
+${pCloud.maxY}
 30
-${maxZ}
+${pCloud.maxZ}
 0
 ENDSEC
 `;

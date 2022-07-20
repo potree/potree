@@ -292,6 +292,7 @@ export class PropertiesPanel{
 			opt.val(strSizeType).selectmenu('refresh');
 
 			opt.selectmenu({
+				appendTo: "#potree_sidebar_container",
 				change: (event, ui) => {
 					material.pointSizeType = PointSizeType[ui.item.value];
 				}
@@ -302,6 +303,7 @@ export class PropertiesPanel{
 			let opt = panel.find(`#optShape`);
 
 			opt.selectmenu({
+				appendTo: "#potree_sidebar_container",
 				change: (event, ui) => {
 					let value = ui.item.value;
 
@@ -411,7 +413,7 @@ export class PropertiesPanel{
 			}
 
 			let updateMaterialPanel = (event, ui) => {
-				let selectedValue = attributeSelection.selectmenu().val();
+				let selectedValue = attributeSelection.selectmenu({appendTo: "#potree_sidebar_container"}).val();
 				material.activeAttributeName = selectedValue;
 
 				let attribute = pointcloud.getAttribute(selectedValue);

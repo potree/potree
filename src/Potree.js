@@ -260,7 +260,7 @@ export function loadPointCloud(path, name, callback){
 
 			let elFieldset = $(`
 				<fieldset style="border: none; margin: 0px; padding: 0px">
-					<legend>${groupTitle}</legend>
+					<legend data-i18n="${groupTitle}"></legend>
 					<span style="display: flex">
 
 					</span>

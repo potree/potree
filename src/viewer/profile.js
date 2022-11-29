@@ -2,6 +2,7 @@
 import * as THREE from "../../libs/three.js/build/three.module.js";
 import {Utils} from "../utils.js";
 import {Points} from "../Points.js";
+import {DXFProfileExporter} from "../exporter/DXFProfileExporter.js";
 import {CSVExporter} from "../exporter/CSVExporter.js";
 import {LASExporter} from "../exporter/LASExporter.js";
 import { EventDispatcher } from "../EventDispatcher.js";
@@ -262,6 +263,12 @@ export class ProfileWindow extends EventDispatcher {
 		let backwardIcon = `${exports.resourcePath}/icons/arrow_down.svg`;
 		$('#potree_profile_move_backward').attr('src', backwardIcon);
 
+		let dxf2DIcon = `${exports.resourcePath}/icons/file_dxf_2d.svg`;
+		$('#potree_download_dxf2D_icon').attr('src', dxf2DIcon);
+
+		let dxf3DIcon = `${exports.resourcePath}/icons/file_dxf_3d.svg`;
+		$('#potree_download_dxf3D_icon').attr('src', dxf3DIcon);
+
 		let csvIcon = `${exports.resourcePath}/icons/file_csv_2d.svg`;
 		$('#potree_download_csv_icon').attr('src', csvIcon);
 
@@ -478,19 +485,25 @@ export class ProfileWindow extends EventDispatcher {
 			this.hide();
 		});
 
-		let getProfilePoints = () => {
+		let getProfilePoints = (truePosition) => {
 			let points = new Points();
 			
 			for(let [pointcloud, entry] of this.pointclouds){
 				for(let pointSet of entry.points){
 
 					let originPos = pointSet.data.position;
-					let trueElevationPosition = new Float32Array(originPos);
+					let truePointPosition = new Float64Array(originPos);
 					for(let i = 0; i < pointSet.numPoints; i++){
-						trueElevationPosition[3 * i + 2] += pointcloud.position.z;
+
+						if (truePosition === true) {
+							truePointPosition[3 * i + 0] += pointcloud.position.x;
+							truePointPosition[3 * i + 1] += pointcloud.position.y;
+						}
+
+						truePointPosition[3 * i + 2] += pointcloud.position.z;
 					}
 
-					pointSet.data.position = trueElevationPosition;
+					pointSet.data.position = truePointPosition;
 					points.add(pointSet);
 					pointSet.data.position = originPos;
 				}
@@ -499,9 +512,29 @@ export class ProfileWindow extends EventDispatcher {
 			return points;
 		};
 
+		$('#potree_download_dxf2D_icon').click(() => {
+			
+			const points = getProfilePoints();
+
+			const string = DXFProfileExporter.toString(points, true);
+
+			const blob = new Blob([string], {type: "text/string"});
+			$('#potree_download_profile_dxf2D_link').attr('href', URL.createObjectURL(blob));
+		});
+
+		$('#potree_download_dxf3D_icon').click(() => {
+			
+			const points = getProfilePoints(true);
+
+			const string = DXFProfileExporter.toString(points);
+
+			const blob = new Blob([string], {type: "text/string"});
+			$('#potree_download_profile_dxf3D_link').attr('href', URL.createObjectURL(blob));
+		});
+
 		$('#potree_download_csv_icon').click(() => {
 			
-			let points = getProfilePoints();
+			let points = getProfilePoints(true);
 
 			let string = CSVExporter.toString(points);
 
@@ -511,7 +544,7 @@ export class ProfileWindow extends EventDispatcher {
 
 		$('#potree_download_las_icon').click(() => {
 
-			let points = getProfilePoints();
+			let points = getProfilePoints(true);
 
 			let buffer = LASExporter.toLAS(points);
 

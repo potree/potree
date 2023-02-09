@@ -748,7 +748,7 @@ export class PropertiesPanel{
 					bMin = min - 0.2 * width;
 					bMax = max + 0.2 * width;
 				}else{
-					// for format up until exlusive 2.0
+					// for format up until exclusive 2.0
 					let box = [pointcloud.pcoGeometry.tightBoundingBox, pointcloud.getBoundingBoxWorld()]
 						.find(v => v !== undefined);
 

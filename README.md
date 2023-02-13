@@ -481,6 +481,9 @@ We would like to thank our sponsors for their financial contributions that keep 
 			€ 1,000+
 		</th>
 		<td>
+			<a href="https://www.kkc.co.jp/english/index.html/">
+				<img src="docs/sponsors/kokusaikogyo_logo_02.jpg" height="40"/> &nbsp;
+			</a>
 			<a href="https://www.unstruk.com/">
 				<img src="docs/sponsors/unstruk.png" height="33"/> &nbsp;
 			</a>

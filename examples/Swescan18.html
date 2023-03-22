@@ -60,11 +60,11 @@
 		
 		viewer.loadGUI(() => {
 			viewer.setLanguage('en');
-			$("#menu_appearance").next().show();
+			//$("#menu_appearance").next().show();
 			viewer.toggleSidebar();
 		});
 		
-		// Lion
+		// plane
 		Potree.loadPointCloud("../pointclouds/vol_total/cloud.js", "lion", function(e){
 			viewer.scene.addPointCloud(e.pointcloud);
 			

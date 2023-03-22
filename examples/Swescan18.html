@@ -18,7 +18,8 @@
 	<script src="../libs/jquery/jquery-3.1.1.min.js"></script>
 	<script src="../libs/spectrum/spectrum.js"></script>
 	<script src="../libs/jquery-ui/jquery-ui.min.js"></script>
-	
+	<!--perfect-scrollbar?-->
+
 	
 	<script src="../libs/other/BinaryHeap.js"></script>
 	<script src="../libs/tween/tween.min.js"></script>
@@ -31,6 +32,10 @@
 	<script src="../libs/plasio/js/laslaz.js"></script>
 	
 	<!-- INCLUDE ADDITIONAL DEPENDENCIES HERE -->
+		document.title = "Volvo";
+		viewer.setEDLEnabled(false);
+		viewer.setBackground("gradient"); // ["skybox", "gradient", "black", "white"];
+		viewer.setDescription(`Swescan pointcloud viewer`);
 	<!-- INCLUDE SETTINGS HERE -->
 	
 	<div class="potree_container" style="position: absolute; width: 100%; height: 100%; left: 0px; top: 0px; ">
@@ -49,7 +54,7 @@
 		viewer.setPointBudget(1_000_000);
 		viewer.loadSettingsFromURL();
 		
-		viewer.setDescription("");
+		viewer.setDescription("SWEREF99 1630 - RH2000");
 		
 		viewer.loadGUI(() => {
 			viewer.setLanguage('en');

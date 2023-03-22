@@ -30,6 +30,7 @@
 	<script src="../libs/jstree/jstree.js"></script>
 	<script src="../build/potree/potree.js"></script>
 	<script src="../libs/plasio/js/laslaz.js"></script>
+	<script src="../libs/shapefile/shapefile.js"></script>
 	
 	<!-- INCLUDE ADDITIONAL DEPENDENCIES HERE -->
 		document.title = "Volvo";
@@ -50,8 +51,9 @@
 		window.viewer = new Potree.Viewer(document.getElementById("potree_render_area"));
 		
 		viewer.setEDLEnabled(true);
-		viewer.setFOV(60);
-		viewer.setPointBudget(1_000_000);
+		viewer.setFOV(50);
+		document.title(nyPorta)
+		//viewer.setPointBudget(1_000_000);
 		viewer.loadSettingsFromURL();
 		
 		viewer.setDescription("SWEREF99 1630 - RH2000");
@@ -59,7 +61,7 @@
 		viewer.loadGUI(() => {
 			viewer.setLanguage('en');
 			$("#menu_appearance").next().show();
-			//viewer.toggleSidebar();
+			viewer.toggleSidebar();
 		});
 		
 		// Lion

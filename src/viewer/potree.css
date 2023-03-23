@@ -34,7 +34,7 @@
 	--color-4: 			rgba( 16,143,185, 1);
 	
 	--bg-color:			var(--color-0);
-	--bg-color-2:		rgb(60, 80, 85);
+	--bg-color-2:		rgb(238, 127, 37);
 	--bg-light-color:	rgba( 48, 61, 65, 1);
 	--bg-dark-color:	rgba( 24, 31, 33, 1);
 	--bg-hover-color:	var(--color-2);

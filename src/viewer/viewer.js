@@ -477,10 +477,15 @@ export class Viewer extends EventDispatcher{
 
 	setDescription (value) {
 		this.description = value;
-		
-		$('#potree_description').html(value);
+		  
+		if (value.includes('.jpg') || value.includes('.png') || value.includes('.gif')) {
+			$('#potree_description').html(`<img src="${value}" />`);
+		  } else {
+			$('#potree_description').html(value);
+		  }
+		}
 		//$('#potree_description').text(value);
-	}
+	
 
 	getDescription(){
 		return this.description;

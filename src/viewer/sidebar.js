@@ -65,7 +65,7 @@ export class Sidebar{
 		// ANGLE
 		let elToolbar = $('#tools');
 		elToolbar.append(this.createToolIcon(
-			Potree.resourcePath + '/icons/angle.png',
+			Potree.resourcePath + '/icons/sw_angle.png',
 			'[title]tt.angle_measurement',
 			() => {
 				$('#menu_measurements').next().slideDown();

@@ -65,7 +65,7 @@ export class Sidebar{
 		// ANGLE
 		let elToolbar = $('#tools');
 		elToolbar.append(this.createToolIcon(
-			Potree.resourcePath + '/icons/sw_angle.png',
+			Potree.resourcePath + '/ikoner/sw_angle.png',
 			'[title]tt.angle_measurement',
 			() => {
 				$('#menu_measurements').next().slideDown();
@@ -86,7 +86,7 @@ export class Sidebar{
 
 		// POINT
 		elToolbar.append(this.createToolIcon(
-			Potree.resourcePath + '/icons/point.svg',
+			Potree.resourcePath + '/ikoner/sw_point.svg',
 			'[title]tt.point_measurement',
 			() => {
 				$('#menu_measurements').next().slideDown();
@@ -108,7 +108,7 @@ export class Sidebar{
 
 		// DISTANCE
 		elToolbar.append(this.createToolIcon(
-			Potree.resourcePath + '/icons/distance.svg',
+			Potree.resourcePath + '/ikoner/sw_distance.svg',
 			'[title]tt.distance_measurement',
 			() => {
 				$('#menu_measurements').next().slideDown();
@@ -127,7 +127,7 @@ export class Sidebar{
 
 		// HEIGHT
 		elToolbar.append(this.createToolIcon(
-			Potree.resourcePath + '/icons/height.svg',
+			Potree.resourcePath + '/ikoner/sw_height.svg',
 			'[title]tt.height_measurement',
 			() => {
 				$('#menu_measurements').next().slideDown();
@@ -148,7 +148,7 @@ export class Sidebar{
 
 		// CIRCLE
 		elToolbar.append(this.createToolIcon(
-			Potree.resourcePath + '/icons/circle.svg',
+			Potree.resourcePath + '/ikoner/sw_circle.svg',
 			'[title]tt.circle_measurement',
 			() => {
 				$('#menu_measurements').next().slideDown();
@@ -195,7 +195,7 @@ export class Sidebar{
 
 		// AREA
 		elToolbar.append(this.createToolIcon(
-			Potree.resourcePath + '/icons/area.svg',
+			Potree.resourcePath + '/ikoner/sw_area.svg',
 			'[title]tt.area_measurement',
 			() => {
 				$('#menu_measurements').next().slideDown();
@@ -242,7 +242,7 @@ export class Sidebar{
 
 		// PROFILE
 		elToolbar.append(this.createToolIcon(
-			Potree.resourcePath + '/icons/profile.svg',
+			Potree.resourcePath + '/ikoner/sw_profile.svg',
 			'[title]tt.height_profile',
 			() => {
 				$('#menu_measurements').next().slideDown(); ;
@@ -272,7 +272,7 @@ export class Sidebar{
 
 		// REMOVE ALL
 		elToolbar.append(this.createToolIcon(
-			Potree.resourcePath + '/icons/reset_tools.svg',
+			Potree.resourcePath + '/ikoner/sw_reset_tools.svg',
 			'[title]tt.remove_all_measurement',
 			() => {
 				this.viewer.scene.removeAllMeasurements();
@@ -869,7 +869,7 @@ export class Sidebar{
 
 		{ // REMOVE CLIPPING TOOLS
 			clippingToolBar.append(this.createToolIcon(
-				Potree.resourcePath + "/icons/remove.svg",
+				Potree.resourcePath + "/ikoner/sw_remove.svg",
 				"[title]tt.remove_all_clipping_volumes",
 				() => {
 

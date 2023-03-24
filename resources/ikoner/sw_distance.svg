@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg width="100%" height="100%" viewBox="0 0 32 32" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" xmlns:serif="http://www.serif.com/" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:1.5;">
+    <g transform="matrix(1,0,0,1,-1.12391,-1.50045)">
+        <use xlink:href="#_Image1" x="3" y="16" width="11px" height="13px"/>
+    </g>
+    <g transform="matrix(1.63052,0,0,2.80007,-6.3497,-51.9025)">
+        <path d="M8.288,28L18,23" style="fill:none;stroke:white;stroke-width:0.61px;"/>
+    </g>
+    <g transform="matrix(1.63052,0,0,2.80007,-1.3497,-48.9022)">
+        <path d="M8.288,28L18,23" style="fill:none;stroke:white;stroke-width:0.24px;"/>
+    </g>
+    <g transform="matrix(-0.549908,-8.65127e-05,9.61334e-05,-0.611061,32.0712,17.3891)">
+        <path d="M16.5,8C16.5,8 9,15.875 9,19.251C9,22.976 12.361,26 16.5,26C20.639,26 24,22.976 24,19.251C24,15.875 16.5,8 16.5,8Z" style="fill:white;"/>
+    </g>
+    <g transform="matrix(1,0,0,1,-1.5004,-1.50045)">
+        <circle cx="8.5" cy="21.5" r="1.5" style="fill:rgb(236,102,0);"/>
+    </g>
+    <g transform="matrix(1,0,0,1,14.4996,-15.5005)">
+        <circle cx="8.5" cy="21.5" r="1.5" style="fill:rgb(236,102,0);"/>
+    </g>
+    <g transform="matrix(1,0,0,1,4.44089e-15,0.499548)">
+        <path d="M13.164,30L11,28" style="fill:none;stroke:white;stroke-width:0.55px;"/>
+    </g>
+    <g transform="matrix(1.38105,0,0,1.5,-9.71668,-6.50045)">
+        <path d="M28.124,16L25.5,14" style="fill:none;stroke:white;stroke-width:0.32px;"/>
+    </g>
+    <g transform="matrix(0.519669,0,0,0.500047,9.12628,10.9986)">
+        <path d="M21.082,23L19,21" style="fill:none;stroke:white;stroke-width:0.99px;"/>
+    </g>
+    <defs>
+        <image id="_Image1" width="11px" height="13px" xlink:href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAsAAAANCAYAAAB/9ZQ7AAAACXBIWXMAAA7EAAAOxAGVKw4bAAAAhklEQVQokZ3RsQ3CMBAFUBsxAi2ICdiAFomeWWgZJCtQZgkYgSpCdIiSgoZHEVmKgp0gfv1Ovn8O4Z9ghgoN7qixKsGb77yw7uMqA1MufdwMYFiEEMIk+V96JXwcMOcY47W7xhLPwgq73EX2GVhn38IUpw58pGKlgbn2Q97YjjbGBodROJYPe+7ZFGAJAWIAAAAASUVORK5CYII="/>
+    </defs>
+</svg>

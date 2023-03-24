@@ -12,6 +12,9 @@
 	<link rel="stylesheet" type="text/css" href="../libs/openlayers3/ol.css">
 	<link rel="stylesheet" type="text/css" href="../libs/spectrum/spectrum.css">
 	<link rel="stylesheet" type="text/css" href="../libs/jstree/themes/mixed/style.css">
+
+	
+
 </head>
 
 <body>
@@ -38,11 +41,13 @@
 		document.title = "Swescan new potree viewer";
 		viewer.setEDLEnabled(false);
 		viewer.setBackground("gradient"); // ["skybox", "gradient", "black", "white"];
-		viewer.setDescription(`Swescan pointcloud viewer`);
+		
 	<!-- INCLUDE SETTINGS HERE -->
 	
 	<div class="potree_container" style="position: absolute; width: 100%; height: 100%; left: 0px; top: 0px; ">
-		<div id="potree_render_area" style="background-image: url('../build/potree/resources/images/background.jpg');"></div>
+		<div id="potree_render_area">
+			<div id="potree_toolbar"></div>
+		</div>
 		<div id="potree_sidebar_container"> </div>
 	</div>
 	
@@ -57,7 +62,7 @@
 		viewer.setPointBudget(8_000_000);
 		viewer.setEDLEnabled(true);
 		
-		viewer.setDescription( );
+		viewer.setDescription("");
 		
 		viewer.loadSettingsFromURL();
 		
@@ -65,10 +70,12 @@
 			viewer.setLanguage('en');
 			//$("#menu_scene").next().show();
 			//viewer.toggleSidebar();
+			
 		});
 		
 		// plane
-		Potree.loadPointCloud("../pointclouds/vol_total/cloud.js", "lion", function(e){
+		//Potree.loadPointCloud("../pointclouds/C/dev/epalinges/epalinges/als_converted/cloud.js", "epalinges", e => {
+		Potree.loadPointCloud("http://5.9.65.151/mschuetz/potree/resources/pointclouds/helimap/epalinges/als_converted/cloud.js", "lion", function(e){
 			viewer.scene.addPointCloud(e.pointcloud);
 			
 			let material = e.pointcloud.material;
@@ -79,7 +86,21 @@
 		});
 		
 	</script>
+	<!--Om man vill lägga till bildfunktionen-->
+	<script type="module">
+
+		import * as THREE from "../libs/three.js/build/three.module.js";
 	
+			const cameraParamsPath = "http://5.9.65.151/mschuetz/potree/resources/pointclouds/helimap/epalinges/img_selected/IXM35_190522_nodistortion.xml";
+			const imageParamsPath = "http://5.9.65.151/mschuetz/potree/resources/pointclouds/helimap/epalinges/img_selected/Calib190522_MN95_NF2_cam_estim.txt";
+	
+			Potree.OrientedImageLoader.load(cameraParamsPath, imageParamsPath, viewer).then( images => {
+				viewer.scene.addOrientedImages(images);
+				
+			});
+			
+		</script>
+
 	
   </body>
 </html>

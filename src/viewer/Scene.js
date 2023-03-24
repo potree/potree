@@ -162,7 +162,17 @@ export class Scene extends EventDispatcher{
 			});
 		}
 	};
-
+	updateOI(images){
+		
+		var OIcheck =document.getElementById('showOrientedImages').checked;
+		if(OIcheck){
+			console.log("hej")
+			viewer.scene.addOrientedImages(images);
+		}else{
+			console.log("hejdå");
+			viewer.scene.removeOrientedImages(images);
+		}
+	}
 	add360Images(images){
 		this.images360.push(images);
 		this.scene.add(images.node);

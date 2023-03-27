@@ -40,7 +40,7 @@
 	<!-- INCLUDE ADDITIONAL DEPENDENCIES HERE -->
 		document.title = "Swescan new potree viewer";
 		viewer.setEDLEnabled(false);
-		viewer.setBackground("gradient"); // ["skybox", "gradient", "black", "white"];
+		viewer.setBackground("black"); // ["skybox", "gradient", "black", "white"];
 		
 	<!-- INCLUDE SETTINGS HERE -->
 	
@@ -62,7 +62,7 @@
 		viewer.setPointBudget(8_000_000);
 		viewer.setEDLEnabled(true);
 		
-		viewer.setDescription("../bilder/logo_white_swe_plain.png");
+		viewer.setDescription("../bilder/Powered_by_Swescan_dark_grey.png");
 		
 		viewer.loadSettingsFromURL();
 		
@@ -89,7 +89,7 @@
 	<!--Om man vill lägga till bildfunktionen-->
 	<script type="module">
 
-		import * as THREE from "../libs/three.js/build/three.module.js";
+		//import * as THREE from "../libs/three.js/build/three.module.js";
 	
 			const cameraParamsPath = "http://5.9.65.151/mschuetz/potree/resources/pointclouds/helimap/epalinges/img_selected/IXM35_190522_nodistortion.xml";
 			const imageParamsPath = "http://5.9.65.151/mschuetz/potree/resources/pointclouds/helimap/epalinges/img_selected/Calib190522_MN95_NF2_cam_estim.txt";

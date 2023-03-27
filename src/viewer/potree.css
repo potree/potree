@@ -33,6 +33,7 @@
 	--color-3: 			rgba( 45,109,130, 1);
 	--color-4: 			rgba( 16,143,185, 1);
 	
+	--sidebar-color:    rgb(88, 88, 88);
 	--bg-color:			var(--color-0);
 	--bg-color-2:		rgb(238, 127, 37);
 	--bg-light-color:	rgba( 48, 61, 65, 1);
@@ -59,7 +60,7 @@
 	overflow-y:	scroll;
 	font-size:	85%;
 	border-right:	1px solid black;
-	background-color:	var(--bg-color);
+	background-color:	var(--sidebar-color);
 }
 
 #sidebar_root{
@@ -110,8 +111,8 @@
 
 #potree_description{
 	position: absolute; 
-	top: 10px; 
-	left: 50%; 
+	bottom: 5px; 
+	right: 0%; 
 	transform: translateX(-50%); 
 	text-align: center;
 	z-index:	1000;

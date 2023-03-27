@@ -13,7 +13,7 @@
 .color-primary-4 { color: #108FB9 }
 
 /* As RGBa codes */
-.rgba-primary-0 { color: rgba( 25, 40, 44,1) }	/* Main Primary color */
+.rgba-primary-0 { color: rgba( 80, 80, 80) }	/* Main Primary color */
 .rgba-primary-1 { color: rgba(122,129,132,1) }
 .rgba-primary-2 { color: rgba( 57, 71, 75,1) }
 .rgba-primary-3 { color: rgba( 45,109,130,1) }
@@ -33,7 +33,7 @@
 	--color-3: 			rgba( 45,109,130, 1);
 	--color-4: 			rgba( 16,143,185, 1);
 	
-	--sidebar-color:    rgb(88, 88, 88);
+	--sidebar-color:    rgb(190, 190, 190);
 	--bg-color:			var(--color-0);
 	--bg-color-2:		rgb(238, 127, 37);
 	--bg-light-color:	rgba( 48, 61, 65, 1);
@@ -59,8 +59,9 @@
 	height:		100%;
 	overflow-y:	scroll;
 	font-size:	85%;
-	border-right:	1px solid black;
-	background-color:	var(--sidebar-color);
+	border-right:	10px solid black;
+	background-color:	var(--color-2);
+	opacity: 1;
 }
 
 #sidebar_root{

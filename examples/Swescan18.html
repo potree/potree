@@ -151,7 +151,7 @@
 				Attribute
 			</div>
 			<div>
-				<img name="action_elevation" src="${Potree.resourcePath}/icons/profile.svg" class="annotation-action-icon" style="width: 2em; height: auto;"/>
+				<img name="action_elevation" src="${Potree.resourcePath}/ikoner/sw_profile.svg" class="annotation-action-icon" style="width: 2em; height: auto;"/>
 				<img name="action_rgb" src="${Potree.resourcePath}/icons/rgb.svg" class="annotation-action-icon" style="width: 2em; height: auto;"/>
 			</div>
 		</span>
@@ -191,17 +191,9 @@
 			</div>
 		</span>
 
-		<span class="potree_toolbar_separator" />
+		
 
-		<span>
-			<div class="potree_toolbar_label">
-				<span data-i18n="appearance.nb_max_pts">Point Budget</span>: 
-				<span name="lblPointBudget" style="display: inline-block; width: 4em;"></span>
-			</div>
-			<div>
-				<div id="sldPointBudget"></div>
-			</div>
-		</span>
+		
 	`);
 
 	// CONTENT & ACTIONS
@@ -307,23 +299,7 @@
 		attributeSelection.selectmenu({change: updateMaterialSelection});
 	}
 
-	{ // POINT BUDGET
-		elToolbar.find('#sldPointBudget').slider({
-			value: viewer.getPointBudget(),
-			min: 100_000,
-			max: 1_000_000,
-			step: 100_000,
-			slide: (event, ui) => { viewer.setPointBudget(ui.value); }
-		});
-
-		const onBudgetChange = () => {
-			let budget = (viewer.getPointBudget() / (1000_000)).toFixed(1) + "M";
-			elToolbar.find('span[name=lblPointBudget]').html(budget);
-		};
-
-		onBudgetChange();
-		viewer.addEventListener("point_budget_changed", onBudgetChange);
-	}
+	
 
 	
 	</script>

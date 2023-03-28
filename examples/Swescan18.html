@@ -18,9 +18,19 @@
 		#potree_toolbar{
 			position: absolute; 
 			z-index: 10000; 
-			left: 100px; 
+			right: 100px; 
 			top: 0px;
-			background: rgb(80, 80, 80);
+			background: (${currentBackground} 0.5);
+			/*
+position: absolute; 
+	bottom: 5px; 
+	right: 0%; 
+	transform: translateX(-50%); 
+	text-align: center;
+	z-index:	1000;
+			*/
+
+			
 			color: white;
 			padding: 0.3em 0.8em;
 			font-family: "system-ui";
@@ -70,12 +80,15 @@
 		viewer.setBackground("gradient"); // ["skybox", "gradient", "black", "white"];
 		
 	<!-- INCLUDE SETTINGS HERE -->
-	
-	<div class="potree_container" style="position: absolute; width: 100%; height: 100%; left: 0px; top: 0px; ">
+	<!--<div class = "topnav">
+		<a href=https://sweportal.swescan.se><img src = "../bilder/Logotype_Sweportal_Points_white2.png"></a>
+	</div>-->
+
+	<div class="potree_container" style="position: absolute; width: 100%; height: 100%; left: 0px; top: 0px;">
 		<div id="potree_render_area">
 			<div id="potree_toolbar"></div>
 		</div>
-		<div id="potree_sidebar_container"> </div>
+		<div id="potree_sidebar_container" style="height: 100%"> </div>
 	</div>
 	
 
@@ -97,7 +110,7 @@
 		
 		
 			viewer.setLanguage('en');
-			//$("#menu_scene").next().show();
+			$("#menu_about").next().show();
 			viewer.toggleSidebar();
 			
 		});
@@ -147,6 +160,11 @@
 	const elToolbar = $("#potree_toolbar");
 	elToolbar.html(`
 		<span>
+			<div>
+				SWEREF99 13 30 - RH2000
+			</div>
+		</span>
+		<span>
 			<div class="potree_toolbar_label">
 				View
 			</div>
@@ -156,33 +174,26 @@
 			</div>
 		</span>
 
-		<span class="potree_toolbar_separator" />
-
-		<span>
-			<div class="potree_toolbar_label">
-				Gradient
-			</div>
-			<div>
-				<span name="gradient_schemes"></span>
-			</div>
-		</span>
+		
 
 		<span class="potree_toolbar_separator" />
 
 		<span>
 			<div class="potree_toolbar_label">
-				Measure
+				Tools
 			</div>
 			<div>
 				<img name="action_measure_point" src="${Potree.resourcePath}/ikoner/sw_point.svg" class="annotation-action-icon" style="width: 2em; height: auto;"/>
 				<img name="action_measure_distance" src="${Potree.resourcePath}/ikoner/sw_distance.svg" class="annotation-action-icon" style="width: 2em; height: auto;"/>
-				<img name="action_measure_circle" src="${Potree.resourcePath}/icons/circle.svg" class="annotation-action-icon" style="width: 2em; height: auto;"/>
+				<img name="action_measure_height" src="${Potree.resourcePath}/ikoner/sw_height.svg" class="annotation-action-icon" style="width: 2em; height: auto;"/>
+				<img name="action_measure_profile" src="${Potree.resourcePath}/ikoner/sw_profile.svg" class="annotation-action-icon" style="width: 2em; height: auto;"/>
+				<img name="action_measure_reset" src="${Potree.resourcePath}/ikoner/sw_reset_tools.svg" class="annotation-action-icon" style="width: 2em; height: auto;"/>
 			</div>
 		</span>
 
 		<span class="potree_toolbar_separator" />
 
-		<span>
+		<!--<span>
 			<div class="potree_toolbar_label" style="width: 12em">
 				Material
 			</div>
@@ -191,9 +202,26 @@
 			</div>
 		</span>
 
+		<span class="potree_toolbar_separator" />-->
 		
-
+		<span>
+			<div class="potree_toolbar_label">
+				Navigation
+			</div>
+			<div id="navigation">
+				 
+			</div>
+		</span>
+		<span class= "potree_toolbar_separator" />
 		
+		<span>
+			<div class="potree_toolbar_label" style="width: 12em">
+				Oriented Images
+			</div>
+			<div>
+				<label><input type="checkbox" id="chkEDLEnabled"/>Toggle</label>
+			</div>
+		</span>
 	`);
 
 	// CONTENT & ACTIONS
@@ -256,22 +284,37 @@
 				name: 'Distance'
 			});
 		});
-
-		elToolbar.find("img[name=action_measure_circle]").click( () => {
+		
+		elToolbar.find("img[name=action_measure_height]").click( () => {
 			const measurement = viewer.measuringTool.startInsertion({
 				showDistances: false,
-				showHeight: false,
-				showArea: false,
-				showCircle: true,
-				showEdges: false,
-				closed: false,
-				maxMarkers: 3,
-				name: 'Circle'
+					showHeight: true,
+					showArea: false,
+					closed: false,
+					maxMarkers: 2,
+					name: 'Height'
+				});
 			});
+			elToolbar.find("img[name=action_measure_profile]").click( () => {
+			const measurement = viewer.measuringTool.startInsertion({
+				showDistances: false,
+					showHeight: true,
+					showArea: false,
+					closed: false,
+					maxMarkers: 2,
+					name: 'Height'
+				});
+			});
+		//Remove measurements
+		elToolbar.find("img[name=action_measure_reset]").click( () => {
+			
+				this.viewer.scene.removeAllMeasurements();
+			
+			
 		});
 	}
 
-	{ // MATERIAL
+	/* { // MATERIAL
 		let options = [
 			"rgba", 
 			"elevation",
@@ -298,11 +341,11 @@
 
 		attributeSelection.selectmenu({change: updateMaterialSelection});
 	}
-
+ */
 	
 
 	
 	</script>
-
+	
   </body>
 </html>

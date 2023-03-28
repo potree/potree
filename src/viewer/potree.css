@@ -33,7 +33,7 @@
 	--color-3: 			rgba( 45,109,130, 1);
 	--color-4: 			rgba( 16,143,185, 1);
 	
-	--sidebar-color:    rgb(190, 190, 190);
+	--sidebar-color:    rgb(107, 107, 107);
 	--bg-color:			var(--color-0);
 	--bg-color-2:		rgb(238, 127, 37);
 	--bg-light-color:	rgba( 48, 61, 65, 1);
@@ -51,6 +51,42 @@
 
 	
 }
+/* Add a black background color to the top navigation */
+.topnav {
+	background-color: #333;
+	overflow: hidden;
+	height: 10%;
+	width:100%;
+	left: 0px;
+	top: 0px;
+	position: absolute;
+  }
+  
+  /* Style the links inside the navigation bar */
+  .topnav a {
+	float: left;
+	color: #f2f2f2;
+	text-align: center;
+	padding: 14px 16px;
+	text-decoration: none;
+	font-size: 17px;
+  }
+  
+  /* Change the color of links on hover */
+  .topnav a:hover {
+	background-color: #ddd;
+	color: black;
+  }
+  
+  /* Add a color to the active/current link */
+  .topnav a.active {
+	background-color: #04AA6D;
+	color: white;
+  }
+img {
+	width: 100%; /* takes the 100 % width of its container (.box div)*/
+	height: 100%; /* takes the 100 % height of its container (.box div)*/
+}
 
 #potree_sidebar_container{
 	position:	absolute;
@@ -60,7 +96,7 @@
 	overflow-y:	scroll;
 	font-size:	85%;
 	border-right:	10px solid black;
-	background-color:	var(--color-2);
+	background-color:	var(--sidebar-color, 0.5);
 	opacity: 1;
 }
 
@@ -455,7 +491,7 @@ body{
 
 .button-icon:hover{
 	/*background-color:	#09181C;*/
-	filter:				drop-shadow(0px 0px 4px white);
+	filter:				drop-shadow(0px 0px 4px rgb(255, 150, 63));
 }
 
 .ui-widget-content{

@@ -246,16 +246,16 @@
 			});
 		});
 
-		elToolbar.find("img[name=action_measure_circle]").click( () => {
+		elToolbar.find("img[name=action_measure_azimut]").click( () => {
 			const measurement = viewer.measuringTool.startInsertion({
 				showDistances: false,
 				showHeight: false,
 				showArea: false,
-				showCircle: true,
+				showCircle: false,
 				showEdges: false,
-				closed: false,
+				closed: true,
 				maxMarkers: 3,
-				name: 'Circle'
+				name: 'Azimut'
 			});
 		});
 	}

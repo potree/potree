@@ -491,6 +491,7 @@ export class Viewer extends EventDispatcher{
 		return this.description;
 	}
 
+
 	setShowBoundingBox (value) {
 		if (this.showBoundingBox !== value) {
 			this.showBoundingBox = value;

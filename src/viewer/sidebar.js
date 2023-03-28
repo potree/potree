@@ -1369,48 +1369,49 @@ export class Sidebar{
 		let elNavigation = $('#navigation');
 		let sldMoveSpeed = $('#sldMoveSpeed');
 		let lblMoveSpeed = $('#lblMoveSpeed');
+		let perspectiveorortho = $('#perspective');
 
-		elNavigation.append(this.createToolIcon(
-			Potree.resourcePath + '/icons/earth_controls_1.png',
-			'[title]tt.earth_control',
-			() => { this.viewer.setControls(this.viewer.earthControls); }
-		));
+		// elNavigation.append(this.createToolIcon(
+		// 	Potree.resourcePath + '/icons/earth_controls_1.png',
+		// 	'[title]tt.earth_control',
+		// 	() => { this.viewer.setControls(this.viewer.earthControls); }
+		// ));
 
-		elNavigation.append(this.createToolIcon(
-			Potree.resourcePath + '/icons/fps_controls.svg',
-			'[title]tt.flight_control',
-			() => {
-				this.viewer.setControls(this.viewer.fpControls);
-				this.viewer.fpControls.lockElevation = false;
-			}
-		));
+		// elNavigation.append(this.createToolIcon(
+		// 	Potree.resourcePath + '/icons/fps_controls.svg',
+		// 	'[title]tt.flight_control',
+		// 	() => {
+		// 		this.viewer.setControls(this.viewer.fpControls);
+		// 		this.viewer.fpControls.lockElevation = false;
+		// 	}
+		// ));
 
-		elNavigation.append(this.createToolIcon(
-			Potree.resourcePath + '/icons/helicopter_controls.svg',
-			'[title]tt.heli_control',
-			() => { 
-				this.viewer.setControls(this.viewer.fpControls);
-				this.viewer.fpControls.lockElevation = true;
-			}
-		));
+		// elNavigation.append(this.createToolIcon(
+		// 	Potree.resourcePath + '/icons/helicopter_controls.svg',
+		// 	'[title]tt.heli_control',
+		// 	() => { 
+		// 		this.viewer.setControls(this.viewer.fpControls);
+		// 		this.viewer.fpControls.lockElevation = true;
+		// 	}
+		// ));
 
-		elNavigation.append(this.createToolIcon(
-			Potree.resourcePath + '/icons/orbit_controls.svg',
-			'[title]tt.orbit_control',
-			() => { this.viewer.setControls(this.viewer.orbitControls); }
-		));
+		// elNavigation.append(this.createToolIcon(
+		// 	Potree.resourcePath + '/icons/orbit_controls.svg',
+		// 	'[title]tt.orbit_control',
+		// 	() => { this.viewer.setControls(this.viewer.orbitControls); }
+		// ));
 
-		elNavigation.append(this.createToolIcon(
-			Potree.resourcePath + '/icons/focus.svg',
-			'[title]tt.focus_control',
-			() => { this.viewer.fitToScreen(); }
-		));
+		// elNavigation.append(this.createToolIcon(
+		// 	Potree.resourcePath + '/icons/focus.svg',
+		// 	'[title]tt.focus_control',
+		// 	() => { this.viewer.fitToScreen(); }
+		// ));
 
-		elNavigation.append(this.createToolIcon(
-			Potree.resourcePath + "/icons/navigation_cube.svg",
-			"[title]tt.navigation_cube_control",
-			() => {this.viewer.toggleNavigationCube()}
-		));
+		// elNavigation.append(this.createToolIcon(
+		// 	Potree.resourcePath + "/icons/navigation_cube.svg",
+		// 	"[title]tt.navigation_cube_control",
+		// 	() => {this.viewer.toggleNavigationCube()}
+		// ));
 
 		elNavigation.append(this.createToolIcon(
 			Potree.resourcePath + "/images/compas.svg",
@@ -1421,18 +1422,18 @@ export class Sidebar{
 			}
 		));
 
-		elNavigation.append(this.createToolIcon(
-			Potree.resourcePath + "/icons/camera_animation.svg",
-			"[title]tt.camera_animation",
-			() => {
-				const animation = CameraAnimation.defaultFromView(this.viewer);
+		// elNavigation.append(this.createToolIcon(
+		// 	Potree.resourcePath + "/icons/camera_animation.svg",
+		// 	"[title]tt.camera_animation",
+		// 	() => {
+		// 		const animation = CameraAnimation.defaultFromView(this.viewer);
 
-				viewer.scene.addCameraAnimation(animation);
-			}
-		));
+		// 		viewer.scene.addCameraAnimation(animation);
+		// 	}
+		// ));
 
 
-		elNavigation.append("<br>");
+		 //elNavigation.append("<br>");
 
 
 		elNavigation.append(this.createToolIcon(
@@ -1481,7 +1482,7 @@ export class Sidebar{
 				<option id="camera_projection_options_orthigraphic" value="ORTHOGRAPHIC">Orthographic</option>
 			</selectgroup>
 		`);
-		elNavigation.append(elCameraProjection);
+		perspectiveorortho.append(elCameraProjection);
 		elCameraProjection.selectgroup({title: "Camera Projection"});
 		elCameraProjection.find("input").click( (e) => {
 			this.viewer.setCameraMode(CameraMode[e.target.value]);

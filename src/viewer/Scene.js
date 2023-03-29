@@ -140,6 +140,7 @@ export class Scene extends EventDispatcher{
 	}
 
 	addOrientedImages(images){
+		console.log("a");
 		this.orientedImages.push(images);
 		this.scene.add(images.node);
 
@@ -151,6 +152,7 @@ export class Scene extends EventDispatcher{
 	};
 
 	removeOrientedImages(images){
+		console.log("r")
 		let index = this.orientedImages.indexOf(images);
 		if (index > -1) {
 			this.orientedImages.splice(index, 1);
@@ -163,16 +165,22 @@ export class Scene extends EventDispatcher{
 		}
 	};
 	updateOI(images){
-		
-		var OIcheck =document.getElementById('showOrientedImages').checked;
+		let OIcheck =document.getElementById("checkoi").checked;
+		this.dispatchEvent({
+			'type': 'oriented_images_updated',
+			'scene': this,
+			'images': images
+		});
 		if(OIcheck){
 			console.log("hej")
-			viewer.scene.addOrientedImages(images);
+			this.addOrientedImages(images);
+				
 		}else{
 			console.log("hejdå");
-			viewer.scene.removeOrientedImages(images);
+			this.removeOrientedImages(images);
+			
 		}
-	}
+	};
 	add360Images(images){
 		this.images360.push(images);
 		this.scene.add(images.node);

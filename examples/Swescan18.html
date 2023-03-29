@@ -110,7 +110,7 @@ position: absolute;
 		
 		
 			viewer.setLanguage('en');
-			$("#menu_about").next().show();
+			//$("#menu_about").next().show();
 			viewer.toggleSidebar();
 			
 		});
@@ -132,15 +132,20 @@ position: absolute;
 	<script type="module">
 
 		//import * as THREE from "../libs/three.js/build/three.module.js";
-	
+		
 			const cameraParamsPath = "http://5.9.65.151/mschuetz/potree/resources/pointclouds/helimap/epalinges/img_selected/IXM35_190522_nodistortion.xml";
 			const imageParamsPath = "http://5.9.65.151/mschuetz/potree/resources/pointclouds/helimap/epalinges/img_selected/Calib190522_MN95_NF2_cam_estim.txt";
-	
-			Potree.OrientedImageLoader.load(cameraParamsPath, imageParamsPath, viewer).then( images => {
-				viewer.scene.addOrientedImages(images);
-				
-			});
 			
+				Potree.OrientedImageLoader.load(cameraParamsPath, imageParamsPath, viewer).then( images => {
+					
+					viewer.scene.addOrientedImages(images);
+					
+				});
+			
+				
+				
+			
+
 		</script>
 
 <script type="module">
@@ -193,6 +198,18 @@ position: absolute;
 
 		<span class="potree_toolbar_separator" />
 
+		<span>
+			<div class="potree_toolbar_label">
+				Clipping
+			</div>
+			<div>
+				<ul id="clipping_tools"></ul>
+				
+			</div>
+		</span>
+
+		<span class="potree_toolbar_separator" />
+
 		<!--<span>
 			<div class="potree_toolbar_label" style="width: 12em">
 				Material
@@ -219,7 +236,7 @@ position: absolute;
 				Oriented Images
 			</div>
 			<div>
-				<label><input type="checkbox" id="chkEDLEnabled"/>Toggle</label>
+				<label><input type="checkbox" id="checkoi" onchange="viewer.scene.updateOI()">Show/Hide</label>
 			</div>
 		</span>
 	`);
@@ -264,6 +281,7 @@ position: absolute;
 	}
 
 	{ // MEASURE
+		//Koordinater
 		elToolbar.find("img[name=action_measure_point]").click( () => {
 			const measurement = viewer.measuringTool.startInsertion({
 				showDistances: false,
@@ -275,7 +293,7 @@ position: absolute;
 				name: 'Point'
 			});
 		});
-
+		//Mäta avstånd
 		elToolbar.find("img[name=action_measure_distance]").click( () => {
 			const measurement = viewer.measuringTool.startInsertion({
 				showDistances: true,
@@ -284,7 +302,8 @@ position: absolute;
 				name: 'Distance'
 			});
 		});
-		
+		//Mäta höjd
+
 		elToolbar.find("img[name=action_measure_height]").click( () => {
 			const measurement = viewer.measuringTool.startInsertion({
 				showDistances: false,
@@ -297,12 +316,8 @@ position: absolute;
 			});
 			elToolbar.find("img[name=action_measure_profile]").click( () => {
 			const measurement = viewer.measuringTool.startInsertion({
-				showDistances: false,
-					showHeight: true,
-					showArea: false,
-					closed: false,
-					maxMarkers: 2,
-					name: 'Height'
+				
+					name: 'Profile'
 				});
 			});
 		//Remove measurements
@@ -342,7 +357,6 @@ position: absolute;
 		attributeSelection.selectmenu({change: updateMaterialSelection});
 	}
  */
-	
 
 	
 	</script>

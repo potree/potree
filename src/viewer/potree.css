@@ -40,9 +40,9 @@
 	--bg-dark-color:	rgba( 24, 31, 33, 1);
 	--bg-hover-color:	var(--color-2);
 	
-	--font-color:		#9AA1A4;
+	--font-color:		#180d3f;
 	--font-color-2:		#ddd;
-	--font-color:		#cccccc;
+	--font-color-3:		#cccccc;
 	--border-color:		black;
 	
 	--measurement-detail-node-bg-light:		var(--color-1);
@@ -91,13 +91,16 @@ img {
 #potree_sidebar_container{
 	position:	absolute;
 	z-index:	0;
+	top: 0px;
+	left: 0px;
 	width:		350px;
-	height:		100%;
+	height:		auto;
 	overflow-y:	scroll;
 	font-size:	85%;
-	border-right:	10px solid black;
-	background-color:	var(--sidebar-color, 0.5);
-	opacity: 1;
+	border:	1px solid rgb(255, 123, 0);
+	background-color:	rgba(129, 129, 129, 0.5);
+	
+	
 }
 
 #sidebar_root{
@@ -500,6 +503,7 @@ body{
 
 .accordion > h3{
 	background-color: var(--bg-color-2) !important;
+	font-family: "Raleway", sans-serif;
 	background: #f6f6f6 50% 50% repeat-x;
 	border:		1px solid black;
 	color:		var(--font-color-2);
@@ -577,7 +581,7 @@ body{
 	letter-spacing:	1px;
 	margin-left:	0px;
 	margin-right:	0px;
-	margin-top: 	1px;
+	margin-top: 	5px;
 	margin-bottom: 	1px;
 	padding:		1px !important;
 }
@@ -594,7 +598,7 @@ body{
 	top: 		50%;
 	width: 		9999px;
 	height: 	1px;
-	background: #b2b2b2;
+	background: #c90000;
 }
 
 .divider > span:before {

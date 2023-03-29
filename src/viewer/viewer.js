@@ -995,7 +995,12 @@ export class Viewer extends EventDispatcher{
 
 	async loadProject(url){
 
-		const response = await fetch(url);
+		const fetchOptions = { headers: {} };
+		Potree.XHRFactory.config.customHeaders?.forEach(function (header) {
+			fetchOptions.headers[header.header] = header.value;
+		});
+
+		const response = await fetch(url, fetchOptions);
 	
 		const text = await response.text();
 		const json = JSON5.parse(text);

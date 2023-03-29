@@ -253,7 +253,12 @@ export class VolumePanel extends MeasurePanel{
 
 			info("estimating results ...");
 
-			let response = await fetch(url);
+			const fetchOptions = { headers: {} };
+			Potree.XHRFactory.config.customHeaders?.forEach(function (header) {
+				fetchOptions.headers[header.header] = header.value;
+			});
+
+			let response = await fetch(url, fetchOptions);
 			let jsResponse = await response.json();
 			//console.log(jsResponse);
 
@@ -317,7 +322,12 @@ export class VolumePanel extends MeasurePanel{
 			let start = Date.now();
 
 			while(true){
-				let response = await fetch(url);
+				const fetchOptions = { headers: {} };
+				Potree.XHRFactory.config.customHeaders?.forEach(function (header) {
+					fetchOptions.headers[header.header] = header.value;
+				});
+
+				let response = await fetch(url, fetchOptions);
 				let jsResponse = await response.json();
 
 				if(jsResponse.status === "ERROR"){

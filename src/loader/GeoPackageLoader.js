@@ -44,8 +44,13 @@ export class GeoPackageLoader{
 			Utils.loadScript(`${Potree.scriptPath}/lazylibs/geopackage/geopackage.js`),
 			Utils.loadScript(`${Potree.scriptPath}/lazylibs/sql.js/sql-wasm.js`),
 		]);
+
+		const fetchOptions = { headers: {} };
+		Potree.XHRFactory.config.customHeaders?.forEach(function (header) {
+			fetchOptions.headers[header.header] = header.value;
+		});
 		
-		const result = await fetch(url);
+		const result = await fetch(url, fetchOptions);
 		const buffer = await result.arrayBuffer();
 
 		params = params || {};

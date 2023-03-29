@@ -698,7 +698,12 @@ export class MapView{
 		let url = `${pointcloud.pcoGeometry.url}/../sources.json`;
 		//let response = await fetch(url);
 
-		fetch(url).then(async (response) => {
+		const fetchOptions = { headers: {} };
+		Potree.XHRFactory.config.customHeaders?.forEach(function (header) {
+			fetchOptions.headers[header.header] = header.value;
+		});
+
+		fetch(url, fetchOptions).then(async (response) => {
 			let data = await response.json();
 		
 			let sources = data.sources;

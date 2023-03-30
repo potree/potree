@@ -1269,7 +1269,7 @@ export class Viewer extends EventDispatcher{
 			i18n.init({
 				lng: 'en',
 				resGetPath: Potree.resourcePath + '/lang/__lng__/__ns__.json',
-				preload: ['en', 'fr', 'de', 'jp', 'se', 'es', 'zh', 'it'],
+				preload: ['en', 'fr', 'de', 'jp', 'se', 'es', 'zh', 'it','ca'],
 				getAsync: true,
 				debug: false
 			}, function (t) {

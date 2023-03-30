@@ -188,11 +188,12 @@ position: absolute;
 				Tools
 			</div>
 			<div>
-				<img name="action_measure_point" src="${Potree.resourcePath}/ikoner/sw_point.svg" class="annotation-action-icon" style="width: 2em; height: auto;"/>
+				<li id="toolbar_tools"></li>
+				<!--<img name="action_measure_point" src="${Potree.resourcePath}/ikoner/sw_point.svg" class="annotation-action-icon" style="width: 2em; height: auto;"/>
 				<img name="action_measure_distance" src="${Potree.resourcePath}/ikoner/sw_distance.svg" class="annotation-action-icon" style="width: 2em; height: auto;"/>
 				<img name="action_measure_height" src="${Potree.resourcePath}/ikoner/sw_height.svg" class="annotation-action-icon" style="width: 2em; height: auto;"/>
 				<img name="action_measure_profile" src="${Potree.resourcePath}/ikoner/sw_profile.svg" class="annotation-action-icon" style="width: 2em; height: auto;"/>
-				<img name="action_measure_reset" src="${Potree.resourcePath}/ikoner/sw_reset_tools.svg" class="annotation-action-icon" style="width: 2em; height: auto;"/>
+				<img name="action_measure_reset" src="${Potree.resourcePath}/ikoner/sw_reset_tools.svg" class="annotation-action-icon" style="width: 2em; height: auto;"/>-->
 			</div>
 		</span>
 
@@ -280,53 +281,55 @@ position: absolute;
 		}
 	}
 
-	{ // MEASURE
-		//Koordinater
-		elToolbar.find("img[name=action_measure_point]").click( () => {
-			const measurement = viewer.measuringTool.startInsertion({
-				showDistances: false,
-				showAngles: false,
-				showCoordinates: true,
-				showArea: false,
-				closed: true,
-				maxMarkers: 1,
-				name: 'Point'
-			});
-		});
-		//Mäta avstånd
-		elToolbar.find("img[name=action_measure_distance]").click( () => {
-			const measurement = viewer.measuringTool.startInsertion({
-				showDistances: true,
-				showArea: false,
-				closed: false,
-				name: 'Distance'
-			});
-		});
-		//Mäta höjd
 
-		elToolbar.find("img[name=action_measure_height]").click( () => {
-			const measurement = viewer.measuringTool.startInsertion({
-				showDistances: false,
-					showHeight: true,
-					showArea: false,
-					closed: false,
-					maxMarkers: 2,
-					name: 'Height'
-				});
-			});
-			elToolbar.find("img[name=action_measure_profile]").click( () => {
-			const measurement = viewer.measuringTool.startInsertion({
+	{ // MEASURE
+		
+	// 	//Koordinater
+	// 	elToolbar.find("img[name=action_measure_point]").click( () => {
+	// 		const measurement = viewer.measuringTool.startInsertion({
+	// 			showDistances: false,
+	// 			showAngles: false,
+	// 			showCoordinates: true,
+	// 			showArea: false,
+	// 			closed: true,
+	// 			maxMarkers: 1,
+	// 			name: 'Point'
+	// 		});
+	// 	});
+	// 	//Mäta avstånd
+	// 	elToolbar.find("img[name=action_measure_distance]").click( () => {
+	// 		const measurement = viewer.measuringTool.startInsertion({
+	// 			showDistances: true,
+	// 			showArea: false,
+	// 			closed: false,
+	// 			name: 'Distance'
+	// 		});
+	// 	});
+	// 	//Mäta höjd
+
+	// 	elToolbar.find("img[name=action_measure_height]").click( () => {
+	// 		const measurement = viewer.measuringTool.startInsertion({
+	// 			showDistances: false,
+	// 				showHeight: true,
+	// 				showArea: false,
+	// 				closed: false,
+	// 				maxMarkers: 2,
+	// 				name: 'Height'
+	// 			});
+	// 		});
+	// 		elToolbar.find("img[name=action_measure_profile]").click( () => {
+	// 		const measurement = viewer.measuringTool.startInsertion({
 				
-					name: 'Profile'
-				});
-			});
-		//Remove measurements
-		elToolbar.find("img[name=action_measure_reset]").click( () => {
+	// 				name: 'Profile'
+	// 			});
+	// 		});
+	// 	//Remove measurements
+	// 	elToolbar.find("img[name=action_measure_reset]").click( () => {
 			
-				this.viewer.scene.removeAllMeasurements();
+	// 			this.viewer.scene.removeAllMeasurements();
 			
 			
-		});
+	// 	});
 	}
 
 	/* { // MATERIAL

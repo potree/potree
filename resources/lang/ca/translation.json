@@ -1,0 +1,108 @@
+{
+	"tb": {
+		"navigation_opt": "Navegació",
+		"rendering_opt": "Visualització",
+		"tools_opt": "Eines",
+		"measurments_opt": "Mesures",
+		"clipping_opt": "Retall",
+		"annotations_opt": "Anotacions",
+		"materials_opt": "Materials",
+		"scene_opt": "Capes",
+		"properties_opt": "Propietats de la capa",
+		"classification_filter_opt": "Classificació per filtres",
+		"filters_opt": "Filtres",
+		"parameters_opt": "Altres configuracions",
+		"info_opt": "Informació de les dades",
+		"about_opt": "Informació sobre el visor"
+	},
+	"tt": {
+		"angle_measurement": "Angle",
+		"point_measurement": "Coordenada del punt",
+		"distance_measurement": "Distància",
+		"height_measurement": "Alçada",
+		"circle_measurement": "Dimensió del cercle",
+		"area_measurement": "Àrea",
+		"volume_measurement": "Volum",
+		"height_profile": "Perfil 2D",
+		"annotation": "Annotació",
+		"clip_volume": "Retall de volum",
+		"clip_polygon": "Retall de polígon",
+		"screen_clip_box": "Dibuixeu un quadre de selecció. Cal estar en mode de càmera ortogràfica",
+		"clip_plane_x": "Pla del retall en l'eix x",
+		"clip_plane_y": "Pla del retall en l'eix y",
+		"clip_plane_z": "Pla del retall en l'eix z",
+		"remove_all_measurement": "Eliminar totes les mesures",
+		"left_view_control": "Vista esquerra",
+		"right_view_control": "Vista dreta",
+		"front_view_control": "Vista frontal",
+		"back_view_control": "Vista posterior",
+		"top_view_control": "Vista superior",
+		"bottom_view_control": "Vista inferior",
+		"focus_control": "Vista completa",
+		"orbit_control": "Control orbital",
+		"flight_control": "Control de vol",
+		"heli_control": "Control d'helicòpter",
+		"earth_control": "Control espacial",
+		"perspective_camera_control": "Perspectiva de la camera",
+		"orthographic_camera_control": "Camera ortogràfica",
+		"navigation_cube_control": "Cub de navegació",
+		"remove_all_clipping_volumes": "Eliminar tots els volums retallats",
+		"compass": "Brúixola",
+		"camera_animation": "Moviment de càmera" 
+	},
+	"appearance": {
+		"nb_max_pts": "Densitat de punts", 
+		"point_size": "Mida del punt",
+		"min_point_size": "Mida mínima del punt",
+		"point_opacity": "Opacitat",
+		"field_view": "Zoom",
+		"point_size_type": "Tamany del punt",
+		"point_material": "Textura",
+		"elevation_range": "Rang d'elevació",
+		"extra_range": "Rang escalar",
+		"point_quality": "Qualitat",
+		"point_shape": "Forma del punt",
+		"edl_radius": "Radi",
+		"edl_strength": "Distància",
+		"edl_opacity": "Opacity",
+		"edl_enable": "Habilitar",
+		"min_node_size": "Mida de node mínima",
+		"clip_mode": "Mode retall",
+		"move_speed": "Velocitat de moviment",
+		"skybox": "Cel",
+		"bottom_lock": "Mantenir-se sobre el terra",
+		"box": "Caixa",
+		"length_unit": "Unitats de mesura",
+		"freeze": "Bloquejar la vista",
+		"language": "Idioma",
+		"backface_culling": "Eliminació de la cara posterior"
+	},
+	"measurements": {
+		"clip": "Retall",
+		"show": "Veure el volum"
+	},
+	"annotations": {
+		"show3D": "Veure en 3D",
+		"showMap": "Veure al mapa"
+	}, 
+	"profile": {
+		"nb_points": "Nombre de punts",
+		"title": "Perfil en alçada",
+		"save_las": "Desar LAS(3D)",
+		"save_ortho": "Desar CSV(2D)"
+	},
+	"scene": {
+		"camera_position": "Posició de la camera",
+		"camera_target": "Objectiu de la camera"
+	},
+	"filters": {
+		"return_number": "Número de retorn",
+		"number_of_returns": "Nombre de Retorns",
+		"gps_min": "min",
+		"gps_max": "màx",
+		"gps_time": "Temps GPS"
+	},
+	"settings": {
+		"language": "Idioma"
+	}
+}

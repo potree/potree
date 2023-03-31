@@ -1,0 +1,3753 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<JOBFile jobName="2022-08-18" version="6.25" product="Trimble Access" productVersion="22.10" productDBVersion="2210-19" controllerSerialNumber="DAD192500144" originalProductVersion="2022.01 (22.00.310)" TimeStamp="2022-08-18T11:07:32"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://www.trimble.com/schema/JobXML/6_2 http://www.trimble.com/schema/JobXML/6_2/JobXMLSchema-6.25.xsd">
+    <FieldBook>
+
+        <UnitsRecord ID="00000002" TimeStamp="2022-08-18T11:07:32">
+            <DistanceUnits>Metres</DistanceUnits>
+            <HeightUnits>Metres</HeightUnits>
+            <AngleUnits>DMSDegrees</AngleUnits>
+            <AzimuthFormat>Azimuth</AzimuthFormat>
+            <LatitudeLongitudeUnits>DMSDegrees</LatitudeLongitudeUnits>
+            <CoordinateOrder>North-East-Elevation</CoordinateOrder>
+            <TemperatureUnits>Celsius</TemperatureUnits>
+            <PressureUnits>MilliBar</PressureUnits>
+            <GradeUnits>Percentage</GradeUnits>
+            <AreaUnits>SquareMetres</AreaUnits>
+            <VolumeUnits>CubicMetres</VolumeUnits>
+            <StationingFormat>1+000.0</StationingFormat>
+            <StationIndexIncrement/>
+            <PrecisionUnits>DRMS</PrecisionUnits>
+            <DistanceDisplayDPs>3</DistanceDisplayDPs>
+            <CoordinateDisplayDPs>3</CoordinateDisplayDPs>
+            <AreaDisplayDPs>3</AreaDisplayDPs>
+            <VolumeDisplayDPs>3</VolumeDisplayDPs>
+            <AngleDisplayDPs>0</AngleDisplayDPs>
+            <LaserVADisplay>Inclination</LaserVADisplay>
+            <TimeFormat>Local</TimeFormat>
+        </UnitsRecord>
+
+        <FeatureCodingRecord ID="00000003" TimeStamp="2022-08-18T11:07:32">
+            <LibraryName/>
+            <SourceFilename/>
+            <AttributeCheckSum>0</AttributeCheckSum>
+            <AttributesStored>false</AttributesStored>
+        </FeatureCodingRecord>
+
+        <CorrectionsRecord ID="00000004" TimeStamp="2022-08-18T11:07:32">
+            <SouthAzimuth>false</SouthAzimuth>
+            <GridOrientation>IncreasingNorthEast</GridOrientation>
+            <MagneticDeclination>0</MagneticDeclination>
+            <Distances>GroundDistance</Distances>
+            <ApplySeaLevelCorrection>false</ApplySeaLevelCorrection>
+            <NeighbourhoodAdjustment>
+                <Applied>false</Applied>
+                <WeightExponent>0.5</WeightExponent>
+            </NeighbourhoodAdjustment>
+            <ReferenceAzimuth>0</ReferenceAzimuth>
+        </CorrectionsRecord>
+
+        <EllipsoidRecord ID="00000006" TimeStamp="2022-08-18T11:07:32">
+            <EarthRadius/>
+            <Flattening/>
+        </EllipsoidRecord>
+
+        <ProjectionRecord ID="00000007" TimeStamp="2022-08-18T11:07:32">
+            <Projection>
+                <Type>ScaleOnly</Type>
+                <Scale>1</Scale>
+            </Projection>
+            <LocalSite>
+                <Type>Grid</Type>
+                <ProjectLocationLatitude/>
+                <ProjectLocationLongitude/>
+                <ProjectLocationHeight/>
+            </LocalSite>
+        </ProjectionRecord>
+
+        <DatumRecord ID="00000008" TimeStamp="2022-08-18T11:07:32">
+            <Type>NoDatum</Type>
+        </DatumRecord>
+
+        <HorizontalAdjustmentRecord ID="00000009" TimeStamp="2022-08-18T11:07:32">
+            <Type>NoAdjustment</Type>
+        </HorizontalAdjustmentRecord>
+
+        <VerticalAdjustmentRecord ID="0000000a" TimeStamp="2022-08-18T11:07:32">
+            <Type>NoAdjustment</Type>
+        </VerticalAdjustmentRecord>
+
+        <CoordinateSystemRecord ID="0000000b" TimeStamp="2022-08-18T11:07:32">
+            <SystemName/>
+            <ZoneName/>
+            <DatumName/>
+        </CoordinateSystemRecord>
+
+        <JobPropertiesRecord ID="0000000c" TimeStamp="2022-08-18T11:07:32">
+            <Reference/>
+            <Description/>
+            <Operator/>
+            <JobNote/>
+            <TectonicPlate>Unknown</TectonicPlate>
+            <ApplyJobPointNameRange>false</ApplyJobPointNameRange>
+            <MinimumJobPointName/>
+            <MaximumJobPointName/>
+        </JobPropertiesRecord>
+
+        <LinkedFilesRecord ID="0000000e" TimeStamp="2022-08-18T11:07:32"/>
+
+        <ActiveMapFilesRecord ID="0000000f" TimeStamp="2022-08-18T11:07:32"/>
+
+        <NoteRecord ID="00000011" TimeStamp="2022-08-18T11:07:32">
+            <Notes>
+                <Note>Converted from GS v2020.00 to GS v2021.10</Note>
+            </Notes>
+        </NoteRecord>
+
+        <NoteRecord ID="00000012" TimeStamp="2022-08-18T11:07:32">
+            <Notes>
+                <Note>Converted from GS v2021.10 to GS v2021.20</Note>
+            </Notes>
+        </NoteRecord>
+
+        <NoteRecord ID="00000013" TimeStamp="2022-08-18T11:07:32">
+            <Notes>
+                <Note>Converted from GS v2021.20 to GS v2022.00</Note>
+            </Notes>
+        </NoteRecord>
+
+        <CorrectionsRecord ID="00000014" TimeStamp="2022-08-18T11:08:11">
+            <SouthAzimuth>false</SouthAzimuth>
+            <GridOrientation>IncreasingNorthEast</GridOrientation>
+            <MagneticDeclination>0</MagneticDeclination>
+            <Distances>GroundDistance</Distances>
+            <ApplySeaLevelCorrection>true</ApplySeaLevelCorrection>
+            <NeighbourhoodAdjustment>
+                <Applied>false</Applied>
+                <WeightExponent>0.5</WeightExponent>
+            </NeighbourhoodAdjustment>
+            <ReferenceAzimuth>0</ReferenceAzimuth>
+        </CorrectionsRecord>
+
+        <EllipsoidRecord ID="00000015" TimeStamp="2022-08-18T11:08:11">
+            <EarthRadius>6378137</EarthRadius>
+            <Flattening>0.00335281068118</Flattening>
+        </EllipsoidRecord>
+
+        <ProjectionRecord ID="00000016" TimeStamp="2022-08-18T11:08:11">
+            <Projection>
+                <Type>TransverseMercator</Type>
+                <ShiftGridFileName/>
+                <CentralLatitude>0</CentralLatitude>
+                <CentralLongitude>13.5</CentralLongitude>
+                <FalseNorthing>0</FalseNorthing>
+                <FalseEasting>150000</FalseEasting>
+                <Scale>1</Scale>
+            </Projection>
+            <LocalSite>
+                <Type>Grid</Type>
+                <ProjectLocationLatitude/>
+                <ProjectLocationLongitude/>
+                <ProjectLocationHeight>0</ProjectLocationHeight>
+            </LocalSite>
+        </ProjectionRecord>
+
+        <DatumRecord ID="00000017" TimeStamp="2022-08-18T11:08:11">
+            <Type>ThreeParameter</Type>
+            <Direction>WGS84ToLocal</Direction>
+            <EarthRadius>6378137</EarthRadius>
+            <Flattening>0.00335281067183</Flattening>
+            <TranslationX>0</TranslationX>
+            <TranslationY>0</TranslationY>
+            <TranslationZ>0</TranslationZ>
+            <ReferenceGlobalFrameID>190</ReferenceGlobalFrameID>
+            <ReferenceGlobalFrameEPSG>6619</ReferenceGlobalFrameEPSG>
+            <ReferenceGlobalFrameEpoch>1999.50</ReferenceGlobalFrameEpoch>
+            <ReferenceGlobalFrameName>SWEREF99</ReferenceGlobalFrameName>
+            <DisplacementModelName>NKG-RF03 2019-07-01</DisplacementModelName>
+        </DatumRecord>
+
+        <DisplacementModelsRecord ID="00000018" TimeStamp="2022-08-18T11:08:11">
+            <DisplacementModel>
+                <Name>ITRF2014</Name>
+                <Realization>ITRF2014</Realization>
+                <SystemID>172</SystemID>
+                <Type>Tectonic</Type>
+                <File>plate_rotations_from_itrf2014.xml</File>
+                <MinEpoch>0</MinEpoch>
+                <MaxEpoch>0</MaxEpoch>
+                <MinimumLatitude>-90</MinimumLatitude>
+                <MaximumLatitude>90</MaximumLatitude>
+                <MinimumLongitude>-180</MinimumLongitude>
+                <MaximumLongitude>180</MaximumLongitude>
+            </DisplacementModel>
+            <DisplacementModel>
+                <Name>NKG-RF03 2019-07-01</Name>
+                <Realization>ETRF2000-Northern-Europe</Realization>
+                <SystemID>192</SystemID>
+                <Type>Local</Type>
+                <File>nkg_rf03vel_etrf2000_velocity_grid_20190701.xml</File>
+                <MinEpoch>0</MinEpoch>
+                <MaxEpoch>0</MaxEpoch>
+                <MinimumLatitude>53</MinimumLatitude>
+                <MaximumLatitude>73</MaximumLatitude>
+                <MinimumLongitude>3</MinimumLongitude>
+                <MaximumLongitude>40</MaximumLongitude>
+            </DisplacementModel>
+        </DisplacementModelsRecord>
+
+        <KinematicTransformationsRecord ID="00000019" TimeStamp="2022-08-18T11:08:11">
+            <KinematicTransformation>
+                <Name>ETRF2000-Northern-Europe to SWEREF99</Name>
+                <SystemID>193</SystemID>
+                <SourceRealization>ETRF2000-Northern-Europe</SourceRealization>
+                <TargetRealization>SWEREF99</TargetRealization>
+                <ReferenceEpoch>1999.50</ReferenceEpoch>
+                <Type>FourteenParameters</Type>
+                <TranslationX>-0.01642</TranslationX>
+                <TranslationY>-0.00064</TranslationY>
+                <TranslationZ>-0.0305</TranslationZ>
+                <RotationX>1.87431</RotationX>
+                <RotationY>0.46382</RotationY>
+                <RotationZ>2.28487</RotationZ>
+                <Scale>1.861</Scale>
+                <DerivativeTranslationX>0</DerivativeTranslationX>
+                <DerivativeTranslationY>0</DerivativeTranslationY>
+                <DerivativeTranslationZ>0</DerivativeTranslationZ>
+                <DerivativeRotationX>0</DerivativeRotationX>
+                <DerivativeRotationY>0</DerivativeRotationY>
+                <DerivativeRotationZ>0</DerivativeRotationZ>
+                <DerivativeScale>0</DerivativeScale>
+                <VelocityIncluded>false</VelocityIncluded>
+            </KinematicTransformation>
+            <KinematicTransformation>
+                <Name>ITRF2014 to ETRF2000-Northern-Europe</Name>
+                <SystemID>194</SystemID>
+                <SourceRealization>ITRF2014</SourceRealization>
+                <TargetRealization>ETRF2000-Northern-Europe</TargetRealization>
+                <ReferenceEpoch>2010.00</ReferenceEpoch>
+                <Type>FourteenParameters</Type>
+                <TranslationX>0.0547</TranslationX>
+                <TranslationY>0.0522</TranslationY>
+                <TranslationZ>-0.0741</TranslationZ>
+                <RotationX>1.701</RotationX>
+                <RotationY>10.29</RotationY>
+                <RotationZ>-16.632</RotationZ>
+                <Scale>2.12</Scale>
+                <DerivativeTranslationX>0.0001</DerivativeTranslationX>
+                <DerivativeTranslationY>0.0001</DerivativeTranslationY>
+                <DerivativeTranslationZ>-0.0019</DerivativeTranslationZ>
+                <DerivativeRotationX>0.081</DerivativeRotationX>
+                <DerivativeRotationY>0.49</DerivativeRotationY>
+                <DerivativeRotationZ>-0.792</DerivativeRotationZ>
+                <DerivativeScale>0.11</DerivativeScale>
+                <VelocityIncluded>false</VelocityIncluded>
+            </KinematicTransformation>
+        </KinematicTransformationsRecord>
+
+        <ReferenceFrameTransformationsRecord ID="0000001a" TimeStamp="2022-08-18T11:08:11">
+            <ReferenceFrameTransformationInformation>
+                <SourceFrameId>19</SourceFrameId>
+                <SourceFrameEPSG>1165</SourceFrameEPSG>
+                <SourceFrameISO>175</SourceFrameISO>
+                <SourceFrameName>ITRF2014</SourceFrameName>
+                <SourceFrameReferenceEpoch>2010.00</SourceFrameReferenceEpoch>
+                <TargetFrameId>190</TargetFrameId>
+                <TargetFrameEPSG>6619</TargetFrameEPSG>
+                <TargetFrameISO/>
+                <TargetFrameName>SWEREF99</TargetFrameName>
+                <TargetFrameReferenceEpoch>1999.50</TargetFrameReferenceEpoch>
+                <DisplacementModels>
+                    <SystemID>192</SystemID>
+                    <SystemID>172</SystemID>
+                </DisplacementModels>
+                <KinematicTransformations>
+                    <SystemID>194</SystemID>
+                    <SystemID>193</SystemID>
+                </KinematicTransformations>
+            </ReferenceFrameTransformationInformation>
+            <ReferenceFrameTransformationInformation>
+                <SourceFrameId>190</SourceFrameId>
+                <SourceFrameEPSG>6619</SourceFrameEPSG>
+                <SourceFrameISO/>
+                <SourceFrameName>SWEREF99</SourceFrameName>
+                <SourceFrameReferenceEpoch>1999.50</SourceFrameReferenceEpoch>
+                <TargetFrameId>19</TargetFrameId>
+                <TargetFrameEPSG>1165</TargetFrameEPSG>
+                <TargetFrameISO>175</TargetFrameISO>
+                <TargetFrameName>ITRF2014</TargetFrameName>
+                <TargetFrameReferenceEpoch>2010.00</TargetFrameReferenceEpoch>
+                <DisplacementModels>
+                    <SystemID>192</SystemID>
+                    <SystemID>172</SystemID>
+                </DisplacementModels>
+                <KinematicTransformations>
+                    <SystemID>193</SystemID>
+                    <SystemID>194</SystemID>
+                </KinematicTransformations>
+            </ReferenceFrameTransformationInformation>
+        </ReferenceFrameTransformationsRecord>
+
+        <VerticalAdjustmentRecord ID="0000001b" TimeStamp="2022-08-18T11:08:11">
+            <Type>GeoidModel</Type>
+            <GeoidName>Sweden 2017 RH2000 Geoid Model</GeoidName>
+        </VerticalAdjustmentRecord>
+
+        <CoordinateSystemRecord ID="0000001c" TimeStamp="2022-08-18T11:08:11">
+            <SystemName>Sweden/SWEREF99</SystemName>
+            <ZoneName>13 30</ZoneName>
+            <DatumName>SWEREF 99</DatumName>
+        </CoordinateSystemRecord>
+
+        <JobPropertiesRecord ID="0000001e" TimeStamp="2022-08-18T11:08:34">
+            <Reference/>
+            <Description/>
+            <Operator>JSV</Operator>
+            <JobNote/>
+            <TectonicPlate>Unknown</TectonicPlate>
+            <ApplyJobPointNameRange>false</ApplyJobPointNameRange>
+            <MinimumJobPointName/>
+            <MaximumJobPointName/>
+        </JobPropertiesRecord>
+
+        <TimeZoneRecord ID="0000001f" TimeStamp="2022-08-18T11:08:34">
+            <ZoneName>W. Europe Daylight Time</ZoneName>
+            <HoursToUTC>-2</HoursToUTC>
+        </TimeZoneRecord>
+
+        <RoverSurveyOptionsRecord ID="00000021" TimeStamp="2022-08-18T11:09:09">
+            <ElevationMask>10</ElevationMask>
+            <PDOPMask>6</PDOPMask>
+        </RoverSurveyOptionsRecord>
+
+        <NTRIPDataSourceRecord ID="0000002f" TimeStamp="2022-08-18T11:09:36">
+            <MountPoint>MSM_GNSS</MountPoint>
+            <DataFormat/>
+            <Solution/>
+            <IPAddress>192.71.190.141</IPAddress>
+            <IPPort>8500</IPPort>
+        </NTRIPDataSourceRecord>
+
+        <RoverSurveyOptionsRecord ID="00000030" TimeStamp="2022-08-18T11:09:36">
+            <ElevationMask>10</ElevationMask>
+            <PDOPMask>6</PDOPMask>
+        </RoverSurveyOptionsRecord>
+
+        <SurveyEventRecord ID="00000031" TimeStamp="2022-08-18T11:09:36">
+            <Event>StartRoverSurvey</Event>
+        </SurveyEventRecord>
+
+        <NoteRecord ID="00000032" TimeStamp="2022-08-18T11:09:40">
+            <Notes>
+                <Note>VRS bas: 56°38&apos;14.18100&quot;, 12°57&apos;23.19600&quot;, 66.748m</Note>
+            </Notes>
+        </NoteRecord>
+
+        <IMUCenteringAlignmentRecord ID="00000033" TimeStamp="2022-08-18T11:09:40">
+            <SerialNumber>6051F00143</SerialNumber>
+            <TiltEvent>StartSurvey</TiltEvent>
+            <CalibrationTimeRemaining/>
+            <CalibrationTimeoutPeriod/>
+            <SensorStatus>NotCalibrated</SensorStatus>
+            <CalibrationTime>
+                <GPSWeek>0</GPSWeek>
+                <Seconds>0</Seconds>
+            </CalibrationTime>
+            <YawAdjustment>0</YawAdjustment>
+            <PitchAdjustment>0</PitchAdjustment>
+            <RollAdjustment>0</RollAdjustment>
+            <PitchDistance>0</PitchDistance>
+            <RollDistance>0</RollDistance>
+        </IMUCenteringAlignmentRecord>
+
+        <InitialisationRecord ID="00000034" TimeStamp="2022-08-18T11:09:43">
+            <InitialisationEvent>RTKInitialised</InitialisationEvent>
+            <Time>
+                <GPSWeek>2223</GPSWeek>
+                <Seconds>378600</Seconds>
+            </Time>
+            <InitialisationType>OnTheFly</InitialisationType>
+            <SurveyType>RealTime</SurveyType>
+            <InitialisationCounter/>
+            <PointName/>
+        </InitialisationRecord>
+
+        <NoteRecord ID="00000035" TimeStamp="2022-08-18T11:09:47">
+            <Notes>
+                <Note>Bashanteringsläge:</Note>
+                <Note>Basdata är i nätverksläge. Lösningen är nu Nätverks-RTK.</Note>
+            </Notes>
+        </NoteRecord>
+
+        <NoteRecord ID="00000036" TimeStamp="2022-08-18T11:09:48">
+            <Notes>
+                <Note>VRS bas: 56°38&apos;14.18100&quot;, 12°57&apos;23.19600&quot;, 66.748m</Note>
+            </Notes>
+        </NoteRecord>
+
+        <InitialisationRecord ID="00000037" TimeStamp="2022-08-18T11:11:13">
+            <InitialisationEvent>RTKNotInitialised</InitialisationEvent>
+            <Time>
+                <GPSWeek>2223</GPSWeek>
+                <Seconds>378690</Seconds>
+            </Time>
+            <InitialisationType>OnTheFly</InitialisationType>
+            <SurveyType>RealTime</SurveyType>
+            <InitialisationCounter/>
+            <PointName/>
+        </InitialisationRecord>
+
+        <InitialisationRecord ID="00000038" TimeStamp="2022-08-18T11:11:17">
+            <InitialisationEvent>RTKInitialised</InitialisationEvent>
+            <Time>
+                <GPSWeek>2223</GPSWeek>
+                <Seconds>378694</Seconds>
+            </Time>
+            <InitialisationType>OnTheFly</InitialisationType>
+            <SurveyType>RealTime</SurveyType>
+            <InitialisationCounter/>
+            <PointName/>
+        </InitialisationRecord>
+
+        <InitialisationRecord ID="00000039" TimeStamp="2022-08-18T11:11:22">
+            <InitialisationEvent>RTKNotInitialised</InitialisationEvent>
+            <Time>
+                <GPSWeek>2223</GPSWeek>
+                <Seconds>378699</Seconds>
+            </Time>
+            <InitialisationType>OnTheFly</InitialisationType>
+            <SurveyType>RealTime</SurveyType>
+            <InitialisationCounter/>
+            <PointName/>
+        </InitialisationRecord>
+
+        <InitialisationRecord ID="0000003a" TimeStamp="2022-08-18T11:11:28">
+            <InitialisationEvent>RTKInitialised</InitialisationEvent>
+            <Time>
+                <GPSWeek>2223</GPSWeek>
+                <Seconds>378705</Seconds>
+            </Time>
+            <InitialisationType>OnTheFly</InitialisationType>
+            <SurveyType>RealTime</SurveyType>
+            <InitialisationCounter/>
+            <PointName/>
+        </InitialisationRecord>
+
+        <InitialisationRecord ID="0000003c" TimeStamp="2022-08-18T11:13:01">
+            <InitialisationEvent>RTKNotInitialised</InitialisationEvent>
+            <Time>
+                <GPSWeek>2223</GPSWeek>
+                <Seconds>378797</Seconds>
+            </Time>
+            <InitialisationType>OnTheFly</InitialisationType>
+            <SurveyType>RealTime</SurveyType>
+            <InitialisationCounter/>
+            <PointName/>
+        </InitialisationRecord>
+
+        <InitialisationRecord ID="0000003d" TimeStamp="2022-08-18T11:13:07">
+            <InitialisationEvent>RTKInitialised</InitialisationEvent>
+            <Time>
+                <GPSWeek>2223</GPSWeek>
+                <Seconds>378805</Seconds>
+            </Time>
+            <InitialisationType>OnTheFly</InitialisationType>
+            <SurveyType>RealTime</SurveyType>
+            <InitialisationCounter/>
+            <PointName/>
+        </InitialisationRecord>
+
+        <TiltSensorCalibrationRecord ID="0000003e" TimeStamp="2022-08-18T11:13:59">
+            <SerialNumber>6051F00143</SerialNumber>
+            <TiltEvent>Calibration</TiltEvent>
+            <CalibrationMethod>ToIMU</CalibrationMethod>
+            <CalibrationTimeRemaining>2591999.2900001</CalibrationTimeRemaining>
+            <CalibrationTimeoutPeriod>2592000</CalibrationTimeoutPeriod>
+            <SensorStatus>CalibratedOk</SensorStatus>
+            <CalibrationTime>
+                <GPSWeek>2223</GPSWeek>
+                <Seconds>378856.091</Seconds>
+            </CalibrationTime>
+        </TiltSensorCalibrationRecord>
+
+        <TiltSensorCalibrationRecord ID="0000003f" TimeStamp="2022-08-18T11:15:09">
+            <SerialNumber>6051F00143</SerialNumber>
+            <TiltEvent>Calibration</TiltEvent>
+            <CalibrationMethod>ToIMU</CalibrationMethod>
+            <CalibrationTimeRemaining>2591999.1490001</CalibrationTimeRemaining>
+            <CalibrationTimeoutPeriod>2592000</CalibrationTimeoutPeriod>
+            <SensorStatus>CalibratedOk</SensorStatus>
+            <CalibrationTime>
+                <GPSWeek>2223</GPSWeek>
+                <Seconds>378926.75</Seconds>
+            </CalibrationTime>
+        </TiltSensorCalibrationRecord>
+
+        <InitialisationRecord ID="00000040" TimeStamp="2022-08-18T11:15:40">
+            <InitialisationEvent>RTKNotInitialised</InitialisationEvent>
+            <Time>
+                <GPSWeek>2223</GPSWeek>
+                <Seconds>378955</Seconds>
+            </Time>
+            <InitialisationType>OnTheFly</InitialisationType>
+            <SurveyType>RealTime</SurveyType>
+            <InitialisationCounter/>
+            <PointName/>
+        </InitialisationRecord>
+
+        <InitialisationRecord ID="00000041" TimeStamp="2022-08-18T11:15:45">
+            <InitialisationEvent>RTKInitialised</InitialisationEvent>
+            <Time>
+                <GPSWeek>2223</GPSWeek>
+                <Seconds>378962</Seconds>
+            </Time>
+            <InitialisationType>OnTheFly</InitialisationType>
+            <SurveyType>RealTime</SurveyType>
+            <InitialisationCounter/>
+            <PointName/>
+        </InitialisationRecord>
+
+        <GPSEquipmentRecord ID="00000042" TimeStamp="2022-08-18T11:16:41">
+            <ReceiverType>R12i</ReceiverType>
+            <ReceiverSerialNumber>6051F00143</ReceiverSerialNumber>
+            <ReceiverFirmwareVersion>6.13</ReceiverFirmwareVersion>
+            <AntennaType>R12i Internal</AntennaType>
+            <AntennaSerialNumber/>
+            <AntennaNumber>610</AntennaNumber>
+            <AntennaMeasurementMethod>Underkant av snabbfäste</AntennaMeasurementMethod>
+            <AntennaMethod>1</AntennaMethod>
+            <AntennaTapeAdjustment>0</AntennaTapeAdjustment>
+            <AntennaHorizontalOffset>0</AntennaHorizontalOffset>
+            <AntennaVerticalOffset>0.17932</AntennaVerticalOffset>
+            <AntennaMeasurementKey>Method1</AntennaMeasurementKey>
+        </GPSEquipmentRecord>
+
+        <AntennaRecord ID="00000043" TimeStamp="2022-08-18T11:16:41">
+            <MeasuredHeight>1.665</MeasuredHeight>
+            <MeasurementType>Raw</MeasurementType>
+            <GPSEquipmentID>00000042</GPSEquipmentID>
+            <ReducedHeight>1.84432</ReducedHeight>
+        </AntennaRecord>
+
+        <PointRecord ID="00000044" TimeStamp="2022-08-18T11:16:41">
+            <Name>1</Name>
+            <Code>GNSS</Code>
+            <Method>GpsStaticObservation</Method>
+            <SurveyMethod>NetworkRTK</SurveyMethod>
+            <Classification>Normal</Classification>
+            <Deleted>false</Deleted>
+
+            <ECEF>
+                <X>3426330.9038263</X>
+                <Y>788291.79411005</Y>
+                <Z>5303846.5648357</Z>
+            </ECEF>
+            <AntennaID>00000043</AntennaID>
+
+            <ComputedGrid>
+                <North>6279643.7545455</North>
+                <East>116650.22548027</East>
+                <Elevation>31.347494494324</Elevation>
+            </ComputedGrid>
+            <DeviceAxisOrientation>
+                <Type>VerticalTiltError</Type>
+                <Attitude>
+                    <Pitch>-0.01201417860736</Pitch>
+                    <Roll>-0.00339970665105</Roll>
+                    <Yaw/>
+                </Attitude>
+            </DeviceAxisOrientation>
+            <Precision>
+                <Horizontal>0.0055465960876</Horizontal>
+                <Vertical>0.00834366772324</Vertical>
+            </Precision>
+            <QualityControl1>
+                <MinimumNumberOfSatellites>15</MinimumNumberOfSatellites>
+                <MinGPSSVs>9</MinGPSSVs>
+                <MinGLONASSSVs>0</MinGLONASSSVs>
+                <MinGalileoSVs>6</MinGalileoSVs>
+                <MinQZSSSVs>0</MinQZSSSVs>
+                <MinBeiDouSVs>0</MinBeiDouSVs>
+                <NumberOfSatellites>15</NumberOfSatellites>
+                <NumGPSSVs>9</NumGPSSVs>
+                <NumGLONASSSVs>0</NumGLONASSSVs>
+                <NumGalileoSVs>6</NumGalileoSVs>
+                <NumQZSSSVs>0</NumQZSSSVs>
+                <NumBeiDouSVs>0</NumBeiDouSVs>
+                <RelativeDOPs>false</RelativeDOPs>
+                <PDOP>1.4923093318939</PDOP>
+                <GDOP>1.9317923616338</GDOP>
+                <HDOP>0.76530659198761</HDOP>
+                <VDOP>1.2811295986176</VDOP>
+                <PDOP_AtStore>1.4923093318939</PDOP_AtStore>
+                <GDOP_AtStore>1.9317923616338</GDOP_AtStore>
+                <HDOP_AtStore>0.76530659198761</HDOP_AtStore>
+                <VDOP_AtStore>1.2811295986176</VDOP_AtStore>
+                <NumberOfPositionsUsed>42</NumberOfPositionsUsed>
+                <HorizontalStandardDeviation/>
+                <VerticalStandardDeviation/>
+                <StartTime>
+                    <GPSWeek>2223</GPSWeek>
+                    <Seconds>378978</Seconds>
+                </StartTime>
+                <EndTime>
+                    <GPSWeek>2223</GPSWeek>
+                    <Seconds>379019</Seconds>
+                </EndTime>
+                <MonitorStatus>NotMonitored</MonitorStatus>
+                <RTCMAge>1</RTCMAge>
+                <Warnings>
+                    <ExcessTiltWarning>No</ExcessTiltWarning>
+                    <ExcessTiltAtStorage>No</ExcessTiltAtStorage>
+                    <ExcessMovementWarning>No</ExcessMovementWarning>
+                    <ExcessMovementAtStorage>No</ExcessMovementAtStorage>
+                    <PoorPrecisionsWarning>No</PoorPrecisionsWarning>
+                    <PoorPrecisionsAtStorage>No</PoorPrecisionsAtStorage>
+                    <MagneticDisturbanceWarning>NotSupported</MagneticDisturbanceWarning>
+                    <MagneticDisturbanceAtStorage>NotSupported</MagneticDisturbanceAtStorage>
+                    <BadEnvironmentWarning>No</BadEnvironmentWarning>
+                    <BadEnvironmentAtStorage>No</BadEnvironmentAtStorage>
+                    <AINSAlignmentWarning>NotChecked</AINSAlignmentWarning>
+                    <AINSAlignmentAtStorage>NotChecked</AINSAlignmentAtStorage>
+                </Warnings>
+                <SVList>
+                    <SV Number="1" System="GPS"/>
+                    <SV Number="8" System="GPS"/>
+                    <SV Number="10" System="GPS"/>
+                    <SV Number="14" System="GPS"/>
+                    <SV Number="21" System="GPS"/>
+                    <SV Number="22" System="GPS"/>
+                    <SV Number="23" System="GPS"/>
+                    <SV Number="27" System="GPS"/>
+                    <SV Number="32" System="GPS"/>
+                    <SV Number="7" System="GALILEO"/>
+                    <SV Number="8" System="GALILEO"/>
+                    <SV Number="24" System="GALILEO"/>
+                    <SV Number="26" System="GALILEO"/>
+                    <SV Number="31" System="GALILEO"/>
+                    <SV Number="33" System="GALILEO"/>
+                </SVList>
+            </QualityControl1>
+            <QualityControl2>
+                <NumberOfSatellites>15</NumberOfSatellites>
+                <ErrorScale>0.00999999977648</ErrorScale>
+                <VCVxx>0.00002706773012</VCVxx>
+                <VCVxy>0.00000200683644</VCVxy>
+                <VCVxz>0.00001756061647</VCVxz>
+                <VCVyy>0.00000981492849</VCVyy>
+                <VCVyz>0.00000685577334</VCVyz>
+                <VCVzz>0.00006349886098</VCVzz>
+                <UnitVariance>1</UnitVariance>
+            </QualityControl2>
+        </PointRecord>
+
+        <InitialisationRecord ID="0000004c" TimeStamp="2022-08-18T11:17:18">
+            <InitialisationEvent>RTKNotInitialised</InitialisationEvent>
+            <Time>
+                <GPSWeek>2223</GPSWeek>
+                <Seconds>379055</Seconds>
+            </Time>
+            <InitialisationType>OnTheFly</InitialisationType>
+            <SurveyType>RealTime</SurveyType>
+            <InitialisationCounter/>
+            <PointName/>
+        </InitialisationRecord>
+
+        <InitialisationRecord ID="0000004d" TimeStamp="2022-08-18T11:20:24">
+            <InitialisationEvent>RTKInitialised</InitialisationEvent>
+            <Time>
+                <GPSWeek>2223</GPSWeek>
+                <Seconds>379241</Seconds>
+            </Time>
+            <InitialisationType>OnTheFly</InitialisationType>
+            <SurveyType>RealTime</SurveyType>
+            <InitialisationCounter/>
+            <PointName/>
+        </InitialisationRecord>
+
+        <InitialisationRecord ID="0000004e" TimeStamp="2022-08-18T11:21:05">
+            <InitialisationEvent>RTKNotInitialised</InitialisationEvent>
+            <Time>
+                <GPSWeek>2223</GPSWeek>
+                <Seconds>379280</Seconds>
+            </Time>
+            <InitialisationType>OnTheFly</InitialisationType>
+            <SurveyType>RealTime</SurveyType>
+            <InitialisationCounter/>
+            <PointName/>
+        </InitialisationRecord>
+
+        <InitialisationRecord ID="0000004f" TimeStamp="2022-08-18T11:21:19">
+            <InitialisationEvent>RTKInitialised</InitialisationEvent>
+            <Time>
+                <GPSWeek>2223</GPSWeek>
+                <Seconds>379296</Seconds>
+            </Time>
+            <InitialisationType>OnTheFly</InitialisationType>
+            <SurveyType>RealTime</SurveyType>
+            <InitialisationCounter/>
+            <PointName/>
+        </InitialisationRecord>
+
+        <PointRecord ID="00000050" TimeStamp="2022-08-18T11:21:56">
+            <Name>2</Name>
+            <Code>GNSS</Code>
+            <Method>GpsStaticObservation</Method>
+            <SurveyMethod>NetworkRTK</SurveyMethod>
+            <Classification>Normal</Classification>
+            <Deleted>false</Deleted>
+
+            <ECEF>
+                <X>3426651.6739577</X>
+                <Y>788469.78291642</Y>
+                <Z>5303607.285987</Z>
+            </ECEF>
+            <AntennaID>00000043</AntennaID>
+
+            <ComputedGrid>
+                <North>6279216.9546352</North>
+                <East>116748.38467284</East>
+                <Elevation>25.376932104513</Elevation>
+            </ComputedGrid>
+            <DeviceAxisOrientation>
+                <Type>VerticalTiltError</Type>
+                <Attitude>
+                    <Pitch>-0.06587425421064</Pitch>
+                    <Roll>-0.00735308636165</Roll>
+                    <Yaw/>
+                </Attitude>
+            </DeviceAxisOrientation>
+            <Precision>
+                <Horizontal>0.00846584592507</Horizontal>
+                <Vertical>0.01408298220485</Vertical>
+            </Precision>
+            <QualityControl1>
+                <MinimumNumberOfSatellites>15</MinimumNumberOfSatellites>
+                <MinGPSSVs>8</MinGPSSVs>
+                <MinGLONASSSVs>0</MinGLONASSSVs>
+                <MinGalileoSVs>7</MinGalileoSVs>
+                <MinQZSSSVs>0</MinQZSSSVs>
+                <MinBeiDouSVs>0</MinBeiDouSVs>
+                <NumberOfSatellites>15</NumberOfSatellites>
+                <NumGPSSVs>8</NumGPSSVs>
+                <NumGLONASSSVs>0</NumGLONASSSVs>
+                <NumGalileoSVs>7</NumGalileoSVs>
+                <NumQZSSSVs>0</NumQZSSSVs>
+                <NumBeiDouSVs>0</NumBeiDouSVs>
+                <RelativeDOPs>false</RelativeDOPs>
+                <PDOP>1.4960843324661</PDOP>
+                <GDOP>1.9042951128362</GDOP>
+                <HDOP>0.83215427398682</HDOP>
+                <VDOP>1.2437204122543</VDOP>
+                <PDOP_AtStore>1.4960843324661</PDOP_AtStore>
+                <GDOP_AtStore>1.9042951128362</GDOP_AtStore>
+                <HDOP_AtStore>0.83152151107788</HDOP_AtStore>
+                <VDOP_AtStore>1.2437204122543</VDOP_AtStore>
+                <NumberOfPositionsUsed>32</NumberOfPositionsUsed>
+                <HorizontalStandardDeviation/>
+                <VerticalStandardDeviation/>
+                <StartTime>
+                    <GPSWeek>2223</GPSWeek>
+                    <Seconds>379302</Seconds>
+                </StartTime>
+                <EndTime>
+                    <GPSWeek>2223</GPSWeek>
+                    <Seconds>379333</Seconds>
+                </EndTime>
+                <MonitorStatus>NotMonitored</MonitorStatus>
+                <RTCMAge>1</RTCMAge>
+                <Warnings>
+                    <ExcessTiltWarning>No</ExcessTiltWarning>
+                    <ExcessTiltAtStorage>No</ExcessTiltAtStorage>
+                    <ExcessMovementWarning>No</ExcessMovementWarning>
+                    <ExcessMovementAtStorage>No</ExcessMovementAtStorage>
+                    <PoorPrecisionsWarning>No</PoorPrecisionsWarning>
+                    <PoorPrecisionsAtStorage>No</PoorPrecisionsAtStorage>
+                    <MagneticDisturbanceWarning>NotSupported</MagneticDisturbanceWarning>
+                    <MagneticDisturbanceAtStorage>NotSupported</MagneticDisturbanceAtStorage>
+                    <BadEnvironmentWarning>No</BadEnvironmentWarning>
+                    <BadEnvironmentAtStorage>No</BadEnvironmentAtStorage>
+                    <AINSAlignmentWarning>NotChecked</AINSAlignmentWarning>
+                    <AINSAlignmentAtStorage>NotChecked</AINSAlignmentAtStorage>
+                </Warnings>
+                <SVList>
+                    <SV Number="1" System="GPS"/>
+                    <SV Number="8" System="GPS"/>
+                    <SV Number="10" System="GPS"/>
+                    <SV Number="14" System="GPS"/>
+                    <SV Number="21" System="GPS"/>
+                    <SV Number="22" System="GPS"/>
+                    <SV Number="27" System="GPS"/>
+                    <SV Number="32" System="GPS"/>
+                    <SV Number="7" System="GALILEO"/>
+                    <SV Number="8" System="GALILEO"/>
+                    <SV Number="13" System="GALILEO"/>
+                    <SV Number="24" System="GALILEO"/>
+                    <SV Number="26" System="GALILEO"/>
+                    <SV Number="31" System="GALILEO"/>
+                    <SV Number="33" System="GALILEO"/>
+                </SVList>
+            </QualityControl1>
+            <QualityControl2>
+                <NumberOfSatellites>15</NumberOfSatellites>
+                <ErrorScale>0.01098314020783</ErrorScale>
+                <VCVxx>0.00008043581329</VCVxx>
+                <VCVxy>0.00001099297697</VCVxy>
+                <VCVxz>0.00005890163447</VCVxz>
+                <VCVyy>0.00002414229675</VCVyy>
+                <VCVyz>0.00002564759052</VCVyz>
+                <VCVzz>0.00016542281082</VCVzz>
+                <UnitVariance>1</UnitVariance>
+            </QualityControl2>
+        </PointRecord>
+
+        <InitialisationRecord ID="00000058" TimeStamp="2022-08-18T11:22:24">
+            <InitialisationEvent>RTKNotInitialised</InitialisationEvent>
+            <Time>
+                <GPSWeek>2223</GPSWeek>
+                <Seconds>379361</Seconds>
+            </Time>
+            <InitialisationType>OnTheFly</InitialisationType>
+            <SurveyType>RealTime</SurveyType>
+            <InitialisationCounter/>
+            <PointName/>
+        </InitialisationRecord>
+
+        <InitialisationRecord ID="00000059" TimeStamp="2022-08-18T11:26:40">
+            <InitialisationEvent>RTKInitialised</InitialisationEvent>
+            <Time>
+                <GPSWeek>2223</GPSWeek>
+                <Seconds>379617</Seconds>
+            </Time>
+            <InitialisationType>OnTheFly</InitialisationType>
+            <SurveyType>RealTime</SurveyType>
+            <InitialisationCounter/>
+            <PointName/>
+        </InitialisationRecord>
+
+        <InitialisationRecord ID="0000005a" TimeStamp="2022-08-18T11:26:43">
+            <InitialisationEvent>RTKNotInitialised</InitialisationEvent>
+            <Time>
+                <GPSWeek>2223</GPSWeek>
+                <Seconds>379620</Seconds>
+            </Time>
+            <InitialisationType>OnTheFly</InitialisationType>
+            <SurveyType>RealTime</SurveyType>
+            <InitialisationCounter/>
+            <PointName/>
+        </InitialisationRecord>
+
+        <InitialisationRecord ID="0000005b" TimeStamp="2022-08-18T11:26:46">
+            <InitialisationEvent>RTKInitialised</InitialisationEvent>
+            <Time>
+                <GPSWeek>2223</GPSWeek>
+                <Seconds>379623</Seconds>
+            </Time>
+            <InitialisationType>OnTheFly</InitialisationType>
+            <SurveyType>RealTime</SurveyType>
+            <InitialisationCounter/>
+            <PointName/>
+        </InitialisationRecord>
+
+        <InitialisationRecord ID="0000005c" TimeStamp="2022-08-18T11:26:48">
+            <InitialisationEvent>RTKNotInitialised</InitialisationEvent>
+            <Time>
+                <GPSWeek>2223</GPSWeek>
+                <Seconds>379625</Seconds>
+            </Time>
+            <InitialisationType>OnTheFly</InitialisationType>
+            <SurveyType>RealTime</SurveyType>
+            <InitialisationCounter/>
+            <PointName/>
+        </InitialisationRecord>
+
+        <InitialisationRecord ID="0000005d" TimeStamp="2022-08-18T11:26:56">
+            <InitialisationEvent>RTKInitialised</InitialisationEvent>
+            <Time>
+                <GPSWeek>2223</GPSWeek>
+                <Seconds>379633</Seconds>
+            </Time>
+            <InitialisationType>OnTheFly</InitialisationType>
+            <SurveyType>RealTime</SurveyType>
+            <InitialisationCounter/>
+            <PointName/>
+        </InitialisationRecord>
+
+        <InitialisationRecord ID="0000005e" TimeStamp="2022-08-18T11:27:09">
+            <InitialisationEvent>RTKNotInitialised</InitialisationEvent>
+            <Time>
+                <GPSWeek>2223</GPSWeek>
+                <Seconds>379646</Seconds>
+            </Time>
+            <InitialisationType>OnTheFly</InitialisationType>
+            <SurveyType>RealTime</SurveyType>
+            <InitialisationCounter/>
+            <PointName/>
+        </InitialisationRecord>
+
+        <InitialisationRecord ID="0000005f" TimeStamp="2022-08-18T11:27:17">
+            <InitialisationEvent>RTKInitialised</InitialisationEvent>
+            <Time>
+                <GPSWeek>2223</GPSWeek>
+                <Seconds>379654</Seconds>
+            </Time>
+            <InitialisationType>OnTheFly</InitialisationType>
+            <SurveyType>RealTime</SurveyType>
+            <InitialisationCounter/>
+            <PointName/>
+        </InitialisationRecord>
+
+        <InitialisationRecord ID="00000060" TimeStamp="2022-08-18T11:27:49">
+            <InitialisationEvent>RTKNotInitialised</InitialisationEvent>
+            <Time>
+                <GPSWeek>2223</GPSWeek>
+                <Seconds>379686</Seconds>
+            </Time>
+            <InitialisationType>OnTheFly</InitialisationType>
+            <SurveyType>RealTime</SurveyType>
+            <InitialisationCounter/>
+            <PointName/>
+        </InitialisationRecord>
+
+        <InitialisationRecord ID="00000061" TimeStamp="2022-08-18T11:27:59">
+            <InitialisationEvent>RTKInitialised</InitialisationEvent>
+            <Time>
+                <GPSWeek>2223</GPSWeek>
+                <Seconds>379696</Seconds>
+            </Time>
+            <InitialisationType>OnTheFly</InitialisationType>
+            <SurveyType>RealTime</SurveyType>
+            <InitialisationCounter/>
+            <PointName/>
+        </InitialisationRecord>
+
+        <PointRecord ID="00000062" TimeStamp="2022-08-18T11:28:35">
+            <Name>3</Name>
+            <Code>GNSS</Code>
+            <Method>GpsStaticObservation</Method>
+            <SurveyMethod>NetworkRTK</SurveyMethod>
+            <Classification>Normal</Classification>
+            <Deleted>false</Deleted>
+
+            <ECEF>
+                <X>3426591.3448659</X>
+                <Y>788027.79722686</Y>
+                <Z>5303726.8313105</Z>
+            </ECEF>
+            <AntennaID>00000043</AntennaID>
+
+            <ComputedGrid>
+                <North>6279417.8691165</North>
+                <East>116332.75589689</East>
+                <Elevation>38.381658686476</Elevation>
+            </ComputedGrid>
+            <DeviceAxisOrientation>
+                <Type>VerticalTiltError</Type>
+                <Attitude>
+                    <Pitch>0.06276998463718</Pitch>
+                    <Roll>0.05730241520297</Roll>
+                    <Yaw/>
+                </Attitude>
+            </DeviceAxisOrientation>
+            <Precision>
+                <Horizontal>0.00750078072166</Horizontal>
+                <Vertical>0.01053779572248</Vertical>
+            </Precision>
+            <QualityControl1>
+                <MinimumNumberOfSatellites>15</MinimumNumberOfSatellites>
+                <MinGPSSVs>9</MinGPSSVs>
+                <MinGLONASSSVs>0</MinGLONASSSVs>
+                <MinGalileoSVs>6</MinGalileoSVs>
+                <MinQZSSSVs>0</MinQZSSSVs>
+                <MinBeiDouSVs>0</MinBeiDouSVs>
+                <NumberOfSatellites>19</NumberOfSatellites>
+                <NumGPSSVs>9</NumGPSSVs>
+                <NumGLONASSSVs>3</NumGLONASSSVs>
+                <NumGalileoSVs>7</NumGalileoSVs>
+                <NumQZSSSVs>0</NumQZSSSVs>
+                <NumBeiDouSVs>0</NumBeiDouSVs>
+                <RelativeDOPs>false</RelativeDOPs>
+                <PDOP>1.4741077423096</PDOP>
+                <GDOP>1.903251635379</GDOP>
+                <HDOP>0.77641099691391</HDOP>
+                <VDOP>1.2530680894852</VDOP>
+                <PDOP_AtStore>1.3374322652817</PDOP_AtStore>
+                <GDOP_AtStore>1.862305048568</GDOP_AtStore>
+                <HDOP_AtStore>0.63953572511673</HDOP_AtStore>
+                <VDOP_AtStore>1.1746144294739</VDOP_AtStore>
+                <NumberOfPositionsUsed>31</NumberOfPositionsUsed>
+                <HorizontalStandardDeviation/>
+                <VerticalStandardDeviation/>
+                <StartTime>
+                    <GPSWeek>2223</GPSWeek>
+                    <Seconds>379703</Seconds>
+                </StartTime>
+                <EndTime>
+                    <GPSWeek>2223</GPSWeek>
+                    <Seconds>379733</Seconds>
+                </EndTime>
+                <MonitorStatus>NotMonitored</MonitorStatus>
+                <RTCMAge>1</RTCMAge>
+                <Warnings>
+                    <ExcessTiltWarning>No</ExcessTiltWarning>
+                    <ExcessTiltAtStorage>No</ExcessTiltAtStorage>
+                    <ExcessMovementWarning>No</ExcessMovementWarning>
+                    <ExcessMovementAtStorage>No</ExcessMovementAtStorage>
+                    <PoorPrecisionsWarning>No</PoorPrecisionsWarning>
+                    <PoorPrecisionsAtStorage>No</PoorPrecisionsAtStorage>
+                    <MagneticDisturbanceWarning>NotSupported</MagneticDisturbanceWarning>
+                    <MagneticDisturbanceAtStorage>NotSupported</MagneticDisturbanceAtStorage>
+                    <BadEnvironmentWarning>No</BadEnvironmentWarning>
+                    <BadEnvironmentAtStorage>No</BadEnvironmentAtStorage>
+                    <AINSAlignmentWarning>NotChecked</AINSAlignmentWarning>
+                    <AINSAlignmentAtStorage>NotChecked</AINSAlignmentAtStorage>
+                </Warnings>
+                <SVList>
+                    <SV Number="1" System="GPS"/>
+                    <SV Number="8" System="GPS"/>
+                    <SV Number="10" System="GPS"/>
+                    <SV Number="14" System="GPS"/>
+                    <SV Number="21" System="GPS"/>
+                    <SV Number="22" System="GPS"/>
+                    <SV Number="23" System="GPS"/>
+                    <SV Number="27" System="GPS"/>
+                    <SV Number="32" System="GPS"/>
+                    <SV Number="8" System="GLONASS"/>
+                    <SV Number="13" System="GLONASS"/>
+                    <SV Number="14" System="GLONASS"/>
+                    <SV Number="7" System="GALILEO"/>
+                    <SV Number="8" System="GALILEO"/>
+                    <SV Number="13" System="GALILEO"/>
+                    <SV Number="24" System="GALILEO"/>
+                    <SV Number="26" System="GALILEO"/>
+                    <SV Number="31" System="GALILEO"/>
+                    <SV Number="33" System="GALILEO"/>
+                </SVList>
+            </QualityControl1>
+            <QualityControl2>
+                <NumberOfSatellites>19</NumberOfSatellites>
+                <ErrorScale>0.00999999977648</ErrorScale>
+                <VCVxx>0.00003657483103</VCVxx>
+                <VCVxy>0.00000872217424</VCVxy>
+                <VCVxz>0.00001945847362</VCVxz>
+                <VCVyy>0.00002176653106</VCVyy>
+                <VCVyz>0.00002731224231</VCVyz>
+                <VCVzz>0.00010896549065</VCVzz>
+                <UnitVariance>1</UnitVariance>
+            </QualityControl2>
+        </PointRecord>
+
+        <SurveyEventRecord ID="0000006a" TimeStamp="2022-08-18T11:28:55">
+            <Event>EndSurvey</Event>
+        </SurveyEventRecord>
+
+        <NoteRecord ID="0000006b" TimeStamp="2022-08-18T11:29:42">
+            <Notes>
+                <Note>Exporterad fil: C:\Users\TSC7\OneDrive - Swescan AB\Trimble\2022\2022-08-18 Stena Halmstad\2022-08-18.csv</Note>
+            </Notes>
+        </NoteRecord>
+
+        <ExportedFilesListRecord ID="0000006c" TimeStamp="2022-08-18T11:29:42">
+            <File>2022-08-18.csv</File>
+            <File>2022-08-18.jxl</File>
+        </ExportedFilesListRecord>
+
+        <NoteRecord ID="0000006d" TimeStamp="2022-08-18T11:30:24">
+            <Notes>
+                <Note>Exporterad fil: C:\Users\TSC7\OneDrive - Swescan AB\Trimble\2022\2022-08-18 Stena Halmstad\2022-08-18.jxl</Note>
+            </Notes>
+        </NoteRecord>
+
+        <NoteRecord ID="00000072" TimeStamp="">
+            <Notes>
+                <Note>Converted from GS v2022.00 to GS v2022.10</Note>
+            </Notes>
+        </NoteRecord>
+
+        <RoverSurveyOptionsRecord ID="00000074" TimeStamp="2023-03-30T11:10:42">
+            <ElevationMask>10</ElevationMask>
+            <PDOPMask>6</PDOPMask>
+        </RoverSurveyOptionsRecord>
+
+        <NTRIPDataSourceRecord ID="00000083" TimeStamp="2023-03-30T11:10:52">
+            <MountPoint>MSM_GNSS</MountPoint>
+            <DataFormat>RTCM 3.2</DataFormat>
+            <Solution>Nätverk</Solution>
+            <IPAddress>192.71.190.141</IPAddress>
+            <IPPort>8500</IPPort>
+        </NTRIPDataSourceRecord>
+
+        <RoverSurveyOptionsRecord ID="00000084" TimeStamp="2023-03-30T11:10:52">
+            <ElevationMask>10</ElevationMask>
+            <PDOPMask>6</PDOPMask>
+        </RoverSurveyOptionsRecord>
+
+        <SurveyEventRecord ID="00000085" TimeStamp="2023-03-30T11:10:52">
+            <Event>StartRoverSurvey</Event>
+        </SurveyEventRecord>
+
+        <PointRecord ID="00000086" TimeStamp="2023-03-30T11:10:56">
+            <Name>PRS245225765538</Name>
+            <Code/>
+            <Method>FromBase</Method>
+            <SurveyMethod>KeyedIn</SurveyMethod>
+            <Classification>Normal</Classification>
+            <Deleted>false</Deleted>
+
+            <WGS84>
+                <Latitude>56.658504866184</Latitude>
+                <Longitude>12.806936161321</Longitude>
+                <Height>50.021250707097</Height>
+            </WGS84>
+
+            <ComputedGrid>
+                <North>6282100.8376048</North>
+                <East>107496.37133078</East>
+                <Elevation>13.341550711662</Elevation>
+            </ComputedGrid>
+        </PointRecord>
+
+        <GPSEquipmentRecord ID="00000089" TimeStamp="2023-03-30T11:10:56">
+            <ReceiverType/>
+            <ReceiverSerialNumber/>
+            <ReceiverFirmwareVersion>0</ReceiverFirmwareVersion>
+            <AntennaType>AdV Null Antenna</AntennaType>
+            <AntennaSerialNumber/>
+            <AntennaNumber>255</AntennaNumber>
+            <AntennaMeasurementMethod>Antennens fascenter</AntennaMeasurementMethod>
+            <AntennaMethod>1</AntennaMethod>
+            <AntennaTapeAdjustment>0</AntennaTapeAdjustment>
+            <AntennaHorizontalOffset>0</AntennaHorizontalOffset>
+            <AntennaVerticalOffset>0</AntennaVerticalOffset>
+        </GPSEquipmentRecord>
+
+        <AntennaRecord ID="0000008a" TimeStamp="2023-03-30T11:10:56">
+            <MeasuredHeight>0</MeasuredHeight>
+            <MeasurementType>Corrected</MeasurementType>
+            <GPSEquipmentID>00000089</GPSEquipmentID>
+            <ReducedHeight>0</ReducedHeight>
+        </AntennaRecord>
+
+        <ReferenceRecord ID="0000008b" TimeStamp="2023-03-30T11:10:56">
+            <PointName>PRS245225765538</PointName>
+            <AntennaID>0000008a</AntennaID>
+        </ReferenceRecord>
+
+        <IMUCenteringAlignmentRecord ID="0000008c" TimeStamp="2023-03-30T11:10:56">
+            <SerialNumber>6051F00143</SerialNumber>
+            <TiltEvent>StartSurvey</TiltEvent>
+            <CalibrationTimeRemaining/>
+            <CalibrationTimeoutPeriod/>
+            <SensorStatus>NotCalibrated</SensorStatus>
+            <CalibrationTime>
+                <GPSWeek>0</GPSWeek>
+                <Seconds>0</Seconds>
+            </CalibrationTime>
+            <YawAdjustment>0</YawAdjustment>
+            <PitchAdjustment>0</PitchAdjustment>
+            <RollAdjustment>0</RollAdjustment>
+            <PitchDistance>0</PitchDistance>
+            <RollDistance>0</RollDistance>
+        </IMUCenteringAlignmentRecord>
+
+        <InitialisationRecord ID="0000008d" TimeStamp="2023-03-30T11:10:56">
+            <InitialisationEvent>RTKInitialised</InitialisationEvent>
+            <Time>
+                <GPSWeek>2255</GPSWeek>
+                <Seconds>378669</Seconds>
+            </Time>
+            <InitialisationType>OnTheFly</InitialisationType>
+            <SurveyType>RealTime</SurveyType>
+            <InitialisationCounter/>
+            <PointName/>
+        </InitialisationRecord>
+
+        <InitialisationRecord ID="0000008e" TimeStamp="2023-03-30T11:11:34">
+            <InitialisationEvent>RTKNotInitialised</InitialisationEvent>
+            <Time>
+                <GPSWeek>2255</GPSWeek>
+                <Seconds>378707</Seconds>
+            </Time>
+            <InitialisationType>OnTheFly</InitialisationType>
+            <SurveyType>RealTime</SurveyType>
+            <InitialisationCounter/>
+            <PointName/>
+        </InitialisationRecord>
+
+        <InitialisationRecord ID="0000008f" TimeStamp="2023-03-30T11:11:45">
+            <InitialisationEvent>RTKInitialised</InitialisationEvent>
+            <Time>
+                <GPSWeek>2255</GPSWeek>
+                <Seconds>378718</Seconds>
+            </Time>
+            <InitialisationType>OnTheFly</InitialisationType>
+            <SurveyType>RealTime</SurveyType>
+            <InitialisationCounter/>
+            <PointName/>
+        </InitialisationRecord>
+
+        <TiltSensorCalibrationRecord ID="00000090" TimeStamp="2023-03-30T11:14:28">
+            <SerialNumber>6051F00143</SerialNumber>
+            <TiltEvent>Calibration</TiltEvent>
+            <CalibrationMethod>ToVial</CalibrationMethod>
+            <CalibrationTimeRemaining>2592000.424</CalibrationTimeRemaining>
+            <CalibrationTimeoutPeriod>2592000</CalibrationTimeoutPeriod>
+            <SensorStatus>CalibratedOk</SensorStatus>
+            <CalibrationTime>
+                <GPSWeek>2255</GPSWeek>
+                <Seconds>378881.425</Seconds>
+            </CalibrationTime>
+        </TiltSensorCalibrationRecord>
+
+        <GPSEquipmentRecord ID="00000092" TimeStamp="2023-03-30T11:17:05">
+            <ReceiverType>R12i</ReceiverType>
+            <ReceiverSerialNumber>6051F00143</ReceiverSerialNumber>
+            <ReceiverFirmwareVersion>6.16</ReceiverFirmwareVersion>
+            <AntennaType>R12i Internal</AntennaType>
+            <AntennaSerialNumber/>
+            <AntennaNumber>610</AntennaNumber>
+            <AntennaMeasurementMethod>Underkant av snabbfäste</AntennaMeasurementMethod>
+            <AntennaMethod>1</AntennaMethod>
+            <AntennaTapeAdjustment>0</AntennaTapeAdjustment>
+            <AntennaHorizontalOffset>0</AntennaHorizontalOffset>
+            <AntennaVerticalOffset>0.17932</AntennaVerticalOffset>
+            <AntennaMeasurementKey>Method1</AntennaMeasurementKey>
+        </GPSEquipmentRecord>
+
+        <AntennaRecord ID="00000093" TimeStamp="2023-03-30T11:17:05">
+            <MeasuredHeight>1.665</MeasuredHeight>
+            <MeasurementType>Raw</MeasurementType>
+            <GPSEquipmentID>00000092</GPSEquipmentID>
+            <ReducedHeight>1.84432</ReducedHeight>
+        </AntennaRecord>
+
+        <PointRecord ID="00000094" TimeStamp="2023-03-30T11:17:05">
+            <Name>g1</Name>
+            <Code>gnss</Code>
+            <Method>GpsRTKControlPoint</Method>
+            <SurveyMethod>NetworkRTK</SurveyMethod>
+            <Classification>Normal</Classification>
+            <Deleted>false</Deleted>
+
+            <ECEFDeltas>
+                <DeltaX>163.08632670343</DeltaX>
+                <DeltaY>8880.6396379409</DeltaY>
+                <DeltaZ>-1399.9018977024</DeltaZ>
+            </ECEFDeltas>
+            <ReferenceRecordID>0000008b</ReferenceRecordID>
+            <RTK_Base>PRS245225765538</RTK_Base>
+            <AntennaID>00000093</AntennaID>
+
+            <ComputedGrid>
+                <North>6279466.9926221</North>
+                <East>116093.84071878</East>
+                <Elevation>17.837281321468</Elevation>
+            </ComputedGrid>
+            <DeviceAxisOrientation>
+                <Type>VerticalTiltError</Type>
+                <Attitude>
+                    <Pitch>-0.0245662001704</Pitch>
+                    <Roll>0.0471611542035</Roll>
+                    <Yaw/>
+                </Attitude>
+            </DeviceAxisOrientation>
+            <Precision>
+                <Horizontal>0.0117884687482</Horizontal>
+                <Vertical>0.01549661159515</Vertical>
+            </Precision>
+            <QualityControl1>
+                <MinimumNumberOfSatellites>19</MinimumNumberOfSatellites>
+                <MinGPSSVs>7</MinGPSSVs>
+                <MinGLONASSSVs>7</MinGLONASSSVs>
+                <MinGalileoSVs>5</MinGalileoSVs>
+                <MinQZSSSVs>0</MinQZSSSVs>
+                <MinBeiDouSVs>0</MinBeiDouSVs>
+                <NumberOfSatellites>19</NumberOfSatellites>
+                <NumGPSSVs>7</NumGPSSVs>
+                <NumGLONASSSVs>7</NumGLONASSSVs>
+                <NumGalileoSVs>5</NumGalileoSVs>
+                <NumQZSSSVs>0</NumQZSSSVs>
+                <NumBeiDouSVs>0</NumBeiDouSVs>
+                <RelativeDOPs>false</RelativeDOPs>
+                <PDOP>1.2872173786163</PDOP>
+                <GDOP>1.8713440196643</GDOP>
+                <HDOP>0.66994100809097</HDOP>
+                <VDOP>1.0991394519806</VDOP>
+                <PDOP_AtStore>1.2862724065781</PDOP_AtStore>
+                <GDOP_AtStore>1.8701662047726</GDOP_AtStore>
+                <HDOP_AtStore>0.66916000843048</HDOP_AtStore>
+                <VDOP_AtStore>1.0985087156296</VDOP_AtStore>
+                <NumberOfPositionsUsed>52</NumberOfPositionsUsed>
+                <HorizontalStandardDeviation/>
+                <VerticalStandardDeviation/>
+                <StartTime>
+                    <GPSWeek>2255</GPSWeek>
+                    <Seconds>378987</Seconds>
+                </StartTime>
+                <EndTime>
+                    <GPSWeek>2255</GPSWeek>
+                    <Seconds>379038</Seconds>
+                </EndTime>
+                <MonitorStatus>NotMonitored</MonitorStatus>
+                <RTCMAge>2</RTCMAge>
+                <Warnings>
+                    <ExcessTiltWarning>No</ExcessTiltWarning>
+                    <ExcessTiltAtStorage>No</ExcessTiltAtStorage>
+                    <ExcessMovementWarning>No</ExcessMovementWarning>
+                    <ExcessMovementAtStorage>No</ExcessMovementAtStorage>
+                    <PoorPrecisionsWarning>No</PoorPrecisionsWarning>
+                    <PoorPrecisionsAtStorage>No</PoorPrecisionsAtStorage>
+                    <MagneticDisturbanceWarning>NotSupported</MagneticDisturbanceWarning>
+                    <MagneticDisturbanceAtStorage>NotSupported</MagneticDisturbanceAtStorage>
+                    <BadEnvironmentWarning>No</BadEnvironmentWarning>
+                    <BadEnvironmentAtStorage>No</BadEnvironmentAtStorage>
+                    <AINSAlignmentWarning>NotChecked</AINSAlignmentWarning>
+                    <AINSAlignmentAtStorage>NotChecked</AINSAlignmentAtStorage>
+                </Warnings>
+                <SVList>
+                    <SV Number="6" System="GPS"/>
+                    <SV Number="11" System="GPS"/>
+                    <SV Number="12" System="GPS"/>
+                    <SV Number="24" System="GPS"/>
+                    <SV Number="25" System="GPS"/>
+                    <SV Number="28" System="GPS"/>
+                    <SV Number="32" System="GPS"/>
+                    <SV Number="7" System="GLONASS"/>
+                    <SV Number="8" System="GLONASS"/>
+                    <SV Number="9" System="GLONASS"/>
+                    <SV Number="16" System="GLONASS"/>
+                    <SV Number="17" System="GLONASS"/>
+                    <SV Number="18" System="GLONASS"/>
+                    <SV Number="19" System="GLONASS"/>
+                    <SV Number="5" System="GALILEO"/>
+                    <SV Number="9" System="GALILEO"/>
+                    <SV Number="26" System="GALILEO"/>
+                    <SV Number="31" System="GALILEO"/>
+                    <SV Number="33" System="GALILEO"/>
+                </SVList>
+            </QualityControl1>
+            <QualityControl2>
+                <NumberOfSatellites>19</NumberOfSatellites>
+                <ErrorScale>0.01513740327209</ErrorScale>
+                <VCVxx>0.00018067006022</VCVxx>
+                <VCVxy>-0.00001365112712</VCVxy>
+                <VCVxz>0.00008193410031</VCVxz>
+                <VCVyy>0.00003431394725</VCVyy>
+                <VCVyz>0.00000818065291</VCVyz>
+                <VCVzz>0.00016412897094</VCVzz>
+                <UnitVariance>1</UnitVariance>
+            </QualityControl2>
+        </PointRecord>
+
+        <InitialisationRecord ID="0000009e" TimeStamp="2023-03-30T11:17:48">
+            <InitialisationEvent>RTKNotInitialised</InitialisationEvent>
+            <Time>
+                <GPSWeek>2255</GPSWeek>
+                <Seconds>379081</Seconds>
+            </Time>
+            <InitialisationType>OnTheFly</InitialisationType>
+            <SurveyType>RealTime</SurveyType>
+            <InitialisationCounter/>
+            <PointName/>
+        </InitialisationRecord>
+
+        <InitialisationRecord ID="0000009f" TimeStamp="2023-03-30T11:20:49">
+            <InitialisationEvent>RTKInitialised</InitialisationEvent>
+            <Time>
+                <GPSWeek>2255</GPSWeek>
+                <Seconds>379262</Seconds>
+            </Time>
+            <InitialisationType>OnTheFly</InitialisationType>
+            <SurveyType>RealTime</SurveyType>
+            <InitialisationCounter/>
+            <PointName/>
+        </InitialisationRecord>
+
+        <InitialisationRecord ID="000000a0" TimeStamp="2023-03-30T11:23:02">
+            <InitialisationEvent>RTKNotInitialised</InitialisationEvent>
+            <Time>
+                <GPSWeek>2255</GPSWeek>
+                <Seconds>379395</Seconds>
+            </Time>
+            <InitialisationType>OnTheFly</InitialisationType>
+            <SurveyType>RealTime</SurveyType>
+            <InitialisationCounter/>
+            <PointName/>
+        </InitialisationRecord>
+
+        <InitialisationRecord ID="000000a1" TimeStamp="2023-03-30T11:23:19">
+            <InitialisationEvent>RTKInitialised</InitialisationEvent>
+            <Time>
+                <GPSWeek>2255</GPSWeek>
+                <Seconds>379412</Seconds>
+            </Time>
+            <InitialisationType>OnTheFly</InitialisationType>
+            <SurveyType>RealTime</SurveyType>
+            <InitialisationCounter/>
+            <PointName/>
+        </InitialisationRecord>
+
+        <InitialisationRecord ID="000000a2" TimeStamp="2023-03-30T11:23:20">
+            <InitialisationEvent>RTKNotInitialised</InitialisationEvent>
+            <Time>
+                <GPSWeek>2255</GPSWeek>
+                <Seconds>379413</Seconds>
+            </Time>
+            <InitialisationType>OnTheFly</InitialisationType>
+            <SurveyType>RealTime</SurveyType>
+            <InitialisationCounter/>
+            <PointName/>
+        </InitialisationRecord>
+
+        <InitialisationRecord ID="000000a3" TimeStamp="2023-03-30T11:23:21">
+            <InitialisationEvent>RTKInitialised</InitialisationEvent>
+            <Time>
+                <GPSWeek>2255</GPSWeek>
+                <Seconds>379414</Seconds>
+            </Time>
+            <InitialisationType>OnTheFly</InitialisationType>
+            <SurveyType>RealTime</SurveyType>
+            <InitialisationCounter/>
+            <PointName/>
+        </InitialisationRecord>
+
+        <SurveyEventRecord ID="000000a5" TimeStamp="2023-03-30T11:28:34">
+            <Event>EndSurvey</Event>
+        </SurveyEventRecord>
+
+        <RoverSurveyOptionsRecord ID="000000a7" TimeStamp="2023-03-30T11:28:41">
+            <ElevationMask>10</ElevationMask>
+            <PDOPMask>6</PDOPMask>
+        </RoverSurveyOptionsRecord>
+
+        <NTRIPDataSourceRecord ID="000000b6" TimeStamp="2023-03-30T11:28:51">
+            <MountPoint>MSM_GNSS</MountPoint>
+            <DataFormat>RTCM 3.2</DataFormat>
+            <Solution>Nätverk</Solution>
+            <IPAddress>192.71.190.141</IPAddress>
+            <IPPort>8500</IPPort>
+        </NTRIPDataSourceRecord>
+
+        <RoverSurveyOptionsRecord ID="000000b7" TimeStamp="2023-03-30T11:28:51">
+            <ElevationMask>10</ElevationMask>
+            <PDOPMask>6</PDOPMask>
+        </RoverSurveyOptionsRecord>
+
+        <SurveyEventRecord ID="000000b8" TimeStamp="2023-03-30T11:28:51">
+            <Event>StartRoverSurvey</Event>
+        </SurveyEventRecord>
+
+        <GPSEquipmentRecord ID="000000b9" TimeStamp="2023-03-30T11:28:59">
+            <ReceiverType/>
+            <ReceiverSerialNumber/>
+            <ReceiverFirmwareVersion>0</ReceiverFirmwareVersion>
+            <AntennaType>AdV Null Antenna</AntennaType>
+            <AntennaSerialNumber/>
+            <AntennaNumber>255</AntennaNumber>
+            <AntennaMeasurementMethod>Antennens fascenter</AntennaMeasurementMethod>
+            <AntennaMethod>1</AntennaMethod>
+            <AntennaTapeAdjustment>0</AntennaTapeAdjustment>
+            <AntennaHorizontalOffset>0</AntennaHorizontalOffset>
+            <AntennaVerticalOffset>0</AntennaVerticalOffset>
+        </GPSEquipmentRecord>
+
+        <AntennaRecord ID="000000ba" TimeStamp="2023-03-30T11:28:59">
+            <MeasuredHeight>0</MeasuredHeight>
+            <MeasurementType>Corrected</MeasurementType>
+            <GPSEquipmentID>000000b9</GPSEquipmentID>
+            <ReducedHeight>0</ReducedHeight>
+        </AntennaRecord>
+
+        <ReferenceRecord ID="000000bb" TimeStamp="2023-03-30T11:28:59">
+            <PointName>PRS245225765538</PointName>
+            <AntennaID>000000ba</AntennaID>
+        </ReferenceRecord>
+
+        <IMUCenteringAlignmentRecord ID="000000bc" TimeStamp="2023-03-30T11:29:00">
+            <SerialNumber>6051F00143</SerialNumber>
+            <TiltEvent>StartSurvey</TiltEvent>
+            <CalibrationTimeRemaining/>
+            <CalibrationTimeoutPeriod/>
+            <SensorStatus>NotCalibrated</SensorStatus>
+            <CalibrationTime>
+                <GPSWeek>0</GPSWeek>
+                <Seconds>0</Seconds>
+            </CalibrationTime>
+            <YawAdjustment>0</YawAdjustment>
+            <PitchAdjustment>0</PitchAdjustment>
+            <RollAdjustment>0</RollAdjustment>
+            <PitchDistance>0</PitchDistance>
+            <RollDistance>0</RollDistance>
+        </IMUCenteringAlignmentRecord>
+
+        <InitialisationRecord ID="000000bd" TimeStamp="2023-03-30T11:29:00">
+            <InitialisationEvent>RTKInitialised</InitialisationEvent>
+            <Time>
+                <GPSWeek>2255</GPSWeek>
+                <Seconds>379753</Seconds>
+            </Time>
+            <InitialisationType>OnTheFly</InitialisationType>
+            <SurveyType>RealTime</SurveyType>
+            <InitialisationCounter/>
+            <PointName/>
+        </InitialisationRecord>
+
+        <InitialisationRecord ID="000000be" TimeStamp="2023-03-30T11:29:07">
+            <InitialisationEvent>RTKNotInitialised</InitialisationEvent>
+            <Time>
+                <GPSWeek>2255</GPSWeek>
+                <Seconds>379758</Seconds>
+            </Time>
+            <InitialisationType>OnTheFly</InitialisationType>
+            <SurveyType>RealTime</SurveyType>
+            <InitialisationCounter/>
+            <PointName/>
+        </InitialisationRecord>
+
+        <InitialisationRecord ID="000000bf" TimeStamp="2023-03-30T11:29:16">
+            <InitialisationEvent>RTKInitialised</InitialisationEvent>
+            <Time>
+                <GPSWeek>2255</GPSWeek>
+                <Seconds>379770</Seconds>
+            </Time>
+            <InitialisationType>OnTheFly</InitialisationType>
+            <SurveyType>RealTime</SurveyType>
+            <InitialisationCounter/>
+            <PointName/>
+        </InitialisationRecord>
+
+        <GPSEquipmentRecord ID="000000c1" TimeStamp="2023-03-30T11:30:55">
+            <ReceiverType>R12i</ReceiverType>
+            <ReceiverSerialNumber>6051F00143</ReceiverSerialNumber>
+            <ReceiverFirmwareVersion>6.16</ReceiverFirmwareVersion>
+            <AntennaType>R12i Internal</AntennaType>
+            <AntennaSerialNumber/>
+            <AntennaNumber>610</AntennaNumber>
+            <AntennaMeasurementMethod>Underkant av snabbfäste</AntennaMeasurementMethod>
+            <AntennaMethod>1</AntennaMethod>
+            <AntennaTapeAdjustment>0</AntennaTapeAdjustment>
+            <AntennaHorizontalOffset>0</AntennaHorizontalOffset>
+            <AntennaVerticalOffset>0.17932</AntennaVerticalOffset>
+            <AntennaMeasurementKey>Method1</AntennaMeasurementKey>
+        </GPSEquipmentRecord>
+
+        <AntennaRecord ID="000000c2" TimeStamp="2023-03-30T11:30:55">
+            <MeasuredHeight>1.665</MeasuredHeight>
+            <MeasurementType>Raw</MeasurementType>
+            <GPSEquipmentID>000000c1</GPSEquipmentID>
+            <ReducedHeight>1.84432</ReducedHeight>
+        </AntennaRecord>
+
+        <PointRecord ID="000000c3" TimeStamp="2023-03-30T11:30:55">
+            <Name>g2</Name>
+            <Code>gnss</Code>
+            <Method>GpsRTKControlPoint</Method>
+            <SurveyMethod>NetworkRTK</SurveyMethod>
+            <Classification>Normal</Classification>
+            <Deleted>false</Deleted>
+
+            <ECEFDeltas>
+                <DeltaX>-88.45630285237</DeltaX>
+                <DeltaY>9381.3071768451</DeltaY>
+                <DeltaZ>-1295.0270969942</DeltaZ>
+            </ECEFDeltas>
+            <ReferenceRecordID>000000bb</ReferenceRecordID>
+            <RTK_Base>PRS245225765538</RTK_Base>
+            <AntennaID>000000c2</AntennaID>
+
+            <ComputedGrid>
+                <North>6279631.3352291</North>
+                <East>116639.48215231</East>
+                <Elevation>32.332771740079</Elevation>
+            </ComputedGrid>
+            <DeviceAxisOrientation>
+                <Type>VerticalTiltError</Type>
+                <Attitude>
+                    <Pitch>0.00087080612829</Pitch>
+                    <Roll>0.0087384383368</Roll>
+                    <Yaw/>
+                </Attitude>
+            </DeviceAxisOrientation>
+            <Precision>
+                <Horizontal>0.00951309734317</Horizontal>
+                <Vertical>0.01298936828971</Vertical>
+            </Precision>
+            <QualityControl1>
+                <MinimumNumberOfSatellites>22</MinimumNumberOfSatellites>
+                <MinGPSSVs>9</MinGPSSVs>
+                <MinGLONASSSVs>8</MinGLONASSSVs>
+                <MinGalileoSVs>5</MinGalileoSVs>
+                <MinQZSSSVs>0</MinQZSSSVs>
+                <MinBeiDouSVs>0</MinBeiDouSVs>
+                <NumberOfSatellites>22</NumberOfSatellites>
+                <NumGPSSVs>9</NumGPSSVs>
+                <NumGLONASSSVs>8</NumGLONASSSVs>
+                <NumGalileoSVs>5</NumGalileoSVs>
+                <NumQZSSSVs>0</NumQZSSSVs>
+                <NumBeiDouSVs>0</NumBeiDouSVs>
+                <RelativeDOPs>false</RelativeDOPs>
+                <PDOP>1.1096950769424</PDOP>
+                <GDOP>1.601368637829</GDOP>
+                <HDOP>0.56845337152481</HDOP>
+                <VDOP>0.95315676927567</VDOP>
+                <PDOP_AtStore>1.1079965829849</PDOP_AtStore>
+                <GDOP_AtStore>1.5984881502839</GDOP_AtStore>
+                <HDOP_AtStore>0.56845337152481</HDOP_AtStore>
+                <VDOP_AtStore>0.95106101036072</VDOP_AtStore>
+                <NumberOfPositionsUsed>48</NumberOfPositionsUsed>
+                <HorizontalStandardDeviation/>
+                <VerticalStandardDeviation/>
+                <StartTime>
+                    <GPSWeek>2255</GPSWeek>
+                    <Seconds>379821</Seconds>
+                </StartTime>
+                <EndTime>
+                    <GPSWeek>2255</GPSWeek>
+                    <Seconds>379868</Seconds>
+                </EndTime>
+                <MonitorStatus>NotMonitored</MonitorStatus>
+                <RTCMAge>2</RTCMAge>
+                <Warnings>
+                    <ExcessTiltWarning>No</ExcessTiltWarning>
+                    <ExcessTiltAtStorage>No</ExcessTiltAtStorage>
+                    <ExcessMovementWarning>No</ExcessMovementWarning>
+                    <ExcessMovementAtStorage>No</ExcessMovementAtStorage>
+                    <PoorPrecisionsWarning>No</PoorPrecisionsWarning>
+                    <PoorPrecisionsAtStorage>No</PoorPrecisionsAtStorage>
+                    <MagneticDisturbanceWarning>NotSupported</MagneticDisturbanceWarning>
+                    <MagneticDisturbanceAtStorage>NotSupported</MagneticDisturbanceAtStorage>
+                    <BadEnvironmentWarning>No</BadEnvironmentWarning>
+                    <BadEnvironmentAtStorage>No</BadEnvironmentAtStorage>
+                    <AINSAlignmentWarning>NotChecked</AINSAlignmentWarning>
+                    <AINSAlignmentAtStorage>NotChecked</AINSAlignmentAtStorage>
+                </Warnings>
+                <SVList>
+                    <SV Number="6" System="GPS"/>
+                    <SV Number="11" System="GPS"/>
+                    <SV Number="12" System="GPS"/>
+                    <SV Number="19" System="GPS"/>
+                    <SV Number="24" System="GPS"/>
+                    <SV Number="25" System="GPS"/>
+                    <SV Number="28" System="GPS"/>
+                    <SV Number="29" System="GPS"/>
+                    <SV Number="32" System="GPS"/>
+                    <SV Number="1" System="GLONASS"/>
+                    <SV Number="7" System="GLONASS"/>
+                    <SV Number="8" System="GLONASS"/>
+                    <SV Number="9" System="GLONASS"/>
+                    <SV Number="16" System="GLONASS"/>
+                    <SV Number="17" System="GLONASS"/>
+                    <SV Number="18" System="GLONASS"/>
+                    <SV Number="19" System="GLONASS"/>
+                    <SV Number="5" System="GALILEO"/>
+                    <SV Number="9" System="GALILEO"/>
+                    <SV Number="26" System="GALILEO"/>
+                    <SV Number="31" System="GALILEO"/>
+                    <SV Number="33" System="GALILEO"/>
+                </SVList>
+            </QualityControl1>
+            <QualityControl2>
+                <NumberOfSatellites>22</NumberOfSatellites>
+                <ErrorScale>0.01453108619899</ErrorScale>
+                <VCVxx>0.00008570938371</VCVxx>
+                <VCVxy>0.0000080932432</VCVxy>
+                <VCVxz>0.00004944611646</VCVxz>
+                <VCVyy>0.00003495775672</VCVyy>
+                <VCVyz>0.00000770298448</VCVyz>
+                <VCVzz>0.00013855556608</VCVzz>
+                <UnitVariance>1</UnitVariance>
+            </QualityControl2>
+        </PointRecord>
+
+        <InitialisationRecord ID="000000cd" TimeStamp="2023-03-30T11:32:14">
+            <InitialisationEvent>RTKNotInitialised</InitialisationEvent>
+            <Time>
+                <GPSWeek>2255</GPSWeek>
+                <Seconds>379947</Seconds>
+            </Time>
+            <InitialisationType>OnTheFly</InitialisationType>
+            <SurveyType>RealTime</SurveyType>
+            <InitialisationCounter/>
+            <PointName/>
+        </InitialisationRecord>
+
+        <InitialisationRecord ID="000000ce" TimeStamp="2023-03-30T11:35:40">
+            <InitialisationEvent>RTKInitialised</InitialisationEvent>
+            <Time>
+                <GPSWeek>2255</GPSWeek>
+                <Seconds>380151</Seconds>
+            </Time>
+            <InitialisationType>OnTheFly</InitialisationType>
+            <SurveyType>RealTime</SurveyType>
+            <InitialisationCounter/>
+            <PointName/>
+        </InitialisationRecord>
+
+        <PointRecord ID="000000cf" TimeStamp="2023-03-30T11:37:51">
+            <Name>g3</Name>
+            <Code>gnss</Code>
+            <Method>GpsRTKControlPoint</Method>
+            <SurveyMethod>NetworkRTK</SurveyMethod>
+            <Classification>Normal</Classification>
+            <Deleted>false</Deleted>
+
+            <ECEFDeltas>
+                <DeltaX>215.58432255033</DeltaX>
+                <DeltaY>9543.8848391499</DeltaY>
+                <DeltaZ>-1522.4334174395</DeltaZ>
+            </ECEFDeltas>
+            <ReferenceRecordID>000000bb</ReferenceRecordID>
+            <RTK_Base>PRS245225765538</RTK_Base>
+            <AntennaID>000000c2</AntennaID>
+
+            <ComputedGrid>
+                <North>6279227.655855</North>
+                <East>116726.55627514</East>
+                <Elevation>25.410772198024</Elevation>
+            </ComputedGrid>
+            <DeviceAxisOrientation>
+                <Type>VerticalTiltError</Type>
+                <Attitude>
+                    <Pitch>0.0128276398159</Pitch>
+                    <Roll>-0.11049757488722</Roll>
+                    <Yaw/>
+                </Attitude>
+            </DeviceAxisOrientation>
+            <Precision>
+                <Horizontal>0.00875892050903</Horizontal>
+                <Vertical>0.01228895317763</Vertical>
+            </Precision>
+            <QualityControl1>
+                <MinimumNumberOfSatellites>20</MinimumNumberOfSatellites>
+                <MinGPSSVs>8</MinGPSSVs>
+                <MinGLONASSSVs>7</MinGLONASSSVs>
+                <MinGalileoSVs>5</MinGalileoSVs>
+                <MinQZSSSVs>0</MinQZSSSVs>
+                <MinBeiDouSVs>0</MinBeiDouSVs>
+                <NumberOfSatellites>20</NumberOfSatellites>
+                <NumGPSSVs>8</NumGPSSVs>
+                <NumGLONASSSVs>7</NumGLONASSSVs>
+                <NumGalileoSVs>5</NumGalileoSVs>
+                <NumQZSSSVs>0</NumQZSSSVs>
+                <NumBeiDouSVs>0</NumBeiDouSVs>
+                <RelativeDOPs>false</RelativeDOPs>
+                <PDOP>1.2149529457092</PDOP>
+                <GDOP>1.761610591454</GDOP>
+                <HDOP>0.62692338228226</HDOP>
+                <VDOP>1.0407721996307</VDOP>
+                <PDOP_AtStore>1.2149529457092</PDOP_AtStore>
+                <GDOP_AtStore>1.7614486932878</GDOP_AtStore>
+                <HDOP_AtStore>0.62692338228226</HDOP_AtStore>
+                <VDOP_AtStore>1.0407102108002</VDOP_AtStore>
+                <NumberOfPositionsUsed>48</NumberOfPositionsUsed>
+                <HorizontalStandardDeviation/>
+                <VerticalStandardDeviation/>
+                <StartTime>
+                    <GPSWeek>2255</GPSWeek>
+                    <Seconds>380237</Seconds>
+                </StartTime>
+                <EndTime>
+                    <GPSWeek>2255</GPSWeek>
+                    <Seconds>380284</Seconds>
+                </EndTime>
+                <MonitorStatus>NotMonitored</MonitorStatus>
+                <RTCMAge>1</RTCMAge>
+                <Warnings>
+                    <ExcessTiltWarning>No</ExcessTiltWarning>
+                    <ExcessTiltAtStorage>No</ExcessTiltAtStorage>
+                    <ExcessMovementWarning>No</ExcessMovementWarning>
+                    <ExcessMovementAtStorage>No</ExcessMovementAtStorage>
+                    <PoorPrecisionsWarning>No</PoorPrecisionsWarning>
+                    <PoorPrecisionsAtStorage>No</PoorPrecisionsAtStorage>
+                    <MagneticDisturbanceWarning>NotSupported</MagneticDisturbanceWarning>
+                    <MagneticDisturbanceAtStorage>NotSupported</MagneticDisturbanceAtStorage>
+                    <BadEnvironmentWarning>No</BadEnvironmentWarning>
+                    <BadEnvironmentAtStorage>No</BadEnvironmentAtStorage>
+                    <AINSAlignmentWarning>NotChecked</AINSAlignmentWarning>
+                    <AINSAlignmentAtStorage>NotChecked</AINSAlignmentAtStorage>
+                </Warnings>
+                <SVList>
+                    <SV Number="6" System="GPS"/>
+                    <SV Number="11" System="GPS"/>
+                    <SV Number="12" System="GPS"/>
+                    <SV Number="24" System="GPS"/>
+                    <SV Number="25" System="GPS"/>
+                    <SV Number="28" System="GPS"/>
+                    <SV Number="29" System="GPS"/>
+                    <SV Number="32" System="GPS"/>
+                    <SV Number="1" System="GLONASS"/>
+                    <SV Number="7" System="GLONASS"/>
+                    <SV Number="8" System="GLONASS"/>
+                    <SV Number="9" System="GLONASS"/>
+                    <SV Number="16" System="GLONASS"/>
+                    <SV Number="18" System="GLONASS"/>
+                    <SV Number="19" System="GLONASS"/>
+                    <SV Number="5" System="GALILEO"/>
+                    <SV Number="9" System="GALILEO"/>
+                    <SV Number="26" System="GALILEO"/>
+                    <SV Number="31" System="GALILEO"/>
+                    <SV Number="33" System="GALILEO"/>
+                </SVList>
+            </QualityControl1>
+            <QualityControl2>
+                <NumberOfSatellites>20</NumberOfSatellites>
+                <ErrorScale>0.01242102403194</ErrorScale>
+                <VCVxx>0.00010944446694</VCVxx>
+                <VCVxy>0.00001948413592</VCVxy>
+                <VCVxz>0.00005567207336</VCVxz>
+                <VCVyy>0.00002574679093</VCVyy>
+                <VCVyz>0.00001077745947</VCVyz>
+                <VCVzz>0.000092545808</VCVzz>
+                <UnitVariance>1</UnitVariance>
+            </QualityControl2>
+        </PointRecord>
+
+        <InitialisationRecord ID="000000d9" TimeStamp="2023-03-30T11:39:05">
+            <InitialisationEvent>RTKNotInitialised</InitialisationEvent>
+            <Time>
+                <GPSWeek>2255</GPSWeek>
+                <Seconds>380358</Seconds>
+            </Time>
+            <InitialisationType>OnTheFly</InitialisationType>
+            <SurveyType>RealTime</SurveyType>
+            <InitialisationCounter/>
+            <PointName/>
+        </InitialisationRecord>
+
+        <SurveyEventRecord ID="000000da" TimeStamp="2023-03-30T11:42:59">
+            <Event>EndSurvey</Event>
+        </SurveyEventRecord>
+
+        <RoverSurveyOptionsRecord ID="000000dc" TimeStamp="2023-03-30T11:43:05">
+            <ElevationMask>10</ElevationMask>
+            <PDOPMask>6</PDOPMask>
+        </RoverSurveyOptionsRecord>
+
+        <RoverSurveyOptionsRecord ID="000000ec" TimeStamp="2023-03-30T11:43:44">
+            <ElevationMask>10</ElevationMask>
+            <PDOPMask>6</PDOPMask>
+        </RoverSurveyOptionsRecord>
+
+        <NTRIPDataSourceRecord ID="000000fb" TimeStamp="2023-03-30T11:43:51">
+            <MountPoint>MSM_GNSS</MountPoint>
+            <DataFormat/>
+            <Solution/>
+            <IPAddress>192.71.190.141</IPAddress>
+            <IPPort>8500</IPPort>
+        </NTRIPDataSourceRecord>
+
+        <RoverSurveyOptionsRecord ID="000000fc" TimeStamp="2023-03-30T11:43:51">
+            <ElevationMask>10</ElevationMask>
+            <PDOPMask>6</PDOPMask>
+        </RoverSurveyOptionsRecord>
+
+        <SurveyEventRecord ID="000000fd" TimeStamp="2023-03-30T11:43:51">
+            <Event>StartRoverSurvey</Event>
+        </SurveyEventRecord>
+
+        <GPSEquipmentRecord ID="000000fe" TimeStamp="2023-03-30T11:43:56">
+            <ReceiverType/>
+            <ReceiverSerialNumber/>
+            <ReceiverFirmwareVersion>0</ReceiverFirmwareVersion>
+            <AntennaType>AdV Null Antenna</AntennaType>
+            <AntennaSerialNumber/>
+            <AntennaNumber>255</AntennaNumber>
+            <AntennaMeasurementMethod>Antennens fascenter</AntennaMeasurementMethod>
+            <AntennaMethod>1</AntennaMethod>
+            <AntennaTapeAdjustment>0</AntennaTapeAdjustment>
+            <AntennaHorizontalOffset>0</AntennaHorizontalOffset>
+            <AntennaVerticalOffset>0</AntennaVerticalOffset>
+        </GPSEquipmentRecord>
+
+        <AntennaRecord ID="000000ff" TimeStamp="2023-03-30T11:43:56">
+            <MeasuredHeight>0</MeasuredHeight>
+            <MeasurementType>Corrected</MeasurementType>
+            <GPSEquipmentID>000000fe</GPSEquipmentID>
+            <ReducedHeight>0</ReducedHeight>
+        </AntennaRecord>
+
+        <ReferenceRecord ID="00000100" TimeStamp="2023-03-30T11:43:56">
+            <PointName>PRS245225765538</PointName>
+            <AntennaID>000000ff</AntennaID>
+        </ReferenceRecord>
+
+        <IMUCenteringAlignmentRecord ID="00000101" TimeStamp="2023-03-30T11:43:57">
+            <SerialNumber>6051F00143</SerialNumber>
+            <TiltEvent>StartSurvey</TiltEvent>
+            <CalibrationTimeRemaining/>
+            <CalibrationTimeoutPeriod/>
+            <SensorStatus>NotCalibrated</SensorStatus>
+            <CalibrationTime>
+                <GPSWeek>0</GPSWeek>
+                <Seconds>0</Seconds>
+            </CalibrationTime>
+            <YawAdjustment>0</YawAdjustment>
+            <PitchAdjustment>0</PitchAdjustment>
+            <RollAdjustment>0</RollAdjustment>
+            <PitchDistance>0</PitchDistance>
+            <RollDistance>0</RollDistance>
+        </IMUCenteringAlignmentRecord>
+
+        <InitialisationRecord ID="00000102" TimeStamp="2023-03-30T11:43:58">
+            <InitialisationEvent>RTKInitialised</InitialisationEvent>
+            <Time>
+                <GPSWeek>2255</GPSWeek>
+                <Seconds>380650</Seconds>
+            </Time>
+            <InitialisationType>OnTheFly</InitialisationType>
+            <SurveyType>RealTime</SurveyType>
+            <InitialisationCounter/>
+            <PointName/>
+        </InitialisationRecord>
+
+        <InitialisationRecord ID="00000103" TimeStamp="2023-03-30T11:44:00">
+            <InitialisationEvent>RTKNotInitialised</InitialisationEvent>
+            <Time>
+                <GPSWeek>2255</GPSWeek>
+                <Seconds>380654</Seconds>
+            </Time>
+            <InitialisationType>OnTheFly</InitialisationType>
+            <SurveyType>RealTime</SurveyType>
+            <InitialisationCounter/>
+            <PointName/>
+        </InitialisationRecord>
+
+        <InitialisationRecord ID="00000104" TimeStamp="2023-03-30T11:44:10">
+            <InitialisationEvent>RTKInitialised</InitialisationEvent>
+            <Time>
+                <GPSWeek>2255</GPSWeek>
+                <Seconds>380664</Seconds>
+            </Time>
+            <InitialisationType>OnTheFly</InitialisationType>
+            <SurveyType>RealTime</SurveyType>
+            <InitialisationCounter/>
+            <PointName/>
+        </InitialisationRecord>
+
+        <GPSEquipmentRecord ID="00000106" TimeStamp="2023-03-30T11:45:34">
+            <ReceiverType>R12i</ReceiverType>
+            <ReceiverSerialNumber>6051F00143</ReceiverSerialNumber>
+            <ReceiverFirmwareVersion>6.16</ReceiverFirmwareVersion>
+            <AntennaType>R12i Internal</AntennaType>
+            <AntennaSerialNumber/>
+            <AntennaNumber>610</AntennaNumber>
+            <AntennaMeasurementMethod>Underkant av snabbfäste</AntennaMeasurementMethod>
+            <AntennaMethod>1</AntennaMethod>
+            <AntennaTapeAdjustment>0</AntennaTapeAdjustment>
+            <AntennaHorizontalOffset>0</AntennaHorizontalOffset>
+            <AntennaVerticalOffset>0.17932</AntennaVerticalOffset>
+            <AntennaMeasurementKey>Method1</AntennaMeasurementKey>
+        </GPSEquipmentRecord>
+
+        <AntennaRecord ID="00000107" TimeStamp="2023-03-30T11:45:34">
+            <MeasuredHeight>1.665</MeasuredHeight>
+            <MeasurementType>Raw</MeasurementType>
+            <GPSEquipmentID>00000106</GPSEquipmentID>
+            <ReducedHeight>1.84432</ReducedHeight>
+        </AntennaRecord>
+
+        <PointRecord ID="00000108" TimeStamp="2023-03-30T11:45:34">
+            <Name>g4</Name>
+            <Code>gnss</Code>
+            <Method>GpsRTKControlPoint</Method>
+            <SurveyMethod>NetworkRTK</SurveyMethod>
+            <Classification>Normal</Classification>
+            <Deleted>false</Deleted>
+
+            <ECEFDeltas>
+                <DeltaX>-52.781426739879</DeltaX>
+                <DeltaY>9788.0469057681</DeltaY>
+                <DeltaZ>-1380.0597025296</DeltaZ>
+            </ECEFDeltas>
+            <ReferenceRecordID>00000100</ReferenceRecordID>
+            <RTK_Base>PRS245225765538</RTK_Base>
+            <AntennaID>00000107</AntennaID>
+
+            <ComputedGrid>
+                <North>6279476.2955659</North>
+                <East>117026.6526968</East>
+                <Elevation>30.603896057457</Elevation>
+            </ComputedGrid>
+            <DeviceAxisOrientation>
+                <Type>VerticalTiltError</Type>
+                <Attitude>
+                    <Pitch>-0.09203681863674</Pitch>
+                    <Roll>0.03082282760691</Roll>
+                    <Yaw/>
+                </Attitude>
+            </DeviceAxisOrientation>
+            <Precision>
+                <Horizontal>0.0123728271133</Horizontal>
+                <Vertical>0.01716732792556</Vertical>
+            </Precision>
+            <QualityControl1>
+                <MinimumNumberOfSatellites>18</MinimumNumberOfSatellites>
+                <MinGPSSVs>9</MinGPSSVs>
+                <MinGLONASSSVs>6</MinGLONASSSVs>
+                <MinGalileoSVs>3</MinGalileoSVs>
+                <MinQZSSSVs>0</MinQZSSSVs>
+                <MinBeiDouSVs>0</MinBeiDouSVs>
+                <NumberOfSatellites>18</NumberOfSatellites>
+                <NumGPSSVs>9</NumGPSSVs>
+                <NumGLONASSSVs>6</NumGLONASSSVs>
+                <NumGalileoSVs>3</NumGalileoSVs>
+                <NumQZSSSVs>0</NumQZSSSVs>
+                <NumBeiDouSVs>0</NumBeiDouSVs>
+                <RelativeDOPs>false</RelativeDOPs>
+                <PDOP>1.3432544469833</PDOP>
+                <GDOP>2.016740802004</GDOP>
+                <HDOP>0.7217623591423</HDOP>
+                <VDOP>1.1332721710205</VDOP>
+                <PDOP_AtStore>1.3432544469833</PDOP_AtStore>
+                <GDOP_AtStore>2.016740802004</GDOP_AtStore>
+                <HDOP_AtStore>0.72112876176834</HDOP_AtStore>
+                <VDOP_AtStore>1.1332721710205</VDOP_AtStore>
+                <NumberOfPositionsUsed>48</NumberOfPositionsUsed>
+                <HorizontalStandardDeviation/>
+                <VerticalStandardDeviation/>
+                <StartTime>
+                    <GPSWeek>2255</GPSWeek>
+                    <Seconds>380701</Seconds>
+                </StartTime>
+                <EndTime>
+                    <GPSWeek>2255</GPSWeek>
+                    <Seconds>380748</Seconds>
+                </EndTime>
+                <MonitorStatus>NotMonitored</MonitorStatus>
+                <RTCMAge>1</RTCMAge>
+                <Warnings>
+                    <ExcessTiltWarning>No</ExcessTiltWarning>
+                    <ExcessTiltAtStorage>No</ExcessTiltAtStorage>
+                    <ExcessMovementWarning>No</ExcessMovementWarning>
+                    <ExcessMovementAtStorage>No</ExcessMovementAtStorage>
+                    <PoorPrecisionsWarning>No</PoorPrecisionsWarning>
+                    <PoorPrecisionsAtStorage>No</PoorPrecisionsAtStorage>
+                    <MagneticDisturbanceWarning>NotSupported</MagneticDisturbanceWarning>
+                    <MagneticDisturbanceAtStorage>NotSupported</MagneticDisturbanceAtStorage>
+                    <BadEnvironmentWarning>No</BadEnvironmentWarning>
+                    <BadEnvironmentAtStorage>No</BadEnvironmentAtStorage>
+                    <AINSAlignmentWarning>NotChecked</AINSAlignmentWarning>
+                    <AINSAlignmentAtStorage>NotChecked</AINSAlignmentAtStorage>
+                </Warnings>
+                <SVList>
+                    <SV Number="6" System="GPS"/>
+                    <SV Number="11" System="GPS"/>
+                    <SV Number="12" System="GPS"/>
+                    <SV Number="24" System="GPS"/>
+                    <SV Number="25" System="GPS"/>
+                    <SV Number="28" System="GPS"/>
+                    <SV Number="29" System="GPS"/>
+                    <SV Number="31" System="GPS"/>
+                    <SV Number="32" System="GPS"/>
+                    <SV Number="1" System="GLONASS"/>
+                    <SV Number="8" System="GLONASS"/>
+                    <SV Number="9" System="GLONASS"/>
+                    <SV Number="16" System="GLONASS"/>
+                    <SV Number="18" System="GLONASS"/>
+                    <SV Number="19" System="GLONASS"/>
+                    <SV Number="26" System="GALILEO"/>
+                    <SV Number="31" System="GALILEO"/>
+                    <SV Number="33" System="GALILEO"/>
+                </SVList>
+            </QualityControl1>
+            <QualityControl2>
+                <NumberOfSatellites>18</NumberOfSatellites>
+                <ErrorScale>0.01575381308794</ErrorScale>
+                <VCVxx>0.00015018320119</VCVxx>
+                <VCVxy>0.00000074316989</VCVxy>
+                <VCVxz>0.00009604325896</VCVxz>
+                <VCVyy>0.00006248437421</VCVyy>
+                <VCVyz>0.00000255920327</VCVyz>
+                <VCVzz>0.00023513642373</VCVzz>
+                <UnitVariance>1</UnitVariance>
+            </QualityControl2>
+        </PointRecord>
+
+        <InitialisationRecord ID="00000112" TimeStamp="2023-03-30T11:46:28">
+            <InitialisationEvent>RTKNotInitialised</InitialisationEvent>
+            <Time>
+                <GPSWeek>2255</GPSWeek>
+                <Seconds>380801</Seconds>
+            </Time>
+            <InitialisationType>OnTheFly</InitialisationType>
+            <SurveyType>RealTime</SurveyType>
+            <InitialisationCounter/>
+            <PointName/>
+        </InitialisationRecord>
+
+        <InitialisationRecord ID="00000113" TimeStamp="2023-03-30T11:49:59">
+            <InitialisationEvent>RTKInitialised</InitialisationEvent>
+            <Time>
+                <GPSWeek>2255</GPSWeek>
+                <Seconds>381012</Seconds>
+            </Time>
+            <InitialisationType>OnTheFly</InitialisationType>
+            <SurveyType>RealTime</SurveyType>
+            <InitialisationCounter/>
+            <PointName/>
+        </InitialisationRecord>
+
+        <InitialisationRecord ID="00000114" TimeStamp="2023-03-30T11:50:08">
+            <InitialisationEvent>RTKNotInitialised</InitialisationEvent>
+            <Time>
+                <GPSWeek>2255</GPSWeek>
+                <Seconds>381021</Seconds>
+            </Time>
+            <InitialisationType>OnTheFly</InitialisationType>
+            <SurveyType>RealTime</SurveyType>
+            <InitialisationCounter/>
+            <PointName/>
+        </InitialisationRecord>
+
+        <InitialisationRecord ID="00000115" TimeStamp="2023-03-30T11:50:16">
+            <InitialisationEvent>RTKInitialised</InitialisationEvent>
+            <Time>
+                <GPSWeek>2255</GPSWeek>
+                <Seconds>381029</Seconds>
+            </Time>
+            <InitialisationType>OnTheFly</InitialisationType>
+            <SurveyType>RealTime</SurveyType>
+            <InitialisationCounter/>
+            <PointName/>
+        </InitialisationRecord>
+
+        <SurveyEventRecord ID="00000117" TimeStamp="2023-03-30T11:53:56">
+            <Event>EndSurvey</Event>
+        </SurveyEventRecord>
+
+        <RoverSurveyOptionsRecord ID="00000119" TimeStamp="2023-03-30T11:54:06">
+            <ElevationMask>10</ElevationMask>
+            <PDOPMask>6</PDOPMask>
+        </RoverSurveyOptionsRecord>
+
+        <NTRIPDataSourceRecord ID="00000128" TimeStamp="2023-03-30T11:54:13">
+            <MountPoint>MSM_GNSS</MountPoint>
+            <DataFormat/>
+            <Solution/>
+            <IPAddress>192.71.190.141</IPAddress>
+            <IPPort>8500</IPPort>
+        </NTRIPDataSourceRecord>
+
+        <RoverSurveyOptionsRecord ID="00000129" TimeStamp="2023-03-30T11:54:13">
+            <ElevationMask>10</ElevationMask>
+            <PDOPMask>6</PDOPMask>
+        </RoverSurveyOptionsRecord>
+
+        <SurveyEventRecord ID="0000012a" TimeStamp="2023-03-30T11:54:13">
+            <Event>StartRoverSurvey</Event>
+        </SurveyEventRecord>
+
+        <GPSEquipmentRecord ID="0000012b" TimeStamp="2023-03-30T11:54:19">
+            <ReceiverType/>
+            <ReceiverSerialNumber/>
+            <ReceiverFirmwareVersion>0</ReceiverFirmwareVersion>
+            <AntennaType>AdV Null Antenna</AntennaType>
+            <AntennaSerialNumber/>
+            <AntennaNumber>255</AntennaNumber>
+            <AntennaMeasurementMethod>Antennens fascenter</AntennaMeasurementMethod>
+            <AntennaMethod>1</AntennaMethod>
+            <AntennaTapeAdjustment>0</AntennaTapeAdjustment>
+            <AntennaHorizontalOffset>0</AntennaHorizontalOffset>
+            <AntennaVerticalOffset>0</AntennaVerticalOffset>
+        </GPSEquipmentRecord>
+
+        <AntennaRecord ID="0000012c" TimeStamp="2023-03-30T11:54:19">
+            <MeasuredHeight>0</MeasuredHeight>
+            <MeasurementType>Corrected</MeasurementType>
+            <GPSEquipmentID>0000012b</GPSEquipmentID>
+            <ReducedHeight>0</ReducedHeight>
+        </AntennaRecord>
+
+        <ReferenceRecord ID="0000012d" TimeStamp="2023-03-30T11:54:19">
+            <PointName>PRS245225765538</PointName>
+            <AntennaID>0000012c</AntennaID>
+        </ReferenceRecord>
+
+        <IMUCenteringAlignmentRecord ID="0000012e" TimeStamp="2023-03-30T11:54:20">
+            <SerialNumber>6051F00143</SerialNumber>
+            <TiltEvent>StartSurvey</TiltEvent>
+            <CalibrationTimeRemaining/>
+            <CalibrationTimeoutPeriod/>
+            <SensorStatus>NotCalibrated</SensorStatus>
+            <CalibrationTime>
+                <GPSWeek>0</GPSWeek>
+                <Seconds>0</Seconds>
+            </CalibrationTime>
+            <YawAdjustment>0</YawAdjustment>
+            <PitchAdjustment>0</PitchAdjustment>
+            <RollAdjustment>0</RollAdjustment>
+            <PitchDistance>0</PitchDistance>
+            <RollDistance>0</RollDistance>
+        </IMUCenteringAlignmentRecord>
+
+        <InitialisationRecord ID="0000012f" TimeStamp="2023-03-30T11:54:20">
+            <InitialisationEvent>RTKInitialised</InitialisationEvent>
+            <Time>
+                <GPSWeek>2255</GPSWeek>
+                <Seconds>381273</Seconds>
+            </Time>
+            <InitialisationType>OnTheFly</InitialisationType>
+            <SurveyType>RealTime</SurveyType>
+            <InitialisationCounter/>
+            <PointName/>
+        </InitialisationRecord>
+
+        <InitialisationRecord ID="00000130" TimeStamp="2023-03-30T11:54:26">
+            <InitialisationEvent>RTKNotInitialised</InitialisationEvent>
+            <Time>
+                <GPSWeek>2255</GPSWeek>
+                <Seconds>381279</Seconds>
+            </Time>
+            <InitialisationType>OnTheFly</InitialisationType>
+            <SurveyType>RealTime</SurveyType>
+            <InitialisationCounter/>
+            <PointName/>
+        </InitialisationRecord>
+
+        <InitialisationRecord ID="00000131" TimeStamp="2023-03-30T11:54:35">
+            <InitialisationEvent>RTKInitialised</InitialisationEvent>
+            <Time>
+                <GPSWeek>2255</GPSWeek>
+                <Seconds>381288</Seconds>
+            </Time>
+            <InitialisationType>OnTheFly</InitialisationType>
+            <SurveyType>RealTime</SurveyType>
+            <InitialisationCounter/>
+            <PointName/>
+        </InitialisationRecord>
+
+        <GPSEquipmentRecord ID="00000133" TimeStamp="2023-03-30T11:55:42">
+            <ReceiverType>R12i</ReceiverType>
+            <ReceiverSerialNumber>6051F00143</ReceiverSerialNumber>
+            <ReceiverFirmwareVersion>6.16</ReceiverFirmwareVersion>
+            <AntennaType>R12i Internal</AntennaType>
+            <AntennaSerialNumber/>
+            <AntennaNumber>610</AntennaNumber>
+            <AntennaMeasurementMethod>Underkant av snabbfäste</AntennaMeasurementMethod>
+            <AntennaMethod>1</AntennaMethod>
+            <AntennaTapeAdjustment>0</AntennaTapeAdjustment>
+            <AntennaHorizontalOffset>0</AntennaHorizontalOffset>
+            <AntennaVerticalOffset>0.17932</AntennaVerticalOffset>
+            <AntennaMeasurementKey>Method1</AntennaMeasurementKey>
+        </GPSEquipmentRecord>
+
+        <AntennaRecord ID="00000134" TimeStamp="2023-03-30T11:55:42">
+            <MeasuredHeight>1.665</MeasuredHeight>
+            <MeasurementType>Raw</MeasurementType>
+            <GPSEquipmentID>00000133</GPSEquipmentID>
+            <ReducedHeight>1.84432</ReducedHeight>
+        </AntennaRecord>
+
+        <PointRecord ID="00000135" TimeStamp="2023-03-30T11:55:42">
+            <Name>g5</Name>
+            <Code>gnss</Code>
+            <Method>GpsRTKControlPoint</Method>
+            <SurveyMethod>NetworkRTK</SurveyMethod>
+            <Classification>Normal</Classification>
+            <Deleted>false</Deleted>
+
+            <ECEFDeltas>
+                <DeltaX>148.40406658594</DeltaX>
+                <DeltaY>9213.6180025716</DeltaY>
+                <DeltaZ>-1417.390026425</DeltaZ>
+            </ECEFDeltas>
+            <ReferenceRecordID>0000012d</ReferenceRecordID>
+            <RTK_Base>PRS245225765538</RTK_Base>
+            <AntennaID>00000134</AntennaID>
+
+            <ComputedGrid>
+                <North>6279404.3767464</North>
+                <East>116421.15012322</East>
+                <Elevation>36.406203743715</Elevation>
+            </ComputedGrid>
+            <DeviceAxisOrientation>
+                <Type>VerticalTiltError</Type>
+                <Attitude>
+                    <Pitch>-0.00511683097081</Pitch>
+                    <Roll>-0.04146901691861</Roll>
+                    <Yaw/>
+                </Attitude>
+            </DeviceAxisOrientation>
+            <Precision>
+                <Horizontal>0.01067638766035</Horizontal>
+                <Vertical>0.02006837725639</Vertical>
+            </Precision>
+            <QualityControl1>
+                <MinimumNumberOfSatellites>18</MinimumNumberOfSatellites>
+                <MinGPSSVs>9</MinGPSSVs>
+                <MinGLONASSSVs>6</MinGLONASSSVs>
+                <MinGalileoSVs>3</MinGalileoSVs>
+                <MinQZSSSVs>0</MinQZSSSVs>
+                <MinBeiDouSVs>0</MinBeiDouSVs>
+                <NumberOfSatellites>18</NumberOfSatellites>
+                <NumGPSSVs>9</NumGPSSVs>
+                <NumGLONASSSVs>6</NumGLONASSSVs>
+                <NumGalileoSVs>3</NumGalileoSVs>
+                <NumQZSSSVs>0</NumQZSSSVs>
+                <NumBeiDouSVs>0</NumBeiDouSVs>
+                <RelativeDOPs>false</RelativeDOPs>
+                <PDOP>1.3360438346863</PDOP>
+                <GDOP>2.0060858825314</GDOP>
+                <HDOP>0.71279686689377</HDOP>
+                <VDOP>1.1300148963928</VDOP>
+                <PDOP_AtStore>1.3339898586273</PDOP_AtStore>
+                <GDOP_AtStore>2.0027952189346</GDOP_AtStore>
+                <HDOP_AtStore>0.71205508708954</HDOP_AtStore>
+                <VDOP_AtStore>1.1280543804169</VDOP_AtStore>
+                <NumberOfPositionsUsed>48</NumberOfPositionsUsed>
+                <HorizontalStandardDeviation/>
+                <VerticalStandardDeviation/>
+                <StartTime>
+                    <GPSWeek>2255</GPSWeek>
+                    <Seconds>381309</Seconds>
+                </StartTime>
+                <EndTime>
+                    <GPSWeek>2255</GPSWeek>
+                    <Seconds>381356</Seconds>
+                </EndTime>
+                <MonitorStatus>NotMonitored</MonitorStatus>
+                <RTCMAge>1</RTCMAge>
+                <Warnings>
+                    <ExcessTiltWarning>No</ExcessTiltWarning>
+                    <ExcessTiltAtStorage>No</ExcessTiltAtStorage>
+                    <ExcessMovementWarning>No</ExcessMovementWarning>
+                    <ExcessMovementAtStorage>No</ExcessMovementAtStorage>
+                    <PoorPrecisionsWarning>No</PoorPrecisionsWarning>
+                    <PoorPrecisionsAtStorage>No</PoorPrecisionsAtStorage>
+                    <MagneticDisturbanceWarning>NotSupported</MagneticDisturbanceWarning>
+                    <MagneticDisturbanceAtStorage>NotSupported</MagneticDisturbanceAtStorage>
+                    <BadEnvironmentWarning>No</BadEnvironmentWarning>
+                    <BadEnvironmentAtStorage>No</BadEnvironmentAtStorage>
+                    <AINSAlignmentWarning>NotChecked</AINSAlignmentWarning>
+                    <AINSAlignmentAtStorage>NotChecked</AINSAlignmentAtStorage>
+                </Warnings>
+                <SVList>
+                    <SV Number="6" System="GPS"/>
+                    <SV Number="11" System="GPS"/>
+                    <SV Number="12" System="GPS"/>
+                    <SV Number="24" System="GPS"/>
+                    <SV Number="25" System="GPS"/>
+                    <SV Number="28" System="GPS"/>
+                    <SV Number="29" System="GPS"/>
+                    <SV Number="31" System="GPS"/>
+                    <SV Number="32" System="GPS"/>
+                    <SV Number="1" System="GLONASS"/>
+                    <SV Number="8" System="GLONASS"/>
+                    <SV Number="9" System="GLONASS"/>
+                    <SV Number="16" System="GLONASS"/>
+                    <SV Number="18" System="GLONASS"/>
+                    <SV Number="19" System="GLONASS"/>
+                    <SV Number="26" System="GALILEO"/>
+                    <SV Number="31" System="GALILEO"/>
+                    <SV Number="33" System="GALILEO"/>
+                </SVList>
+            </QualityControl1>
+            <QualityControl2>
+                <NumberOfSatellites>18</NumberOfSatellites>
+                <ErrorScale>0.01704029925168</ErrorScale>
+                <VCVxx>0.00013382617908</VCVxx>
+                <VCVxy>0.00002019562817</VCVxy>
+                <VCVxz>0.00013993223547</VCVxz>
+                <VCVyy>0.00005383699681</VCVyy>
+                <VCVyz>0.00002912159835</VCVyz>
+                <VCVzz>0.00032906184788</VCVzz>
+                <UnitVariance>1</UnitVariance>
+            </QualityControl2>
+        </PointRecord>
+
+        <NoteRecord ID="0000013f" TimeStamp="2023-03-30T11:57:01">
+            <Notes>
+                <Note>Exporterad fil: C:\Users\TSC7\OneDrive - Swescan AB\Trimble\2023\2023-03-30 Stena Halmstad\2022-08-18.jxl</Note>
+            </Notes>
+        </NoteRecord>
+
+        <SurveyEventRecord ID="00000140" TimeStamp="2023-03-30T11:57:12">
+            <Event>EndSurvey</Event>
+        </SurveyEventRecord>
+
+        <RoverSurveyOptionsRecord ID="00000143" TimeStamp="2023-03-30T13:18:00">
+            <ElevationMask>10</ElevationMask>
+            <PDOPMask>6</PDOPMask>
+        </RoverSurveyOptionsRecord>
+
+        <NTRIPDataSourceRecord ID="00000152" TimeStamp="2023-03-30T13:18:08">
+            <MountPoint>MSM_GNSS</MountPoint>
+            <DataFormat/>
+            <Solution/>
+            <IPAddress>192.71.190.141</IPAddress>
+            <IPPort>8500</IPPort>
+        </NTRIPDataSourceRecord>
+
+        <RoverSurveyOptionsRecord ID="00000153" TimeStamp="2023-03-30T13:18:08">
+            <ElevationMask>10</ElevationMask>
+            <PDOPMask>6</PDOPMask>
+        </RoverSurveyOptionsRecord>
+
+        <SurveyEventRecord ID="00000154" TimeStamp="2023-03-30T13:18:08">
+            <Event>StartRoverSurvey</Event>
+        </SurveyEventRecord>
+
+        <GPSEquipmentRecord ID="00000155" TimeStamp="2023-03-30T13:18:16">
+            <ReceiverType/>
+            <ReceiverSerialNumber/>
+            <ReceiverFirmwareVersion>0</ReceiverFirmwareVersion>
+            <AntennaType>AdV Null Antenna</AntennaType>
+            <AntennaSerialNumber/>
+            <AntennaNumber>255</AntennaNumber>
+            <AntennaMeasurementMethod>Antennens fascenter</AntennaMeasurementMethod>
+            <AntennaMethod>1</AntennaMethod>
+            <AntennaTapeAdjustment>0</AntennaTapeAdjustment>
+            <AntennaHorizontalOffset>0</AntennaHorizontalOffset>
+            <AntennaVerticalOffset>0</AntennaVerticalOffset>
+        </GPSEquipmentRecord>
+
+        <AntennaRecord ID="00000156" TimeStamp="2023-03-30T13:18:16">
+            <MeasuredHeight>0</MeasuredHeight>
+            <MeasurementType>Corrected</MeasurementType>
+            <GPSEquipmentID>00000155</GPSEquipmentID>
+            <ReducedHeight>0</ReducedHeight>
+        </AntennaRecord>
+
+        <ReferenceRecord ID="00000157" TimeStamp="2023-03-30T13:18:16">
+            <PointName>PRS245225765538</PointName>
+            <AntennaID>00000156</AntennaID>
+        </ReferenceRecord>
+
+        <IMUCenteringAlignmentRecord ID="00000158" TimeStamp="2023-03-30T13:18:16">
+            <SerialNumber>6051F00143</SerialNumber>
+            <TiltEvent>StartSurvey</TiltEvent>
+            <CalibrationTimeRemaining/>
+            <CalibrationTimeoutPeriod/>
+            <SensorStatus>NotCalibrated</SensorStatus>
+            <CalibrationTime>
+                <GPSWeek>0</GPSWeek>
+                <Seconds>0</Seconds>
+            </CalibrationTime>
+            <YawAdjustment>0</YawAdjustment>
+            <PitchAdjustment>0</PitchAdjustment>
+            <RollAdjustment>0</RollAdjustment>
+            <PitchDistance>0</PitchDistance>
+            <RollDistance>0</RollDistance>
+        </IMUCenteringAlignmentRecord>
+
+        <InitialisationRecord ID="00000159" TimeStamp="2023-03-30T13:18:17">
+            <InitialisationEvent>RTKInitialised</InitialisationEvent>
+            <Time>
+                <GPSWeek>2255</GPSWeek>
+                <Seconds>386310</Seconds>
+            </Time>
+            <InitialisationType>OnTheFly</InitialisationType>
+            <SurveyType>RealTime</SurveyType>
+            <InitialisationCounter/>
+            <PointName/>
+        </InitialisationRecord>
+
+        <InitialisationRecord ID="0000015a" TimeStamp="2023-03-30T13:18:30">
+            <InitialisationEvent>RTKNotInitialised</InitialisationEvent>
+            <Time>
+                <GPSWeek>2255</GPSWeek>
+                <Seconds>386323</Seconds>
+            </Time>
+            <InitialisationType>OnTheFly</InitialisationType>
+            <SurveyType>RealTime</SurveyType>
+            <InitialisationCounter/>
+            <PointName/>
+        </InitialisationRecord>
+
+        <InitialisationRecord ID="0000015b" TimeStamp="2023-03-30T13:18:45">
+            <InitialisationEvent>RTKInitialised</InitialisationEvent>
+            <Time>
+                <GPSWeek>2255</GPSWeek>
+                <Seconds>386338</Seconds>
+            </Time>
+            <InitialisationType>OnTheFly</InitialisationType>
+            <SurveyType>RealTime</SurveyType>
+            <InitialisationCounter/>
+            <PointName/>
+        </InitialisationRecord>
+
+        <GPSEquipmentRecord ID="0000015d" TimeStamp="2023-03-30T13:20:22">
+            <ReceiverType>R12i</ReceiverType>
+            <ReceiverSerialNumber>6051F00143</ReceiverSerialNumber>
+            <ReceiverFirmwareVersion>6.16</ReceiverFirmwareVersion>
+            <AntennaType>R12i Internal</AntennaType>
+            <AntennaSerialNumber/>
+            <AntennaNumber>610</AntennaNumber>
+            <AntennaMeasurementMethod>Underkant av snabbfäste</AntennaMeasurementMethod>
+            <AntennaMethod>1</AntennaMethod>
+            <AntennaTapeAdjustment>0</AntennaTapeAdjustment>
+            <AntennaHorizontalOffset>0</AntennaHorizontalOffset>
+            <AntennaVerticalOffset>0.17932</AntennaVerticalOffset>
+            <AntennaMeasurementKey>Method1</AntennaMeasurementKey>
+        </GPSEquipmentRecord>
+
+        <AntennaRecord ID="0000015e" TimeStamp="2023-03-30T13:20:22">
+            <MeasuredHeight>1.665</MeasuredHeight>
+            <MeasurementType>Raw</MeasurementType>
+            <GPSEquipmentID>0000015d</GPSEquipmentID>
+            <ReducedHeight>1.84432</ReducedHeight>
+        </AntennaRecord>
+
+        <PointRecord ID="0000015f" TimeStamp="2023-03-30T13:20:22">
+            <Name>g6</Name>
+            <Code>gnss</Code>
+            <Method>GpsRTKControlPoint</Method>
+            <SurveyMethod>NetworkRTK</SurveyMethod>
+            <Classification>Normal</Classification>
+            <Deleted>false</Deleted>
+
+            <ECEFDeltas>
+                <DeltaX>-63.819371548481</DeltaX>
+                <DeltaY>9046.5234740694</DeltaY>
+                <DeltaZ>-1270.5999168875</DeltaZ>
+            </ECEFDeltas>
+            <ReferenceRecordID>00000157</ReferenceRecordID>
+            <RTK_Base>PRS245225765538</RTK_Base>
+            <AntennaID>0000015e</AntennaID>
+
+            <ComputedGrid>
+                <North>6279690.0351096</North>
+                <East>116308.15132257</East>
+                <Elevation>24.663098223764</Elevation>
+            </ComputedGrid>
+            <DeviceAxisOrientation>
+                <Type>VerticalTiltError</Type>
+                <Attitude>
+                    <Pitch>-0.01515879462174</Pitch>
+                    <Roll>-0.03431132727925</Roll>
+                    <Yaw/>
+                </Attitude>
+            </DeviceAxisOrientation>
+            <Precision>
+                <Horizontal>0.01138337235617</Horizontal>
+                <Vertical>0.02009925059974</Vertical>
+            </Precision>
+            <QualityControl1>
+                <MinimumNumberOfSatellites>19</MinimumNumberOfSatellites>
+                <MinGPSSVs>8</MinGPSSVs>
+                <MinGLONASSSVs>4</MinGLONASSSVs>
+                <MinGalileoSVs>7</MinGalileoSVs>
+                <MinQZSSSVs>0</MinQZSSSVs>
+                <MinBeiDouSVs>0</MinBeiDouSVs>
+                <NumberOfSatellites>21</NumberOfSatellites>
+                <NumGPSSVs>8</NumGPSSVs>
+                <NumGLONASSSVs>6</NumGLONASSSVs>
+                <NumGalileoSVs>7</NumGalileoSVs>
+                <NumQZSSSVs>0</NumQZSSSVs>
+                <NumBeiDouSVs>0</NumBeiDouSVs>
+                <RelativeDOPs>false</RelativeDOPs>
+                <PDOP>1.5564337968826</PDOP>
+                <GDOP>2.2820014867976</GDOP>
+                <HDOP>0.67439424991608</HDOP>
+                <VDOP>1.4027396440506</VDOP>
+                <PDOP_AtStore>1.4241037368774</PDOP_AtStore>
+                <GDOP_AtStore>2.0311994197031</GDOP_AtStore>
+                <HDOP_AtStore>0.65179890394211</HDOP_AtStore>
+                <VDOP_AtStore>1.2661870718002</VDOP_AtStore>
+                <NumberOfPositionsUsed>45</NumberOfPositionsUsed>
+                <HorizontalStandardDeviation/>
+                <VerticalStandardDeviation/>
+                <StartTime>
+                    <GPSWeek>2255</GPSWeek>
+                    <Seconds>386390</Seconds>
+                </StartTime>
+                <EndTime>
+                    <GPSWeek>2255</GPSWeek>
+                    <Seconds>386435</Seconds>
+                </EndTime>
+                <MonitorStatus>NotMonitored</MonitorStatus>
+                <RTCMAge>1</RTCMAge>
+                <Warnings>
+                    <ExcessTiltWarning>No</ExcessTiltWarning>
+                    <ExcessTiltAtStorage>No</ExcessTiltAtStorage>
+                    <ExcessMovementWarning>No</ExcessMovementWarning>
+                    <ExcessMovementAtStorage>No</ExcessMovementAtStorage>
+                    <PoorPrecisionsWarning>No</PoorPrecisionsWarning>
+                    <PoorPrecisionsAtStorage>No</PoorPrecisionsAtStorage>
+                    <MagneticDisturbanceWarning>NotSupported</MagneticDisturbanceWarning>
+                    <MagneticDisturbanceAtStorage>NotSupported</MagneticDisturbanceAtStorage>
+                    <BadEnvironmentWarning>No</BadEnvironmentWarning>
+                    <BadEnvironmentAtStorage>No</BadEnvironmentAtStorage>
+                    <AINSAlignmentWarning>NotChecked</AINSAlignmentWarning>
+                    <AINSAlignmentAtStorage>NotChecked</AINSAlignmentAtStorage>
+                </Warnings>
+                <SVList>
+                    <SV Number="2" System="GPS"/>
+                    <SV Number="11" System="GPS"/>
+                    <SV Number="12" System="GPS"/>
+                    <SV Number="25" System="GPS"/>
+                    <SV Number="26" System="GPS"/>
+                    <SV Number="28" System="GPS"/>
+                    <SV Number="29" System="GPS"/>
+                    <SV Number="31" System="GPS"/>
+                    <SV Number="1" System="GLONASS"/>
+                    <SV Number="2" System="GLONASS"/>
+                    <SV Number="9" System="GLONASS"/>
+                    <SV Number="11" System="GLONASS"/>
+                    <SV Number="19" System="GLONASS"/>
+                    <SV Number="20" System="GLONASS"/>
+                    <SV Number="3" System="GALILEO"/>
+                    <SV Number="10" System="GALILEO"/>
+                    <SV Number="12" System="GALILEO"/>
+                    <SV Number="25" System="GALILEO"/>
+                    <SV Number="26" System="GALILEO"/>
+                    <SV Number="31" System="GALILEO"/>
+                    <SV Number="33" System="GALILEO"/>
+                </SVList>
+            </QualityControl1>
+            <QualityControl2>
+                <NumberOfSatellites>21</NumberOfSatellites>
+                <ErrorScale>0.01621998474002</ErrorScale>
+                <VCVxx>0.00011270265531</VCVxx>
+                <VCVxy>0.00002014415622</VCVxy>
+                <VCVxz>0.00010194659262</VCVxz>
+                <VCVyy>0.00004096496195</VCVyy>
+                <VCVyz>0.00005854468691</VCVyz>
+                <VCVzz>0.000379893434</VCVzz>
+                <UnitVariance>1</UnitVariance>
+            </QualityControl2>
+        </PointRecord>
+
+        <InitialisationRecord ID="00000169" TimeStamp="2023-03-30T13:21:16">
+            <InitialisationEvent>RTKNotInitialised</InitialisationEvent>
+            <Time>
+                <GPSWeek>2255</GPSWeek>
+                <Seconds>386489</Seconds>
+            </Time>
+            <InitialisationType>OnTheFly</InitialisationType>
+            <SurveyType>RealTime</SurveyType>
+            <InitialisationCounter/>
+            <PointName/>
+        </InitialisationRecord>
+
+        <InitialisationRecord ID="0000016a" TimeStamp="2023-03-30T13:22:58">
+            <InitialisationEvent>RTKInitialised</InitialisationEvent>
+            <Time>
+                <GPSWeek>2255</GPSWeek>
+                <Seconds>386591</Seconds>
+            </Time>
+            <InitialisationType>OnTheFly</InitialisationType>
+            <SurveyType>RealTime</SurveyType>
+            <InitialisationCounter/>
+            <PointName/>
+        </InitialisationRecord>
+
+        <InitialisationRecord ID="0000016b" TimeStamp="2023-03-30T13:23:10">
+            <InitialisationEvent>RTKNotInitialised</InitialisationEvent>
+            <Time>
+                <GPSWeek>2255</GPSWeek>
+                <Seconds>386603</Seconds>
+            </Time>
+            <InitialisationType>OnTheFly</InitialisationType>
+            <SurveyType>RealTime</SurveyType>
+            <InitialisationCounter/>
+            <PointName/>
+        </InitialisationRecord>
+
+        <NTRIPDataSourceRecord ID="0000016c" TimeStamp="2023-03-30T13:25:04">
+            <MountPoint>MSM_GNSS</MountPoint>
+            <DataFormat/>
+            <Solution/>
+            <IPAddress>192.71.190.141</IPAddress>
+            <IPPort>8500</IPPort>
+        </NTRIPDataSourceRecord>
+
+        <NoteRecord ID="0000016d" TimeStamp="2023-03-30T13:25:10">
+            <Notes>
+                <Note>Ny basstation detekterad</Note>
+            </Notes>
+        </NoteRecord>
+
+        <GPSEquipmentRecord ID="0000016e" TimeStamp="2023-03-30T13:25:11">
+            <ReceiverType/>
+            <ReceiverSerialNumber/>
+            <ReceiverFirmwareVersion>0</ReceiverFirmwareVersion>
+            <AntennaType>AdV Null Antenna</AntennaType>
+            <AntennaSerialNumber/>
+            <AntennaNumber>255</AntennaNumber>
+            <AntennaMeasurementMethod>Antennens fascenter</AntennaMeasurementMethod>
+            <AntennaMethod>1</AntennaMethod>
+            <AntennaTapeAdjustment>0</AntennaTapeAdjustment>
+            <AntennaHorizontalOffset>0</AntennaHorizontalOffset>
+            <AntennaVerticalOffset>0</AntennaVerticalOffset>
+        </GPSEquipmentRecord>
+
+        <AntennaRecord ID="0000016f" TimeStamp="2023-03-30T13:25:11">
+            <MeasuredHeight>0</MeasuredHeight>
+            <MeasurementType>Corrected</MeasurementType>
+            <GPSEquipmentID>0000016e</GPSEquipmentID>
+            <ReducedHeight>0</ReducedHeight>
+        </AntennaRecord>
+
+        <ReferenceRecord ID="00000170" TimeStamp="2023-03-30T13:25:11">
+            <PointName>PRS245225765538</PointName>
+            <AntennaID>0000016f</AntennaID>
+        </ReferenceRecord>
+
+        <InitialisationRecord ID="00000173" TimeStamp="2023-03-30T13:25:12">
+            <InitialisationEvent>RTKInitialised</InitialisationEvent>
+            <Time>
+                <GPSWeek>2255</GPSWeek>
+                <Seconds>386725</Seconds>
+            </Time>
+            <InitialisationType>OnTheFly</InitialisationType>
+            <SurveyType>RealTime</SurveyType>
+            <InitialisationCounter/>
+            <PointName/>
+        </InitialisationRecord>
+
+        <GPSEquipmentRecord ID="00000171" TimeStamp="2023-03-30T13:25:11">
+            <ReceiverType>R12i</ReceiverType>
+            <ReceiverSerialNumber>6051F00143</ReceiverSerialNumber>
+            <ReceiverFirmwareVersion>6.16</ReceiverFirmwareVersion>
+            <AntennaType>R12i Internal</AntennaType>
+            <AntennaSerialNumber/>
+            <AntennaNumber>610</AntennaNumber>
+            <AntennaMeasurementMethod>Underkant av snabbfäste</AntennaMeasurementMethod>
+            <AntennaMethod>1</AntennaMethod>
+            <AntennaTapeAdjustment>0</AntennaTapeAdjustment>
+            <AntennaHorizontalOffset>0</AntennaHorizontalOffset>
+            <AntennaVerticalOffset>0.17932</AntennaVerticalOffset>
+            <AntennaMeasurementKey>Method1</AntennaMeasurementKey>
+        </GPSEquipmentRecord>
+
+        <AntennaRecord ID="00000172" TimeStamp="2023-03-30T13:25:11">
+            <MeasuredHeight>1.665</MeasuredHeight>
+            <MeasurementType>Raw</MeasurementType>
+            <GPSEquipmentID>00000171</GPSEquipmentID>
+            <ReducedHeight>1.84432</ReducedHeight>
+        </AntennaRecord>
+
+        <PointRecord ID="00000174" TimeStamp="2023-03-30T13:26:20">
+            <Name>g7</Name>
+            <Code>gnss</Code>
+            <Method>GpsRTKControlPoint</Method>
+            <SurveyMethod>NetworkRTK</SurveyMethod>
+            <Classification>Normal</Classification>
+            <Deleted>false</Deleted>
+
+            <ECEFDeltas>
+                <DeltaX>-157.25833383761</DeltaX>
+                <DeltaY>8922.9268757633</DeltaY>
+                <DeltaZ>-1191.9880503956</DeltaZ>
+            </ECEFDeltas>
+            <ReferenceRecordID>00000170</ReferenceRecordID>
+            <RTK_Base>PRS245225765538</RTK_Base>
+            <AntennaID>00000172</AntennaID>
+
+            <ComputedGrid>
+                <North>6279833.2500381</North>
+                <East>116209.78266971</East>
+                <Elevation>25.010004386604</Elevation>
+            </ComputedGrid>
+            <DeviceAxisOrientation>
+                <Type>VerticalTiltError</Type>
+                <Attitude>
+                    <Pitch>-0.05377954671464</Pitch>
+                    <Roll>0.0838815498106</Roll>
+                    <Yaw/>
+                </Attitude>
+            </DeviceAxisOrientation>
+            <Precision>
+                <Horizontal>0.00828260352561</Horizontal>
+                <Vertical>0.01439898181707</Vertical>
+            </Precision>
+            <QualityControl1>
+                <MinimumNumberOfSatellites>19</MinimumNumberOfSatellites>
+                <MinGPSSVs>9</MinGPSSVs>
+                <MinGLONASSSVs>4</MinGLONASSSVs>
+                <MinGalileoSVs>6</MinGalileoSVs>
+                <MinQZSSSVs>0</MinQZSSSVs>
+                <MinBeiDouSVs>0</MinBeiDouSVs>
+                <NumberOfSatellites>20</NumberOfSatellites>
+                <NumGPSSVs>9</NumGPSSVs>
+                <NumGLONASSSVs>5</NumGLONASSSVs>
+                <NumGalileoSVs>6</NumGalileoSVs>
+                <NumQZSSSVs>0</NumQZSSSVs>
+                <NumBeiDouSVs>0</NumBeiDouSVs>
+                <RelativeDOPs>false</RelativeDOPs>
+                <PDOP>1.5120524168015</PDOP>
+                <GDOP>2.2119140562065</GDOP>
+                <HDOP>0.70682352781296</HDOP>
+                <VDOP>1.3366760015488</VDOP>
+                <PDOP_AtStore>1.4650983810425</PDOP_AtStore>
+                <GDOP_AtStore>2.1153668180058</GDOP_AtStore>
+                <HDOP_AtStore>0.68683660030365</HDOP_AtStore>
+                <VDOP_AtStore>1.294128537178</VDOP_AtStore>
+                <NumberOfPositionsUsed>51</NumberOfPositionsUsed>
+                <HorizontalStandardDeviation/>
+                <VerticalStandardDeviation/>
+                <StartTime>
+                    <GPSWeek>2255</GPSWeek>
+                    <Seconds>386744</Seconds>
+                </StartTime>
+                <EndTime>
+                    <GPSWeek>2255</GPSWeek>
+                    <Seconds>386794</Seconds>
+                </EndTime>
+                <MonitorStatus>NotMonitored</MonitorStatus>
+                <RTCMAge>1</RTCMAge>
+                <Warnings>
+                    <ExcessTiltWarning>No</ExcessTiltWarning>
+                    <ExcessTiltAtStorage>No</ExcessTiltAtStorage>
+                    <ExcessMovementWarning>No</ExcessMovementWarning>
+                    <ExcessMovementAtStorage>No</ExcessMovementAtStorage>
+                    <PoorPrecisionsWarning>No</PoorPrecisionsWarning>
+                    <PoorPrecisionsAtStorage>No</PoorPrecisionsAtStorage>
+                    <MagneticDisturbanceWarning>NotSupported</MagneticDisturbanceWarning>
+                    <MagneticDisturbanceAtStorage>NotSupported</MagneticDisturbanceAtStorage>
+                    <BadEnvironmentWarning>No</BadEnvironmentWarning>
+                    <BadEnvironmentAtStorage>No</BadEnvironmentAtStorage>
+                    <AINSAlignmentWarning>NotChecked</AINSAlignmentWarning>
+                    <AINSAlignmentAtStorage>NotChecked</AINSAlignmentAtStorage>
+                </Warnings>
+                <SVList>
+                    <SV Number="2" System="GPS"/>
+                    <SV Number="11" System="GPS"/>
+                    <SV Number="12" System="GPS"/>
+                    <SV Number="20" System="GPS"/>
+                    <SV Number="25" System="GPS"/>
+                    <SV Number="26" System="GPS"/>
+                    <SV Number="28" System="GPS"/>
+                    <SV Number="29" System="GPS"/>
+                    <SV Number="31" System="GPS"/>
+                    <SV Number="2" System="GLONASS"/>
+                    <SV Number="9" System="GLONASS"/>
+                    <SV Number="11" System="GLONASS"/>
+                    <SV Number="19" System="GLONASS"/>
+                    <SV Number="20" System="GLONASS"/>
+                    <SV Number="3" System="GALILEO"/>
+                    <SV Number="10" System="GALILEO"/>
+                    <SV Number="12" System="GALILEO"/>
+                    <SV Number="25" System="GALILEO"/>
+                    <SV Number="31" System="GALILEO"/>
+                    <SV Number="33" System="GALILEO"/>
+                </SVList>
+            </QualityControl1>
+            <QualityControl2>
+                <NumberOfSatellites>20</NumberOfSatellites>
+                <ErrorScale>0.0113379471004</ErrorScale>
+                <VCVxx>0.00007091969746</VCVxx>
+                <VCVxy>0.00001238189816</VCVxy>
+                <VCVxz>0.00005784857422</VCVxz>
+                <VCVyy>0.0000253733524</VCVyy>
+                <VCVyz>0.00003807297617</VCVyz>
+                <VCVzz>0.00017963915889</VCVzz>
+                <UnitVariance>1</UnitVariance>
+            </QualityControl2>
+        </PointRecord>
+
+        <InitialisationRecord ID="0000017e" TimeStamp="2023-03-30T13:26:49">
+            <InitialisationEvent>RTKNotInitialised</InitialisationEvent>
+            <Time>
+                <GPSWeek>2255</GPSWeek>
+                <Seconds>386822</Seconds>
+            </Time>
+            <InitialisationType>OnTheFly</InitialisationType>
+            <SurveyType>RealTime</SurveyType>
+            <InitialisationCounter/>
+            <PointName/>
+        </InitialisationRecord>
+
+        <SurveyEventRecord ID="0000017f" TimeStamp="2023-03-30T13:36:25">
+            <Event>EndSurvey</Event>
+        </SurveyEventRecord>
+
+        <RoverSurveyOptionsRecord ID="00000181" TimeStamp="2023-03-30T13:36:33">
+            <ElevationMask>10</ElevationMask>
+            <PDOPMask>6</PDOPMask>
+        </RoverSurveyOptionsRecord>
+
+        <NTRIPDataSourceRecord ID="00000190" TimeStamp="2023-03-30T13:36:39">
+            <MountPoint>MSM_GNSS</MountPoint>
+            <DataFormat/>
+            <Solution/>
+            <IPAddress>192.71.190.141</IPAddress>
+            <IPPort>8500</IPPort>
+        </NTRIPDataSourceRecord>
+
+        <RoverSurveyOptionsRecord ID="00000191" TimeStamp="2023-03-30T13:36:39">
+            <ElevationMask>10</ElevationMask>
+            <PDOPMask>6</PDOPMask>
+        </RoverSurveyOptionsRecord>
+
+        <SurveyEventRecord ID="00000192" TimeStamp="2023-03-30T13:36:39">
+            <Event>StartRoverSurvey</Event>
+        </SurveyEventRecord>
+
+        <GPSEquipmentRecord ID="00000193" TimeStamp="2023-03-30T13:36:43">
+            <ReceiverType/>
+            <ReceiverSerialNumber/>
+            <ReceiverFirmwareVersion>0</ReceiverFirmwareVersion>
+            <AntennaType>AdV Null Antenna</AntennaType>
+            <AntennaSerialNumber/>
+            <AntennaNumber>255</AntennaNumber>
+            <AntennaMeasurementMethod>Antennens fascenter</AntennaMeasurementMethod>
+            <AntennaMethod>1</AntennaMethod>
+            <AntennaTapeAdjustment>0</AntennaTapeAdjustment>
+            <AntennaHorizontalOffset>0</AntennaHorizontalOffset>
+            <AntennaVerticalOffset>0</AntennaVerticalOffset>
+        </GPSEquipmentRecord>
+
+        <AntennaRecord ID="00000194" TimeStamp="2023-03-30T13:36:43">
+            <MeasuredHeight>0</MeasuredHeight>
+            <MeasurementType>Corrected</MeasurementType>
+            <GPSEquipmentID>00000193</GPSEquipmentID>
+            <ReducedHeight>0</ReducedHeight>
+        </AntennaRecord>
+
+        <ReferenceRecord ID="00000195" TimeStamp="2023-03-30T13:36:43">
+            <PointName>PRS245225765538</PointName>
+            <AntennaID>00000194</AntennaID>
+        </ReferenceRecord>
+
+        <IMUCenteringAlignmentRecord ID="00000196" TimeStamp="2023-03-30T13:36:44">
+            <SerialNumber>6051F00143</SerialNumber>
+            <TiltEvent>StartSurvey</TiltEvent>
+            <CalibrationTimeRemaining/>
+            <CalibrationTimeoutPeriod/>
+            <SensorStatus>NotCalibrated</SensorStatus>
+            <CalibrationTime>
+                <GPSWeek>0</GPSWeek>
+                <Seconds>0</Seconds>
+            </CalibrationTime>
+            <YawAdjustment>0</YawAdjustment>
+            <PitchAdjustment>0</PitchAdjustment>
+            <RollAdjustment>0</RollAdjustment>
+            <PitchDistance>0</PitchDistance>
+            <RollDistance>0</RollDistance>
+        </IMUCenteringAlignmentRecord>
+
+        <InitialisationRecord ID="00000197" TimeStamp="2023-03-30T13:36:45">
+            <InitialisationEvent>RTKInitialised</InitialisationEvent>
+            <Time>
+                <GPSWeek>2255</GPSWeek>
+                <Seconds>387418</Seconds>
+            </Time>
+            <InitialisationType>OnTheFly</InitialisationType>
+            <SurveyType>RealTime</SurveyType>
+            <InitialisationCounter/>
+            <PointName/>
+        </InitialisationRecord>
+
+        <InitialisationRecord ID="00000198" TimeStamp="2023-03-30T13:36:51">
+            <InitialisationEvent>RTKNotInitialised</InitialisationEvent>
+            <Time>
+                <GPSWeek>2255</GPSWeek>
+                <Seconds>387424</Seconds>
+            </Time>
+            <InitialisationType>OnTheFly</InitialisationType>
+            <SurveyType>RealTime</SurveyType>
+            <InitialisationCounter/>
+            <PointName/>
+        </InitialisationRecord>
+
+        <InitialisationRecord ID="00000199" TimeStamp="2023-03-30T13:37:00">
+            <InitialisationEvent>RTKInitialised</InitialisationEvent>
+            <Time>
+                <GPSWeek>2255</GPSWeek>
+                <Seconds>387433</Seconds>
+            </Time>
+            <InitialisationType>OnTheFly</InitialisationType>
+            <SurveyType>RealTime</SurveyType>
+            <InitialisationCounter/>
+            <PointName/>
+        </InitialisationRecord>
+
+        <GPSEquipmentRecord ID="0000019b" TimeStamp="2023-03-30T13:38:02">
+            <ReceiverType>R12i</ReceiverType>
+            <ReceiverSerialNumber>6051F00143</ReceiverSerialNumber>
+            <ReceiverFirmwareVersion>6.16</ReceiverFirmwareVersion>
+            <AntennaType>R12i Internal</AntennaType>
+            <AntennaSerialNumber/>
+            <AntennaNumber>610</AntennaNumber>
+            <AntennaMeasurementMethod>Underkant av snabbfäste</AntennaMeasurementMethod>
+            <AntennaMethod>1</AntennaMethod>
+            <AntennaTapeAdjustment>0</AntennaTapeAdjustment>
+            <AntennaHorizontalOffset>0</AntennaHorizontalOffset>
+            <AntennaVerticalOffset>0.17932</AntennaVerticalOffset>
+            <AntennaMeasurementKey>Method1</AntennaMeasurementKey>
+        </GPSEquipmentRecord>
+
+        <AntennaRecord ID="0000019c" TimeStamp="2023-03-30T13:38:02">
+            <MeasuredHeight>1.665</MeasuredHeight>
+            <MeasurementType>Raw</MeasurementType>
+            <GPSEquipmentID>0000019b</GPSEquipmentID>
+            <ReducedHeight>1.84432</ReducedHeight>
+        </AntennaRecord>
+
+        <PointRecord ID="0000019d" TimeStamp="2023-03-30T13:38:02">
+            <Name>g8</Name>
+            <Code>gnss</Code>
+            <Method>GpsRTKControlPoint</Method>
+            <SurveyMethod>NetworkRTK</SurveyMethod>
+            <Classification>Normal</Classification>
+            <Deleted>false</Deleted>
+
+            <ECEFDeltas>
+                <DeltaX>139.94913886348</DeltaX>
+                <DeltaY>8620.2326735466</DeltaY>
+                <DeltaZ>-1343.686809714</DeltaZ>
+            </ECEFDeltas>
+            <ReferenceRecordID>00000195</ReferenceRecordID>
+            <RTK_Base>PRS245225765538</RTK_Base>
+            <AntennaID>0000019c</AntennaID>
+
+            <ComputedGrid>
+                <North>6279567.4711392</North>
+                <East>115846.03841696</East>
+                <Elevation>20.300164470546</Elevation>
+            </ComputedGrid>
+            <DeviceAxisOrientation>
+                <Type>VerticalTiltError</Type>
+                <Attitude>
+                    <Pitch>-0.04179228372086</Pitch>
+                    <Roll>-0.07350447495757</Roll>
+                    <Yaw/>
+                </Attitude>
+            </DeviceAxisOrientation>
+            <Precision>
+                <Horizontal>0.01351710857499</Horizontal>
+                <Vertical>0.02498077787459</Vertical>
+            </Precision>
+            <QualityControl1>
+                <MinimumNumberOfSatellites>19</MinimumNumberOfSatellites>
+                <MinGPSSVs>9</MinGPSSVs>
+                <MinGLONASSSVs>5</MinGLONASSSVs>
+                <MinGalileoSVs>5</MinGalileoSVs>
+                <MinQZSSSVs>0</MinQZSSSVs>
+                <MinBeiDouSVs>0</MinBeiDouSVs>
+                <NumberOfSatellites>20</NumberOfSatellites>
+                <NumGPSSVs>10</NumGPSSVs>
+                <NumGLONASSSVs>5</NumGLONASSSVs>
+                <NumGalileoSVs>5</NumGalileoSVs>
+                <NumQZSSSVs>0</NumQZSSSVs>
+                <NumBeiDouSVs>0</NumBeiDouSVs>
+                <RelativeDOPs>false</RelativeDOPs>
+                <PDOP>1.517879486084</PDOP>
+                <GDOP>2.1871748798881</GDOP>
+                <HDOP>0.74866229295731</HDOP>
+                <VDOP>1.3204026222229</VDOP>
+                <PDOP_AtStore>1.4717698097229</PDOP_AtStore>
+                <GDOP_AtStore>2.1208599935159</GDOP_AtStore>
+                <HDOP_AtStore>0.72884714603424</HDOP_AtStore>
+                <VDOP_AtStore>1.2786273956299</VDOP_AtStore>
+                <NumberOfPositionsUsed>45</NumberOfPositionsUsed>
+                <HorizontalStandardDeviation/>
+                <VerticalStandardDeviation/>
+                <StartTime>
+                    <GPSWeek>2255</GPSWeek>
+                    <Seconds>387451</Seconds>
+                </StartTime>
+                <EndTime>
+                    <GPSWeek>2255</GPSWeek>
+                    <Seconds>387495</Seconds>
+                </EndTime>
+                <MonitorStatus>NotMonitored</MonitorStatus>
+                <RTCMAge>1</RTCMAge>
+                <Warnings>
+                    <ExcessTiltWarning>No</ExcessTiltWarning>
+                    <ExcessTiltAtStorage>No</ExcessTiltAtStorage>
+                    <ExcessMovementWarning>No</ExcessMovementWarning>
+                    <ExcessMovementAtStorage>No</ExcessMovementAtStorage>
+                    <PoorPrecisionsWarning>No</PoorPrecisionsWarning>
+                    <PoorPrecisionsAtStorage>No</PoorPrecisionsAtStorage>
+                    <MagneticDisturbanceWarning>NotSupported</MagneticDisturbanceWarning>
+                    <MagneticDisturbanceAtStorage>NotSupported</MagneticDisturbanceAtStorage>
+                    <BadEnvironmentWarning>No</BadEnvironmentWarning>
+                    <BadEnvironmentAtStorage>No</BadEnvironmentAtStorage>
+                    <AINSAlignmentWarning>NotChecked</AINSAlignmentWarning>
+                    <AINSAlignmentAtStorage>NotChecked</AINSAlignmentAtStorage>
+                </Warnings>
+                <SVList>
+                    <SV Number="2" System="GPS"/>
+                    <SV Number="4" System="GPS"/>
+                    <SV Number="11" System="GPS"/>
+                    <SV Number="12" System="GPS"/>
+                    <SV Number="20" System="GPS"/>
+                    <SV Number="25" System="GPS"/>
+                    <SV Number="26" System="GPS"/>
+                    <SV Number="28" System="GPS"/>
+                    <SV Number="29" System="GPS"/>
+                    <SV Number="31" System="GPS"/>
+                    <SV Number="2" System="GLONASS"/>
+                    <SV Number="9" System="GLONASS"/>
+                    <SV Number="11" System="GLONASS"/>
+                    <SV Number="19" System="GLONASS"/>
+                    <SV Number="20" System="GLONASS"/>
+                    <SV Number="3" System="GALILEO"/>
+                    <SV Number="8" System="GALILEO"/>
+                    <SV Number="12" System="GALILEO"/>
+                    <SV Number="31" System="GALILEO"/>
+                    <SV Number="33" System="GALILEO"/>
+                </SVList>
+            </QualityControl1>
+            <QualityControl2>
+                <NumberOfSatellites>20</NumberOfSatellites>
+                <ErrorScale>0.01929878629744</ErrorScale>
+                <VCVxx>0.0001190681869</VCVxx>
+                <VCVxy>0.00002162539386</VCVxy>
+                <VCVxz>0.00017374138406</VCVxz>
+                <VCVyy>0.0001042509175</VCVyy>
+                <VCVyz>0.00011108281615</VCVyz>
+                <VCVzz>0.00058343238197</VCVzz>
+                <UnitVariance>1</UnitVariance>
+            </QualityControl2>
+        </PointRecord>
+
+        <InitialisationRecord ID="000001a7" TimeStamp="2023-03-30T13:39:00">
+            <InitialisationEvent>RTKNotInitialised</InitialisationEvent>
+            <Time>
+                <GPSWeek>2255</GPSWeek>
+                <Seconds>387553</Seconds>
+            </Time>
+            <InitialisationType>OnTheFly</InitialisationType>
+            <SurveyType>RealTime</SurveyType>
+            <InitialisationCounter/>
+            <PointName/>
+        </InitialisationRecord>
+
+        <InitialisationRecord ID="000001a8" TimeStamp="2023-03-30T13:40:59">
+            <InitialisationEvent>RTKInitialised</InitialisationEvent>
+            <Time>
+                <GPSWeek>2255</GPSWeek>
+                <Seconds>387672</Seconds>
+            </Time>
+            <InitialisationType>OnTheFly</InitialisationType>
+            <SurveyType>RealTime</SurveyType>
+            <InitialisationCounter/>
+            <PointName/>
+        </InitialisationRecord>
+
+        <PointRecord ID="000001a9" TimeStamp="2023-03-30T13:43:27">
+            <Name>g9</Name>
+            <Code>gnss</Code>
+            <Method>GpsRTKControlPoint</Method>
+            <SurveyMethod>NetworkRTK</SurveyMethod>
+            <Classification>Normal</Classification>
+            <Deleted>false</Deleted>
+
+            <ECEFDeltas>
+                <DeltaX>19.354257145431</DeltaX>
+                <DeltaY>8709.1940466404</DeltaY>
+                <DeltaZ>-1278.9536423665</DeltaZ>
+            </ECEFDeltas>
+            <ReferenceRecordID>00000195</ReferenceRecordID>
+            <RTK_Base>PRS245225765538</RTK_Base>
+            <AntennaID>0000019c</AntennaID>
+
+            <ComputedGrid>
+                <North>6279683.6642672</North>
+                <East>115960.69838253</East>
+                <Elevation>20.69131434004</Elevation>
+            </ComputedGrid>
+            <DeviceAxisOrientation>
+                <Type>VerticalTiltError</Type>
+                <Attitude>
+                    <Pitch>-0.13444863525947</Pitch>
+                    <Roll>-0.13039814883968</Roll>
+                    <Yaw/>
+                </Attitude>
+            </DeviceAxisOrientation>
+            <Precision>
+                <Horizontal>0.00757958873593</Horizontal>
+                <Vertical>0.01080918498337</Vertical>
+            </Precision>
+            <QualityControl1>
+                <MinimumNumberOfSatellites>20</MinimumNumberOfSatellites>
+                <MinGPSSVs>10</MinGPSSVs>
+                <MinGLONASSSVs>5</MinGLONASSSVs>
+                <MinGalileoSVs>5</MinGalileoSVs>
+                <MinQZSSSVs>0</MinQZSSSVs>
+                <MinBeiDouSVs>0</MinBeiDouSVs>
+                <NumberOfSatellites>20</NumberOfSatellites>
+                <NumGPSSVs>10</NumGPSSVs>
+                <NumGLONASSSVs>5</NumGLONASSSVs>
+                <NumGalileoSVs>5</NumGalileoSVs>
+                <NumQZSSSVs>0</NumQZSSSVs>
+                <NumBeiDouSVs>0</NumBeiDouSVs>
+                <RelativeDOPs>false</RelativeDOPs>
+                <PDOP>1.4214670658112</PDOP>
+                <GDOP>2.0477020291584</GDOP>
+                <HDOP>0.71364730596542</HDOP>
+                <VDOP>1.2293397188187</VDOP>
+                <PDOP_AtStore>1.412057518959</PDOP_AtStore>
+                <GDOP_AtStore>2.0339710789096</GDOP_AtStore>
+                <HDOP_AtStore>0.71088004112244</HDOP_AtStore>
+                <VDOP_AtStore>1.2200638055801</VDOP_AtStore>
+                <NumberOfPositionsUsed>48</NumberOfPositionsUsed>
+                <HorizontalStandardDeviation/>
+                <VerticalStandardDeviation/>
+                <StartTime>
+                    <GPSWeek>2255</GPSWeek>
+                    <Seconds>387774</Seconds>
+                </StartTime>
+                <EndTime>
+                    <GPSWeek>2255</GPSWeek>
+                    <Seconds>387821</Seconds>
+                </EndTime>
+                <MonitorStatus>NotMonitored</MonitorStatus>
+                <RTCMAge>1</RTCMAge>
+                <Warnings>
+                    <ExcessTiltWarning>No</ExcessTiltWarning>
+                    <ExcessTiltAtStorage>No</ExcessTiltAtStorage>
+                    <ExcessMovementWarning>No</ExcessMovementWarning>
+                    <ExcessMovementAtStorage>No</ExcessMovementAtStorage>
+                    <PoorPrecisionsWarning>No</PoorPrecisionsWarning>
+                    <PoorPrecisionsAtStorage>No</PoorPrecisionsAtStorage>
+                    <MagneticDisturbanceWarning>NotSupported</MagneticDisturbanceWarning>
+                    <MagneticDisturbanceAtStorage>NotSupported</MagneticDisturbanceAtStorage>
+                    <BadEnvironmentWarning>No</BadEnvironmentWarning>
+                    <BadEnvironmentAtStorage>No</BadEnvironmentAtStorage>
+                    <AINSAlignmentWarning>NotChecked</AINSAlignmentWarning>
+                    <AINSAlignmentAtStorage>NotChecked</AINSAlignmentAtStorage>
+                </Warnings>
+                <SVList>
+                    <SV Number="2" System="GPS"/>
+                    <SV Number="4" System="GPS"/>
+                    <SV Number="11" System="GPS"/>
+                    <SV Number="12" System="GPS"/>
+                    <SV Number="20" System="GPS"/>
+                    <SV Number="25" System="GPS"/>
+                    <SV Number="26" System="GPS"/>
+                    <SV Number="28" System="GPS"/>
+                    <SV Number="29" System="GPS"/>
+                    <SV Number="31" System="GPS"/>
+                    <SV Number="2" System="GLONASS"/>
+                    <SV Number="9" System="GLONASS"/>
+                    <SV Number="11" System="GLONASS"/>
+                    <SV Number="19" System="GLONASS"/>
+                    <SV Number="20" System="GLONASS"/>
+                    <SV Number="3" System="GALILEO"/>
+                    <SV Number="8" System="GALILEO"/>
+                    <SV Number="12" System="GALILEO"/>
+                    <SV Number="31" System="GALILEO"/>
+                    <SV Number="33" System="GALILEO"/>
+                </SVList>
+            </QualityControl1>
+            <QualityControl2>
+                <NumberOfSatellites>20</NumberOfSatellites>
+                <ErrorScale>0.00999999977648</ErrorScale>
+                <VCVxx>0.00003522859697</VCVxx>
+                <VCVxy>-0.0000005835314</VCVxy>
+                <VCVxz>0.00001953008359</VCVxz>
+                <VCVyy>0.00001625926234</VCVyy>
+                <VCVyz>0.00001652868013</VCVyz>
+                <VCVzz>0.00012280078954</VCVzz>
+                <UnitVariance>1</UnitVariance>
+            </QualityControl2>
+        </PointRecord>
+
+        <SurveyEventRecord ID="000001b3" TimeStamp="2023-03-30T13:44:12">
+            <Event>EndSurvey</Event>
+        </SurveyEventRecord>
+    </FieldBook>
+
+    <Reductions>
+
+        <Point>
+            <ID>00000044</ID>
+            <Name>1</Name>
+            <Code>GNSS</Code>
+            <SurveyMethod>NetworkRTK</SurveyMethod>
+            <Classification>Normal</Classification>
+
+            <WGS84>
+                <Latitude>56.63718151045</Latitude>
+                <Longitude>12.95650763455</Longitude>
+                <Height>67.884174524956</Height>
+            </WGS84>
+
+            <Grid>
+                <North>6279643.7545455</North>
+                <East>116650.22548027</East>
+                <Elevation>31.347494494324</Elevation>
+            </Grid>
+        </Point>
+
+        <Point>
+            <ID>00000050</ID>
+            <Name>2</Name>
+            <Code>GNSS</Code>
+            <SurveyMethod>NetworkRTK</SurveyMethod>
+            <Classification>Normal</Classification>
+
+            <WGS84>
+                <Latitude>56.63335581145</Latitude>
+                <Longitude>12.958162162189</Longitude>
+                <Height>61.911614652872</Height>
+            </WGS84>
+
+            <Grid>
+                <North>6279216.9546352</North>
+                <East>116748.38467284</East>
+                <Elevation>25.376932104513</Elevation>
+            </Grid>
+        </Point>
+
+        <Point>
+            <ID>00000062</ID>
+            <Name>3</Name>
+            <Code>GNSS</Code>
+            <SurveyMethod>NetworkRTK</SurveyMethod>
+            <Classification>Normal</Classification>
+
+            <WGS84>
+                <Latitude>56.635130362621</Latitude>
+                <Longitude>12.951363624268</Longitude>
+                <Height>74.922715717145</Height>
+            </WGS84>
+
+            <Grid>
+                <North>6279417.8691165</North>
+                <East>116332.75589689</East>
+                <Elevation>38.381658686476</Elevation>
+            </Grid>
+        </Point>
+
+        <Point>
+            <ID>00000086</ID>
+            <Name>PRS245225765538</Name>
+            <Code/>
+            <SurveyMethod>KeyedIn</SurveyMethod>
+            <Classification>Normal</Classification>
+
+            <WGS84>
+                <Latitude>56.658504866184</Latitude>
+                <Longitude>12.806936161321</Longitude>
+                <Height>50.021250707097</Height>
+            </WGS84>
+
+            <Grid>
+                <North>6282100.8376048</North>
+                <East>107496.37133078</East>
+                <Elevation>13.341550711662</Elevation>
+            </Grid>
+        </Point>
+
+        <Point>
+            <ID>00000094</ID>
+            <Name>g1</Name>
+            <Code>gnss</Code>
+            <SurveyMethod>NetworkRTK</SurveyMethod>
+            <Classification>Normal</Classification>
+
+            <WGS84>
+                <Latitude>56.635554272623</Latitude>
+                <Longitude>12.947464055163</Longitude>
+                <Height>54.381883246973</Height>
+            </WGS84>
+
+            <Grid>
+                <North>6279466.9926221</North>
+                <East>116093.84071878</East>
+                <Elevation>17.837281321468</Elevation>
+            </Grid>
+        </Point>
+
+        <Point>
+            <ID>000000c3</ID>
+            <Name>g2</Name>
+            <Code>gnss</Code>
+            <SurveyMethod>NetworkRTK</SurveyMethod>
+            <Classification>Normal</Classification>
+
+            <WGS84>
+                <Latitude>56.637069220313</Latitude>
+                <Longitude>12.956334166278</Longitude>
+                <Height>68.869591700994</Height>
+            </WGS84>
+
+            <Grid>
+                <North>6279631.3352291</North>
+                <East>116639.48215231</East>
+                <Elevation>32.332771740079</Elevation>
+            </Grid>
+        </Point>
+
+        <Point>
+            <ID>000000cf</ID>
+            <Name>g3</Name>
+            <Code>gnss</Code>
+            <SurveyMethod>NetworkRTK</SurveyMethod>
+            <Classification>Normal</Classification>
+
+            <WGS84>
+                <Latitude>56.633450359929</Latitude>
+                <Longitude>12.957805106534</Longitude>
+                <Height>61.945793618597</Height>
+            </WGS84>
+
+            <Grid>
+                <North>6279227.655855</North>
+                <East>116726.55627514</East>
+                <Elevation>25.410772198024</Elevation>
+            </Grid>
+        </Point>
+
+        <Point>
+            <ID>00000108</ID>
+            <Name>g4</Name>
+            <Code>gnss</Code>
+            <SurveyMethod>NetworkRTK</SurveyMethod>
+            <Classification>Normal</Classification>
+
+            <WGS84>
+                <Latitude>56.635704354748</Latitude>
+                <Longitude>12.962663236521</Longitude>
+                <Height>67.134752677903</Height>
+            </WGS84>
+
+            <Grid>
+                <North>6279476.2955659</North>
+                <East>117026.6526968</East>
+                <Elevation>30.603896057457</Elevation>
+            </Grid>
+        </Point>
+
+        <Point>
+            <ID>00000135</ID>
+            <Name>g5</Name>
+            <Code>gnss</Code>
+            <SurveyMethod>NetworkRTK</SurveyMethod>
+            <Classification>Normal</Classification>
+
+            <WGS84>
+                <Latitude>56.635015540938</Latitude>
+                <Longitude>12.952805762605</Longitude>
+                <Height>72.945948681012</Height>
+            </WGS84>
+
+            <Grid>
+                <North>6279404.3767464</North>
+                <East>116421.15012322</East>
+                <Elevation>36.406203743715</Elevation>
+            </Grid>
+        </Point>
+
+        <Point>
+            <ID>0000015f</ID>
+            <Name>g6</Name>
+            <Code>gnss</Code>
+            <SurveyMethod>NetworkRTK</SurveyMethod>
+            <Classification>Normal</Classification>
+
+            <WGS84>
+                <Latitude>56.637572648068</Latitude>
+                <Longitude>12.950927195133</Longitude>
+                <Height>61.204770767279</Height>
+            </WGS84>
+
+            <Grid>
+                <North>6279690.0351096</North>
+                <East>116308.15132257</East>
+                <Elevation>24.663098223764</Elevation>
+            </Grid>
+        </Point>
+
+        <Point>
+            <ID>00000174</ID>
+            <Name>g7</Name>
+            <Code>gnss</Code>
+            <SurveyMethod>NetworkRTK</SurveyMethod>
+            <Classification>Normal</Classification>
+
+            <WGS84>
+                <Latitude>56.638851637917</Latitude>
+                <Longitude>12.949305438679</Longitude>
+                <Height>61.553216146455</Height>
+            </WGS84>
+
+            <Grid>
+                <North>6279833.2500381</North>
+                <East>116209.78266971</East>
+                <Elevation>25.010004386604</Elevation>
+            </Grid>
+        </Point>
+
+        <Point>
+            <ID>0000019d</ID>
+            <Name>g8</Name>
+            <Code>gnss</Code>
+            <SurveyMethod>NetworkRTK</SurveyMethod>
+            <Classification>Normal</Classification>
+
+            <WGS84>
+                <Latitude>56.63643858075</Latitude>
+                <Longitude>12.943412790754</Longitude>
+                <Height>56.848445073851</Height>
+            </WGS84>
+
+            <Grid>
+                <North>6279567.4711392</North>
+                <East>115846.03841696</East>
+                <Elevation>20.300164470546</Elevation>
+            </Grid>
+        </Point>
+
+        <Point>
+            <ID>000001a9</ID>
+            <Name>g9</Name>
+            <Code>gnss</Code>
+            <SurveyMethod>NetworkRTK</SurveyMethod>
+            <Classification>Normal</Classification>
+
+            <WGS84>
+                <Latitude>56.637490335137</Latitude>
+                <Longitude>12.945265926599</Longitude>
+                <Height>57.237996783257</Height>
+            </WGS84>
+
+            <Grid>
+                <North>6279683.6642672</North>
+                <East>115960.69838253</East>
+                <Elevation>20.69131434004</Elevation>
+            </Grid>
+        </Point>
+    </Reductions>
+
+    <Environment>
+
+        <DisplaySettings>
+            <DistanceUnits>Metres</DistanceUnits>
+            <HeightUnits>Metres</HeightUnits>
+            <AngleUnits>DMSDegrees</AngleUnits>
+            <AzimuthFormat>Azimuth</AzimuthFormat>
+            <LatitudeLongitudeUnits>DMSDegrees</LatitudeLongitudeUnits>
+            <CoordinateOrder>North-East-Elevation</CoordinateOrder>
+            <TemperatureUnits>Celsius</TemperatureUnits>
+            <PressureUnits>MilliBar</PressureUnits>
+            <GradeUnits>Percentage</GradeUnits>
+            <AreaUnits>SquareMetres</AreaUnits>
+            <VolumeUnits>CubicMetres</VolumeUnits>
+            <StationingFormat>1+000.0</StationingFormat>
+            <StationIndexIncrement/>
+            <PrecisionUnits>DRMS</PrecisionUnits>
+            <DistanceDisplayDPs>3</DistanceDisplayDPs>
+            <CoordinateDisplayDPs>3</CoordinateDisplayDPs>
+            <AreaDisplayDPs>3</AreaDisplayDPs>
+            <VolumeDisplayDPs>3</VolumeDisplayDPs>
+            <AngleDisplayDPs>0</AngleDisplayDPs>
+            <LaserVADisplay>Inclination</LaserVADisplay>
+            <TimeFormat>Local</TimeFormat>
+        </DisplaySettings>
+
+        <CoordinateSystem>
+            <SystemName>Sweden/SWEREF99</SystemName>
+            <ZoneName>13 30</ZoneName>
+            <DatumName>SWEREF 99</DatumName>
+            <Ellipsoid>
+                <EarthRadius>6378137</EarthRadius>
+                <Flattening>0.00335281068118</Flattening>
+            </Ellipsoid>
+            <Projection>
+                <Type>TransverseMercator</Type>
+                <ShiftGridFileName/>
+                <CentralLatitude>0</CentralLatitude>
+                <CentralLongitude>13.5</CentralLongitude>
+                <FalseNorthing>0</FalseNorthing>
+                <FalseEasting>150000</FalseEasting>
+                <Scale>1</Scale>
+                <SouthAzimuth>false</SouthAzimuth>
+                <GridOrientation>IncreasingNorthEast</GridOrientation>
+                <ApplySeaLevelCorrection>true</ApplySeaLevelCorrection>
+                <MagneticDeclination>0</MagneticDeclination>
+                <Distances>GroundDistance</Distances>
+            </Projection>
+            <LocalSite>
+                <Type>Grid</Type>
+                <ProjectLocationLatitude/>
+                <ProjectLocationLongitude/>
+                <ProjectLocationHeight>0</ProjectLocationHeight>
+            </LocalSite>
+            <Datum>
+                <Type>ThreeParameter</Type>
+                <Direction>WGS84ToLocal</Direction>
+                <EarthRadius>6378137</EarthRadius>
+                <Flattening>0.00335281067183</Flattening>
+                <TranslationX>0</TranslationX>
+                <TranslationY>0</TranslationY>
+                <TranslationZ>0</TranslationZ>
+                <ReferenceGlobalFrameID>190</ReferenceGlobalFrameID>
+                <ReferenceGlobalFrameEPSG>6619</ReferenceGlobalFrameEPSG>
+                <ReferenceGlobalFrameEpoch>1999.50</ReferenceGlobalFrameEpoch>
+                <ReferenceGlobalFrameName>SWEREF99</ReferenceGlobalFrameName>
+                <DisplacementModelName>NKG-RF03 2019-07-01</DisplacementModelName>
+            </Datum>
+            <DisplacementModels>
+                <DisplacementModel>
+                    <Name>ITRF2014</Name>
+                    <Realization>ITRF2014</Realization>
+                    <SystemID>172</SystemID>
+                    <Type>Tectonic</Type>
+                    <File>plate_rotations_from_itrf2014.xml</File>
+                    <MinEpoch>0</MinEpoch>
+                    <MaxEpoch>0</MaxEpoch>
+                    <MinimumLatitude>-90</MinimumLatitude>
+                    <MaximumLatitude>90</MaximumLatitude>
+                    <MinimumLongitude>-180</MinimumLongitude>
+                    <MaximumLongitude>180</MaximumLongitude>
+                </DisplacementModel>
+                <DisplacementModel>
+                    <Name>NKG-RF03 2019-07-01</Name>
+                    <Realization>ETRF2000-Northern-Europe</Realization>
+                    <SystemID>192</SystemID>
+                    <Type>Local</Type>
+                    <File>nkg_rf03vel_etrf2000_velocity_grid_20190701.xml</File>
+                    <MinEpoch>0</MinEpoch>
+                    <MaxEpoch>0</MaxEpoch>
+                    <MinimumLatitude>53</MinimumLatitude>
+                    <MaximumLatitude>73</MaximumLatitude>
+                    <MinimumLongitude>3</MinimumLongitude>
+                    <MaximumLongitude>40</MaximumLongitude>
+                </DisplacementModel>
+            </DisplacementModels>
+            <KinematicTransformations>
+                <KinematicTransformation>
+                    <Name>ETRF2000-Northern-Europe to SWEREF99</Name>
+                    <SystemID>193</SystemID>
+                    <SourceRealization>ETRF2000-Northern-Europe</SourceRealization>
+                    <TargetRealization>SWEREF99</TargetRealization>
+                    <ReferenceEpoch>1999.50</ReferenceEpoch>
+                    <Type>FourteenParameters</Type>
+                    <TranslationX>-0.01642</TranslationX>
+                    <TranslationY>-0.00064</TranslationY>
+                    <TranslationZ>-0.0305</TranslationZ>
+                    <RotationX>1.87431</RotationX>
+                    <RotationY>0.46382</RotationY>
+                    <RotationZ>2.28487</RotationZ>
+                    <Scale>1.861</Scale>
+                    <DerivativeTranslationX>0</DerivativeTranslationX>
+                    <DerivativeTranslationY>0</DerivativeTranslationY>
+                    <DerivativeTranslationZ>0</DerivativeTranslationZ>
+                    <DerivativeRotationX>0</DerivativeRotationX>
+                    <DerivativeRotationY>0</DerivativeRotationY>
+                    <DerivativeRotationZ>0</DerivativeRotationZ>
+                    <DerivativeScale>0</DerivativeScale>
+                    <VelocityIncluded>false</VelocityIncluded>
+                </KinematicTransformation>
+                <KinematicTransformation>
+                    <Name>ITRF2014 to ETRF2000-Northern-Europe</Name>
+                    <SystemID>194</SystemID>
+                    <SourceRealization>ITRF2014</SourceRealization>
+                    <TargetRealization>ETRF2000-Northern-Europe</TargetRealization>
+                    <ReferenceEpoch>2010.00</ReferenceEpoch>
+                    <Type>FourteenParameters</Type>
+                    <TranslationX>0.0547</TranslationX>
+                    <TranslationY>0.0522</TranslationY>
+                    <TranslationZ>-0.0741</TranslationZ>
+                    <RotationX>1.701</RotationX>
+                    <RotationY>10.29</RotationY>
+                    <RotationZ>-16.632</RotationZ>
+                    <Scale>2.12</Scale>
+                    <DerivativeTranslationX>0.0001</DerivativeTranslationX>
+                    <DerivativeTranslationY>0.0001</DerivativeTranslationY>
+                    <DerivativeTranslationZ>-0.0019</DerivativeTranslationZ>
+                    <DerivativeRotationX>0.081</DerivativeRotationX>
+                    <DerivativeRotationY>0.49</DerivativeRotationY>
+                    <DerivativeRotationZ>-0.792</DerivativeRotationZ>
+                    <DerivativeScale>0.11</DerivativeScale>
+                    <VelocityIncluded>false</VelocityIncluded>
+                </KinematicTransformation>
+            </KinematicTransformations>
+            <ReferenceFrameTransformations>
+                <ReferenceFrameTransformationInformation>
+                    <SourceFrameId>19</SourceFrameId>
+                    <SourceFrameEPSG>1165</SourceFrameEPSG>
+                    <SourceFrameISO>175</SourceFrameISO>
+                    <SourceFrameName>ITRF2014</SourceFrameName>
+                    <SourceFrameReferenceEpoch>2010.00</SourceFrameReferenceEpoch>
+                    <TargetFrameId>190</TargetFrameId>
+                    <TargetFrameEPSG>6619</TargetFrameEPSG>
+                    <TargetFrameISO/>
+                    <TargetFrameName>SWEREF99</TargetFrameName>
+                    <TargetFrameReferenceEpoch>1999.50</TargetFrameReferenceEpoch>
+                    <DisplacementModels>
+                        <SystemID>192</SystemID>
+                        <SystemID>172</SystemID>
+                    </DisplacementModels>
+                    <KinematicTransformations>
+                        <SystemID>194</SystemID>
+                        <SystemID>193</SystemID>
+                    </KinematicTransformations>
+                </ReferenceFrameTransformationInformation>
+                <ReferenceFrameTransformationInformation>
+                    <SourceFrameId>190</SourceFrameId>
+                    <SourceFrameEPSG>6619</SourceFrameEPSG>
+                    <SourceFrameISO/>
+                    <SourceFrameName>SWEREF99</SourceFrameName>
+                    <SourceFrameReferenceEpoch>1999.50</SourceFrameReferenceEpoch>
+                    <TargetFrameId>19</TargetFrameId>
+                    <TargetFrameEPSG>1165</TargetFrameEPSG>
+                    <TargetFrameISO>175</TargetFrameISO>
+                    <TargetFrameName>ITRF2014</TargetFrameName>
+                    <TargetFrameReferenceEpoch>2010.00</TargetFrameReferenceEpoch>
+                    <DisplacementModels>
+                        <SystemID>192</SystemID>
+                        <SystemID>172</SystemID>
+                    </DisplacementModels>
+                    <KinematicTransformations>
+                        <SystemID>193</SystemID>
+                        <SystemID>194</SystemID>
+                    </KinematicTransformations>
+                </ReferenceFrameTransformationInformation>
+            </ReferenceFrameTransformations>
+            <HorizontalAdjustment>
+                <Type>NoAdjustment</Type>
+            </HorizontalAdjustment>
+            <VerticalAdjustment>
+                <Type>GeoidModel</Type>
+                <GeoidName>Sweden 2017 RH2000 Geoid Model</GeoidName>
+            </VerticalAdjustment>
+            <CombinedScaleFactor>
+                <Location>
+                    <Latitude>56.63779999289</Latitude>
+                    <Longitude>12.941464147252</Longitude>
+                    <Height>0</Height>
+                </Location>
+                <Scale>1.0000143971507</Scale>
+            </CombinedScaleFactor>
+            <TectonicPlate>
+                <Name>Unknown</Name>
+            </TectonicPlate>
+        </CoordinateSystem>
+
+        <JobProperties>
+            <Reference/>
+            <Description/>
+            <Operator>JSV</Operator>
+            <JobNote/>
+            <TectonicPlate>Unknown</TectonicPlate>
+            <ApplyJobPointNameRange>false</ApplyJobPointNameRange>
+            <MinimumJobPointName/>
+            <MaximumJobPointName/>
+        </JobProperties>
+
+        <JobSettings>
+            <NeighbourhoodAdjustment>
+                <Applied>false</Applied>
+                <WeightExponent>0.5</WeightExponent>
+            </NeighbourhoodAdjustment>
+            <Averaging>Weighted</Averaging>
+            <UseAttributesOfBaseCode>true</UseAttributesOfBaseCode>
+        </JobSettings>
+
+        <AssociatedFiles>
+            <LinkedFiles/>
+            <ActiveMapFiles/>
+            <FeatureCodeLibrary/>
+            <ExportedFiles>
+                <File>2022-08-18.csv</File>
+                <File>2022-08-18.jxl</File>
+                <File>2022-08-18.jxl</File>
+            </ExportedFiles>
+            <DefinitionFiles/>
+        </AssociatedFiles>
+
+        <TimeZone>
+            <ZoneName>W. Europe Daylight Time</ZoneName>
+            <HoursToUTC>-2</HoursToUTC>
+        </TimeZone>
+    </Environment>
+</JOBFile>

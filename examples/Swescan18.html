@@ -188,8 +188,8 @@ position: absolute;
 				Tools
 			</div>
 			<div>
-				<li id="toolbar_tools"></li>
-				<!--<img name="action_measure_point" src="${Potree.resourcePath}/ikoner/sw_point.svg" class="annotation-action-icon" style="width: 2em; height: auto;"/>
+				<!--<li id="toolbar_tools"></li>-->
+				<img name="action_measure_point" src="${Potree.resourcePath}/ikoner/sw_point.svg" class="annotation-action-icon" style="width: 2em; height: auto;"/>
 				<img name="action_measure_distance" src="${Potree.resourcePath}/ikoner/sw_distance.svg" class="annotation-action-icon" style="width: 2em; height: auto;"/>
 				<img name="action_measure_height" src="${Potree.resourcePath}/ikoner/sw_height.svg" class="annotation-action-icon" style="width: 2em; height: auto;"/>
 				<img name="action_measure_profile" src="${Potree.resourcePath}/ikoner/sw_profile.svg" class="annotation-action-icon" style="width: 2em; height: auto;"/>
@@ -284,52 +284,71 @@ position: absolute;
 
 	{ // MEASURE
 		
-	// 	//Koordinater
-	// 	elToolbar.find("img[name=action_measure_point]").click( () => {
-	// 		const measurement = viewer.measuringTool.startInsertion({
-	// 			showDistances: false,
-	// 			showAngles: false,
-	// 			showCoordinates: true,
-	// 			showArea: false,
-	// 			closed: true,
-	// 			maxMarkers: 1,
-	// 			name: 'Point'
-	// 		});
-	// 	});
-	// 	//Mäta avstånd
-	// 	elToolbar.find("img[name=action_measure_distance]").click( () => {
-	// 		const measurement = viewer.measuringTool.startInsertion({
-	// 			showDistances: true,
-	// 			showArea: false,
-	// 			closed: false,
-	// 			name: 'Distance'
-	// 		});
-	// 	});
-	// 	//Mäta höjd
+		//Koordinater
+		elToolbar.find("img[name=action_measure_point]").click( () => {
+			const measurement = viewer.measuringTool.startInsertion({
+				showDistances: false,
+				showAngles: false,
+				showCoordinates: true,
+				showArea: false,
+				closed: true,
+				maxMarkers: 1,
+				name: 'Point'
+			});
+			let measurementsRoot = $("#jstree_scene").jstree().get_json("measurements");
+				let jsonNode = measurementsRoot.children.find(child => child.data.uuid === measurement.uuid);
+				$.jstree.reference(jsonNode.id).deselect_all();
+				$.jstree.reference(jsonNode.id).select_node(jsonNode.id);
+		});
+		//Mäta avstånd
+		elToolbar.find("img[name=action_measure_distance]").click( () => {
+			const measurement = viewer.measuringTool.startInsertion({
+				showDistances: true,
+					showArea: false,
+					closed: false,
+					name: 'Distance'});
 
-	// 	elToolbar.find("img[name=action_measure_height]").click( () => {
-	// 		const measurement = viewer.measuringTool.startInsertion({
-	// 			showDistances: false,
-	// 				showHeight: true,
-	// 				showArea: false,
-	// 				closed: false,
-	// 				maxMarkers: 2,
-	// 				name: 'Height'
-	// 			});
-	// 		});
-	// 		elToolbar.find("img[name=action_measure_profile]").click( () => {
-	// 		const measurement = viewer.measuringTool.startInsertion({
+				let measurementsRoot = $("#jstree_scene").jstree().get_json("measurements");
+				let jsonNode = measurementsRoot.children.find(child => child.data.uuid === measurement.uuid);
+				$.jstree.reference(jsonNode.id).deselect_all();
+				$.jstree.reference(jsonNode.id).select_node(jsonNode.id);
+			}
+		);
+		//Mäta höjd
+
+		elToolbar.find("img[name=action_measure_height]").click( () => {
+			const measurement = viewer.measuringTool.startInsertion({
+				showDistances: false,
+				showDistances: false,
+					showHeight: true,
+					showArea: false,
+					closed: false,
+					maxMarkers: 2,
+					name: 'Height'});
+
+				let measurementsRoot = $("#jstree_scene").jstree().get_json("measurements");
+				let jsonNode = measurementsRoot.children.find(child => child.data.uuid === measurement.uuid);
+				$.jstree.reference(jsonNode.id).deselect_all();
+				$.jstree.reference(jsonNode.id).select_node(jsonNode.id);
 				
-	// 				name: 'Profile'
-	// 			});
-	// 		});
-	// 	//Remove measurements
-	// 	elToolbar.find("img[name=action_measure_reset]").click( () => {
+		});
+		//Höjdprofil
+		elToolbar.find("img[name=action_measure_profile]").click( () => {
+			const profile = viewer.profileTool.startInsertion({
+			});
+				let measurementsRoot = $("#jstree_scene").jstree().get_json("measurements");
+				let jsonNode = measurementsRoot.children.find(child => child.data.uuid === profile.uuid);
+				$.jstree.reference(jsonNode.id).deselect_all();
+				$.jstree.reference(jsonNode.id).select_node(jsonNode.id);
+				
+			});
+		//Remove measurements
+		elToolbar.find("img[name=action_measure_reset]").click( () => {
 			
-	// 			this.viewer.scene.removeAllMeasurements();
+				this.viewer.scene.removeAllMeasurements();
 			
 			
-	// 	});
+		});
 	}
 
 	/* { // MATERIAL

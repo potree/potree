@@ -58,28 +58,6 @@ export class Sidebar{
 		$('#potree_version_number').html(Potree.version.major + "." + Potree.version.minor + Potree.version.suffix);
 	}
 
-	initSWtoolbar(){
-		let elToolbar = $("toolbar_tools");
-			elToolbar.append(this.createToolIcon(
-				Potree.resourcePath + '/ikoner/sw_angle.png',
-				'[title]tt.angle_measurement',
-				() => {
-					console.log("here");
-					let measurement = this.measuringTool.startInsertion({
-						showDistances: false,
-						showAngles: true,
-						showArea: false,
-						closed: true,
-						maxMarkers: 3,
-						name: 'Angle'});
-	
-					let measurementsRoot = $("#jstree_scene").jstree().get_json("measurements");
-					let jsonNode = measurementsRoot.children.find(child => child.data.uuid === measurement.uuid);
-					$.jstree.reference(jsonNode.id).deselect_all();
-					$.jstree.reference(jsonNode.id).select_node(jsonNode.id);
-				}
-			));
-	}
 
 	initToolbar(){
 

@@ -164,7 +164,7 @@ export class Scene extends EventDispatcher{
 			});
 		}
 	};
-	updateOI(images){
+	updateOrientedImages(images){
 		let OIcheck =document.getElementById("checkoi").checked;
 		this.dispatchEvent({
 			'type': 'oriented_images_updated',

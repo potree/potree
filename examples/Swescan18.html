@@ -132,7 +132,7 @@ position: absolute;
 	<script type="module">
 
 		//import * as THREE from "../libs/three.js/build/three.module.js";
-		
+		let image;
 			const cameraParamsPath = "http://5.9.65.151/mschuetz/potree/resources/pointclouds/helimap/epalinges/img_selected/IXM35_190522_nodistortion.xml";
 			const imageParamsPath = "http://5.9.65.151/mschuetz/potree/resources/pointclouds/helimap/epalinges/img_selected/Calib190522_MN95_NF2_cam_estim.txt";
 			
@@ -143,7 +143,7 @@ position: absolute;
 					
 					
 				});
-		
+				
 
 			
 
@@ -175,6 +175,7 @@ position: absolute;
 				SWEREF99 13 30 - RH2000
 			</div>
 		</span>
+		<span class="potree_toolbar_separator" />
 		<span>
 			<div class="potree_toolbar_label">
 				View
@@ -209,8 +210,7 @@ position: absolute;
 			<div class="potree_toolbar_label">
 				Clipping
 			</div>
-			<div>
-				<ul id="clipping_tools"></ul>
+			<div id="clipping_tools"></ul>
 				
 			</div>
 		</span>
@@ -243,7 +243,7 @@ position: absolute;
 				Oriented Images
 			</div>
 			<div>
-				<img name="action_oi" src="${Potree.resourcePath}/ikoner/sw_reset_tools.svg" class="annotation-action-icon" style="width: 2em; height: auto;"/>
+				<label><input type="checkbox" id="chckOI"/>toggle OI</span></label
 			</div>
 		</span>
 	`);
@@ -386,11 +386,18 @@ position: absolute;
 	}
  */
 		{//show/hide Oriented Images
-			elToolbar.find(name=action_oi).click( () => {
+			elToolbar.find("chckOI").change( () => {
 				console.log("laddar");
-					viewer.scene.updaterientedImages()
-		});
+				
+				const cameraParamsPath = "http://5.9.65.151/mschuetz/potree/resources/pointclouds/helimap/epalinges/img_selected/IXM35_190522_nodistortion.xml";
+			const imageParamsPath = "http://5.9.65.151/mschuetz/potree/resources/pointclouds/helimap/epalinges/img_selected/Calib190522_MN95_NF2_cam_estim.txt";
+			var image;
+				 Potree.OrientedImageLoader.load(cameraParamsPath, imageParamsPath, viewer).then( images => {
+					image = images;
 
+				});
+				viewer.scene.removeOrientedImages(image);
+		});
 		}
 
 	

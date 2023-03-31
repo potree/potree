@@ -75,9 +75,9 @@ position: absolute;
     
 	
 	<!-- INCLUDE ADDITIONAL DEPENDENCIES HERE -->
-		document.title = "Swescan new potree viewer";
+		<!--document.title = "Swescan new potree viewer";
 		viewer.setEDLEnabled(false);
-		viewer.setBackground("gradient"); // ["skybox", "gradient", "black", "white"];
+		viewer.setBackground("gradient"); // ["skybox", "gradient", "black", "white"];-->
 		
 	<!-- INCLUDE SETTINGS HERE -->
 	<!--<div class = "topnav">
@@ -136,11 +136,17 @@ position: absolute;
 			const cameraParamsPath = "http://5.9.65.151/mschuetz/potree/resources/pointclouds/helimap/epalinges/img_selected/IXM35_190522_nodistortion.xml";
 			const imageParamsPath = "http://5.9.65.151/mschuetz/potree/resources/pointclouds/helimap/epalinges/img_selected/Calib190522_MN95_NF2_cam_estim.txt";
 			
-				Potree.OrientedImageLoader.load(cameraParamsPath, imageParamsPath, viewer).then( images => {
+				 Potree.OrientedImageLoader.load(cameraParamsPath, imageParamsPath, viewer).then( images => {
 					
 					viewer.scene.addOrientedImages(images);
 					
+					
+					
 				});
+		
+
+			
+
 			
 				
 				
@@ -193,7 +199,7 @@ position: absolute;
 				<img name="action_measure_distance" src="${Potree.resourcePath}/ikoner/sw_distance.svg" class="annotation-action-icon" style="width: 2em; height: auto;"/>
 				<img name="action_measure_height" src="${Potree.resourcePath}/ikoner/sw_height.svg" class="annotation-action-icon" style="width: 2em; height: auto;"/>
 				<img name="action_measure_profile" src="${Potree.resourcePath}/ikoner/sw_profile.svg" class="annotation-action-icon" style="width: 2em; height: auto;"/>
-				<img name="action_measure_reset" src="${Potree.resourcePath}/ikoner/sw_reset_tools.svg" class="annotation-action-icon" style="width: 2em; height: auto;"/>-->
+				<img name="action_measure_reset" src="${Potree.resourcePath}/ikoner/sw_reset_tools.svg" class="annotation-action-icon" style="width: 2em; height: auto;"/>
 			</div>
 		</span>
 
@@ -237,7 +243,7 @@ position: absolute;
 				Oriented Images
 			</div>
 			<div>
-				<label><input type="checkbox" id="checkoi" onchange="viewer.scene.updateOI()">Show/Hide</label>
+				<img name="action_oi" src="${Potree.resourcePath}/ikoner/sw_reset_tools.svg" class="annotation-action-icon" style="width: 2em; height: auto;"/>
 			</div>
 		</span>
 	`);
@@ -345,7 +351,7 @@ position: absolute;
 		//Remove measurements
 		elToolbar.find("img[name=action_measure_reset]").click( () => {
 			
-				this.viewer.scene.removeAllMeasurements();
+				viewer.scene.removeAllMeasurements();
 			
 			
 		});
@@ -379,6 +385,13 @@ position: absolute;
 		attributeSelection.selectmenu({change: updateMaterialSelection});
 	}
  */
+		{//show/hide Oriented Images
+			elToolbar.find(name=action_oi).click( () => {
+				console.log("laddar");
+					viewer.scene.updaterientedImages()
+		});
+
+		}
 
 	
 	</script>

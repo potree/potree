@@ -54,7 +54,7 @@ export class Sidebar{
 		this.initFilters();
 		this.initClippingTool();
 		this.initSettings();
-		this.initSWtoolbar();
+		
 		$('#potree_version_number').html(Potree.version.major + "." + Potree.version.minor + Potree.version.suffix);
 	}
 
@@ -312,9 +312,11 @@ export class Sidebar{
 
 			elExport.append(`
 				Export: <br>
+				<div style="display: flex;">
 				<a href="#" download="measure.json"><img name="geojson_export_button" src="${geoJSONIcon}" class="button-icon" style="height: 24px" /></a>
 				<a href="#" download="measure.dxf"><img name="dxf_export_button" src="${dxfIcon}" class="button-icon" style="height: 24px" /></a>
 				<a href="#" download="potree.json5"><img name="potree_export_button" src="${potreeIcon}" class="button-icon" style="height: 24px" /></a>
+				</div>
 			`);
 
 			let elDownloadJSON = elExport.find("img[name=geojson_export_button]").parent();

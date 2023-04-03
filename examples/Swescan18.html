@@ -5,7 +5,7 @@
 	<meta name="description" content="">
 	<meta name="author" content="">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-	<title>Potree Viewer</title>
+	<title>Swescan Pointcloud Viewer</title>
 
 	<link rel="stylesheet" type="text/css" href="../build/potree/potree.css">
 	<link rel="stylesheet" type="text/css" href="../libs/jquery-ui/jquery-ui.min.css">
@@ -20,7 +20,7 @@
 			z-index: 10000; 
 			right: 100px; 
 			top: 0px;
-			background: (${currentBackground} 0.5);
+			background: (${currentBackground});
 			/*
 position: absolute; 
 	bottom: 5px; 
@@ -65,17 +65,17 @@ position: absolute;
 	<script src="../libs/tween/tween.min.js"></script>
 	<script src="../libs/d3/d3.js"></script>
 	<script src="../libs/proj4/proj4.js"></script>
-	
+	<script src="../libs/openlayers3/ol.js"></script>
     <script src="../libs/i18next/i18next.js"></script>
     <script src="../libs/jstree/jstree.js"></script>
-
+	<script src="../src/viewer/modal.js"></script>
 	
 	<script src="../build/potree/potree.js"></script>
 	<script src="../libs/plasio/js/laslaz.js"></script>
     
 	
 	<!-- INCLUDE ADDITIONAL DEPENDENCIES HERE -->
-		<!--document.title = "Swescan new potree viewer";
+		<!--document.title = "Swescan new pointcloud viewer";
 		viewer.setEDLEnabled(false);
 		viewer.setBackground("gradient"); // ["skybox", "gradient", "black", "white"];-->
 		
@@ -87,8 +87,17 @@ position: absolute;
 	<div class="potree_container" style="position: absolute; width: 100%; height: 100%; left: 0px; top: 0px;">
 		<div id="potree_render_area">
 			<div id="potree_toolbar"></div>
+			<div class="modal" id="modal">
+				<div class="modal-header">
+				<div class="title">Profile Settings</div>
+				<button data-close-button class="close-button">&times;</button>
+			</div>
+			<div class="modal-body">Profil</div>
+			
+			</div>
+			<div id="overlay"></div>
 		</div>
-		<div id="potree_sidebar_container" style="height: 100%"> </div>
+		<div id="potree_sidebar_container" style="height: 100%"></div> <!--Flytta upp i render_area kanske gör så att de överlappar snyggt-->
 	</div>
 	
 
@@ -112,7 +121,7 @@ position: absolute;
 			viewer.setLanguage('en');
 			//$("#menu_about").next().show();
 			viewer.toggleSidebar();
-			
+			//viewer.compass.setVisible(visible)//här
 		});
 		
 		// plane
@@ -132,17 +141,21 @@ position: absolute;
 	<script type="module">
 
 		//import * as THREE from "../libs/three.js/build/three.module.js";
-		let image;
+		
 			const cameraParamsPath = "http://5.9.65.151/mschuetz/potree/resources/pointclouds/helimap/epalinges/img_selected/IXM35_190522_nodistortion.xml";
 			const imageParamsPath = "http://5.9.65.151/mschuetz/potree/resources/pointclouds/helimap/epalinges/img_selected/Calib190522_MN95_NF2_cam_estim.txt";
 			
 				 Potree.OrientedImageLoader.load(cameraParamsPath, imageParamsPath, viewer).then( images => {
 					
+					
+		
 					viewer.scene.addOrientedImages(images);
 					
 					
 					
 				});
+				
+		
 				
 
 			
@@ -202,6 +215,7 @@ position: absolute;
 				<img name="action_measure_profile" src="${Potree.resourcePath}/ikoner/sw_profile.svg" class="annotation-action-icon" style="width: 2em; height: auto;"/>
 				<img name="action_measure_reset" src="${Potree.resourcePath}/ikoner/sw_reset_tools.svg" class="annotation-action-icon" style="width: 2em; height: auto;"/>
 			</div>
+		<button data-model-target="#modal">Elevation</button>
 		</span>
 
 		<span class="potree_toolbar_separator" />
@@ -346,7 +360,8 @@ position: absolute;
 				let jsonNode = measurementsRoot.children.find(child => child.data.uuid === profile.uuid);
 				$.jstree.reference(jsonNode.id).deselect_all();
 				$.jstree.reference(jsonNode.id).select_node(jsonNode.id);
-				
+				//$("#menu_scene").next().show();
+			//viewer.toggleSidebar();
 			});
 		//Remove measurements
 		elToolbar.find("img[name=action_measure_reset]").click( () => {

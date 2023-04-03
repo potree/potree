@@ -592,6 +592,7 @@ export class Sidebar{
 			let profile = e.profile;
 			let icon = Utils.getMeasurementIcon(profile);
 			createNode(measurementID, profile.name, icon, profile);
+			
 		};
 
 		let onAnnotationAdded = (e) => {

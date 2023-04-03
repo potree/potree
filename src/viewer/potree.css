@@ -51,6 +51,65 @@
 
 	
 }
+*, *::after, *::before {
+	box-sizing: border-box;
+  }
+
+.modal{
+	position: fixed;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%) scale(0);
+	border: 1px solid black;
+	z-index: 10;
+	background-color: white;
+	width: 500px;
+	max-width: 80%;
+}
+.modal-active{
+	transform: translate(-50%, -50%) scale(1);
+}
+
+.modal-header{
+	padding: 10px 15px;
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	border-bottom: 1px solid black;
+}
+
+.modal-header .title{
+	font-size: 1.25rem;
+	font-weight: bold;
+}
+
+.modal-header .close-button{
+	cursor: pointer;
+	border: none;
+	outline: none;
+	background: none;
+	font-size: 1.25rem;
+	font-weight: bold;
+}
+
+.modal-body{
+	padding: 10px 15px;
+}
+
+#overlay{
+	position: fixed;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	
+}
+
+#overlay.active{
+	opacity: 1;
+	pointer-events: all;
+}
+
 /* Add a black background color to the top navigation */
 .topnav {
 	background-color: #333;

@@ -151,24 +151,9 @@ position: absolute;
 			const imageParamsPath = "http://5.9.65.151/mschuetz/potree/resources/pointclouds/helimap/epalinges/img_selected/Calib190522_MN95_NF2_cam_estim.txt";
 			
 				 Potree.OrientedImageLoader.load(cameraParamsPath, imageParamsPath, viewer).then( images => {
-					
-					
-		
 					viewer.scene.addOrientedImages(images);
 					
-					
-					
 				});
-				
-		
-				
-
-			
-
-			
-				
-				
-			
 
 		</script>
 
@@ -220,7 +205,7 @@ position: absolute;
 				<img name="action_measure_profile" src="${Potree.resourcePath}/ikoner/sw_profile.svg" class="annotation-action-icon" style="width: 2em; height: auto;"/>
 				<img name="action_measure_reset" src="${Potree.resourcePath}/ikoner/sw_reset_tools.svg" class="annotation-action-icon" style="width: 2em; height: auto;"/>
 			</div>
-		<button data-model-target="#modal">Elevation</button>
+		<!--<button data-model-target="#modal">Elevation</button>-->
 		</span>
 
 		<span class="potree_toolbar_separator" />

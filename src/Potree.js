@@ -40,6 +40,7 @@ export * from "./loader/ept/ZstandardLoader.js";
 export * from "./loader/PointAttributes.js";
 export * from "./loader/ShapefileLoader.js";
 export * from "./loader/GeoPackageLoader.js";
+export * from "./loader/GeojsonFileLoader.js";
 
 export * from "./utils/Box3Helper.js";
 export * from "./utils/ClippingTool.js";

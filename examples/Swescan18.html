@@ -20,7 +20,7 @@
 			z-index: 10000; 
 			right: 100px; 
 			top: 0px;
-			background: (${currentBackground});
+			background: rgba(0,0, 0, 0.25);
 			/*
 position: absolute; 
 	bottom: 5px; 
@@ -77,17 +77,21 @@ position: absolute;
 	<!-- INCLUDE ADDITIONAL DEPENDENCIES HERE -->
 		<!--document.title = "Swescan new pointcloud viewer";
 		viewer.setEDLEnabled(false);
-		viewer.setBackground("gradient"); // ["skybox", "gradient", "black", "white"];-->
+		viewer.setBackground("black"); // ["skybox", "gradient", "black", "white"];-->
 		
 	<!-- INCLUDE SETTINGS HERE -->
 	<!--<div class = "topnav">
 		<a href=https://sweportal.swescan.se><img src = "../bilder/Logotype_Sweportal_Points_white2.png"></a>
 	</div>-->
-
-	<div class="potree_container" style="position: absolute; width: 100%; height: 100%; left: 0px; top: 0px;">
+	<div class="topnav">
+		<a href=https://sweportal.swescan.se><img src = "../bilder/swepoertal_points_WBG.png" Style="object-fit: contain;"></a>
+		<!--<a href=https://sweportal.swescan.se><img src = "../bilder/swepoertal_points_WBG.png" Style=" float: right;"></a>-->
+	</div>
+	<div class="potree_container" style="position: flex; width: 100%; height: 100%; left: 0px; top: 88%;">
+		
 		<div id="potree_render_area">
 			<div id="potree_toolbar"></div>
-			<div class="modal" id="modal">
+			<!-- <div class="modal" id="modal">
 				<div class="modal-header">
 				<div class="title">Profile Settings</div>
 				<button data-close-button class="close-button">&times;</button>
@@ -95,7 +99,7 @@ position: absolute;
 			<div class="modal-body">Profil</div>
 			
 			</div>
-			<div id="overlay"></div>
+			<div id="overlay"></div> -->
 		</div>
 		<div id="potree_sidebar_container" style="height: 100%"></div> <!--Flytta upp i render_area kanske gör så att de överlappar snyggt-->
 	</div>
@@ -121,7 +125,7 @@ position: absolute;
 			viewer.setLanguage('en');
 			//$("#menu_about").next().show();
 			viewer.toggleSidebar();
-			//viewer.compass.setVisible(visible)//här
+			viewer.compass.setVisible(true)//här
 		});
 		
 		// plane
@@ -135,6 +139,7 @@ position: absolute;
 			
 			viewer.fitToScreen();
 		});
+		//metod som öppnar scene här?
 		
 	</script>
 	<!--Om man vill lägga till bildfunktionen-->

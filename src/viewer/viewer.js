@@ -1168,11 +1168,11 @@ export class Viewer extends EventDispatcher{
 		let renderArea = $('#potree_render_area');
 		let isVisible = renderArea.css('left') !== '0px';
 
-		if (isVisible) {
-			renderArea.css('left', '0px');
-		} else {
-			renderArea.css('left', '300px');
-		}
+		// if (isVisible) {
+		// 	renderArea.css('left', '0px');
+		// } else {
+		// 	renderArea.css('left', '300px');
+		// }
 	};
 
 	toggleMap () {
@@ -1214,12 +1214,13 @@ export class Viewer extends EventDispatcher{
 		let sidebarContainer = $('#potree_sidebar_container');
 		sidebarContainer.load(new URL(Potree.scriptPath + '/sidebar.html').href, () => {
 			sidebarContainer.css('width', '300px');
-			sidebarContainer.css('height', '100%');
+			sidebarContainer.css('height', '80dvh');
 
 			let imgMenuToggle = document.createElement('img');
 			imgMenuToggle.src = new URL(Potree.resourcePath + '/icons/menu_button.svg').href;
 			imgMenuToggle.onclick = this.toggleSidebar;
-			imgMenuToggle.classList.add('potree_menu_toggle');
+			//imgMenuToggle.classList.add('potree_menu_toggle');
+			
 
 			let imgMapToggle = document.createElement('img');
 			imgMapToggle.src = new URL(Potree.resourcePath + '/icons/map_icon.png').href;

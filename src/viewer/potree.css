@@ -40,7 +40,7 @@
 	--bg-dark-color:	rgba( 24, 31, 33, 1);
 	--bg-hover-color:	var(--color-2);
 	
-	--font-color:		#180d3f;
+	--font-color:		#000000;
 	--font-color-2:		#ddd;
 	--font-color-3:		#cccccc;
 	--border-color:		black;
@@ -112,13 +112,15 @@
 
 /* Add a black background color to the top navigation */
 .topnav {
-	background-color: #333;
+	background-color: #ffffff;
 	overflow: hidden;
-	height: 10%;
+	height: 8%;
 	width:100%;
 	left: 0px;
 	top: 0px;
 	position: absolute;
+	z-index: 1000;
+	border-bottom: 5px solid var(--bg-color-2);
   }
   
   /* Style the links inside the navigation bar */
@@ -126,10 +128,13 @@
 	float: left;
 	color: #f2f2f2;
 	text-align: center;
-	padding: 14px 16px;
+	padding: 5px 5px;
 	text-decoration: none;
 	font-size: 17px;
+	height: 100%;
   }
+
+
   
   /* Change the color of links on hover */
   .topnav a:hover {
@@ -148,16 +153,17 @@ img {
 }
 
 #potree_sidebar_container{
-	position:	absolute;
-	z-index:	0;
-	top: 0px;
-	left: 0px;
+	position:	fixed;
+	z-index:	10;
+	top: 10%;
+	left: 25px;
 	width:		350px;
 	height:		auto;
 	overflow-y:	scroll;
 	font-size:	85%;
-	border:	1px solid rgb(255, 123, 0);
-	background-color:	rgba(129, 129, 129, 0.5);
+	/* border:	2px solid rgb(0, 0, 0);  */
+	border-radius: 10px;
+	background-color:	rgba(189, 189, 189, 0.75);
 	
 	
 }
@@ -165,7 +171,8 @@ img {
 #sidebar_root{
 	color:				var(--font-color);
 	font-family:		Arial,Helvetica,sans-serif;
-	font-size:			1em;
+	font-size:			1.25em;
+	height: auto;
 }
 
 .potree_failpage{
@@ -228,7 +235,7 @@ img {
 }
 
 #potree_sidebar_container a{
-	color: 			#8Aa1c4;
+	color: 			#000000;
 }
 
 #potree_quick_buttons{
@@ -266,7 +273,7 @@ img {
 #potree_render_area{
 	position: 	absolute;
 	/*background: linear-gradient(-90deg, red, yellow);*/
-	top: 		0px;
+	top: 		8%;
 	bottom: 	0px;
 	left: 		0px;
 	right: 		0px;
@@ -562,6 +569,7 @@ body{
 
 .accordion > h3{
 	background-color: var(--bg-color-2) !important;
+	
 	font-family: "Raleway", sans-serif;
 	background: #f6f6f6 50% 50% repeat-x;
 	border:		1px solid black;
@@ -657,7 +665,7 @@ body{
 	top: 		50%;
 	width: 		9999px;
 	height: 	1px;
-	background: #c90000;
+	background: #ffffff;
 }
 
 .divider > span:before {
@@ -870,7 +878,8 @@ body{
 }
 
 #potree_sidebar_container{
-	scrollbar-color: var(--color-1) var(--bg-color);
+	/* scrollbar-color: var(--color-1) var(--bg-color); */
+	scrollbar-color: var(--bg-color-2);
 	scrollbar-width: thin;
 }
 

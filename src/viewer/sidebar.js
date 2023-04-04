@@ -312,11 +312,11 @@ export class Sidebar{
 
 			elExport.append(`
 				Export: <br>
-				<!--<div style="display: flex;">-->
+				<!--<div style="display: flex;">
 				<a href="#" download="measure.json"><img name="geojson_export_button" src="${geoJSONIcon}" class="button-icon" style="height: 24px" /></a>
 				<a href="#" download="measure.dxf"><img name="dxf_export_button" src="${dxfIcon}" class="button-icon" style="height: 24px" /></a>
 				<a href="#" download="potree.json5"><img name="potree_export_button" src="${potreeIcon}" class="button-icon" style="height: 24px" /></a>
-				<!--</div>-->
+				</div>
 			`);
 
 			let elDownloadJSON = elExport.find("img[name=geojson_export_button]").parent();
@@ -835,42 +835,42 @@ export class Sidebar{
 			}
 		));
 
-		// CLIP POLYGON
-		clippingToolBar.append(this.createToolIcon(
-			Potree.resourcePath + "/icons/clip-polygon.svg",
-			"[title]tt.clip_polygon",
-			() => {
-				let item = this.viewer.clippingTool.startInsertion({type: "polygon"});
+		// // CLIP POLYGON Funkar ej i denna versionen
+		// clippingToolBar.append(this.createToolIcon(
+		// 	Potree.resourcePath + "/icons/clip-polygon.svg",
+		// 	"[title]tt.clip_polygon",
+		// 	() => {
+		// 		let item = this.viewer.clippingTool.startInsertion({type: "polygon"});
 
-				let measurementsRoot = $("#jstree_scene").jstree().get_json("measurements");
-				let jsonNode = measurementsRoot.children.find(child => child.data.uuid === item.uuid);
-				$.jstree.reference(jsonNode.id).deselect_all();
-				$.jstree.reference(jsonNode.id).select_node(jsonNode.id);
-			}
-		));
+		// 		let measurementsRoot = $("#jstree_scene").jstree().get_json("measurements");
+		// 		let jsonNode = measurementsRoot.children.find(child => child.data.uuid === item.uuid);
+		// 		$.jstree.reference(jsonNode.id).deselect_all();
+		// 		$.jstree.reference(jsonNode.id).select_node(jsonNode.id);
+		// 	}
+		// ));
 
-		{// SCREEN BOX SELECT
-			let boxSelectTool = new ScreenBoxSelectTool(this.viewer);
+		// {// SCREEN BOX SELECT
+		// 	let boxSelectTool = new ScreenBoxSelectTool(this.viewer);
 
-			clippingToolBar.append(this.createToolIcon(
-				Potree.resourcePath + "/icons/clip-screen.svg",
-				"[title]tt.screen_clip_box",
-				() => {
-					if(!(this.viewer.scene.getActiveCamera() instanceof THREE.OrthographicCamera)){
-						this.viewer.postMessage(`Switch to Orthographic Camera Mode before using the Screen-Box-Select tool.`, 
-							{duration: 2000});
-						return;
-					}
+		// 	clippingToolBar.append(this.createToolIcon(
+		// 		Potree.resourcePath + "/icons/clip-screen.svg",
+		// 		"[title]tt.screen_clip_box",
+		// 		() => {
+		// 			if(!(this.viewer.scene.getActiveCamera() instanceof THREE.OrthographicCamera)){
+		// 				this.viewer.postMessage(`Switch to Orthographic Camera Mode before using the Screen-Box-Select tool.`, 
+		// 					{duration: 2000});
+		// 				return;
+		// 			}
 					
-					let item = boxSelectTool.startInsertion();
+		// 			let item = boxSelectTool.startInsertion();
 
-					let measurementsRoot = $("#jstree_scene").jstree().get_json("measurements");
-					let jsonNode = measurementsRoot.children.find(child => child.data.uuid === item.uuid);
-					$.jstree.reference(jsonNode.id).deselect_all();
-					$.jstree.reference(jsonNode.id).select_node(jsonNode.id);
-				}
-			));
-		}
+		// 			let measurementsRoot = $("#jstree_scene").jstree().get_json("measurements");
+		// 			let jsonNode = measurementsRoot.children.find(child => child.data.uuid === item.uuid);
+		// 			$.jstree.reference(jsonNode.id).deselect_all();
+		// 			$.jstree.reference(jsonNode.id).select_node(jsonNode.id);
+		// 		}
+		// 	));
+		// }
 
 		{ // REMOVE CLIPPING TOOLS
 			clippingToolBar.append(this.createToolIcon(

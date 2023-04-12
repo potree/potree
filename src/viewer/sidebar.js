@@ -254,20 +254,20 @@ export class Sidebar{
 			}
 		));
 
-		// ANNOTATION
-		elToolbar.append(this.createToolIcon(
-			Potree.resourcePath + '/icons/annotation.svg',
-			'[title]tt.annotation',
-			() => {
-				$('#menu_measurements').next().slideDown(); ;
-				let annotation = this.viewer.annotationTool.startInsertion();
+		// ANNOTATION Funkar ej
+		// elToolbar.append(this.createToolIcon(
+		// 	Potree.resourcePath + '/icons/annotation.svg',
+		// 	'[title]tt.annotation',
+		// 	() => {
+		// 		$('#menu_measurements').next().slideDown(); ;
+		// 		let annotation = this.viewer.annotationTool.startInsertion();
 
-				let annotationsRoot = $("#jstree_scene").jstree().get_json("annotations");
-				let jsonNode = annotationsRoot.children.find(child => child.data.uuid === annotation.uuid);
-				$.jstree.reference(jsonNode.id).deselect_all();
-				$.jstree.reference(jsonNode.id).select_node(jsonNode.id);
-			}
-		));
+		// 		let annotationsRoot = $("#jstree_scene").jstree().get_json("annotations");
+		// 		let jsonNode = annotationsRoot.children.find(child => child.data.uuid === annotation.uuid);
+		// 		$.jstree.reference(jsonNode.id).deselect_all();
+		// 		$.jstree.reference(jsonNode.id).select_node(jsonNode.id);
+		// 	}
+		// ));
 
 		// REMOVE ALL
 		elToolbar.append(this.createToolIcon(

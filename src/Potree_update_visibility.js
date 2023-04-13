@@ -337,6 +337,8 @@ export function updateVisibility(pointclouds, camera, renderer){
 				node.boundingBoxNode.visible = false;
 			}
 
+			node.update();
+
 			// if(node.boundingBoxNode !== undefined && exports.debug.allowedNodes !== undefined){
 			// 	if(!exports.debug.allowedNodes.includes(node.name)){
 			// 		node.boundingBoxNode.visible = false;

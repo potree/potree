@@ -593,6 +593,9 @@ export class Sidebar{
 		let onAnnotationAdded = (e) => {
 			let annotation = e.annotation;
 
+			if(annotation.forDebug)
+				return;
+
 			let annotationIcon = `${Potree.resourcePath}/icons/annotation.svg`;
 			let parentID = this.annotationMapping.get(annotation.parent);
 			let annotationID = createNode(parentID, annotation.title, annotationIcon, annotation);
@@ -1558,6 +1561,12 @@ export class Sidebar{
 
 		$('#set_freeze').click(() => {
 			this.viewer.setFreeze($('#set_freeze').prop("checked"));
+		});
+
+		$('#show_node_name').prop("checked", this.viewer.debugShowNodeName);
+
+		$('#show_node_name').click(() => {
+			this.viewer.debugShowNodeName = $('#show_node_name').prop("checked");
 		});
 	}
 

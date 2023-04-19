@@ -115,8 +115,10 @@
 	background-color: #ffffff;
 	overflow: hidden;
 	height: 8%;
+	min-height: 20px;
 	width:100%;
-	left: 0px;
+	left: 0;
+	right: 0;
 	top: 0px;
 	position: absolute;
 	z-index: 1000;
@@ -125,9 +127,11 @@
   
   /* Style the links inside the navigation bar */
   .topnav a {
-	float: left;
+	float: right;
+	position: absolute;
+	
 	color: #f2f2f2;
-	text-align: center;
+	/*text-align: center;*/
 	padding: 5px 5px;
 	text-decoration: none;
 	font-size: 17px;
@@ -156,8 +160,9 @@ img {
 	position:	fixed;
 	z-index:	10;
 	top: 10%;
-	left: 25px;
+	left: 1%;
 	width:		350px;
+	max-width: 20%;
 	height:		auto;
 	overflow-y:	scroll;
 	font-size:	85%;
@@ -636,7 +641,9 @@ body{
 	user-select: 			text;
 }
 
-
+a {
+	font-size: 16px;
+}
 
 .divider {
 	display: 		block;
@@ -697,6 +704,7 @@ body{
 .text-icon{
 	opacity:	0.5;
 	height:		24px;
+	
 }
 
 .text-icon:hover{

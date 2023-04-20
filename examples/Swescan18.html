@@ -165,6 +165,13 @@ position: absolute;
 					
 				});
 					//
+					const cameraParamsPath1 = "../images/inspection_mur/murOI.xml";
+			const imageParamsPath1 = "../images/inspection_mur/OIwallimageparams.txt";
+			
+				 Potree.OrientedImageLoader.load(cameraParamsPath1, imageParamsPath1, viewer).then( images => {
+					viewer.scene.addOrientedImages(images);
+					
+				});
 		</script>
 
 <script type="module">

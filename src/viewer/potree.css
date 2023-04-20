@@ -569,7 +569,7 @@ body{
 }
 
 .ui-widget-content{
-	/*color: var(--font-color) !important;*/
+	color: var(--font-color) !important;
 }
 
 .accordion > h3{
@@ -703,8 +703,8 @@ a {
 
 .text-icon{
 	opacity:	0.5;
-	height:		24px;
-	
+	height:		45px;
+	width: 45px;
 }
 
 .text-icon:hover{

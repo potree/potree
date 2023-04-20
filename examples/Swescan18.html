@@ -75,9 +75,9 @@ position: absolute;
     
 	
 	<!-- INCLUDE ADDITIONAL DEPENDENCIES HERE -->
-		<!--document.title = "Swescan new pointcloud viewer";
+		document.title = "Swescan new pointcloud viewer";
 		viewer.setEDLEnabled(false);
-		viewer.setBackground("black"); // ["skybox", "gradient", "black", "white"];-->
+		viewer.setBackground("black"); // ["skybox", "gradient", "black", "white"];
 		
 	<!-- INCLUDE SETTINGS HERE -->
 	<!--<div class = "topnav">
@@ -104,6 +104,12 @@ position: absolute;
 			
 			</div>
 			<div id="overlay"></div> -->
+			<span style="position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%); z-index: 10000">
+				<input type="button" value="Default Scheme" onclick="setDefaultScheme()"/>
+				<input type="button" value="Tree Scheme" onclick="setTreeScheme()"/>
+				<input type="button" value="Random Scheme" onclick="setRandomScheme()"/>
+			</span>
+
 		</div>
 		<div id="potree_sidebar_container" style="height: 100%"></div> <!--Flytta upp i render_area kanske gör så att de överlappar snyggt-->
 	</div>
@@ -127,7 +133,7 @@ position: absolute;
 		
 		
 			viewer.setLanguage('en');
-			$("#menu_scene").next().show();
+			//$("#menu_scene").next().show();
 			viewer.toggleSidebar();
 			viewer.compass.setVisible(true)//här
 		});
@@ -160,6 +166,33 @@ position: absolute;
 				});
 					//
 		</script>
+
+<script type="module">
+
+	import * as THREE from "../libs/three.js/build/three.module.js";
+
+	window.setDefaultScheme = function(){
+		viewer.setClassifications(Potree.ClassificationScheme.DEFAULT);
+	}
+
+	window.setTreeScheme = function(){
+		viewer.setClassifications({
+			5:       { visible: true, name: 'trees'        , color: [0.0, 1.0, 0.0, 1.0] },
+			DEFAULT: { visible: false, name: 'other' , color: [0.0, 0.0, 0.0, 1.0] },
+		});
+	}
+
+	window.setRandomScheme = function(){
+		const scheme = {};
+
+		for(let i = 0; i < 32; i++){
+			scheme[i] = { visible: true, name: `random:_${i}`, color: [Math.random(), Math.random(), Math.random(), 1.0] };
+		}
+
+		viewer.setClassifications(scheme);
+	}
+
+</script>
 
 <script type="module">
 
@@ -355,7 +388,7 @@ position: absolute;
 				let jsonNode = measurementsRoot.children.find(child => child.data.uuid === profile.uuid);
 				$.jstree.reference(jsonNode.id).deselect_all();
 				$.jstree.reference(jsonNode.id).select_node(jsonNode.id);
-				//$("#menu_scene").next().show();
+				$("#menu_scene").next().show();
 			//viewer.toggleSidebar();
 			});
 		//Remove measurements

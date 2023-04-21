@@ -254,7 +254,7 @@ export class Sidebar{
 			}
 		));
 
-		// ANNOTATION Funkar ej
+		// ANNOTATION
 		elToolbar.append(this.createToolIcon(
 			Potree.resourcePath + '/icons/annotation.svg',
 			'[title]tt.annotation',
@@ -835,19 +835,19 @@ export class Sidebar{
 			}
 		));
 
-		// // CLIP POLYGON Funkar ej i denna versionen
-		// clippingToolBar.append(this.createToolIcon(
-		// 	Potree.resourcePath + "/icons/clip-polygon.svg",
-		// 	"[title]tt.clip_polygon",
-		// 	() => {
-		// 		let item = this.viewer.clippingTool.startInsertion({type: "polygon"});
-
-		// 		let measurementsRoot = $("#jstree_scene").jstree().get_json("measurements");
-		// 		let jsonNode = measurementsRoot.children.find(child => child.data.uuid === item.uuid);
-		// 		$.jstree.reference(jsonNode.id).deselect_all();
-		// 		$.jstree.reference(jsonNode.id).select_node(jsonNode.id);
-		// 	}
-		// ));
+		// CLIP POLYGON Funkar ej i denna versionen
+		clippingToolBar.append(this.createToolIcon(
+			Potree.resourcePath + "/icons/clip-polygon.svg",
+			"[title]tt.clip_polygon",
+			() => {
+				let item = this.viewer.clippingTool.startInsertion({type: "polygon"});
+				console.log("polygonen");
+				let measurementsRoot = $("#jstree_scene").jstree().get_json("measurements");
+				let jsonNode = measurementsRoot.children.find(child => child.data.uuid === item.uuid);
+				$.jstree.reference(jsonNode.id).deselect_all();
+				$.jstree.reference(jsonNode.id).select_node(jsonNode.id);
+			}
+		));
 
 		// {// SCREEN BOX SELECT
 		// 	let boxSelectTool = new ScreenBoxSelectTool(this.viewer);

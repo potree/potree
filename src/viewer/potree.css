@@ -114,8 +114,8 @@
 .topnav {
 	background-color: #ffffff;
 	overflow: hidden;
-	height: 8%;
-	min-height: 20px;
+	height: 6%;
+	min-height: 10px;
 	width:100%;
 	left: 0;
 	right: 0;
@@ -223,7 +223,7 @@ img {
 #potree_description{
 	position: absolute; 
 	bottom: 5px; 
-	right: 0%; 
+	right: 5px; 
 	transform: translateX(-50%); 
 	text-align: center;
 	z-index:	1000;
@@ -278,7 +278,8 @@ img {
 #potree_render_area{
 	position: 	absolute;
 	/*background: linear-gradient(-90deg, red, yellow);*/
-	top: 		8%;
+	top: 		6%;
+	
 	bottom: 	0px;
 	left: 		0px;
 	right: 		0px;

@@ -165,11 +165,11 @@ img {
 	max-width: 20%;
 	height:		auto;
 	overflow-y:	scroll;
+	/*overflow-x: scroll;*/
 	font-size:	85%;
 	/* border:	2px solid rgb(0, 0, 0);  */
 	border-radius: 10px;
 	background-color:	rgba(189, 189, 189, 0.75);
-	
 	
 }
 
@@ -177,7 +177,7 @@ img {
 	color:				var(--font-color);
 	font-family:		Arial,Helvetica,sans-serif;
 	font-size:			1.25em;
-	height: auto;
+	object-fit:contain;
 }
 
 .potree_failpage{
@@ -224,9 +224,11 @@ img {
 	position: absolute; 
 	bottom: 5px; 
 	right: 5px; 
-	transform: translateX(-50%); 
+	/* transform: translateX(-50%);  */
 	text-align: center;
 	z-index:	1000;
+	max-width: 10%;
+	max-height:10%;
 }
 
 .potree_sidebar_brand{

@@ -193,7 +193,7 @@ export class Sidebar{
 		));
 
 		// AREA
-		elToolbar.append(this.createToolIcon(
+		/* elToolbar.append(this.createToolIcon(
 			Potree.resourcePath + '/ikoner/sw_area.svg',
 			'[title]tt.area_measurement',
 			() => {
@@ -209,10 +209,10 @@ export class Sidebar{
 				$.jstree.reference(jsonNode.id).deselect_all();
 				$.jstree.reference(jsonNode.id).select_node(jsonNode.id);
 			}
-		));
+		)); */
 
 		// VOLUME
-		elToolbar.append(this.createToolIcon(
+/* 		elToolbar.append(this.createToolIcon(
 			Potree.resourcePath + '/icons/volume.svg',
 			'[title]tt.volume_measurement',
 			() => {
@@ -223,10 +223,10 @@ export class Sidebar{
 				$.jstree.reference(jsonNode.id).deselect_all();
 				$.jstree.reference(jsonNode.id).select_node(jsonNode.id);
 			}
-		));
+		)); */
 
 		// SPHERE VOLUME
-		elToolbar.append(this.createToolIcon(
+		/* elToolbar.append(this.createToolIcon(
 			Potree.resourcePath + '/icons/sphere_distances.svg',
 			'[title]tt.volume_measurement',
 			() => { 
@@ -237,7 +237,7 @@ export class Sidebar{
 				$.jstree.reference(jsonNode.id).deselect_all();
 				$.jstree.reference(jsonNode.id).select_node(jsonNode.id);
 			}
-		));
+		)); */
 
 		// PROFILE
 		elToolbar.append(this.createToolIcon(
@@ -836,7 +836,7 @@ export class Sidebar{
 		));
 
 		// CLIP POLYGON Funkar ej i denna versionen
-		clippingToolBar.append(this.createToolIcon(
+		/* clippingToolBar.append(this.createToolIcon(
 			Potree.resourcePath + "/icons/clip-polygon.svg",
 			"[title]tt.clip_polygon",
 			() => {
@@ -848,7 +848,7 @@ export class Sidebar{
 				$.jstree.reference(jsonNode.id).select_node(jsonNode.id);
 			}
 		));
-
+ */
 		// {// SCREEN BOX SELECT
 		// 	let boxSelectTool = new ScreenBoxSelectTool(this.viewer);
 
@@ -874,7 +874,7 @@ export class Sidebar{
 
 		{ // REMOVE CLIPPING TOOLS
 			clippingToolBar.append(this.createToolIcon(
-				Potree.resourcePath + "/ikoner/sw_remove.svg",
+				Potree.resourcePath + "/ikoner/sw_reset_tools.svg",
 				"[title]tt.remove_all_clipping_volumes",
 				() => {
 
@@ -1442,37 +1442,37 @@ export class Sidebar{
 
 
 		elNavigation.append(this.createToolIcon(
-			Potree.resourcePath + "/icons/left.svg",
+			Potree.resourcePath + "/ikoner/left.svg",
 			"[title]tt.left_view_control",
 			() => {this.viewer.setLeftView()}
 		));
 
 		elNavigation.append(this.createToolIcon(
-			Potree.resourcePath + "/icons/right.svg",
+			Potree.resourcePath + "/ikoner/right.svg",
 			"[title]tt.right_view_control",
 			() => {this.viewer.setRightView()}
 		));
 
 		elNavigation.append(this.createToolIcon(
-			Potree.resourcePath + "/icons/front.svg",
+			Potree.resourcePath + "/ikoner/front.svg",
 			"[title]tt.front_view_control",
 			() => {this.viewer.setFrontView()}
 		));
 
 		elNavigation.append(this.createToolIcon(
-			Potree.resourcePath + "/icons/back.svg",
+			Potree.resourcePath + "/ikoner/back.svg",
 			"[title]tt.back_view_control",
 			() => {this.viewer.setBackView()}
 		));
 
 		elNavigation.append(this.createToolIcon(
-			Potree.resourcePath + "/icons/top.svg",
+			Potree.resourcePath + "/ikoner/top.svg",
 			"[title]tt.top_view_control",
 			() => {this.viewer.setTopView()}
 		));
 
 		elNavigation.append(this.createToolIcon(
-			Potree.resourcePath + "/icons/bottom.svg",
+			Potree.resourcePath + "/ikoner/bottom.svg",
 			"[title]tt.bottom_view_control",
 			() => {this.viewer.setBottomView()}
 		));

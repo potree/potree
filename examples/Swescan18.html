@@ -12,13 +12,20 @@
 	<link rel="stylesheet" type="text/css" href="../libs/openlayers3/ol.css">
 	<link rel="stylesheet" type="text/css" href="../libs/spectrum/spectrum.css">
 	<link rel="stylesheet" type="text/css" href="../libs/jstree/themes/mixed/style.css">
-
+	<script type="text/javascript">
+	//sätt in önskade länkar/text här
+	punktmoln = "../pointclouds/testardetta/metadata.json" //länk till punktmolnet
+	oiimageparameters = "../images/inspection_wall/OIimageparams.txt" //koordnater och rotation för bilderna
+	oicameraparameters = "../images/inspection_wall/OIcameraparams.xml" //specifikation av bilderna. 
+	kordinatsystem = "SWEREF99TM - RH2000" //Vilket kordinatsystem som anges i toolbaren
+	</script>
 	<style>
 	
 		#potree_toolbar{
 			position: absolute; 
 			z-index: 10000; 
-			right: 100px; 
+			right: 3%; 
+			max-width: 75%;
 			top: 0px;
 			background: rgba(0,0, 0, 0.25);
 			/*
@@ -76,7 +83,7 @@ position: absolute;
 	
 	<!-- INCLUDE ADDITIONAL DEPENDENCIES HERE -->
 		document.title = "Swescan new pointcloud viewer";
-		viewer.setEDLEnabled(false);
+		viewer.setEDLEnabled(true);
 		viewer.setBackground("black"); // ["skybox", "gradient", "black", "white"];
 		
 	<!-- INCLUDE SETTINGS HERE -->
@@ -140,7 +147,7 @@ position: absolute;
 		
 		// plane
 		//Potree.loadPointCloud("../pointclouds/C/dev/epalinges/epalinges/als_converted/cloud.js", "epalinges", e => {
-		Potree.loadPointCloud("../pointclouds/testardetta/metadata.json", "lion", function(e){
+		Potree.loadPointCloud(punktmoln, "lion", function(e){
 			viewer.scene.addPointCloud(e.pointcloud);
 			
 			let material = e.pointcloud.material;
@@ -157,21 +164,21 @@ position: absolute;
 
 		//import * as THREE from "../libs/three.js/build/three.module.js";
 		
-			const cameraParamsPath = "../images/inspection_wall/OIcameraparams.xml";
-			const imageParamsPath = "../images/inspection_wall/OIimageparams.txt";
+			const cameraParamsPath = oicameraparameters;
+			const imageParamsPath = oiimageparameters;
 			
 				 Potree.OrientedImageLoader.load(cameraParamsPath, imageParamsPath, viewer).then( images => {
 					viewer.scene.addOrientedImages(images);
 					
 				});
 					//
-					const cameraParamsPath1 = "../images/inspection_mur/murOI.xml";
-			const imageParamsPath1 = "../images/inspection_mur/OIwallimageparams.txt";
+					/* const cameraParamsPath1 = "../images/Inspektionsbilder/many3.xml";
+			const imageParamsPath1 = "../images/Inspektionsbilder/many5.txt";
 			
 				 Potree.OrientedImageLoader.load(cameraParamsPath1, imageParamsPath1, viewer).then( images => {
 					viewer.scene.addOrientedImages(images);
 					
-				});
+				}); */
 		</script>
 
 <script type="module">
@@ -213,13 +220,17 @@ position: absolute;
 	// - sidebar.js
 	// - PropertiesPanel.html and its dependencies (DistancePanel, ProfilePanel, ...)
 	// 
+	
 
 	// HTML
 	const elToolbar = $("#potree_toolbar");
 	elToolbar.html(`
 		<span>
+			<div class="potree_toolbar_label">
+				Coordinate System
+			</div>
 			<div>
-				SWEREF99 13 30 - RH2000
+			${parent.kordinatsystem}
 			</div>
 		</span>
 		<span class="potree_toolbar_separator" />
@@ -228,7 +239,7 @@ position: absolute;
 				View
 			</div>
 			<div>
-				<img name="action_elevation" src="${Potree.resourcePath}/ikoner/sw_profile.svg" class="annotation-action-icon" style="width: 2em; height: auto;"/>
+				<img name="action_elevation" src="${Potree.resourcePath}/ikoner/2.ico" class="annotation-action-icon" style="width: 2em; height: auto;"/>
 				<img name="action_rgb" src="${Potree.resourcePath}/icons/rgb.svg" class="annotation-action-icon" style="width: 2em; height: auto;"/>
 			</div>
 		</span>
@@ -435,7 +446,7 @@ position: absolute;
 		attributeSelection.selectmenu({change: updateMaterialSelection});
 	}
  */
-		{//show/hide Oriented Images
+		/* {//show/hide Oriented Images
 			elToolbar.find("chckOI").change( () => {
 				console.log("laddar");
 				
@@ -448,7 +459,7 @@ position: absolute;
 				});
 				viewer.scene.removeOrientedImages(image);
 		});
-		}
+		} */
 
 	
 	</script>

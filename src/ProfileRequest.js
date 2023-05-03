@@ -186,7 +186,7 @@ export class ProfileRequest {
 
 		let accepted = new Uint32Array(numPoints);
 		let mileage = new Float64Array(numPoints);
-		let acceptedPositions = new Float32Array(numPoints * 3);
+		let acceptedPositions = new Float64Array(numPoints * 3);
 		let numAccepted = 0;
 
 		let pos = new THREE.Vector3();

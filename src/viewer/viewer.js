@@ -73,6 +73,11 @@ export class Viewer extends EventDispatcher{
 				$(domElement).append(potreeDescription);
 			}
 
+			if ($(domElement).find('#potree_description2').length === 0) {
+				let potreeDescription2 = $(`<div id="potree_description2" class="potree_info_text"></div>`);
+				$(domElement).append(potreeDescription2);
+			}
+
 			if ($(domElement).find('#potree_annotations').length === 0) {
 				let potreeAnnotationContainer = $(`
 					<div id="potree_annotation_container" 
@@ -137,6 +142,7 @@ export class Viewer extends EventDispatcher{
 		this.edlOpacity = 1.0;
 		this.useEDL = false;
 		this.description = "";
+		this.description2 = "";
 
 		this.classifications = ClassificationScheme.DEFAULT;
 
@@ -305,7 +311,7 @@ export class Viewer extends EventDispatcher{
 			this.setShowBoundingBox(false);
 			this.setFreeze(false);
 			this.setControls(this.orbitControls);
-			this.setBackground('gradient');
+			this.setBackground('black');
 
 			this.scaleFactor = 1;
 
@@ -489,6 +495,22 @@ export class Viewer extends EventDispatcher{
 
 	getDescription(){
 		return this.description;
+	}
+
+	setDescription2 (value) {
+		this.description2 = value;
+		console.log("desc");
+		if (value.includes('.jpg') || value.includes('.png') || value.includes('.gif')) {
+			$('#potree_description2').html(`<img src="${value}" />`);
+		  } else {
+			$('#potree_description2').html(value);
+		  }
+		}
+	/* 	$('#potree_description2').text(value);
+	} */
+
+	getDescription2(){
+		return this.description2;
 	}
 
 

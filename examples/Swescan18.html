@@ -17,7 +17,9 @@
 	punktmoln = "../pointclouds/testardetta/metadata.json" //länk till punktmolnet
 	oiimageparameters = "../images/inspection_wall/OIimageparams.txt" //koordnater och rotation för bilderna
 	oicameraparameters = "../images/inspection_wall/OIcameraparams.xml" //specifikation av bilderna. 
-	kordinatsystem = "SWEREF99TM - RH2000" //Vilket kordinatsystem som anges i toolbaren
+	titel = "torn"
+	kordinatsystem = "SWEREF99TM - RH2000" //Vilket kordinatsystem som 
+	
 	</script>
 	<style>
 	
@@ -26,7 +28,7 @@
 			z-index: 10000; 
 			right: 3%; 
 			max-width: 75%;
-			top: 0px;
+			top: 5px;
 			background: rgba(0,0, 0, 0.25);
 			/*
 position: absolute; 
@@ -41,8 +43,9 @@ position: absolute;
 			color: white;
 			padding: 0.3em 0.8em;
 			font-family: "system-ui";
-			border-radius: 0em 0em 0.3em 0.3em;
+			border-radius: 0.3em 0.3em 0.3em 0.3em;
 			display: flex;
+
 		}
 	
 		.potree_toolbar_label{
@@ -66,7 +69,7 @@ position: absolute;
 	<script src="../libs/spectrum/spectrum.js"></script>
 	<script src="../libs/jquery-ui/jquery-ui.min.js"></script>
 	<!--perfect-scrollbar?-->
-
+	<script src="../src/viewer/sidebar.js"></script>
 	
 	<script src="../libs/other/BinaryHeap.js"></script>
 	<script src="../libs/tween/tween.min.js"></script>
@@ -75,7 +78,7 @@ position: absolute;
 	<script src="../libs/openlayers3/ol.js"></script>
     <script src="../libs/i18next/i18next.js"></script>
     <script src="../libs/jstree/jstree.js"></script>
-	<script src="../src/viewer/modal.js"></script>
+	<!--<script src="../src/viewer/modal.js"></script>-->
 	
 	<script src="../build/potree/potree.js"></script>
 	<script src="../libs/plasio/js/laslaz.js"></script>
@@ -93,7 +96,7 @@ position: absolute;
 	<div class="topnav">
 		<a href=https://sweportal.swescan.se Style="float: none;"><img src = "../bilder/swepoertal_points_WBG.png" Style="object-fit: contain;"></a>
 		<!--<a href=https://sweportal.swescan.se><img src = "../bilder/swepoertal_points_WBG.png" Style=" float: right;"></a>-->
-		<a href=https://sweportal.swescan.se/profile style="right: 0;"><img src="../resources/ikoner/user.svg" Style="object-fit: scale down; margin-left: 10px; margin-right: 10px;"></a>
+		<a href=https://sweportal.swescan.se/profile target="_blank" style="right: 0;"><img src="../resources/ikoner/user.svg" Style="object-fit: scale down; margin-left: 10px; margin-right: 10px;"></a>
 		<!--<a href=https://swescan.se/sweportal-support/ style="float: right;"><img src="../resources/ikoner/wrench.svg" Style="object-fit: scale down; margin-left: 10px; margin-right: 10px;"></a>-->
 		
 	</div>
@@ -113,8 +116,7 @@ position: absolute;
 			<div id="overlay"></div> -->
 			<span style="position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%); z-index: 10000">
 				<input type="button" value="Default Scheme" onclick="setDefaultScheme()"/>
-				<input type="button" value="Tree Scheme" onclick="setTreeScheme()"/>
-				<input type="button" value="Random Scheme" onclick="setRandomScheme()"/>
+				<input type="button" value="Vegetation Scheme" onclick="setTreeScheme()"/>
 			</span>
 
 		</div>
@@ -135,7 +137,7 @@ position: absolute;
 		viewer.setEDLEnabled(true);
 		viewer.setBackground("black")
 		viewer.setDescription("../bilder/Powered_by_Swescan_dark_grey.png");
-		
+		viewer.setDescription2(kordinatsystem);
 		viewer.loadSettingsFromURL();
 		
 		
@@ -147,7 +149,7 @@ position: absolute;
 		
 		// plane
 		//Potree.loadPointCloud("../pointclouds/C/dev/epalinges/epalinges/als_converted/cloud.js", "epalinges", e => {
-		Potree.loadPointCloud(punktmoln, "lion", function(e){
+		Potree.loadPointCloud(punktmoln, "Bohus", function(e){
 			viewer.scene.addPointCloud(e.pointcloud);
 			
 			let material = e.pointcloud.material;
@@ -162,23 +164,23 @@ position: absolute;
 	<!--Om man vill lägga till bildfunktionen-->
 	<script type="module">
 
-		//import * as THREE from "../libs/three.js/build/three.module.js";
+		import * as THREE from "../libs/three.js/build/three.module.js";
 		
 			const cameraParamsPath = oicameraparameters;
 			const imageParamsPath = oiimageparameters;
-			
+			const OInamn = titel
 				 Potree.OrientedImageLoader.load(cameraParamsPath, imageParamsPath, viewer).then( images => {
 					viewer.scene.addOrientedImages(images);
 					
 				});
 					//
-					/* const cameraParamsPath1 = "../images/Inspektionsbilder/many3.xml";
+					 const cameraParamsPath1 = "../images/Inspektionsbilder/many3.xml";
 			const imageParamsPath1 = "../images/Inspektionsbilder/many5.txt";
 			
 				 Potree.OrientedImageLoader.load(cameraParamsPath1, imageParamsPath1, viewer).then( images => {
 					viewer.scene.addOrientedImages(images);
 					
-				}); */
+				}); 
 		</script>
 
 <script type="module">
@@ -189,10 +191,11 @@ position: absolute;
 		viewer.setClassifications(Potree.ClassificationScheme.DEFAULT);
 	}
 
+	// Set classification
 	window.setTreeScheme = function(){
 		viewer.setClassifications({
-			5:       { visible: true, name: 'trees'        , color: [0.0, 1.0, 0.0, 1.0] },
-			DEFAULT: { visible: false, name: 'other' , color: [0.0, 0.0, 0.0, 1.0] },
+			4:       { visible: true, name: 'trees'        , color: [0.0, 1.0, 0.0, 1.0] },
+			DEFAULT: { visible: false, name: 'other' , color: [0.0, 0.0, 1.0, 1.0] },
 		});
 	}
 
@@ -200,7 +203,7 @@ position: absolute;
 		const scheme = {};
 
 		for(let i = 0; i < 32; i++){
-			scheme[i] = { visible: true, name: `random:_${i}`, color: [Math.random(), Math.random(), Math.random(), 1.0] };
+			scheme[i] = { visible: true, name: `random:_${i}`, color: [Math.random(), Math.random(), Math.random(), 1.0] }; // random classes
 		}
 
 		viewer.setClassifications(scheme);
@@ -225,7 +228,7 @@ position: absolute;
 	// HTML
 	const elToolbar = $("#potree_toolbar");
 	elToolbar.html(`
-		<span>
+		<!--<span>
 			<div class="potree_toolbar_label">
 				Coordinate System
 			</div>
@@ -233,7 +236,7 @@ position: absolute;
 			${parent.kordinatsystem}
 			</div>
 		</span>
-		<span class="potree_toolbar_separator" />
+		<span class="potree_toolbar_separator" />-->
 		<span>
 			<div class="potree_toolbar_label">
 				View
@@ -255,10 +258,10 @@ position: absolute;
 			<div>
 				<!--<li id="toolbar_tools"></li>-->
 				<img name="action_measure_point" src="${Potree.resourcePath}/ikoner/sw_point.svg" class="annotation-action-icon" style="width: 2em; height: auto;"/>
-				<img name="action_measure_distance" src="${Potree.resourcePath}/ikoner/sw_distance.svg" class="annotation-action-icon" style="width: 2em; height: auto;"/>
+				<img name="action_measure_distance" src="${Potree.resourcePath}/ikoner/sw_distance2.png" class="annotation-action-icon" style="width: 2em; height: auto;"/>
 				<img name="action_measure_height" src="${Potree.resourcePath}/ikoner/sw_height.svg" class="annotation-action-icon" style="width: 2em; height: auto;"/>
-				<img name="action_measure_profile" src="${Potree.resourcePath}/ikoner/sw_profile.svg" class="annotation-action-icon" style="width: 2em; height: auto;"/>
-				<img name="action_measure_reset" src="${Potree.resourcePath}/ikoner/sw_reset_tools.svg" class="annotation-action-icon" style="width: 2em; height: auto;"/>
+				<img name="action_measure_profile" src="${Potree.resourcePath}/ikoner/sw_profile2.png" class="annotation-action-icon" style="width: 2em; height: auto;"/>
+				<img name="action_measure_reset" src="${Potree.resourcePath}/ikoner/sw_reset_tools2.png" class="annotation-action-icon" style="width: 2em; height: auto;"/>
 			</div>
 		<!--<button data-model-target="#modal">Elevation</button>-->
 		</span>

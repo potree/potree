@@ -620,9 +620,9 @@ export class Sidebar{
 
 		let onOrientedImagesAdded = (e) => {
 			const images = e.images;
-
+			
 			const imagesIcon = `${Potree.resourcePath}/icons/picture.svg`;
-			const node = createNode(imagesID, "images", imagesIcon, images);
+			const node = createNode(imagesID, "image", imagesIcon, images);
 
 			images.addEventListener("visibility_changed", () => {
 				if(images.visible){
@@ -874,7 +874,7 @@ export class Sidebar{
 
 		{ // REMOVE CLIPPING TOOLS
 			clippingToolBar.append(this.createToolIcon(
-				Potree.resourcePath + "/ikoner/sw_reset_tools.svg",
+				Potree.resourcePath + "/ikoner/sw_reset_tools2.png",
 				"[title]tt.remove_all_clipping_volumes",
 				() => {
 
@@ -1229,7 +1229,7 @@ export class Sidebar{
 			let header = $(this);
 			let content = $(this).next();
 
-			//header.addClass('accordion-header ui-widget');
+			header.addClass('accordion-header ui-widget');
 			//content.addClass('accordion-content ui-widget');
 
 			content.hide();

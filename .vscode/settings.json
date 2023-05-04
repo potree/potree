@@ -19,4 +19,5 @@
 	"workbench.tree.indent": 30,
 	"editor.autoClosingQuotes": "never",
 	"editor.autoSurround": "never",
+	"python.formatting.provider": "black",
 }

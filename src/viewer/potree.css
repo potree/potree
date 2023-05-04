@@ -200,6 +200,7 @@ img {
 				  1px -1px 1px black,
 				 -1px  1px 1px black,
 				 -1px -1px 1px black;
+	float: right;
 }
 
 .potree_message{
@@ -222,13 +223,26 @@ img {
 
 #potree_description{
 	position: absolute; 
-	bottom: 5px; 
-	right: 5px; 
+	bottom: 1%; 
+	right: 1%; 
+	/*transform: translateX(-50%); */
+	text-align: center;
+	z-index:	1000;
+	max-width: 10%;
+	max-height:10%;
+	
+}
+
+#potree_description2{
+	position: absolute; 
+	bottom: 1%; 
+	right: 11%; 
 	/* transform: translateX(-50%);  */
 	text-align: center;
 	z-index:	1000;
 	max-width: 10%;
 	max-height:10%;
+
 }
 
 .potree_sidebar_brand{
@@ -575,6 +589,7 @@ body{
 	color: var(--font-color) !important;
 }
 
+
 .accordion > h3{
 	background-color: var(--bg-color-2) !important;
 	
@@ -654,7 +669,7 @@ a {
 	overflow: 		hidden;
 	white-space: 	nowrap; 
 	font-weight:	bold;
-	font-size:		90%;
+	font-size:		100%;
 	letter-spacing:	1px;
 	margin-left:	0px;
 	margin-right:	0px;
@@ -663,10 +678,10 @@ a {
 	padding:		1px !important;
 }
 
-.divider > span {
+/* .divider > span {
 	position: 	relative;
 	display: 	inline-block;
-}
+} */
 
 .divider > span:before,
 .divider > span:after {

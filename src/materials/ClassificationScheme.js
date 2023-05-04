@@ -14,7 +14,7 @@ export const ClassificationScheme = {
 		7:       { visible: true, name: 'low point(noise)'  , color: [1.0,  0.0,  1.0,  1.0] },
 		8:       { visible: true, name: 'key-point'         , color: [1.0,  0.0,  0.0,  1.0] },
 		9:       { visible: true, name: 'water'             , color: [0.0,  0.0,  1.0,  1.0] },
-		12:      { visible: true, name: 'overlap'           , color: [1.0,  1.0,  0.0,  1.0] },
+		10:      { visible: true, name: 'overlap'           , color: [1.0,  1.0,  0.0,  1.0] },
 		DEFAULT: { visible: true, name: 'default'           , color: [0.3,  0.6,  0.6,  0.5] },
 	}
 };

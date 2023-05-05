@@ -13,13 +13,29 @@
 	<link rel="stylesheet" type="text/css" href="../libs/spectrum/spectrum.css">
 	<link rel="stylesheet" type="text/css" href="../libs/jstree/themes/mixed/style.css">
  	<script type="text/javascript">
+		
 	//sätt in önskade länkar/text här
 	punktmoln = "../pointclouds/testardetta/metadata.json" //länk till punktmolnet
 	oiimageparameters = "../images/inspection_wall/OIimageparams.txt" //koordnater och rotation för bilderna
 	oicameraparameters = "../images/inspection_wall/OIcameraparams.xml" //specifikation av bilderna. 
 	titel = "torn"
 	kordinatsystem = "SWEREF99TM - RH2000" //Vilket kordinatsystem som 
+	custom = {
+		4:       { visible: true, name: 'medium vegetation' , color: [0.0,  0.8,  0.0,  1.0] },
+		DEFAULT: { visible: true, name: 'default'           , color: [0.3,  0.6,  0.6,  0.5] },
+		}
 	
+	
+	window.onload = function(){
+			var buttons = document.getElementsByClassName("buttons");
+			
+			if(Object.keys(custom) == 0){
+				
+			for(var i = 0; i<buttons.length; i++){
+					buttons[i].style.display = "none";
+				}
+			}
+	}
 	</script>
 	<style>
 	
@@ -69,7 +85,7 @@ position: absolute;
 	<script src="../libs/spectrum/spectrum.js"></script>
 	<script src="../libs/jquery-ui/jquery-ui.min.js"></script>
 	<!--perfect-scrollbar?-->
-	<script src="../src/viewer/sidebar.js"></script>
+	
 	
 	<script src="../libs/other/BinaryHeap.js"></script>
 	<script src="../libs/tween/tween.min.js"></script>
@@ -115,12 +131,12 @@ position: absolute;
 			</div>
 			<div id="overlay"></div> -->
 			<span style="position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%); z-index: 10000">
-				<input type="button" value="Default Scheme" onclick="setDefaultScheme()"/>
-				<input type="button" value="Vegetation Scheme" onclick="setTreeScheme()"/>
+				<input type="button" class="buttons" value="Default Scheme" onclick="setDefaultScheme()"/>
+				<input type="button" class="buttons" value="Vegetation Scheme" onclick="setTreeScheme()"/>
 			</span>
 
 		</div>
-		<div id="potree_sidebar_container" style="height: 100%"></div> <!--Flytta upp i render_area kanske gör så att de överlappar snyggt-->
+		<div id="potree_sidebar_container" style="height: auto"></div> <!--Flytta upp i render_area kanske gör så att de överlappar snyggt-->
 	</div>
 	
 
@@ -168,7 +184,7 @@ position: absolute;
 		
 			const cameraParamsPath = oicameraparameters;
 			const imageParamsPath = oiimageparameters;
-			const OInamn = titel
+			
 				 Potree.OrientedImageLoader.load(cameraParamsPath, imageParamsPath, viewer).then( images => {
 					viewer.scene.addOrientedImages(images);
 					
@@ -193,10 +209,7 @@ position: absolute;
 
 	// Set classification
 	window.setTreeScheme = function(){
-		viewer.setClassifications({
-			4:       { visible: true, name: 'trees'        , color: [0.0, 1.0, 0.0, 1.0] },
-			DEFAULT: { visible: false, name: 'other' , color: [0.0, 0.0, 1.0, 1.0] },
-		});
+		viewer.setClassifications(custom);
 	}
 
 	window.setRandomScheme = function(){

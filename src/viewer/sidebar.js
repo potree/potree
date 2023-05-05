@@ -145,7 +145,7 @@ export class Sidebar{
 			}
 		));
 
-		// CIRCLE
+/* 		// CIRCLE
 		elToolbar.append(this.createToolIcon(
 			Potree.resourcePath + '/ikoner/sw_circle.svg',
 			'[title]tt.circle_measurement',
@@ -190,7 +190,7 @@ export class Sidebar{
 				$.jstree.reference(jsonNode.id).deselect_all();
 				$.jstree.reference(jsonNode.id).select_node(jsonNode.id);
 			}
-		));
+		)); */
 
 		// AREA
 		/* elToolbar.append(this.createToolIcon(
@@ -241,7 +241,7 @@ export class Sidebar{
 
 		// PROFILE
 		elToolbar.append(this.createToolIcon(
-			Potree.resourcePath + '/ikoner/sw_profile.svg',
+			Potree.resourcePath + '/ikoner/sw_profile2.png',
 			'[title]tt.height_profile',
 			() => {
 				$('#menu_measurements').next().slideDown(); ;
@@ -271,7 +271,7 @@ export class Sidebar{
 
 		// REMOVE ALL
 		elToolbar.append(this.createToolIcon(
-			Potree.resourcePath + '/ikoner/sw_reset_tools.svg',
+			Potree.resourcePath + '/ikoner/sw_reset_tools2.png',
 			'[title]tt.remove_all_measurement',
 			() => {
 				this.viewer.scene.removeAllMeasurements();

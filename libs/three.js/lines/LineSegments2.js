@@ -11,20 +11,24 @@ import {
 import { LineSegmentsGeometry } from './LineSegmentsGeometry.js';
 import { LineMaterial } from './LineMaterial.js';
 
-var LineSegments2 = function ( geometry, material ) {
+const _LineSegments2 = class {
+	constructor(geometry, material) {
 
-	if ( geometry === undefined ) geometry = new LineSegmentsGeometry();
-	if ( material === undefined ) material = new LineMaterial( { color: Math.random() * 0xffffff } );
+		if (geometry === undefined)
+			geometry = new LineSegmentsGeometry();
+		if (material === undefined)
+			material = new LineMaterial({ color: Math.random() * 0xffffff });
 
-	Mesh.call( this, geometry, material );
+		Mesh.call(this, geometry, material);
 
-	this.type = 'LineSegments2';
+		this.type = 'LineSegments2';
 
-};
+	}
+}
 
-LineSegments2.prototype = Object.assign( Object.create( Mesh.prototype ), {
+_LineSegments2.prototype = Object.assign( Object.create( Mesh.prototype ), {
 
-	constructor: LineSegments2,
+	constructor: _LineSegments2,
 
 	isLineSegments2: true,
 
@@ -206,4 +210,4 @@ LineSegments2.prototype = Object.assign( Object.create( Mesh.prototype ), {
 
 } );
 
-export { LineSegments2 };
+export { _LineSegments2 as LineSegments2 };

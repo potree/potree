@@ -7,20 +7,22 @@ import {
 import { LineSegmentsGeometry } from '../lines/LineSegmentsGeometry.js';
 import { LineMaterial } from '../lines/LineMaterial.js';
 
-var Wireframe = function ( geometry, material ) {
+const _Wireframe = class {
+	constructor(geometry, material) {
 
-	Mesh.call( this );
+		Mesh.call(this);
 
-	this.type = 'Wireframe';
+		this.type = 'Wireframe';
 
-	this.geometry = geometry !== undefined ? geometry : new LineSegmentsGeometry();
-	this.material = material !== undefined ? material : new LineMaterial( { color: Math.random() * 0xffffff } );
+		this.geometry = geometry !== undefined ? geometry : new LineSegmentsGeometry();
+		this.material = material !== undefined ? material : new LineMaterial({ color: Math.random() * 0xffffff });
 
-};
+	}
+}
 
-Wireframe.prototype = Object.assign( Object.create( Mesh.prototype ), {
+_Wireframe.prototype = Object.assign( Object.create( Mesh.prototype ), {
 
-	constructor: Wireframe,
+	constructor: _Wireframe,
 
 	isWireframe: true,
 
@@ -60,4 +62,4 @@ Wireframe.prototype = Object.assign( Object.create( Mesh.prototype ), {
 
 } );
 
-export { Wireframe };
+export { _Wireframe as Wireframe };

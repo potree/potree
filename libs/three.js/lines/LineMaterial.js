@@ -247,178 +247,160 @@ ShaderLib[ 'line' ] = {
 		`
 };
 
-var LineMaterial = function ( parameters ) {
+const _LineMaterial = class {
+	constructor(parameters) {
 
-	ShaderMaterial.call( this, {
+		ShaderMaterial.call(this, {
+			type: 'LineMaterial',
 
-		type: 'LineMaterial',
+			uniforms: UniformsUtils.clone(ShaderLib['line'].uniforms),
 
-		uniforms: UniformsUtils.clone( ShaderLib[ 'line' ].uniforms ),
+			vertexShader: ShaderLib['line'].vertexShader,
+			fragmentShader: ShaderLib['line'].fragmentShader,
 
-		vertexShader: ShaderLib[ 'line' ].vertexShader,
-		fragmentShader: ShaderLib[ 'line' ].fragmentShader,
+			clipping: true // required for clipping support
+		});
 
-		clipping: true // required for clipping support
+		this.dashed = false;
 
-	} );
+		Object.defineProperties(this, {
+			color: {
+				enumerable: true,
 
-	this.dashed = false;
+				get: function () {
 
-	Object.defineProperties( this, {
+					return this.uniforms.diffuse.value;
 
-		color: {
+				},
 
-			enumerable: true,
+				set: function (value) {
 
-			get: function () {
+					this.uniforms.diffuse.value = value;
 
-				return this.uniforms.diffuse.value;
-
+				}
 			},
 
-			set: function ( value ) {
+			linewidth: {
+				enumerable: true,
 
-				this.uniforms.diffuse.value = value;
+				get: function () {
 
-			}
+					return this.uniforms.linewidth.value;
 
-		},
+				},
 
-		linewidth: {
+				set: function (value) {
 
-			enumerable: true,
+					this.uniforms.linewidth.value = value;
 
-			get: function () {
-
-				return this.uniforms.linewidth.value;
-
+				}
 			},
 
-			set: function ( value ) {
+			dashScale: {
+				enumerable: true,
 
-				this.uniforms.linewidth.value = value;
+				get: function () {
 
-			}
+					return this.uniforms.dashScale.value;
 
-		},
+				},
 
-		dashScale: {
+				set: function (value) {
 
-			enumerable: true,
+					this.uniforms.dashScale.value = value;
 
-			get: function () {
-
-				return this.uniforms.dashScale.value;
-
+				}
 			},
 
-			set: function ( value ) {
+			dashSize: {
+				enumerable: true,
 
-				this.uniforms.dashScale.value = value;
+				get: function () {
 
-			}
+					return this.uniforms.dashSize.value;
 
-		},
+				},
 
-		dashSize: {
+				set: function (value) {
 
-			enumerable: true,
+					this.uniforms.dashSize.value = value;
 
-			get: function () {
-
-				return this.uniforms.dashSize.value;
-
+				}
 			},
 
-			set: function ( value ) {
+			dashOffset: {
+				enumerable: true,
 
-				this.uniforms.dashSize.value = value;
+				get: function () {
 
-			}
+					return this.uniforms.dashOffset.value;
 
-		},
+				},
 
-		dashOffset: {
+				set: function (value) {
 
-			enumerable: true,
+					this.uniforms.dashOffset.value = value;
 
-			get: function () {
-
-				return this.uniforms.dashOffset.value;
-
+				}
 			},
 
-			set: function ( value ) {
+			gapSize: {
+				enumerable: true,
 
-				this.uniforms.dashOffset.value = value;
+				get: function () {
 
-			}
+					return this.uniforms.gapSize.value;
 
-		},
+				},
 
-		gapSize: {
+				set: function (value) {
 
-			enumerable: true,
+					this.uniforms.gapSize.value = value;
 
-			get: function () {
-
-				return this.uniforms.gapSize.value;
-
+				}
 			},
 
-			set: function ( value ) {
+			opacity: {
+				enumerable: true,
 
-				this.uniforms.gapSize.value = value;
+				get: function () {
 
-			}
+					return this.uniforms.opacity.value;
 
-		},
+				},
 
-		opacity: {
+				set: function (value) {
 
-			enumerable: true,
+					this.uniforms.opacity.value = value;
 
-			get: function () {
-
-				return this.uniforms.opacity.value;
-
+				}
 			},
 
-			set: function ( value ) {
+			resolution: {
+				enumerable: true,
 
-				this.uniforms.opacity.value = value;
+				get: function () {
 
+					return this.uniforms.resolution.value;
+
+				},
+
+				set: function (value) {
+
+					this.uniforms.resolution.value.copy(value);
+
+				}
 			}
+		});
 
-		},
+		this.setValues(parameters);
 
-		resolution: {
+	}
+}
 
-			enumerable: true,
+_LineMaterial.prototype = Object.create( ShaderMaterial.prototype );
+;
 
-			get: function () {
+_LineMaterial.prototype.isLineMaterial = true;
 
-				return this.uniforms.resolution.value;
-
-			},
-
-			set: function ( value ) {
-
-				this.uniforms.resolution.value.copy( value );
-
-			}
-
-		}
-
-	} );
-
-	this.setValues( parameters );
-
-};
-
-LineMaterial.prototype = Object.create( ShaderMaterial.prototype );
-LineMaterial.prototype.constructor = LineMaterial;
-
-LineMaterial.prototype.isLineMaterial = true;
-
-export { LineMaterial };
+export { _LineMaterial as LineMaterial };

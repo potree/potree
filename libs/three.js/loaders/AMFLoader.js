@@ -8,7 +8,7 @@ import {
 	LoaderUtils,
 	Mesh,
 	MeshPhongMaterial
-} from '../../../build/three.module.js';
+} from 'three';
 import { JSZip } from '../libs/jszip.module.min.js';
 
 /**

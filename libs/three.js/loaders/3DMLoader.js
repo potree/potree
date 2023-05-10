@@ -22,7 +22,7 @@ import {
 	LinearFilter,
 	ClampToEdgeWrapping,
 	TextureLoader
-} from '../../../build/three.module.js';
+} from 'three';
 
 var Rhino3dmLoader = function ( manager ) {
 

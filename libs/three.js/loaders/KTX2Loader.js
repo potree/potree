@@ -32,7 +32,7 @@ import {
 	RGB_S3TC_DXT1_Format,
 	UnsignedByteType,
 	sRGBEncoding,
-} from '../../../build/three.module.js';
+} from 'three';
 
 import { ZSTDDecoder } from '../libs/zstddec.module.js';
 

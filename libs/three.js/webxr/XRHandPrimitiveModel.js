@@ -4,7 +4,7 @@ import {
 	MeshStandardMaterial,
 	Mesh,
 	Group
-} from '../../../build/three.module.js';
+} from 'three';
 
 class XRHandPrimitiveModel {
 

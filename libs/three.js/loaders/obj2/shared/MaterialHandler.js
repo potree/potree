@@ -7,7 +7,7 @@ import {
 	MaterialLoader,
 	MeshStandardMaterial,
 	PointsMaterial
-} from '../../../../../build/three.module.js';
+} from 'three';
 
 
 const MaterialHandler = function () {

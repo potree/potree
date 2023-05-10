@@ -26,6 +26,9 @@ let paths = {
 	],
 	resources: [
 		"resources/**/*"
+	],
+	types: [
+		"types/potree.d.ts"
 	]
 };
 
@@ -158,13 +161,15 @@ gulp.task("shaders", async function(){
 	fs.writeFileSync(targetPath, content, {flag: "w"});
 });
 
-gulp.task('build', 
+gulp.task('build',
 	gulp.series(
 		gulp.parallel("workers", "lazylibs", "shaders", "icons_viewer", "examples_page"),
 		async function(done){
 			gulp.src(paths.html).pipe(gulp.dest('build/potree'));
 
 			gulp.src(paths.resources).pipe(gulp.dest('build/potree/resources'));
+
+			gulp.src(paths.types).pipe(gulp.dest('build/potree'));
 
 			gulp.src(["LICENSE"]).pipe(gulp.dest('build/potree'));
 
@@ -174,7 +179,7 @@ gulp.task('build',
 );
 
 gulp.task("pack", async function(){
-	exec('rollup -c', function (err, stdout, stderr) {
+	exec('rollup -c --bundleConfigAsCjs', function (err, stdout, stderr) {
 		console.log(stdout);
 		console.log(stderr);
 	});

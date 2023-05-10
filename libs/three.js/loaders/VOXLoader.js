@@ -5,7 +5,7 @@ import {
 	Loader,
 	Mesh,
 	MeshStandardMaterial
-} from '../../../build/three.module.js';
+} from 'three';
 
 class VOXLoader extends Loader {
 

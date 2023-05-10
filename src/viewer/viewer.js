@@ -1,5 +1,5 @@
 
-import * as THREE from "../../libs/three.js/build/three.module.js";
+import * as THREE from  'three';
 import { ClipTask, ClipMethod, CameraMode, LengthUnits, ElevationGradientRepeat } from "../defines.js";
 import { Renderer } from "../PotreeRenderer.js";
 import { PotreeRenderer } from "./PotreeRenderer.js";
@@ -76,7 +76,7 @@ export class Viewer extends EventDispatcher {
 				this.annotationContainer = $(`
 					<div class="potree_annotation_container" 
 						style="position: absolute; z-index: 100000; width: 100%; height: 100%; pointer-events: none; overflow: hidden;"></div>`);
-				$(domElement).append(potreeAnnotationContainer);
+				$(domElement).append(this.annotationContainer);
 
 				if ($(domElement).find('#potree_quick_buttons').length === 0) {
 					let potreeMap = $(`

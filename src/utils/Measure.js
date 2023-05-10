@@ -1,5 +1,5 @@
 
-import * as THREE from "../../libs/three.js/build/three.module.js";
+import * as THREE from  'three';
 import {TextSprite} from "../TextSprite.js";
 import {Utils} from "../utils.js";
 import {Line2} from "../../libs/three.js/lines/Line2.js";

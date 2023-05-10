@@ -11,7 +11,7 @@ import {
 	TextureLoader,
 	Quaternion,
 	Vector3
-} from '../../../build/three.module.js';
+} from 'three';
 import { JSZip } from '../libs/jszip.module.min.js';
 
 class TiltLoader extends Loader {

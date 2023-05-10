@@ -1,5 +1,5 @@
 
-import * as THREE from "../libs/three.js/build/three.module.js";
+import * as THREE from 'three';
 import {XHRFactory} from "./XHRFactory.js";
 import {Volume} from "./utils/Volume.js";
 import {Profile} from "./utils/Profile.js";
@@ -43,7 +43,7 @@ export class Utils {
 		let u = new URL(url);
 
 		return u.protocol + '//' + u.hostname + u.pathname.replace(/\/+/g, '/');
-	};
+	}
 
 	static pathExists (url) {
 		let req = XHRFactory.createXMLHttpRequest();
@@ -53,7 +53,7 @@ export class Utils {
 			return false;
 		}
 		return true;
-	};
+	}
 
 	static debugSphere(parent, position, scale, color){
 		let geometry = new THREE.SphereGeometry(1, 8, 8);
@@ -212,7 +212,7 @@ export class Utils {
 		boundingBox.setFromPoints(vertices);
 
 		return boundingBox;
-	};
+	}
 
 	/**
 	 * add separators to large numbers
@@ -230,7 +230,7 @@ export class Utils {
 			x1 = x1.replace(rgx, '$1' + ',' + '$2');
 		}
 		return x1 + x2;
-	};
+	}
 
 	static removeCommas (str) {
 		return str.replace(/,/g, '');
@@ -246,7 +246,7 @@ export class Utils {
 		let worker = new Worker(URL.createObjectURL(blob));
 
 		return worker;
-	};
+	}
 
 	static moveTo(scene, endPosition, endTarget){
 
@@ -336,7 +336,7 @@ export class Utils {
 		camera.parent = parent;
 
 		return {camera, scene, parent};
-	};
+	}
 
 	static createGrid (width, length, spacing, color) {
 		let material = new THREE.LineBasicMaterial({
@@ -1078,22 +1078,22 @@ export class Utils {
 
 }
 
-Utils.screenPass = new function () {
-	this.screenScene = new THREE.Scene();
-	this.screenQuad = new THREE.Mesh(new THREE.PlaneBufferGeometry(2, 2, 1));
-	this.screenQuad.material.depthTest = true;
-	this.screenQuad.material.depthWrite = true;
-	this.screenQuad.material.transparent = true;
-	this.screenScene.add(this.screenQuad);
-	this.camera = new THREE.Camera();
+// Utils.screenPass = new function () {
+// 	this.screenScene = new THREE.Scene();
+// 	this.screenQuad = new THREE.Mesh(new THREE.PlaneBufferGeometry(2, 2, 1));
+// 	this.screenQuad.material.depthTest = true;
+// 	this.screenQuad.material.depthWrite = true;
+// 	this.screenQuad.material.transparent = true;
+// 	this.screenScene.add(this.screenQuad);
+// 	this.camera = new THREE.Camera();
 
-	this.render = function (renderer, material, target) {
-		this.screenQuad.material = material;
+// 	this.render = function (renderer, material, target) {
+// 		this.screenQuad.material = material;
 
-		if (typeof target === 'undefined') {
-			renderer.render(this.screenScene, this.camera);
-		} else {
-			renderer.render(this.screenScene, this.camera, target);
-		}
-	};
-}();
+// 		if (typeof target === 'undefined') {
+// 			renderer.render(this.screenScene, this.camera);
+// 		} else {
+// 			renderer.render(this.screenScene, this.camera, target);
+// 		}
+// 	};
+// }();

@@ -5,7 +5,7 @@
 // Imports only related to wrapper
 import {
 	Object3D
-} from '../../../build/three.module.js';
+} from 'three';
 import {
 	CodeBuilderInstructions,
 	WorkerExecutionSupport

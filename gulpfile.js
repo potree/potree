@@ -185,7 +185,7 @@ gulp.task("pack", async function(){
 	});
 });
 
-gulp.task('watch', gulp.parallel("build", "pack", "webserver", async function() {
+gulp.task('watch', gulp.parallel("build", "pack", async function() {
 
 	let watchlist = [
 		'src/**/*.js',
@@ -194,6 +194,7 @@ gulp.task('watch', gulp.parallel("build", "pack", "webserver", async function() 
 		'src/**/*.html',
 		'src/**/*.vs',
 		'src/**/*.fs',
+		'types/potree.d.ts',
 		'resources/**/*',
 		'examples//**/*.json',
 		'!resources/icons/index.html',
@@ -203,4 +204,21 @@ gulp.task('watch', gulp.parallel("build", "pack", "webserver", async function() 
 
 }));
 
+gulp.task('start', gulp.parallel("build", "pack", "webserver", async function() {
 
+	let watchlist = [
+		'src/**/*.js',
+		'src/**/**/*.js',
+		'src/**/*.css',
+		'src/**/*.html',
+		'src/**/*.vs',
+		'src/**/*.fs',
+		'types/potree.d.ts',
+		'resources/**/*',
+		'examples//**/*.json',
+		'!resources/icons/index.html',
+	];
+
+	watch(watchlist, gulp.series("build", "pack"));
+
+}));

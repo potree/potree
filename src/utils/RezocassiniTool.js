@@ -1,7 +1,11 @@
 import * as THREE from 'three';
 import { Subject } from 'rxjs';
+import { EventDispatcher } from "../EventDispatcher.js";
+import { Utils } from "../utils.js";
+import { Annotation } from '../Annotation.js';
 
-export class RezocassiniTool extends Potree.EventDispatcher {
+
+export class RezocassiniTool extends EventDispatcher {
 	constructor(viewer) {
 		super();
 
@@ -46,7 +50,7 @@ export class RezocassiniTool extends Potree.EventDispatcher {
 		// Called whenever user moves mouse while dragging something. Makes sphere follow pointcloud.
 		// implemented as arrow function to keep "this" context
 		this.drag = (e) => {
-			const I = Potree.Utils.getMousePointCloudIntersection(
+			const I = Utils.getMousePointCloudIntersection(
 				e.drag.end,
 				e.viewer.scene.getActiveCamera(),
 				e.viewer,
@@ -77,7 +81,7 @@ export class RezocassiniTool extends Potree.EventDispatcher {
 
 		const title = $(`<span>${this.points.length}</span>`);
 		title.toString = () => this.points.length;
-		const annotation = new Potree.Annotation({
+		const annotation = new Annotation({
 			position: point.position,
 			title
 		});
@@ -171,7 +175,7 @@ export class RezocassiniTool extends Potree.EventDispatcher {
 
 		for (let mesh of meshesToKeepScaled) {
 			let distance = camera.position.distanceTo(mesh.getWorldPosition(new THREE.Vector3()));
-			let pr = Potree.Utils.projectedRadius(1, camera, distance, clientWidth, clientHeight);
+			let pr = Utils.projectedRadius(1, camera, distance, clientWidth, clientHeight);
 			let scale = 5 / pr;
 			mesh.scale.set(scale, scale, scale);
 		}

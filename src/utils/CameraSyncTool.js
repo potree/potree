@@ -1,4 +1,7 @@
-export class CameraSyncTool extends Potree.EventDispatcher {
+import { EventDispatcher } from '../EventDispatcher.js';
+
+
+export class CameraSyncTool extends EventDispatcher {
     constructor(viewer) {
         super();
 

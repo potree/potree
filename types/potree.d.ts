@@ -49,14 +49,14 @@ export class Tool extends EventDispatcher {
 	update(): void;
 }
 
-export type InsertionEvent = { type: 'start_insertion' | 'stop_insertion' | 'point_inserted', point?: THREE.Mesh, source: RezocassiniTool };
+export type InsertionEvent = { type: 'start_insertion' | 'stop_insertion' | 'point_inserted', point?: Mesh, source: RezocassiniTool };
 
 export class RezocassiniTool extends Tool {
 	override startInsertion(pointsNumber: number): void;
 	pauseInsertion(): void;
 	resumeInsertion(): void;
-	insertPoint(position: THREE.Vector3): void;
-	cancelLastInsertion(): THREE.Mesh | undefined;
+	insertPoint(position: Vector3): void;
+	cancelLastInsertion(): Mesh | undefined;
 	private _subject: Subject<InsertionEvent>;
 	events$: Observable<InsertionEvent>;
 	inserting: boolean;
@@ -64,12 +64,12 @@ export class RezocassiniTool extends Tool {
 	points: Mesh[];
 }
 
-export class Measure extends THREE.Object3D {
+export class Measure extends Object3D {
 	getTotalDistance(): number;
 }
 
 export class MeasuringTool extends Tool {
-	override startInsertion(args: any): Measure;
+	startInsertion(args: any): Measure;
 }
 
 export class CameraSyncTool extends Tool {

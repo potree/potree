@@ -20,6 +20,8 @@ import { AnnotationTool } from "../utils/AnnotationTool.js";
 import { MeasuringTool } from "../utils/MeasuringTool.js";
 import { ProfileTool } from "../utils/ProfileTool.js";
 import { VolumeTool } from "../utils/VolumeTool.js";
+import { RezocassiniTool } from "../utils/RezocassiniTool.js";
+import { CameraSyncTool } from "../utils/CameraSyncTool.js";
 
 import { InputHandler } from "../navigation/InputHandler.js";
 import { NavigationCube } from "./NavigationCube.js";
@@ -323,6 +325,8 @@ export class Viewer extends EventDispatcher {
 			this.measuringTool = new MeasuringTool(this);
 			this.profileTool = new ProfileTool(this);
 			this.volumeTool = new VolumeTool(this);
+			this.rezocassiniTool = new RezocassiniTool(this);
+			this.cameraSyncTool = new CameraSyncTool(this);
 
 		} catch (e) {
 			this.onCrash(e);

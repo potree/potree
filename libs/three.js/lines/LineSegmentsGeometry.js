@@ -9,27 +9,25 @@ import {
 	WireframeGeometry
 } from 'three';
 
-const _LineSegmentsGeometry = class {
-	constructor() {
+var LineSegmentsGeometry = function () {
 
-		InstancedBufferGeometry.call(this);
+	InstancedBufferGeometry.call( this );
 
-		this.type = 'LineSegmentsGeometry';
+	this.type = 'LineSegmentsGeometry';
 
-		var positions = [-1, 2, 0, 1, 2, 0, -1, 1, 0, 1, 1, 0, -1, 0, 0, 1, 0, 0, -1, -1, 0, 1, -1, 0];
-		var uvs = [-1, 2, 1, 2, -1, 1, 1, 1, -1, -1, 1, -1, -1, -2, 1, -2];
-		var index = [0, 2, 1, 2, 3, 1, 2, 4, 3, 4, 5, 3, 4, 6, 5, 6, 7, 5];
+	var positions = [ - 1, 2, 0, 1, 2, 0, - 1, 1, 0, 1, 1, 0, - 1, 0, 0, 1, 0, 0, - 1, - 1, 0, 1, - 1, 0 ];
+	var uvs = [ - 1, 2, 1, 2, - 1, 1, 1, 1, - 1, - 1, 1, - 1, - 1, - 2, 1, - 2 ];
+	var index = [ 0, 2, 1, 2, 3, 1, 2, 4, 3, 4, 5, 3, 4, 6, 5, 6, 7, 5 ];
 
-		this.setIndex(index);
-		this.setAttribute('position', new Float32BufferAttribute(positions, 3));
-		this.setAttribute('uv', new Float32BufferAttribute(uvs, 2));
+	this.setIndex( index );
+	this.setAttribute( 'position', new Float32BufferAttribute( positions, 3 ) );
+	this.setAttribute( 'uv', new Float32BufferAttribute( uvs, 2 ) );
 
-	}
-}
+};
 
-_LineSegmentsGeometry.prototype = Object.assign( Object.create( InstancedBufferGeometry.prototype ), {
+LineSegmentsGeometry.prototype = Object.assign( Object.create( InstancedBufferGeometry.prototype ), {
 
-	constructor: _LineSegmentsGeometry,
+	constructor: LineSegmentsGeometry,
 
 	isLineSegmentsGeometry: true,
 
@@ -259,4 +257,4 @@ _LineSegmentsGeometry.prototype = Object.assign( Object.create( InstancedBufferG
 
 } );
 
-export { _LineSegmentsGeometry as LineSegmentsGeometry };
+export { LineSegmentsGeometry };

@@ -1,18 +1,16 @@
 import { LineSegmentsGeometry } from '../lines/LineSegmentsGeometry.js';
 
-const _LineGeometry = class {
-	constructor() {
+var LineGeometry = function () {
 
-		LineSegmentsGeometry.call(this);
+	LineSegmentsGeometry.call( this );
 
-		this.type = 'LineGeometry';
+	this.type = 'LineGeometry';
 
-	}
-}
+};
 
-_LineGeometry.prototype = Object.assign( Object.create( LineSegmentsGeometry.prototype ), {
+LineGeometry.prototype = Object.assign( Object.create( LineSegmentsGeometry.prototype ), {
 
-	constructor: _LineGeometry,
+	constructor: LineGeometry,
 
 	isLineGeometry: true,
 
@@ -96,4 +94,4 @@ _LineGeometry.prototype = Object.assign( Object.create( LineSegmentsGeometry.pro
 
 } );
 
-export { _LineGeometry as LineGeometry };
+export { LineGeometry };

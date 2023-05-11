@@ -33,3 +33,4 @@ libs/CesiumUnminified
 pointclouds/F
 
 /types/**
+!/types/potree.d.ts

@@ -1,3 +1,6 @@
+import { Subject, Observable } from "rxjs";
+import THREE, { Box3, BufferGeometry, Camera, DataTexture, Intersection, Light, Line, LineSegments, Material, Matrix4, Mesh, Object3D, OrthographicCamera, PerspectiveCamera, Ray, Renderer, Vector2, Vector3, WebGLRenderer } from "three";
+
 export function loadPointCloud(path: string, name: string): Promise<PointCloudEvent>;
 
 export interface PointCloudEvent {
@@ -163,7 +166,6 @@ export class Viewer extends EventDispatcher {
 	showAnnotations: boolean;
 	showBoundingBox: boolean;
 	skybox: any; // @TODO
-	testTool: Tool;
 	transformationTool: Tool;
 	useDEMCollisions: boolean;
 	useEDL: boolean;

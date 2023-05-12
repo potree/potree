@@ -14,16 +14,22 @@
 	<link rel="stylesheet" type="text/css" href="../libs/jstree/themes/mixed/style.css">
  	<script type="text/javascript">
 		
-	//sätt in önskade länkar/text här
-	punktmoln = "../pointclouds/testardetta/metadata.json" //länk till punktmolnet
-	oiimageparameters = "../images/inspection_wall/OIimageparams.txt" //koordnater och rotation för bilderna
-	oicameraparameters = "../images/inspection_wall/OIcameraparams.xml" //specifikation av bilderna. 
-	titel = "torn"
-	kordinatsystem = "SWEREF99TM - RH2000" //Vilket kordinatsystem som 
+	//Sätt in önskade länkar/text här:
+	//PUNKTMOLN. Tänk på att ha allt i samma mapp.
+	punktmoln = "../pointclouds/testardetta/metadata.json"
+	kordinatsystem = "SWEREF99TM - RH2000" //Vilket kordinatsystem som ska anges på skärmen
+
+	//Alternativ klassificering. Lämna som "custom = {}" om du inte vill ha alternativ klassificering, se ClassificationScheme.js för orginalklassificering"
 	custom = {
-		4:       { visible: true, name: 'medium vegetation' , color: [0.0,  0.8,  0.0,  1.0] },
-		DEFAULT: { visible: true, name: 'default'           , color: [0.3,  0.6,  0.6,  0.5] },
+		/*4:       { visible: true, name: 'medium vegetation' , color: [0.0,  0.8,  0.0,  1.0] },
+		DEFAULT: { visible: true, name: 'default'           , color: [0.3,  0.6,  0.6,  0.5] },*/
 		}
+
+	//Oreinted Images. Viktigt att att bilderna är samma mapp som filerna nedan
+	oiimageparameters = "../images/inspection_wall/OIimageparams.txt" //koordnater och rotation för bilderna
+	oicameraparameters = "../images/inspektionsbilder/many3.xml" //specifikation av bilderna. 
+	
+
 	
 	
 	window.onload = function(){
@@ -117,7 +123,7 @@ position: absolute;
 		
 	</div>
 
-	<div class="potree_container" style="position: flex; width: 100%; height: 100%; left: 0px; top: 88%;">
+	<div class="potree_container" style="position: flex; width: 100%; height: 100%; left: 0px; top: 8%;">
 		
 		<div id="potree_render_area">
 			<div id="potree_toolbar"></div>
@@ -132,11 +138,11 @@ position: absolute;
 			<div id="overlay"></div> -->
 			<span style="position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%); z-index: 10000">
 				<input type="button" class="buttons" value="Default Scheme" onclick="setDefaultScheme()"/>
-				<input type="button" class="buttons" value="Vegetation Scheme" onclick="setTreeScheme()"/>
+				<input type="button" class="buttons" value="Custom Scheme" onclick="setTreeScheme()"/>
 			</span>
-
+		<div id="potree_sidebar_container" style="height: 50%"></div>		
 		</div>
-		<div id="potree_sidebar_container" style="height: auto"></div> <!--Flytta upp i render_area kanske gör så att de överlappar snyggt-->
+		<!--<div id="potree_sidebar_container"></div> Flytta upp i render_area kanske gör så att de överlappar snyggt-->
 	</div>
 	
 
@@ -160,7 +166,7 @@ position: absolute;
 			viewer.setLanguage('en');
 			//$("#menu_scene").next().show();
 			viewer.toggleSidebar();
-			viewer.compass.setVisible(true)//här
+			viewer.compass.setVisible(true);
 		});
 		
 		// plane
@@ -174,8 +180,16 @@ position: absolute;
 			
 			viewer.fitToScreen();
 		});
-		//metod som öppnar scene här?
-		
+		//Ifall man vill ha flera punktmoln
+/* 		Potree.loadPointCloud(punktmoln, "Bohus", function(e){
+			viewer.scene.addPointCloud(e.pointcloud);
+			
+			let material = e.pointcloud.material;
+			material.size = 1;
+			material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
+			
+			viewer.fitToScreen();
+		}); */
 	</script>
 	<!--Om man vill lägga till bildfunktionen-->
 	<script type="module">

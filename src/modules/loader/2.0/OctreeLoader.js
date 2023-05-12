@@ -41,7 +41,7 @@ export class NodeLoader{
 			let last = byteOffset + byteSize - 1n;
 
 			let buffer;
-
+			
 			if(byteSize === 0n){
 				buffer = new ArrayBuffer(0);
 				console.warn(`loaded node with 0 bytes: ${node.name}`);

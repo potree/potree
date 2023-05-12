@@ -164,11 +164,12 @@ img {
 	width:		350px;
 	max-width: 20%;
 	height:		auto;
+	max-height: 80dvh;
 	overflow-y:	scroll;
 	/*overflow-x: scroll;*/
 	font-size:	85%;
 	/* border:	2px solid rgb(0, 0, 0);  */
-	border-radius: 10px;
+	
 	background-color:	rgba(189, 189, 189, 0.75);
 	
 }
@@ -178,7 +179,11 @@ img {
 	font-family:		Arial,Helvetica,sans-serif;
 	font-size:			1.25em;
 	object-fit:contain;
+	height: auto;
 }
+.sidebar_header{
+	height: auto;
+}	
 
 .potree_failpage{
 	width: 100%;
@@ -513,6 +518,7 @@ body{
 
 
 
+
 .pv-panel-heading{
 	padding: 	4px !important;
 	display: 	flex; 
@@ -588,7 +594,9 @@ body{
 .ui-widget-content{
 	color: var(--font-color) !important;
 }
-
+.rotation{
+	transform: rotate(180deg);
+}
 
 .accordion > h3{
 	background-color: var(--bg-color-2) !important;
@@ -608,6 +616,33 @@ body{
 .accordion > h3:hover{
 	filter: brightness(125%);
 }
+.accordion > h3 .fa.fa-angle-down{
+	float: right;
+	transform: rotate(0);
+	transition: 0.35s;
+}
+.accordion > h3.active .fa.fa-angle-down{
+	float: right;
+	transform: rotate(180deg);
+}
+
+.accordion >h3 .left-icon,
+.accordion >h3 .right-icon{
+	position: relative;
+	display: inline-block;
+	
+	width: 15px;
+	height: 5px;
+	background: white;
+	border-radius: 40px;
+}
+.accordion >h3 .left-icon{
+	left: 7px;
+	transform: rotate(45deg);
+}	
+.accordion >h3 .right-icon{
+	transform: rotate(-45deg);
+}	
 
 .accordion-content{
 	padding: 0px 0px !important;
@@ -689,7 +724,7 @@ a {
 	position: 	absolute;
 	top: 		50%;
 	width: 		9999px;
-	height: 	1px;
+	height: 	0; /*1pxom du vill ha streck i divider */
 	background: #ffffff;
 }
 
@@ -907,6 +942,7 @@ a {
 	/* scrollbar-color: var(--color-1) var(--bg-color); */
 	scrollbar-color: var(--bg-color-2);
 	scrollbar-width: thin;
+	
 }
 
 

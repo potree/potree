@@ -1,9 +1,11 @@
-
-
-<div id="sidebar_root" class="">
+<head>
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+</head>
+<body></body>
+<div id="sidebar_root" class="sidebar_root">
     <div id="sidebar_header">
         
-            <a href=https://sweportal.swescan.se><img src = "../bilder/Logotype_Sweportal_Points_white2.png"></a>
+            Bohus
         
     </div>
     <div>
@@ -12,7 +14,11 @@
        
             <!--basic settings-->
 			
-            <h3 id ="menu_navigation">Basic functions</h3>
+            <h3 id ="menu_navigation">Basic functions
+				<i id="arrow_nav"class="fa fa-angle-down"></i>
+				<!--<span class="left-icon"></span>
+				<span class="right-icon"></span>-->
+				</h3>
             <div>
                 <ul class="pv-menu-list">
                     <div class="divider"><span>Navigation</span></div>
@@ -56,7 +62,7 @@
                     </ul>
             </div>
         <!-- APPEARANCE -->
-        <h3 id="menu_appearance">Advances Visual Settings</span></h3>
+        <h3 id="menu_appearance">Advances Visual Settings<i class="fa fa-angle-down" Style="float: right;"></i></h3>
         <div>
             <ul class="pv-menu-list">
                
@@ -81,7 +87,7 @@
                         <option id="background_options_gradient" value="gradient">Gradient</option>
                         <option id="background_options_black" value="black">Black</option>
                         <option id="background_options_white" value="white">White</option>
-                        <!--<option id="background_options_none" value="null">None</option> är samma som white så behövs inte-->
+                        <option id="background_options_none" value="null">None</option>
                     </selectgroup>
                 </li>
 
@@ -156,7 +162,7 @@
 
 
         <!-- SCENE -->
-        <h3 id="menu_scene">Scene & Exports</h3>
+        <h3 id="menu_scene">Scene & Exports<i class="fa fa-angle-down" Style="float: right;"></i></h3>
         <div class="pv-menu-list">
 
 
@@ -177,7 +183,7 @@
 
 
         <!-- Classification -->
-        <h3 id="menu_filters"><span data-i18n="tb.filters_opt"></span></h3>
+        <h3 id="menu_filters"><span data-i18n="tb.filters_opt"></span><i class="fa fa-angle-down" Style="float: right;"></i></h3>
         <div>
 
 
@@ -241,16 +247,50 @@
         </div>
        
         <!-- ABOUT -->
-        <h3 id="menu_about"><span data-i18n="tb.about_opt"></span></h3>
+        <h3 id="menu_about"><span data-i18n="tb.about_opt"></span><i class="fa fa-angle-down" Style="float: right;"></i></h3>
         <div>
-            <P>Info/copyright här eller något</P>
+            <P>Classification according to ASRP LAS 1.4 R15 Standard
+				<BR>
+				<BR>
+				Copyright (c) 2011-2020, Markus Schütz
+				<BR>	
+				All rights reserved.
+				<BR>
+				Redistribution and use in source and binary forms, with or without
+				modification, are permitted provided that the following conditions are met:	
+				<BR>
+				<BR>
+				1. Redistributions of source code must retain the above copyright notice, this
+				list of conditions and the following disclaimer.
+				<BR>
+				2. Redistributions in binary form must reproduce the above copyright notice,
+				this list of conditions and the following disclaimer in the documentation
+				and/or other materials provided with the distribution.
+				<BR>
+				<BR>
+				THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+				ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+				WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+				DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
+				ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+				(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+				LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+				ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+				(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+				SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+				<BR>
+				
+				The views and conclusions contained in the software and documentation are those
+				of the authors and should not be interpreted as representing official policies,
+				either expressed or implied, of the FreeBSD Project.
+				</P>
         </div>
 
 
     </div>
 
 
-    <div>
+    <!--<div>
             <br>
             <br>
             <br>
@@ -264,11 +304,11 @@
             <br>
             <br>
             <br>
-        </div>
+        </div>-->
     </div>
 
 </div>
-
+</body>
 
 
 

@@ -40,6 +40,12 @@ export class OrientedImageControls extends EventDispatcher{
 			this.release();
 		});
 
+/* 		document.addEventListener("keydown", function(event) { //EJ fått att funka...
+  // Check if the "Escape" key was pressed
+  if (event.key === "Escape") {
+	this.elExit.click();
+  }
+}); */
 		this.elUp.click(() => {
 			const fovY = viewer.getFOV();
 			const top = Math.tan(THREE.Math.degToRad(fovY / 2));

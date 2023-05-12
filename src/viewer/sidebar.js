@@ -1103,7 +1103,7 @@ export class Sidebar{
 					<label style="whitespace: nowrap; display: flex">
 						<input id="${inputID}" type="checkbox" ${checked}/>
 						<span style="flex-grow: 1">${name}</span>
-						<input id="${colorPickerID}" style="zoom: 0.5" />
+						<!--<input id="${colorPickerID}" style="zoom: 0.5" />-->
 					</label>
 				</li>
 			`);
@@ -1146,7 +1146,7 @@ export class Sidebar{
 				<li>
 					<label style="whitespace: nowrap">
 						<input id="toggleClassificationFilters" type="checkbox" checked/>
-						<span>show/hide all</span>
+						<span>Show/Side All</span>
 					</label>
 				</li>
 			`);
@@ -1228,14 +1228,15 @@ export class Sidebar{
 		$('.accordion > h3').each(function(){
 			let header = $(this);
 			let content = $(this).next();
-
-			header.addClass('accordion-header ui-widget');
+			
+			//header.addClass('accordion-header ui-widget');
 			//content.addClass('accordion-content ui-widget');
-
+			
 			content.hide();
 
 			header.click(() => {
 				content.slideToggle();
+				header.toggleClass('active');
 			});
 		});
 

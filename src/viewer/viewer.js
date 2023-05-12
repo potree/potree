@@ -1236,7 +1236,7 @@ export class Viewer extends EventDispatcher{
 		let sidebarContainer = $('#potree_sidebar_container');
 		sidebarContainer.load(new URL(Potree.scriptPath + '/sidebar.html').href, () => {
 			sidebarContainer.css('width', '300px');
-			sidebarContainer.css('height', '80dvh');
+			sidebarContainer.css('height', 'auto');
 
 			let imgMenuToggle = document.createElement('img');
 			imgMenuToggle.src = new URL(Potree.resourcePath + '/icons/menu_button.svg').href;

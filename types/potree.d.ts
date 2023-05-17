@@ -100,6 +100,8 @@ export type CameraOptionsKey = 'ORTHOGRAPHIC' | 'PERSPECTIVE' | 'VR';
 export type CameraOptions = 0 | 1 | 2;
 export type CameraModeType = { [key in CameraOptionsKey]: CameraOptions };
 
+export const CameraMode: CameraModeType;
+
 export class Viewer extends EventDispatcher {
 
 	constructor(container: HTMLElement);

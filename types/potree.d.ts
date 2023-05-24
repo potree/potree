@@ -49,8 +49,13 @@ export class Tool extends EventDispatcher {
 	update(): void;
 }
 
-export type InsertionEvent = { type: 'start_insertion' | 'stop_insertion' | 'point_inserted', point?: Mesh, source: RezocassiniTool };
+export type TBaseEvent<T, O, OT extends string, S> = {
+	[key in OT]?: O;
+} & {
+	type: T; source: S;
+};
 
+export type InsertionEvent = TBaseEvent<'start_insertion' | 'stop_insertion' | 'point_inserted', Mesh, 'point', RezocassiniTool>;
 export class RezocassiniTool extends Tool {
 	override startInsertion(pointsNumber: number): void;
 	pauseInsertion(): void;
@@ -67,9 +72,23 @@ export class RezocassiniTool extends Tool {
 export class Measure extends Object3D {
 	getTotalDistance(): number;
 }
-
+interface MeasuringToolArgs {
+	showDistances: boolean;
+	showArea: boolean;
+	showAngles: boolean;
+	showCoordinates: boolean;
+	showHeight: boolean;
+	showCircle: boolean;
+	showAzimuth: boolean;
+	showEdges: boolean;
+	closed: boolean;
+	maxMarkers: number;
+}
+export type MeasureEvent = TBaseEvent<'start_inserting_measurement' | 'cancel_insertions' | 'marker_inserted', Mesh, 'measure', MeasuringTool>;
 export class MeasuringTool extends Tool {
-	startInsertion(args: any): Measure;
+	startInsertion(args: MeasuringToolArgs): Measure;
+	private _subject: Subject<MeasureEvent>;
+	events$: Observable<MeasureEvent>;
 }
 
 export class CameraSyncTool extends Tool {

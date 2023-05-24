@@ -1,4 +1,4 @@
-
+import { Subject } from 'rxjs';
 import * as THREE from  'three';
 import {Measure} from "./Measure.js";
 import {Utils} from "../utils.js";
@@ -124,13 +124,19 @@ export class MeasuringTool extends EventDispatcher{
 	constructor (viewer) {
 		super();
 
+		// Events subject. To be used in Angular to react to events.
+		this._subject = new Subject();
+		this.events$ = this._subject.asObservable();
+
 		this.viewer = viewer;
 		this.renderer = viewer.renderer;
 
 		this.addEventListener('start_inserting_measurement', e => {
-			this.viewer.dispatchEvent({
+			const event = {
 				type: 'cancel_insertions'
-			});
+			};
+			this.viewer.dispatchEvent(event);
+			this._subject.next(event);
 		});
 
 		this.showLabels = true;
@@ -171,10 +177,13 @@ export class MeasuringTool extends EventDispatcher{
 
 		let measure = new Measure();
 
-		this.dispatchEvent({
+		const event = {
 			type: 'start_inserting_measurement',
-			measure: measure
-		});
+			measure: measure,
+			source: this
+		};
+		this.dispatchEvent(event);
+		this._subject.next(event);
 
 		const pick = (defaul, alternative) => {
 			if(defaul != null){
@@ -208,6 +217,13 @@ export class MeasuringTool extends EventDispatcher{
 		let insertionCallback = (e) => {
 			if (e.button === THREE.MOUSE.LEFT) {
 				measure.addMarker(measure.points[measure.points.length - 1].position.clone());
+				const event = {
+					type: 'marker_inserted',
+					measure: measure,
+					marker: measure.points[measure.points.length - 1],
+					source: this
+				};
+				this._subject.next(event);
 
 				if (measure.points.length >= measure.maxMarkers) {
 					cancel.callback();
@@ -224,6 +240,12 @@ export class MeasuringTool extends EventDispatcher{
 			if (cancel.removeLastMarker) {
 				measure.removeMarker(measure.points.length - 1);
 			}
+			const event = {
+				type: 'cancel_insertions',
+				measure: measure,
+				source: this
+			};
+			this._subject.next(event);
 			domElement.removeEventListener('mouseup', insertionCallback, false);
 			this.viewer.removeEventListener('cancel_insertions', cancel.callback);
 		};

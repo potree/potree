@@ -73,16 +73,16 @@ export class Measure extends Object3D {
 	getTotalDistance(): number;
 }
 interface MeasuringToolArgs {
-	showDistances: boolean;
-	showArea: boolean;
-	showAngles: boolean;
-	showCoordinates: boolean;
-	showHeight: boolean;
-	showCircle: boolean;
-	showAzimuth: boolean;
-	showEdges: boolean;
-	closed: boolean;
-	maxMarkers: number;
+	showDistances?: boolean;
+	showArea?: boolean;
+	showAngles?: boolean;
+	showCoordinates?: boolean;
+	showHeight?: boolean;
+	showCircle?: boolean;
+	showAzimuth?: boolean;
+	showEdges?: boolean;
+	closed?: boolean;
+	maxMarkers?: number;
 }
 export type MeasureEvent = TBaseEvent<'start_inserting_measurement' | 'cancel_insertions' | 'marker_inserted', Mesh, 'measure', MeasuringTool>;
 export class MeasuringTool extends Tool {

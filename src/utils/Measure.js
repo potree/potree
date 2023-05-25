@@ -288,6 +288,8 @@ export class Measure extends THREE.Object3D {
 		this._subject = new Subject();
 		this.events$ = this._subject.asObservable();
 
+		console.log(this, this._subject, this.events$);
+
 		this.constructor.counter = (this.constructor.counter === undefined) ? 0 : this.constructor.counter + 1;
 
 		this.name = 'Measure_' + this.constructor.counter;

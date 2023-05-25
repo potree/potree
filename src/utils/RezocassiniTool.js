@@ -154,7 +154,7 @@ export class RezocassiniTool extends EventDispatcher {
 	cancelLastInsertion() {
 		const point = this.points.pop();
 		if (point) {
-			const annotation = this.viewer.scene.annotations.flatten().find(a => a.position?.equals(point.position));
+			const annotation = this.viewer.scene.annotations.flatten().find(a => a.position && a.position.equals(point.position));
 			if (annotation) this.viewer.scene.annotations.remove(annotation);
 			this.scene.remove(point);
 		}

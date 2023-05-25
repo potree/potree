@@ -120,13 +120,15 @@ function updateAzimuth(viewer, measure){
 	azimuth.label.scale.set(scale, scale, scale);
 }
 
-export class MeasuringTool extends EventDispatcher{
+export class MeasuringTool extends EventDispatcher {
 	constructor (viewer) {
 		super();
 
 		// Events subject. To be used in Angular to react to events.
 		this._subject = new Subject();
 		this.events$ = this._subject.asObservable();
+
+		console.log(this, this._subject, this.events$);
 
 		this.viewer = viewer;
 		this.renderer = viewer.renderer;

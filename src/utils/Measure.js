@@ -5,6 +5,7 @@ import {Utils} from "../utils.js";
 import {Line2} from "../../libs/three.js/lines/Line2.js";
 import {LineGeometry} from "../../libs/three.js/lines/LineGeometry.js";
 import {LineMaterial} from "../../libs/three.js/lines/LineMaterial.js";
+import { Subject } from 'rxjs';
 
 function createHeightLine(){
 	let lineGeometry = new LineGeometry();
@@ -284,6 +285,9 @@ export class Measure extends THREE.Object3D {
 	constructor () {
 		super();
 
+		this._subject = new Subject();
+		this.events$ = this._subject.asObservable();
+
 		this.constructor.counter = (this.constructor.counter === undefined) ? 0 : this.constructor.counter + 1;
 
 		this.name = 'Measure_' + this.constructor.counter;
@@ -446,11 +450,13 @@ export class Measure extends THREE.Object3D {
 			let drop = e => {
 				let i = this.spheres.indexOf(e.drag.object);
 				if (i !== -1) {
-					this.dispatchEvent({
+					const event = {
 						'type': 'marker_dropped',
 						'measurement': this,
 						'index': i
-					});
+					};
+					this.dispatchEvent(event);
+					this._subject.next(event);
 				}
 			};
 

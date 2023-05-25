@@ -69,8 +69,10 @@ export class RezocassiniTool extends Tool {
 	points: Mesh[];
 }
 
+export type MarkerEvent = TBaseEvent<'marker_dropped', Measure, 'measurement', Measure>;
 export class Measure extends Object3D {
 	getTotalDistance(): number;
+	events$: Observable<MarkerEvent>;
 }
 interface MeasuringToolArgs {
 	showDistances?: boolean;
@@ -83,6 +85,7 @@ interface MeasuringToolArgs {
 	showEdges?: boolean;
 	closed?: boolean;
 	maxMarkers?: number;
+	disableCancel?: boolean;
 }
 export type MeasureEvent = TBaseEvent<'start_inserting_measurement' | 'cancel_insertions' | 'marker_inserted', Mesh, 'measure', MeasuringTool>;
 export class MeasuringTool extends Tool {

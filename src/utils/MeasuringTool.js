@@ -206,6 +206,7 @@ export class MeasuringTool extends EventDispatcher {
 		measure.showEdges = pick(args.showEdges, true);
 		measure.closed = pick(args.closed, false);
 		measure.maxMarkers = pick(args.maxMarkers, Infinity);
+		const disableCancel = pick(args.disableCancel, false);
 
 		measure.name = args.name || 'Measurement';
 
@@ -233,7 +234,13 @@ export class MeasuringTool extends EventDispatcher {
 
 				this.viewer.inputHandler.startDragging(
 					measure.spheres[measure.spheres.length - 1]);
-			} else if (e.button === THREE.MOUSE.RIGHT) {
+			} else if (e.button === THREE.MOUSE.RIGHT && !disableCancel) {
+				const event = {
+					type: 'marker_cancelled',
+					measure: measure,
+					source: this
+				};
+				this._subject.next(event);
 				cancel.callback();
 			}
 		};

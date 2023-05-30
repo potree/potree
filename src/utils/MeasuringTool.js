@@ -128,8 +128,6 @@ export class MeasuringTool extends EventDispatcher {
 		this._subject = new Subject();
 		this.events$ = this._subject.asObservable();
 
-		console.log(this, this._subject, this.events$);
-
 		this.viewer = viewer;
 		this.renderer = viewer.renderer;
 
@@ -227,8 +225,13 @@ export class MeasuringTool extends EventDispatcher {
 					source: this
 				};
 				this._subject.next(event);
-
 				if (measure.points.length >= measure.maxMarkers) {
+					const event = {
+						type: 'measure_done',
+						measure: measure,
+						source: this
+					};
+					this._subject.next(event);
 					cancel.callback();
 				}
 

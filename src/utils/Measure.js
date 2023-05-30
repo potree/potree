@@ -288,8 +288,6 @@ export class Measure extends THREE.Object3D {
 		this._subject = new Subject();
 		this.events$ = this._subject.asObservable();
 
-		console.log(this, this._subject, this.events$);
-
 		this.constructor.counter = (this.constructor.counter === undefined) ? 0 : this.constructor.counter + 1;
 
 		this.name = 'Measure_' + this.constructor.counter;
@@ -302,6 +300,8 @@ export class Measure extends THREE.Object3D {
 		this._showCircle = false;
 		this._showHeight = false;
 		this._showEdges = true;
+		this._showEdgesLabels = true;
+		this._setEdgesTo = null;
 		this._showAzimuth = false;
 		this.maxMarkers = Number.MAX_SAFE_INTEGER;
 
@@ -677,13 +677,20 @@ export class Measure extends THREE.Object3D {
 				}
 			}
 
+			if (this._showEdgesLabels)
 			{ // edge labels
 				let edgeLabel = this.edgeLabels[i];
 
 				let center = new THREE.Vector3().add(point.position);
 				center.add(nextPoint.position);
 				center = center.multiplyScalar(0.5);
-				let distance = point.position.distanceTo(nextPoint.position);
+				let distance;
+				if (this._setEdgesTo !== null) {
+					distance = this._setEdgesTo;
+				}
+				 else {
+					distance = point.position.distanceTo(nextPoint.position);
+				}
 
 				edgeLabel.position.copy(center);
 
@@ -902,6 +909,24 @@ export class Measure extends THREE.Object3D {
 
 	set showEdges (value) {
 		this._showEdges = value;
+		this.update();
+	}
+
+	get showEdgesLabels () {
+		return this._showEdgesLabels;
+	}
+
+	set showEdgesLabels (value) {
+		this._showEdgesLabels = value;
+		this.update();
+	}
+
+	get setEdgesTo () {
+		return this._setEdgesTo;
+	}
+
+	set setEdgesTo (value) {
+		this._setEdgesTo = value;
 		this.update();
 	}
 

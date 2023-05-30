@@ -73,6 +73,12 @@ export type MarkerEvent = TBaseEvent<'marker_dropped', Measure, 'measurement', M
 export class Measure extends Object3D {
 	getTotalDistance(): number;
 	events$: Observable<MarkerEvent>;
+	get setEdgesTo(): number | null;
+	set setEdgesTo(value: number | null);
+	get showEdges(): boolean;
+	set showEdges(value: boolean);
+	get showEdgesLabels(): boolean;
+	set showEdgesLabels(value: boolean);
 }
 interface MeasuringToolArgs {
 	showDistances?: boolean;
@@ -87,7 +93,7 @@ interface MeasuringToolArgs {
 	maxMarkers?: number;
 	disableCancel?: boolean;
 }
-export type MeasureEvent = TBaseEvent<'start_inserting_measurement' | 'cancel_insertions' | 'marker_inserted', Mesh, 'measure', MeasuringTool>;
+export type MeasureEvent = TBaseEvent<'start_inserting_measurement' | 'cancel_insertions' | 'marker_inserted' | 'measure_done', Mesh, 'measure', MeasuringTool>;
 export class MeasuringTool extends Tool {
 	startInsertion(args: MeasuringToolArgs): Measure;
 	private _subject: Subject<MeasureEvent>;

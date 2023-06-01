@@ -1,5 +1,5 @@
 import { Subject, Observable } from "rxjs";
-import THREE, { Box3, BufferGeometry, Camera, DataTexture, Intersection, Light, Line, LineSegments, Material, Matrix4, Mesh, Object3D, OrthographicCamera, PerspectiveCamera, Ray, Renderer, Vector2, Vector3, WebGLRenderer } from "three";
+import { Box3, BufferGeometry, Camera, DataTexture, Intersection, Light, Line, LineSegments, Material, Matrix4, Mesh, Object3D, OrthographicCamera, PerspectiveCamera, RawShaderMaterial, Ray, Renderer, Scene as THREEScene, Vector2, Vector3, WebGLRenderer } from "three";
 
 export function loadPointCloud(path: string, name: string): Promise<PointCloudEvent>;
 
@@ -8,7 +8,11 @@ export interface PointCloudEvent {
 	pointcloud: PointCloudTree;
 }
 
-export type Background = 'gradient' | 'black' | 'white' | 'none';
+export type BackgroundKeys = 'SKYBOX' | 'GRADIENT' | 'BLACK' | 'WHITE' | 'NONE';
+export type BackgroundValues = 'skybox' | 'gradient' | 'black' | 'white' | 'null';
+export type BackgroundType = KeyValueBaseType<BackgroundKeys, BackgroundValues>;
+export const BackgroundColors: BackgroundType;
+
 
 export interface Classification {
 	visible: boolean,
@@ -38,8 +42,8 @@ export class InputHandler extends EventDispatcher {
 	constructor();
 	startDragging(m: Object3D): void;
 	getHoveredElements(): Array<Intersection>;
-	interactiveScenes: THREE.Scene[];
-	scene: THREE.Scene | null;
+	interactiveScenes: THREEScene[];
+	scene: THREEScene | null;
 }
 
 export class Tool extends EventDispatcher {
@@ -113,7 +117,7 @@ export class Controls extends EventDispatcher {
 	viewer: Viewer;
 	renderer: Renderer;
 	scene: Scene;
-	sceneControls: THREE.Scene;
+	sceneControls: THREEScene;
 	rotationSpeed: number;
 	fadeFactor: number;
 	yawDelta: number;
@@ -124,18 +128,65 @@ export class Controls extends EventDispatcher {
 	tweens: any[];
 }
 
+export type KeyValueBaseType<K extends string | number | symbol, V> = { [key in K]: V };
+
+export type ClipTaskKeys = 'NONE' | 'HIGHLIGHT' | 'SHOW_INSIDE' | 'SHOW_OUTSIDE';
+export type ClipTaskValues = 0 | 1 | 2 | 3;
+export type ClipTaskType = KeyValueBaseType<ClipTaskKeys, ClipTaskValues>;
+export const ClipTask: ClipTaskType;
+
+export type ClipMethodKeys = 'INSIDE_ANY' | 'INSIDE_ALL';
+export type ClipMethodValues = 0 | 1;
+export type ClipMethodType = KeyValueBaseType<ClipMethodKeys, ClipMethodValues>;
+export const ClipMethod: ClipMethodType;
+
+export type ElevationGradientRepeatKeys = 'CLAMP' | 'REPEAT' | 'MIRRORED_REPEAT';
+export type ElevationGradientRepeatValues = 0 | 1 | 2;
+export type ElevationGradientRepeatType = KeyValueBaseType<ElevationGradientRepeatKeys, ElevationGradientRepeatValues>;
+export const ElevationGradientRepeat: ElevationGradientRepeatType;
+
+export type PointSizeTypeKeys = 'FIXED' | 'ATTENUATED' | 'ADAPTIVE';
+export type PointSizeTypeValues = 0 | 1 | 2;
+export type PointSizeTypeType = KeyValueBaseType<PointSizeTypeKeys, PointSizeTypeValues>;
+export const PointSizeType: PointSizeTypeType;
+
+export type PointShapeKeys = 'SQUARE' | 'CIRCLE' | 'PARABOLOID';
+export type PointShapeValues = 0 | 1 | 2;
+export type PointShapeType = KeyValueBaseType<PointShapeKeys, PointShapeValues>
+export const PointShape: PointShapeType;
+
+export type TreeTypeKeys = 'OCTREE' | 'KDTREE';
+export type TreeTypeValues = 0 | 1 | 2;
+export type TreeTypeType = KeyValueBaseType<TreeTypeKeys, TreeTypeValues>;
+export const TreeType: TreeTypeType;
+
+export type LengthUnitKeys = 'METER' | 'FEET' | 'INCH';
+export type LengthUnitCodes = 'm' | 'ft' | '\u2033';
+export type LengthUnitValues = { code: LengthUnitCodes , unitspermeter: number };
+export type LengthUnitType = KeyValueBaseType<LengthUnitKeys, LengthUnitValues>
+export const LengthUnits: LengthUnitType;
+
 export type CameraOptionsKey = 'ORTHOGRAPHIC' | 'PERSPECTIVE' | 'VR';
 export type CameraOptions = 0 | 1 | 2;
-export type CameraModeType = { [key in CameraOptionsKey]: CameraOptions };
-
+export type CameraModeType = KeyValueBaseType<CameraOptionsKey, CameraOptions>;
 export const CameraMode: CameraModeType;
+
+export type MaterialAttributeOptionsKey = 'COLOR' | 'ELEVATION' | 'INTENSITY' | 'INTENSITY_GRADIENT' | 'CLASSIFICATION';
+export type MaterialAttributeOptionsValue = 'color' | 'elevation' | 'intensity' | 'intensity gradient' | 'classification';
+export type MaterialAttributeOptionsType = KeyValueBaseType<MaterialAttributeOptionsKey, MaterialAttributeOptionsValue>;
+export const MaterialAttributeOptions: MaterialAttributeOptionsType;
+
+export type ControlsOptionsKeys = 'EARTH' | 'FPS' | 'ORBIT' | 'CUSTOM';
+export type ControlsOptionsValues = 'earthControls' | 'fpControls' | 'orbitControls' | 'customControls';
+export type ControlsOptionsType = KeyValueBaseType<ControlsOptionsKeys, ControlsOptionsValues>;
+export const ControlsOptions: ControlsOptionsType;
 
 export class Viewer extends EventDispatcher {
 
 	constructor(container: HTMLElement);
 
 	annotationTool: Tool;
-	background: Background;
+	background: BackgroundValues;
 	cameraSyncTool: CameraSyncTool;
 	classifications: { [key: string]: Classification };
 	clipMethod: number; // @ENUM A RETROUVER
@@ -190,8 +241,19 @@ export class Viewer extends EventDispatcher {
 	scene: Scene;
 	sceneVR: Scene;
 	server: any;
+	setBackground(background: BackgroundValues): void;
 	setControls(controls: Controls): void;
-	setCameraMode(mode: number): void;
+	setCameraMode(mode: CameraOptions): void;
+	setEDLEnabled(value: boolean): void;
+	setEDLRadius(value: number): void;
+	setEDLStrength(value: number): void;
+	setPointBudget(value: number): void;
+	setLeftView(): void;
+	setRightView(): void;
+	setFrontView(): void;
+	setBackView(): void;
+	setTopView(): void;
+	setBottomView(): void;
 	shadowTestCam: PerspectiveCamera;
 	showAnnotations: boolean;
 	showBoundingBox: boolean;
@@ -199,6 +261,7 @@ export class Viewer extends EventDispatcher {
 	transformationTool: Tool;
 	useDEMCollisions: boolean;
 	useEDL: boolean;
+	useHQ: boolean;
 	volumeTool: Tool;
 	vrControls: Controls;
 	fitToScreen(): void;
@@ -208,15 +271,15 @@ export class Scene extends EventDispatcher {
 	constructor();
 
 	annotations: any[];
-	scene: THREE.Scene;
+	scene: THREEScene;
 	sceneBG: Scene;
-	scenePointCloud: THREE.Scene;
+	scenePointCloud: THREEScene;
 	cameraP: PerspectiveCamera;
 	cameraO: OrthographicCamera;
 	cameraVR: PerspectiveCamera;
 	cameraBG: Camera;
 	cameraScreenSpace: OrthographicCamera;
-	cameraMode: number; //@TODO ENUM A RETROUVER
+	cameraMode: CameraOptions; //@TODO ENUM A RETROUVER
 	overrideCamera: null;
 	pointclouds: PointCloudTree[];
 	measurements: any[];
@@ -239,8 +302,32 @@ export class Scene extends EventDispatcher {
 	getActiveCamera(): Camera;
 }
 
+export class PointCloudMaterial extends RawShaderMaterial {
+	get activeAttributeName(): string;
+	set activeAttributeName(value: string);
+
+	get intensityRange(): [number, number];
+	set intensityRange(value: [number, number]);
+
+	get elevationRange(): [number, number];
+	set elevationRange (value: [number, number]);
+
+	get heightMin(): number;
+	set heightMin(value: number);
+
+	get heightMax(): number;
+	set heightMax(value: number);
+
+	get pointSizeType(): PointSizeTypeValues;
+	set pointSizeType(value: PointSizeTypeValues);
+	
+	get size(): number;
+	set size(value: number);
+}
+
 export class PointCloudTree extends Object3D {
 	initialized(): boolean;
+	material: PointCloudMaterial;
 }
 
 export class PointCloudOctree extends PointCloudTree {

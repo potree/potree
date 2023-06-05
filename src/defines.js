@@ -74,6 +74,5 @@ export const BackgroundColors = {
 export const ControlsOptions = {
 	EARTH: 'earthControls',
 	FPS: 'fpControls',
-	ORBIT: 'orbitControls',
-	CUSTOM: 'customControls'
+	ORBIT: 'orbitControls'
 };

@@ -176,8 +176,8 @@ export type MaterialAttributeOptionsValue = 'color' | 'elevation' | 'intensity' 
 export type MaterialAttributeOptionsType = KeyValueBaseType<MaterialAttributeOptionsKey, MaterialAttributeOptionsValue>;
 export const MaterialAttributeOptions: MaterialAttributeOptionsType;
 
-export type ControlsOptionsKeys = 'EARTH' | 'FPS' | 'ORBIT' | 'CUSTOM';
-export type ControlsOptionsValues = 'earthControls' | 'fpControls' | 'orbitControls' | 'customControls';
+export type ControlsOptionsKeys = 'EARTH' | 'FPS' | 'ORBIT';
+export type ControlsOptionsValues = 'earthControls' | 'fpControls' | 'orbitControls';
 export type ControlsOptionsType = KeyValueBaseType<ControlsOptionsKeys, ControlsOptionsValues>;
 export const ControlsOptions: ControlsOptionsType;
 
@@ -212,7 +212,14 @@ export class Viewer extends EventDispatcher {
 	fpControls: Controls;
 	freeze: boolean;
 	generateDEM: boolean;
+	getBackground(): BackgroundValues;
+	getCameraMode(): CameraOptions;
 	getControls(): Controls;
+	getEDLEnabled(): boolean;
+	getEDLRadius(): number;
+	getEDLStrength(): number;
+	getMoveSpeed(): number;
+	getPointBudget(): number;
 	guiLoadTasks: Function[];
 	guiLoaded: boolean;
 	inputHandler: InputHandler;
@@ -247,6 +254,7 @@ export class Viewer extends EventDispatcher {
 	setEDLEnabled(value: boolean): void;
 	setEDLRadius(value: number): void;
 	setEDLStrength(value: number): void;
+	setMoveSpeed(value: number): void;
 	setPointBudget(value: number): void;
 	setLeftView(): void;
 	setRightView(): void;
@@ -303,8 +311,8 @@ export class Scene extends EventDispatcher {
 }
 
 export class PointCloudMaterial extends RawShaderMaterial {
-	get activeAttributeName(): string;
-	set activeAttributeName(value: string);
+	get activeAttributeName(): MaterialAttributeOptionsValue;
+	set activeAttributeName(value: MaterialAttributeOptionsValue);
 
 	get intensityRange(): [number, number];
 	set intensityRange(value: [number, number]);

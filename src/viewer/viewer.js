@@ -136,6 +136,7 @@ export class Viewer extends EventDispatcher {
 			this.edlRadius = 1.4;
 			this.edlOpacity = 1.0;
 			this.useEDL = false;
+			this.useHQ = false;
 			this.description = "";
 
 			this.classifications = ClassificationScheme.DEFAULT;

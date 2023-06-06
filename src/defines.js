@@ -57,6 +57,7 @@ export const LengthUnits = {
 
 export const MaterialAttributeOptions = {
 	COLOR: "color",
+	RGBA: "rgba",
 	ELEVATION: "elevation",
 	INTENSITY: "intensity",
 	INTENSITY_GRADIENT: "intensity gradient",

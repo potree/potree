@@ -171,8 +171,8 @@ export type CameraOptions = 0 | 1 | 2;
 export type CameraModeType = KeyValueBaseType<CameraOptionsKey, CameraOptions>;
 export const CameraMode: CameraModeType;
 
-export type MaterialAttributeOptionsKey = 'COLOR' | 'ELEVATION' | 'INTENSITY' | 'INTENSITY_GRADIENT' | 'CLASSIFICATION';
-export type MaterialAttributeOptionsValue = 'color' | 'elevation' | 'intensity' | 'intensity gradient' | 'classification';
+export type MaterialAttributeOptionsKey = 'COLOR' | 'RGBA' | 'ELEVATION' | 'INTENSITY' | 'INTENSITY_GRADIENT' | 'CLASSIFICATION';
+export type MaterialAttributeOptionsValue = 'color' | 'rgba' | 'elevation' | 'intensity' | 'intensity gradient' | 'classification';
 export type MaterialAttributeOptionsType = KeyValueBaseType<MaterialAttributeOptionsKey, MaterialAttributeOptionsValue>;
 export const MaterialAttributeOptions: MaterialAttributeOptionsType;
 

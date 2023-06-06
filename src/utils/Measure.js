@@ -622,7 +622,7 @@ export class Measure extends THREE.Object3D {
 			{ // coordinate labels
 				let coordinateLabel = this.coordinateLabels[0];
 				
-				let msg = position.toArray().map(p => Utils.addCommas(p.toFixed(2))).join(" / ");
+				let msg = position.toArray().map(p => Utils.addCommas(p.toFixed(3))).join(" / ");
 				coordinateLabel.setText(msg);
 
 				coordinateLabel.visible = this.showCoordinates;
@@ -700,7 +700,7 @@ export class Measure extends THREE.Object3D {
 					suffix = this.lengthUnitDisplay.code;
 				}
 
-				let txtLength = Utils.addCommas(distance.toFixed(2));
+				let txtLength = Utils.addCommas(distance.toFixed(3));
 				edgeLabel.setText(`${txtLength} ${suffix}`);
 				edgeLabel.visible = this.showDistances && (index < lastIndex || this.closed) && this.points.length >= 2 && distance > 0;
 			}
@@ -769,7 +769,7 @@ export class Measure extends THREE.Object3D {
 					suffix = this.lengthUnitDisplay.code;
 				}
 
-				let txtHeight = Utils.addCommas(height.toFixed(2));
+				let txtHeight = Utils.addCommas(height.toFixed(3));
 				let msg = `${txtHeight} ${suffix}`;
 				this.heightLabel.setText(msg);
 			}

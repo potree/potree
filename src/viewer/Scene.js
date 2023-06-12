@@ -5,6 +5,7 @@ import {CameraMode} from "../defines.js";
 import {View} from "./View.js";
 import {Utils} from "../utils.js";
 import {EventDispatcher} from "../EventDispatcher.js";
+import { Subject } from 'rxjs';
 
 
 export class Scene extends EventDispatcher{
@@ -46,6 +47,9 @@ export class Scene extends EventDispatcher{
 		this.view = new View();
 
 		this.directionalLight = null;
+
+		this._subject = new Subject();
+		this.events$ = this._subject.asObservable();
 
 		this.initialize();
 	}
@@ -124,10 +128,12 @@ export class Scene extends EventDispatcher{
 		this.pointclouds.push(pointcloud);
 		this.scenePointCloud.add(pointcloud);
 
-		this.dispatchEvent({
+		const event = {
 			type: 'pointcloud_added',
 			pointcloud: pointcloud
-		});
+		};
+		this.dispatchEvent(event);
+		this._subject.next(event);
 	}
 
 	addVolume (volume) {

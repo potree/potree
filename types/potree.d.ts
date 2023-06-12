@@ -181,6 +181,22 @@ export type ControlsOptionsValues = 'earthControls' | 'fpControls' | 'orbitContr
 export type ControlsOptionsType = KeyValueBaseType<ControlsOptionsKeys, ControlsOptionsValues>;
 export const ControlsOptions: ControlsOptionsType;
 
+export class Volume extends Object3D {
+	constructor(args?: { clip?: boolean, modifiable?: boolean });
+	get clip(): boolean;
+	set clip(value: boolean);
+	get modifieable(): boolean;
+	set modifieable(value: boolean);
+	getVolume(): number;
+}
+
+export class BoxVolume extends Volume {
+	override getVolume(): number;
+}
+export class SphereVolume extends Volume {
+	override getVolume(): number;
+}
+
 export class Viewer extends EventDispatcher {
 
 	constructor(container: HTMLElement);
@@ -249,6 +265,7 @@ export class Viewer extends EventDispatcher {
 	sceneVR: Scene;
 	server: any;
 	setBackground(background: BackgroundValues): void;
+	setClipTask(task: ClipTaskValues): void;
 	setControls(controls: Controls): void;
 	setCameraMode(mode: CameraOptions): void;
 	setEDLEnabled(value: boolean): void;
@@ -278,6 +295,8 @@ export class Viewer extends EventDispatcher {
 export class Scene extends EventDispatcher {
 	constructor();
 
+	events$: Observable<{type: 'pointcloud_added', pointcloud: PointCloudTree}>;
+	addVolume(volume: Volume): void;
 	annotations: any[];
 	scene: THREEScene;
 	sceneBG: Scene;
@@ -304,6 +323,8 @@ export class Scene extends EventDispatcher {
 	geoControls: Controls;
 	deviceControls: Controls;
 	inputHandler: EventDispatcher;
+	removeAllClipVolumes(): void;
+	removeVolume(volume: Volume | any): void;
 	view: any;
 	directionalLight: Light;
 	addPointCloud(pointcloud: PointCloudTree): void;

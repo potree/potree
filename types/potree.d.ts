@@ -296,6 +296,8 @@ export class Scene extends EventDispatcher {
 	constructor();
 
 	events$: Observable<{type: 'pointcloud_added', pointcloud: PointCloudTree}>;
+	addMeasurement(measure: Measure): void;
+	removeMeasurement(measure: Measure | any): void;
 	addVolume(volume: Volume): void;
 	annotations: any[];
 	scene: THREEScene;
@@ -309,9 +311,9 @@ export class Scene extends EventDispatcher {
 	cameraMode: CameraOptions; //@TODO ENUM A RETROUVER
 	overrideCamera: null;
 	pointclouds: PointCloudTree[];
-	measurements: any[];
+	measurements: Measure[];
 	profiles: any[];
-	volumes: any[];
+	volumes: Volume[];
 	polygonClipVolumes: any[];
 	cameraAnimations: any[];
 	orientedImages: any[];

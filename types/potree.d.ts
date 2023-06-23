@@ -1,7 +1,29 @@
 import { Subject, Observable } from "rxjs";
 import { Box3, BufferGeometry, Camera, DataTexture, Intersection, Light, Line, LineSegments, Material, Matrix4, Mesh, Object3D, OrthographicCamera, PerspectiveCamera, RawShaderMaterial, Ray, Renderer, Scene as THREEScene, Vector2, Vector3, WebGLRenderer } from "three";
 
-export function loadPointCloud(path: string, name: string): Promise<PointCloudEvent>;
+export interface BoundingBox {
+	lx: number;
+	ly: number;
+	lz: number;
+	ux: number;
+	uy: number;
+	uz: number;
+}
+
+export interface PointCloudConfig {
+	boundingBox: BoundingBox;
+	hierarchyStepSize: number;
+	octreeDir: string;
+	pointAttributes: string;
+	points: number;
+	projection: string;
+	scale: number;
+	spacing: number;
+	tightBoundingBox: BoundingBox;
+	version: string;
+}
+
+export function loadPointCloud(pointcloud_config: PointCloudConfig, name: string): Promise<PointCloudEvent>;
 
 export interface PointCloudEvent {
 	type: string;

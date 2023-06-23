@@ -118,117 +118,102 @@ function lasLazAttributes(fMno){
 
 export class POCLoader {
 
-	static load(url, callback){
+	static load(pointcloud_config, callback){
 		try {
 			let pco = new PointCloudOctreeGeometry();
-			pco.url = url;
-			let xhr = XHRFactory.createXMLHttpRequest();
-			xhr.open('GET', url, true);
+			let fMno = pointcloud_config;
+			console.log(fMno);
+			console.log(fMno.version);
 
-			xhr.onreadystatechange = function () {
-				if (xhr.readyState === 4 && (xhr.status === 200 || xhr.status === 0)) {
-					let fMno = JSON.parse(xhr.responseText);
+			let version = new Version(fMno.version);
 
-					let version = new Version(fMno.version);
+			pco.octreeDir = fMno.octreeDir;
 
-					// assume octreeDir is absolute if it starts with http
-					if (fMno.octreeDir.indexOf('http') === 0) {
-						pco.octreeDir = fMno.octreeDir;
-					} else {
-						pco.octreeDir = url + '/../' + fMno.octreeDir;
-					}
+			pco.spacing = fMno.spacing;
+			pco.hierarchyStepSize = fMno.hierarchyStepSize;
 
-					pco.spacing = fMno.spacing;
-					pco.hierarchyStepSize = fMno.hierarchyStepSize;
+			pco.pointAttributes = fMno.pointAttributes;
 
-					pco.pointAttributes = fMno.pointAttributes;
+			let min = new THREE.Vector3(fMno.boundingBox.lx, fMno.boundingBox.ly, fMno.boundingBox.lz);
+			let max = new THREE.Vector3(fMno.boundingBox.ux, fMno.boundingBox.uy, fMno.boundingBox.uz);
+			let boundingBox = new THREE.Box3(min, max);
+			let tightBoundingBox = boundingBox.clone();
 
-					let min = new THREE.Vector3(fMno.boundingBox.lx, fMno.boundingBox.ly, fMno.boundingBox.lz);
-					let max = new THREE.Vector3(fMno.boundingBox.ux, fMno.boundingBox.uy, fMno.boundingBox.uz);
-					let boundingBox = new THREE.Box3(min, max);
-					let tightBoundingBox = boundingBox.clone();
+			if (fMno.tightBoundingBox) {
+				tightBoundingBox.min.copy(new THREE.Vector3(fMno.tightBoundingBox.lx, fMno.tightBoundingBox.ly, fMno.tightBoundingBox.lz));
+				tightBoundingBox.max.copy(new THREE.Vector3(fMno.tightBoundingBox.ux, fMno.tightBoundingBox.uy, fMno.tightBoundingBox.uz));
+			}
 
-					if (fMno.tightBoundingBox) {
-						tightBoundingBox.min.copy(new THREE.Vector3(fMno.tightBoundingBox.lx, fMno.tightBoundingBox.ly, fMno.tightBoundingBox.lz));
-						tightBoundingBox.max.copy(new THREE.Vector3(fMno.tightBoundingBox.ux, fMno.tightBoundingBox.uy, fMno.tightBoundingBox.uz));
-					}
+			let offset = min.clone();
 
-					let offset = min.clone();
+			boundingBox.min.sub(offset);
+			boundingBox.max.sub(offset);
 
-					boundingBox.min.sub(offset);
-					boundingBox.max.sub(offset);
+			tightBoundingBox.min.sub(offset);
+			tightBoundingBox.max.sub(offset);
 
-					tightBoundingBox.min.sub(offset);
-					tightBoundingBox.max.sub(offset);
+			pco.projection = fMno.projection;
+			pco.boundingBox = boundingBox;
+			pco.tightBoundingBox = tightBoundingBox;
+			pco.boundingSphere = boundingBox.getBoundingSphere(new THREE.Sphere());
+			pco.tightBoundingSphere = tightBoundingBox.getBoundingSphere(new THREE.Sphere());
+			pco.offset = offset;
+			if (fMno.pointAttributes === 'LAS') {
+				pco.loader = new LasLazLoader(fMno.version, "las");
+				pco.pointAttributes = lasLazAttributes(fMno);
+			} else if (fMno.pointAttributes === 'LAZ') {
+				pco.loader = new LasLazLoader(fMno.version, "laz");
+				pco.pointAttributes = lasLazAttributes(fMno);
+			} else {
+				pco.loader = new BinaryLoader(fMno.version, boundingBox, fMno.scale);
+				pco.pointAttributes = parseAttributes(fMno);
+			}
 
-					pco.projection = fMno.projection;
-					pco.boundingBox = boundingBox;
-					pco.tightBoundingBox = tightBoundingBox;
-					pco.boundingSphere = boundingBox.getBoundingSphere(new THREE.Sphere());
-					pco.tightBoundingSphere = tightBoundingBox.getBoundingSphere(new THREE.Sphere());
-					pco.offset = offset;
-					if (fMno.pointAttributes === 'LAS') {
-						pco.loader = new LasLazLoader(fMno.version, "las");
-						pco.pointAttributes = lasLazAttributes(fMno);
-					} else if (fMno.pointAttributes === 'LAZ') {
-						pco.loader = new LasLazLoader(fMno.version, "laz");
-						pco.pointAttributes = lasLazAttributes(fMno);
-					} else {
-						pco.loader = new BinaryLoader(fMno.version, boundingBox, fMno.scale);
-						pco.pointAttributes = parseAttributes(fMno);
-					}
+			let nodes = {};
 
-					let nodes = {};
+			{ // load root
+				let name = 'r';
 
-					{ // load root
-						let name = 'r';
-
-						let root = new PointCloudOctreeGeometryNode(name, pco, boundingBox);
-						root.level = 0;
-						root.hasChildren = true;
-						root.spacing = pco.spacing;
-						if (version.upTo('1.5')) {
-							root.numPoints = fMno.hierarchy[0][1];
-						} else {
-							root.numPoints = 0;
-						}
-						pco.root = root;
-						pco.root.load();
-						nodes[name] = root;
-					}
-
-					// load remaining hierarchy
-					if (version.upTo('1.4')) {
-						for (let i = 1; i < fMno.hierarchy.length; i++) {
-							let name = fMno.hierarchy[i][0];
-							let numPoints = fMno.hierarchy[i][1];
-							let index = parseInt(name.charAt(name.length - 1));
-							let parentName = name.substring(0, name.length - 1);
-							let parentNode = nodes[parentName];
-							let level = name.length - 1;
-							//let boundingBox = POCLoader.createChildAABB(parentNode.boundingBox, index);
-							let boundingBox = Utils.createChildAABB(parentNode.boundingBox, index);
-
-							let node = new PointCloudOctreeGeometryNode(name, pco, boundingBox);
-							node.level = level;
-							node.numPoints = numPoints;
-							node.spacing = pco.spacing / Math.pow(2, level);
-							parentNode.addChild(node);
-							nodes[name] = node;
-						}
-					}
-
-					pco.nodes = nodes;
-
-					callback(pco);
+				let root = new PointCloudOctreeGeometryNode(name, pco, boundingBox);
+				root.level = 0;
+				root.hasChildren = true;
+				root.spacing = pco.spacing;
+				if (version.upTo('1.5')) {
+					root.numPoints = fMno.hierarchy[0][1];
+				} else {
+					root.numPoints = 0;
 				}
-			};
+				pco.root = root;
+				pco.root.load();
+				nodes[name] = root;
+			}
 
-			xhr.send(null);
+			// load remaining hierarchy
+			if (version.upTo('1.4')) {
+				for (let i = 1; i < fMno.hierarchy.length; i++) {
+					let name = fMno.hierarchy[i][0];
+					let numPoints = fMno.hierarchy[i][1];
+					let index = parseInt(name.charAt(name.length - 1));
+					let parentName = name.substring(0, name.length - 1);
+					let parentNode = nodes[parentName];
+					let level = name.length - 1;
+					//let boundingBox = POCLoader.createChildAABB(parentNode.boundingBox, index);
+					let boundingBox = Utils.createChildAABB(parentNode.boundingBox, index);
+
+					let node = new PointCloudOctreeGeometryNode(name, pco, boundingBox);
+					node.level = level;
+					node.numPoints = numPoints;
+					node.spacing = pco.spacing / Math.pow(2, level);
+					parentNode.addChild(node);
+					nodes[name] = node;
+				}
+			}
+
+			pco.nodes = nodes;
+
+			callback(pco);
 		} catch (e) {
-			console.log("loading failed: '" + url + "'");
 			console.log(e);
-
 			callback();
 		}
 	}

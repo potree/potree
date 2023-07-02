@@ -1,5 +1,5 @@
 
-import * as THREE from "../../libs/three.js/build/three.module.js";
+import * as THREE from "three";
 import {ClipTask, ClipMethod, CameraMode, LengthUnits, ElevationGradientRepeat} from "../defines.js";
 import {Renderer} from "../PotreeRenderer.js";
 import {PotreeRenderer} from "./PotreeRenderer.js";
@@ -1269,7 +1269,7 @@ export class Viewer extends EventDispatcher{
 			i18n.init({
 				lng: 'en',
 				resGetPath: Potree.resourcePath + '/lang/__lng__/__ns__.json',
-				preload: ['en', 'fr', 'de', 'jp', 'se', 'es', 'zh', 'it','ca'],
+				preload: ['en', 'fr', 'de', 'jp', 'se', 'es', 'zh'],
 				getAsync: true,
 				debug: false
 			}, function (t) {
@@ -1349,14 +1349,14 @@ export class Viewer extends EventDispatcher{
 
 				const file = item.getAsFile();
 
-				const isJson5 = file.name.toLowerCase().endsWith(".json5");
+				const isJson = file.name.toLowerCase().endsWith(".json");
 				const isGeoPackage = file.name.toLowerCase().endsWith(".gpkg");
 
-				if(isJson5){
+				if(isJson){
 					try{
 
 						const text = await file.text();
-						const json = JSON5.parse(text);
+						const json = JSON.parse(text);
 
 						if(json.type === "Potree"){
 							Potree.loadProject(viewer, json);

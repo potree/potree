@@ -1,5 +1,5 @@
 
-import * as THREE from "../../../libs/three.js/build/three.module.js";
+import * as THREE from "three";
 import { EventDispatcher } from "../../EventDispatcher.js";
 import {TextSprite} from "../../TextSprite.js";
 
@@ -75,7 +75,7 @@ export class Images360 extends EventDispatcher{
 		viewer.inputHandler.addInputListener(this);
 
 		this.addEventListener("mousedown", () => {
-			if(currentlyHovered && currentlyHovered.image360){
+			if(currentlyHovered){
 				this.focus(currentlyHovered.image360);
 			}
 		});

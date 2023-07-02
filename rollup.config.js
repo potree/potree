@@ -1,3 +1,5 @@
+import resolve from '@rollup/plugin-node-resolve';
+
 export default [
 	{
 		input: 'src/Potree.js',
@@ -7,7 +9,8 @@ export default [
 			format: 'umd',
 			name: 'Potree',
 			sourcemap: true,
-		}
+		},
+		plugins: [ resolve() ]
 	},{
 		input: 'src/workers/BinaryDecoderWorker.js',
 		output: {

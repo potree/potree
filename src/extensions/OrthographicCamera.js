@@ -1,5 +1,5 @@
 
-import * as THREE from "../../libs/three.js/build/three.module.js";
+import * as THREE from "three";
 
 THREE.OrthographicCamera.prototype.zoomTo = function( node, factor = 1){
 

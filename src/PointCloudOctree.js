@@ -1,5 +1,5 @@
 
-import * as THREE from "../libs/three.js/build/three.module.js";
+import * as THREE from "three";
 import {PointCloudTree, PointCloudTreeNode} from "./PointCloudTree.js";
 import {PointCloudOctreeGeometryNode} from "./PointCloudOctreeGeometry.js";
 import {Utils} from "./utils.js";
@@ -367,7 +367,7 @@ export class PointCloudOctree extends PointCloudTree {
 
 			let density = node.geometryNode.density;
 			
-			if(typeof density === "number" && !Number.isNaN(density)){
+			if(typeof density === "number"){
 				let lodOffset = Math.log2(density) / 2 - 1.5;
 
 				let offsetUint8 = (lodOffset + 10) * 10;

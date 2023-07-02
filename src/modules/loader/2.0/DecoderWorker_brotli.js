@@ -57,18 +57,7 @@ onmessage = function (event) {
 
 	let tStart = performance.now();
 
-	let buffer; 
-	if(numPoints === 0){
-		buffer = {buffer: new ArrayBuffer(0)};
-	}else{
-		try{
-			buffer = BrotliDecode(new Int8Array(event.data.buffer));
-		}catch(e){
-			buffer = {buffer: new ArrayBuffer(numPoints * (pointAttributes.byteSize + 12))};
-			console.error(`problem with node ${name}: `, e);
-		}
-	}
-
+	let buffer = BrotliDecode(new Int8Array(event.data.buffer));
 	let view = new DataView(buffer.buffer);
 	
 	let attributeBuffers = {};

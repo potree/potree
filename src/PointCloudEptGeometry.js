@@ -1,6 +1,6 @@
 import {PointCloudTreeNode} from "./PointCloudTree.js";
 import {PointAttributes, PointAttribute, PointAttributeTypes} from "./loader/PointAttributes.js";
-import * as THREE from "../libs/three.js/build/three.module.js";
+import * as THREE from "three";
 
 class U {
 	static toVector3(v, offset) {
@@ -59,7 +59,7 @@ export class PointCloudEptGeometry {
 			this.projection = info.srs.authority + ':' + info.srs.horizontal;
 		}
 
-		if (info.srs && info.srs.wkt) {
+		if (info.srs.wkt) {
 			if (!this.projection) this.projection = info.srs.wkt;
 			else this.fallbackProjection = info.srs.wkt;
 		}

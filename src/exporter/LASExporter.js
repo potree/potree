@@ -1,5 +1,5 @@
 
-import * as THREE from "../../libs/three.js/build/three.module.js";
+import * as THREE from "three";
 
 export class LASExporter {
 	static toLAS (points) {
@@ -134,8 +134,8 @@ export class LASExporter {
 				view.setUint16(boffset + 18, points.data.pointSourceID[i]);
 			}
 
-			if (points.data.rgba || points.data.color) {
-				let rgba = points.data.rgba ?? points.data.color;
+			if (points.data.rgba) {
+				let rgba = points.data.rgba;
 				view.setUint16(boffset + 20, (rgba[4 * i + 0] * 255), true);
 				view.setUint16(boffset + 22, (rgba[4 * i + 1] * 255), true);
 				view.setUint16(boffset + 24, (rgba[4 * i + 2] * 255), true);

@@ -1,10 +1,10 @@
 
-import * as THREE from "../../libs/three.js/build/three.module.js";
+import * as THREE from "three";
 import {EventDispatcher} from "../EventDispatcher.js";
-import { XRControllerModelFactory } from '../../libs/three.js/webxr/XRControllerModelFactory.js';
-import {Line2} from "../../libs/three.js/lines/Line2.js";
-import {LineGeometry} from "../../libs/three.js/lines/LineGeometry.js";
-import {LineMaterial} from "../../libs/three.js/lines/LineMaterial.js";
+import { XRControllerModelFactory } from 'three/examples/jsm/webxr/XRControllerModelFactory.js';
+import {Line2} from "three/examples/jsm/lines/Line2.js";
+import {LineGeometry} from "three/examples/jsm/lines/LineGeometry.js";
+import {LineMaterial} from "three/examples/jsm/lines/LineMaterial.js";
 
 let fakeCam = new THREE.PerspectiveCamera();
 

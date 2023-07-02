@@ -1,5 +1,5 @@
 
-import * as THREE from "../../libs/three.js/build/three.module.js";
+import * as THREE from "three";
 import {BoxVolume} from "./Volume.js";
 import {Utils} from "../utils.js";
 import {PointSizeType} from "../defines.js";

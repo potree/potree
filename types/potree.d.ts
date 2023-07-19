@@ -198,8 +198,8 @@ export type MaterialAttributeOptionsValue = 'color' | 'rgba' | 'elevation' | 'in
 export type MaterialAttributeOptionsType = KeyValueBaseType<MaterialAttributeOptionsKey, MaterialAttributeOptionsValue>;
 export const MaterialAttributeOptions: MaterialAttributeOptionsType;
 
-export type ControlsOptionsKeys = 'EARTH' | 'FPS' | 'ORBIT';
-export type ControlsOptionsValues = 'earthControls' | 'fpControls' | 'orbitControls';
+export type ControlsOptionsKeys = 'EARTH' | 'FPS' | 'ORBIT' | 'CUSTOM';
+export type ControlsOptionsValues = 'earthControls' | 'fpControls' | 'orbitControls' | 'customControls';
 export type ControlsOptionsType = KeyValueBaseType<ControlsOptionsKeys, ControlsOptionsValues>;
 export const ControlsOptions: ControlsOptionsType;
 
@@ -342,6 +342,7 @@ export class Scene extends EventDispatcher {
 	images360: any[];
 	geopackages: any[];
 	fpControls: Controls;
+	customControls: Controls;
 	orbitControls: Controls;
 	earthControls: Controls;
 	geoControls: Controls;

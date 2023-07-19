@@ -28,6 +28,7 @@ import { NavigationCube } from "./NavigationCube.js";
 import { Compass } from "../utils/Compass.js";
 import { OrbitControls } from "../navigation/OrbitControls.js";
 import { FirstPersonControls } from "../navigation/FirstPersonControls.js";
+import { CustomControls } from "../navigation/CustomControls";
 import { EarthControls } from "../navigation/EarthControls.js";
 import { DeviceOrientationControls } from "../navigation/DeviceOrientationControls.js";
 import { VRControls } from "../navigation/VRControls.js";
@@ -305,7 +306,7 @@ export class Viewer extends EventDispatcher {
 				this.setPointBudget(1 * 1000 * 1000);
 				this.setShowBoundingBox(false);
 				this.setFreeze(false);
-				this.setControls(this.orbitControls);
+				this.setControls(this.customControls);
 				this.setBackground('gradient');
 
 				this.scaleFactor = 1;
@@ -1120,6 +1121,13 @@ export class Viewer extends EventDispatcher {
 			this.fpControls.enabled = false;
 			this.fpControls.addEventListener('start', this.disableAnnotations.bind(this));
 			this.fpControls.addEventListener('end', this.enableAnnotations.bind(this));
+		}
+
+		{ // create CUSTOM CONTROLS
+			this.customControls = new CustomControls(this);
+			this.customControls.enabled = false;
+			this.customControls.addEventListener('start', this.disableAnnotations.bind(this));
+			this.customControls.addEventListener('end', this.enableAnnotations.bind(this));
 		}
 
 		// { // create GEO CONTROLS

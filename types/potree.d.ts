@@ -99,6 +99,7 @@ export type MarkerEvent = TBaseEvent<'marker_dropped', Measure, 'measurement', M
 export class Measure extends Object3D {
 	getTotalDistance(): number;
 	events$: Observable<MarkerEvent>;
+	spheres: Mesh[];
 	get setEdgesTo(): number | null;
 	set setEdgesTo(value: number | null);
 	get showEdges(): boolean;
@@ -227,8 +228,8 @@ export class Viewer extends EventDispatcher {
 	background: BackgroundValues;
 	cameraSyncTool: CameraSyncTool;
 	classifications: { [key: string]: Classification };
-	clipMethod: number; // @ENUM A RETROUVER
-	clipTask: number; // @ENUM A RETROUVER
+	clipMethod: ClipMethodValues;
+	clipTask: ClipTaskValues;
 	clippingTool: Tool;
 	compass: any; // @TODO
 	controls: Controls;

@@ -315,6 +315,32 @@ export class Viewer extends EventDispatcher {
 	fitToScreen(): void;
 }
 
+export class View {
+	constructor();
+
+	position: Vector3;
+	yaw: number;
+	private _pitch: number;
+	get pitch(): number;
+	set pitch(angle: number);
+	radius: number;
+	maxPitch: number;
+	minPitch: number;
+	get direction(): Vector3;
+	set direction(vector: Vector3);
+	private subject: Subject<Vector3>;
+	events$: Observable<Vector3>;
+
+	clone(): View;
+	lookAt(t: Vector3);
+	getPivot(): Vector3;
+	getSide(): Vector3;
+	pan(x: number, y: number): void;
+	translate(x: number, y: number, z: number): void;
+	translateWorld(x: number, y: number, z: number): void;
+	setView(position: Vector3 | [number, number, number], target: Vector3 | [number, number, number], duration?: number, callback?: Function): void;
+}
+
 export class Scene extends EventDispatcher {
 	constructor();
 
@@ -351,7 +377,7 @@ export class Scene extends EventDispatcher {
 	inputHandler: EventDispatcher;
 	removeAllClipVolumes(): void;
 	removeVolume(volume: Volume | any): void;
-	view: any;
+	view: View;
 	directionalLight: Light;
 	addPointCloud(pointcloud: PointCloudTree): void;
 	getActiveCamera(): Camera;

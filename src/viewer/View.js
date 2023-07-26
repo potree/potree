@@ -1,4 +1,5 @@
 import * as THREE from  'three';
+import { Subject } from 'rxjs';
 
 export class View{
 	constructor () {
@@ -10,6 +11,9 @@ export class View{
 
 		this.maxPitch = Math.PI / 2;
 		this.minPitch = -Math.PI / 2;
+
+		this.subject = new Subject();
+		this.events$ = this.subject.asObservable();
 	}
 
 	clone () {
@@ -149,6 +153,7 @@ export class View{
 		if(duration === 0){
 			this.position.copy(endPosition);
 			this.lookAt(endTarget);
+			this.subject.next(endTarget);
 		}else{
 			let value = {x: 0};
 			let tween = new TWEEN.Tween(value).to({x: 1}, duration);
@@ -180,6 +185,7 @@ export class View{
 			tween.start();
 
 			tween.onComplete(() => {
+				this.subject.next(endTarget);
 				if(callback){
 					callback();
 				}

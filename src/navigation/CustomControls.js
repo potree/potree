@@ -84,9 +84,9 @@ export class CustomControls extends EventDispatcher {
 		let scroll = (e) => {
 			let speed = this.viewer.getMoveSpeed();
 
-			if (e.delta < 0) {
+			if (e.deltaY < 0) {
 				speed = speed * 0.9;
-			} else if (e.delta > 0) {
+			} else if (e.deltaY > 0) {
 				speed = speed / 0.9;
 			}
 

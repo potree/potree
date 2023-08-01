@@ -82,17 +82,8 @@ export class CustomControls extends EventDispatcher {
 		};
 
 		let scroll = (e) => {
-			let speed = this.viewer.getMoveSpeed();
-
-			if (e.delta < 0) {
-				speed = speed * 0.9;
-			} else if (e.delta > 0) {
-				speed = speed / 0.9;
-			}
-
-			speed = Math.max(speed, 0.1);
-
-			this.viewer.setMoveSpeed(speed);
+			this.viewer.setMoveSpeed(0.1);
+			this.viewer.setFOV(this.viewer.fov - e.delta);
 		};
 
 		let dblclick = (e) => {

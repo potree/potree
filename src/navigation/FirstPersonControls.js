@@ -84,9 +84,9 @@ export class FirstPersonControls extends EventDispatcher {
 		let scroll = (e) => {
 			let speed = this.viewer.getMoveSpeed();
 
-			if (e.deltaY < 0) {
+			if (e.delta < 0) {
 				speed = speed * 0.9;
-			} else if (e.deltaY > 0) {
+			} else if (e.delta > 0) {
 				speed = speed / 0.9;
 			}
 
@@ -101,7 +101,7 @@ export class FirstPersonControls extends EventDispatcher {
 
 		this.addEventListener('drag', drag);
 		this.addEventListener('drop', drop);
-		this.addEventListener('wheel', scroll);
+		this.addEventListener('mousewheel', scroll);
 		this.addEventListener('dblclick', dblclick);
 	}
 

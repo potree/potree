@@ -142,7 +142,7 @@ export class EarthControls extends EventDispatcher {
 		};
 
 		let scroll = (e) => {
-			this.wheelDelta += e.deltaY;
+			this.wheelDelta += e.delta;
 		};
 
 		let dblclick = (e) => {
@@ -151,7 +151,7 @@ export class EarthControls extends EventDispatcher {
 
 		this.addEventListener('drag', drag);
 		this.addEventListener('drop', drop);
-		this.addEventListener('wheel', scroll);
+		this.addEventListener('mousewheel', scroll);
 		this.addEventListener('mousedown', onMouseDown);
 		this.addEventListener('mouseup', onMouseUp);
 		this.addEventListener('dblclick', dblclick);

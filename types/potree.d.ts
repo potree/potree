@@ -199,8 +199,8 @@ export type MaterialAttributeOptionsValue = 'color' | 'rgba' | 'elevation' | 'in
 export type MaterialAttributeOptionsType = KeyValueBaseType<MaterialAttributeOptionsKey, MaterialAttributeOptionsValue>;
 export const MaterialAttributeOptions: MaterialAttributeOptionsType;
 
-export type ControlsOptionsKeys = 'EARTH' | 'FPS' | 'ORBIT' | 'CUSTOM';
-export type ControlsOptionsValues = 'earthControls' | 'fpControls' | 'orbitControls' | 'customControls';
+export type ControlsOptionsKeys = 'EARTH' | 'FPS' | 'ORBIT' /* | 'CUSTOM' */;
+export type ControlsOptionsValues = 'earthControls' /* | 'fpControls' */ | 'orbitControls' | 'customControls';
 export type ControlsOptionsType = KeyValueBaseType<ControlsOptionsKeys, ControlsOptionsValues>;
 export const ControlsOptions: ControlsOptionsType;
 

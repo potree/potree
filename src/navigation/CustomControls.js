@@ -82,7 +82,6 @@ export class CustomControls extends EventDispatcher {
 		};
 
 		let scroll = (e) => {
-			this.viewer.setMoveSpeed(0.1);
 			this.viewer.setFOV(this.viewer.fov - e.delta);
 		};
 

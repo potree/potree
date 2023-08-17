@@ -118,12 +118,14 @@ export class View{
 			.add(up.multiplyScalar(z));
 
 		this.position = this.position.add(t);
+		this.subject.next(this.position);
 	}
 
 	translateWorld (x, y, z) {
 		this.position.x += x;
 		this.position.y += y;
 		this.position.z += z;
+		this.subject.next(this.position);
 	}
 
 	setView(position, target, duration = 0, callback = null){
@@ -153,7 +155,6 @@ export class View{
 		if(duration === 0){
 			this.position.copy(endPosition);
 			this.lookAt(endTarget);
-			this.subject.next(endTarget);
 		}else{
 			let value = {x: 0};
 			let tween = new TWEEN.Tween(value).to({x: 1}, duration);
@@ -185,7 +186,6 @@ export class View{
 			tween.start();
 
 			tween.onComplete(() => {
-				this.subject.next(endTarget);
 				if(callback){
 					callback();
 				}

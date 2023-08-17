@@ -8,6 +8,7 @@ import * as THREE from  'three';
 import {KeyCodes} from "../KeyCodes.js";
 import {Utils} from "../utils.js";
 import {EventDispatcher} from "../EventDispatcher.js";
+import { Subject } from 'rxjs';
 
 export class InputHandler extends EventDispatcher {
 	constructor (viewer) {
@@ -18,6 +19,9 @@ export class InputHandler extends EventDispatcher {
 		this.domElement = this.renderer.domElement;
 		this.enabled = true;
 		
+		this._subject = new Subject();
+		this.events$ = this._subject.asObservable();
+
 		this.scene = null;
 		this.interactiveScenes = [];
 		this.interactiveObjects = new Set();
@@ -88,13 +92,14 @@ export class InputHandler extends EventDispatcher {
 			this.startDragging(null);
 		}
 
-		
+		const event = {
+			type: e.type,
+			touches: e.touches,
+			changedTouches: e.changedTouches
+		};
+		this._subject.next(event);
 		for (let inputListener of this.getSortedListeners()) {
-			inputListener.dispatchEvent({
-				type: e.type,
-				touches: e.touches,
-				changedTouches: e.changedTouches
-			});
+			inputListener.dispatchEvent(event);
 		}
 	}
 
@@ -103,22 +108,25 @@ export class InputHandler extends EventDispatcher {
 
 		e.preventDefault();
 
+		const event1 = {
+			type: 'drop',
+			drag: this.drag,
+			viewer: this.viewer
+		};
+		this._subject.next(event1);
 		for (let inputListener of this.getSortedListeners()) {
-			inputListener.dispatchEvent({
-				type: 'drop',
-				drag: this.drag,
-				viewer: this.viewer
-			});
+			inputListener.dispatchEvent(event1);
 		}
 
 		this.drag = null;
 
+		const event2 = {
+			type: e.type,
+			touches: e.touches,
+			changedTouches: e.changedTouches
+		};
 		for (let inputListener of this.getSortedListeners()) {
-			inputListener.dispatchEvent({
-				type: e.type,
-				touches: e.touches,
-				changedTouches: e.changedTouches
-			});
+			inputListener.dispatchEvent(event2);
 		}
 	}
 
@@ -142,22 +150,26 @@ export class InputHandler extends EventDispatcher {
 				this.drag.end.set(x, y);
 
 				if (this.logMessages) console.log(this.constructor.name + ': drag: ');
+				const event = {
+					type: 'drag',
+					drag: this.drag,
+					viewer: this.viewer
+				};
+				this._subject.next(event);
 				for (let inputListener of this.getSortedListeners()) {
-					inputListener.dispatchEvent({
-						type: 'drag',
-						drag: this.drag,
-						viewer: this.viewer
-					});
+					inputListener.dispatchEvent(event);
 				}
 			}
 		}
 
+		const event = {
+			type: e.type,
+			touches: e.touches,
+			changedTouches: e.changedTouches
+		};
+		this._subject.next(event);
 		for (let inputListener of this.getSortedListeners()) {
-			inputListener.dispatchEvent({
-				type: e.type,
-				touches: e.touches,
-				changedTouches: e.changedTouches
-			});
+			inputListener.dispatchEvent(event);
 		}
 
 		// DEBUG CODE
@@ -177,20 +189,22 @@ export class InputHandler extends EventDispatcher {
 		if (this.logMessages) console.log(this.constructor.name + ': onKeyDown');
 
 		// DELETE
+		const event1 = {
+			type: 'delete',
+			selection: this.selection
+		};
+		this._subject.next(event);
 		if (e.keyCode === KeyCodes.DELETE && this.selection.length > 0) {
-			this.dispatchEvent({
-				type: 'delete',
-				selection: this.selection
-			});
-
+			this.dispatchEvent(event);
 			this.deselectAll();
 		}
 
-		this.dispatchEvent({
+		const event2 = {
 			type: 'keydown',
 			keyCode: e.keyCode,
 			event: e
-		});
+		};
+		this.dispatchEvent(event2);
 
 		// for(let l of this.getSortedListeners()){
 		//	l.dispatchEvent({
@@ -217,25 +231,34 @@ export class InputHandler extends EventDispatcher {
 		if (this.logMessages) console.log(this.constructor.name + ': onDoubleClick');
 
 		let consumed = false;
+		const event = {
+			type: 'dblclick',
+			mouse: this.mouse
+		};
+		event.objects = this.hoveredElements
+			.filter(hovered => hovered._listeners && hovered._listeners['dblclick'])
+			.map(hovered => hovered.object); 
+		this._subject.next(event);
+		delete event.objects;
+
 		for (let hovered of this.hoveredElements) {
 			if (hovered._listeners && hovered._listeners['dblclick']) {
-				hovered.object.dispatchEvent({
-					type: 'dblclick',
-					mouse: this.mouse,
-					object: hovered.object
-				});
+				event.object = hovered.object;
+				hovered.object.dispatchEvent(event);
 				consumed = true;
 				break;
 			}
 		}
 
 		if (!consumed) {
+			const event = {
+				type: 'dblclick',
+				mouse: this.mouse,
+				object: null
+			};
+			this._subject.next(event);
 			for (let inputListener of this.getSortedListeners()) {
-				inputListener.dispatchEvent({
-					type: 'dblclick',
-					mouse: this.mouse,
-					object: null
-				});
+				inputListener.dispatchEvent(event);
 			}
 		}
 
@@ -256,21 +279,25 @@ export class InputHandler extends EventDispatcher {
 		let consumed = false;
 		let consume = () => { return consumed = true; };
 		if (this.hoveredElements.length === 0) {
+			const event = {
+				type: 'mousedown',
+				viewer: this.viewer,
+				mouse: this.mouse
+			};
+			this._subject.next(event);
 			for (let inputListener of this.getSortedListeners()) {
-				inputListener.dispatchEvent({
-					type: 'mousedown',
-					viewer: this.viewer,
-					mouse: this.mouse
-				});
+				inputListener.dispatchEvent(event);
 			}
 		}else{
+			const event = {
+				type: 'mousedown',
+				viewer: this.viewer,
+				consume: consume
+			};
+			this._subject.next(event);
 			for(let hovered of this.hoveredElements){
 				let object = hovered.object;
-				object.dispatchEvent({
-					type: 'mousedown',
-					viewer: this.viewer,
-					consume: consume
-				});
+				object.dispatchEvent(event);
 
 				if(consumed){
 					break;
@@ -308,13 +335,15 @@ export class InputHandler extends EventDispatcher {
 		let consumed = false;
 		let consume = () => { return consumed = true; };
 		if (this.hoveredElements.length === 0) {
+			const event = {
+				type: 'mouseup',
+				viewer: this.viewer,
+				mouse: this.mouse,
+				consume: consume
+			};
+			this._subject.next(event);
 			for (let inputListener of this.getSortedListeners()) {
-				inputListener.dispatchEvent({
-					type: 'mouseup',
-					viewer: this.viewer,
-					mouse: this.mouse,
-					consume: consume
-				});
+				inputListener.dispatchEvent(event);
 
 				if(consumed){
 					break;
@@ -325,30 +354,35 @@ export class InputHandler extends EventDispatcher {
 				.map(e => e.object)
 				.find(e => (e._listeners && e._listeners['mouseup']));
 			if(hovered){
-				hovered.dispatchEvent({
+				const event = {
 					type: 'mouseup',
 					viewer: this.viewer,
 					consume: consume
-				});
+				};
+				this._subject.next(event);
+				hovered.dispatchEvent(event);
 			}
 		}
 
 		if (this.drag) {
 			if (this.drag.object) {
 				if (this.logMessages) console.log(`${this.constructor.name}: drop ${this.drag.object.name}`);
-				this.drag.object.dispatchEvent({
+				const event = {
 					type: 'drop',
 					drag: this.drag,
 					viewer: this.viewer
-
-				});
+				};
+				this._subject.next(event);
+				this.drag.object.dispatchEvent(event);
 			} else {
+				const event = {
+					type: 'drop',
+					drag: this.drag,
+					viewer: this.viewer
+				};
+				this._subject.next(event);
 				for (let inputListener of this.getSortedListeners()) {
-					inputListener.dispatchEvent({
-						type: 'drop',
-						drag: this.drag,
-						viewer: this.viewer
-					});
+					inputListener.dispatchEvent(event);
 				}
 			}
 
@@ -356,11 +390,13 @@ export class InputHandler extends EventDispatcher {
 			let clicked = this.hoveredElements.map(h => h.object).find(v => v === this.drag.object) !== undefined;
 			if(clicked){
 				if (this.logMessages) console.log(`${this.constructor.name}: click ${this.drag.object.name}`);
-				this.drag.object.dispatchEvent({
+				const event = {
 					type: 'click',
 					viewer: this.viewer,
 					consume: consume,
-				});
+				};
+				this._subject.next(event);
+				this.drag.object.dispatchEvent(event);
 			}
 
 			this.drag = null;
@@ -417,22 +453,26 @@ export class InputHandler extends EventDispatcher {
 
 			if (this.drag.object) {
 				if (this.logMessages) console.log(this.constructor.name + ': drag: ' + this.drag.object.name);
-				this.drag.object.dispatchEvent({
+				const event = {
 					type: 'drag',
 					drag: this.drag,
 					viewer: this.viewer
-				});
+				};
+				this._subject.next(event);
+				this.drag.object.dispatchEvent(event);
 			} else {
 				if (this.logMessages) console.log(this.constructor.name + ': drag: ');
 
 				let dragConsumed = false;
+				const event = {
+					type: 'drag',
+					drag: this.drag,
+					viewer: this.viewer,
+					consume: () => {dragConsumed = true;}
+				};
+				this._subject.next(event);
 				for (let inputListener of this.getSortedListeners()) {
-					inputListener.dispatchEvent({
-						type: 'drag',
-						drag: this.drag,
-						viewer: this.viewer,
-						consume: () => {dragConsumed = true;}
-					});
+					inputListener.dispatchEvent(event);
 
 					if(dragConsumed){
 						break;
@@ -446,17 +486,21 @@ export class InputHandler extends EventDispatcher {
 			if(curr !== prev){
 				if(curr){
 					if (this.logMessages) console.log(`${this.constructor.name}: mouseover: ${curr.name}`);
-					curr.dispatchEvent({
+					const event = {
 						type: 'mouseover',
-						object: curr,
-					});
+						object: curr
+					};
+					this._subject.next(event);
+					curr.dispatchEvent(event);
 				}
 				if(prev){
 					if (this.logMessages) console.log(`${this.constructor.name}: mouseleave: ${prev.name}`);
-					prev.dispatchEvent({
+					const event = {
 						type: 'mouseleave',
-						object: prev,
-					});
+						object: prev
+					};
+					this._subject.next(event);
+					prev.dispatchEvent(event);
 				}
 			}
 
@@ -466,10 +510,12 @@ export class InputHandler extends EventDispatcher {
 					.find(e => (e._listeners && e._listeners['mousemove']));
 				
 				if(object){
-					object.dispatchEvent({
+					const event = {
 						type: 'mousemove',
 						object: object
-					});
+					};
+					this._subject.next(event);
+					object.dispatchEvent(event);
 				}
 			}
 
@@ -505,18 +551,22 @@ export class InputHandler extends EventDispatcher {
 		// this.wheelDelta += Math.sign(delta);
 
 		if (this.hoveredElement) {
-			this.hoveredElement.object.dispatchEvent({
+			const event = {
 				type: 'mousewheel',
 				delta: ndelta,
 				object: this.hoveredElement.object
-			});
+			};
+			this._subject.next(event);
+			this.hoveredElement.object.dispatchEvent(event);
 		} else {
+			const event = {
+				type: 'mousewheel',
+				delta: ndelta,
+				object: null
+			};
+			this._subject.next(event);
 			for (let inputListener of this.getSortedListeners()) {
-				inputListener.dispatchEvent({
-					type: 'mousewheel',
-					delta: ndelta,
-					object: null
-				});
+				inputListener.dispatchEvent(event);
 			}
 		}
 	}
@@ -556,21 +606,27 @@ export class InputHandler extends EventDispatcher {
 
 		if (index === -1) {
 			this.selection.push(object);
-			object.dispatchEvent({
+			const event = {
 				type: 'select'
-			});
+			};
+			this._subject.next(event);
+			object.dispatchEvent(event);
 		} else {
 			this.selection.splice(index, 1);
-			object.dispatchEvent({
+			const event = {
 				type: 'deselect'
-			});
+			};
+			this._subject.next(event);
+			object.dispatchEvent(event);
 		}
 
-		this.dispatchEvent({
+		const event = {
 			type: 'selection_changed',
 			oldSelection: oldSelection,
 			selection: this.selection
-		});
+		};
+		this._subject.next(event);
+		this.dispatchEvent(event);
 	}
 
 	deselect(object){
@@ -581,34 +637,44 @@ export class InputHandler extends EventDispatcher {
 
 		if(index >= 0){
 			this.selection.splice(index, 1);
-			object.dispatchEvent({
+			const event1 = {
 				type: 'deselect'
-			});
+			};
+			this._subject.next(event1);
+			object.dispatchEvent(event1);
 
-			this.dispatchEvent({
+			const event2 = {
 				type: 'selection_changed',
 				oldSelection: oldSelection,
 				selection: this.selection
-			});
+			};
+			this._subject.next(event2);
+			this.dispatchEvent(event2);
 		}
 	}
 
 	deselectAll () {
+		const event = {
+			type: 'deselect'
+		};
+		event.objects = this.selection;
+		this._subject.next(event);
+		delete event.objects;
 		for (let object of this.selection) {
-			object.dispatchEvent({
-				type: 'deselect'
-			});
+			object.dispatchEvent(event);
 		}
 
 		let oldSelection = this.selection;
 
 		if (this.selection.length > 0) {
 			this.selection = [];
-			this.dispatchEvent({
+			const event = {
 				type: 'selection_changed',
 				oldSelection: oldSelection,
 				selection: this.selection
-			});
+			};
+			this._subject.next(event);
+			this.dispatchEvent(event);
 		}
 	}
 

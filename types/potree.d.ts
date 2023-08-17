@@ -62,6 +62,7 @@ export class EventDispatcher {
 
 export class InputHandler extends EventDispatcher {
 	constructor();
+	events$: Observable<any>;
 	startDragging(m: Object3D): void;
 	getHoveredElements(): Array<Intersection>;
 	interactiveScenes: THREEScene[];
@@ -151,6 +152,10 @@ export class Controls extends EventDispatcher {
 	tweens: any[];
 }
 
+export class CustomControls extends Controls {}
+export class OrbitControls extends Controls {}
+export class EarthControls extends Controls {}
+
 export type KeyValueBaseType<K extends string | number | symbol, V> = { [key in K]: V };
 
 export type ClipTaskKeys = 'NONE' | 'HIGHLIGHT' | 'SHOW_INSIDE' | 'SHOW_OUTSIDE';
@@ -233,10 +238,10 @@ export class Viewer extends EventDispatcher {
 	clippingTool: Tool;
 	compass: any; // @TODO
 	controls: Controls;
-	customControls: Controls;
+	customControls: CustomControls;
 	description: string
 	deviceControls: Controls;
-	earthControls: Controls;
+	earthControls: EarthControls;
 	edlOpacity: number;
 	edlRadius: number;
 	edlRenderer: any; // @TODO
@@ -273,7 +278,7 @@ export class Viewer extends EventDispatcher {
 	navigationCube: Object3D;
 	onAnnotationAdded: Function;
 	onVrListeners: any[];
-	orbitControls: Controls;
+	orbitControls: OrbitControls;
 	overlay: Scene;
 	overlayCamera: OrthographicCamera;
 	pRenderer: Renderer;

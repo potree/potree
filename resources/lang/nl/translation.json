@@ -1,0 +1,64 @@
+{
+    "tb": {
+        "navigation_opt": "Navigatie",
+        "rendering_opt": "Weergave",
+        "tools_opt": "Hulpmiddelen",
+        "measurments_opt": "Metingen",
+        "materials_opt": "Materialen",
+        "scene_opt": "Scène",
+        "classification_filter_opt": "Classificatiefilter",
+        "parameters_opt": "Andere instellingen",
+        "about_opt": "Info"
+    },
+    "tt": {
+        "angle_measurement": "Hoekmeting",
+        "distance_measurement": "Afstandsmeting",
+        "area_measurement": "Oppervlaktemeting",
+        "volume_measurement": "Volumemeting",
+        "height_profile": "Hoogteprofiel",
+        "clip_volume": "Volume uitsnijden",
+        "remove_all_measurement": "Alle metingen verwijderen",
+        "left_view_control": "Linkerzicht",
+        "right_view_control": "Rechterzicht",
+        "front_view_control": "Vooraanzicht",
+        "back_view_control": "Achteraanzicht",
+        "top_view_control": "Bovenaanzicht",
+        "bottom_view_control": "Onderaanzicht",
+        "focus_control": "Volledig overzicht",
+        "orbit_control": "Baanelementbediening",
+        "flight_control": "Vliegbediening",
+        "heli_control": "Helikopterbediening",
+        "earth_control": "Aardbediening"
+    },
+    "appearance": {
+        "nb_max_pts": "Puntenbudget",
+        "point_size": "Puntgrootte",
+        "point_opacity": "Opaciteit van punten",
+        "field_view": "Gezichtsveld",
+        "point_size_type": "Puntgroottebepaling",
+        "point_material": "Materialen",
+        "elevation_range": "Hoogtebereik",
+        "extra_range": "Schaalbereik",
+        "point_quality": "Kwaliteit van punten",
+        "edl_radius": "Straal EDL",
+        "edl_strength": "Sterkte EDL",
+        "edl_opacity": "Opaciteit EDL",
+        "edl_enable": "Inschakelen",
+        "min_node_size": "Minimale knoopgrootte",
+        "clip_mode": "Uitsnijdingsmodus",
+        "move_speed": "Snelheid",
+        "skybox": "Lucht",
+        "bottom_lock": "Boven de grond houden",
+        "box": "Doos",
+        "freeze": "Weergave vergrendelen",
+        "language": "Taal"
+    },
+    "profile": {
+        "nb_points": "Aantal punten",
+        "title": "Hoogteprofiel",
+        "save": "Opslaan"
+    },
+    "settings": {
+        "language": "Taal"
+    }
+}

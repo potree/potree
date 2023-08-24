@@ -58,12 +58,12 @@ export class OrbitControls extends EventDispatcher{
 				y: e.drag.lastDrag.y / this.renderer.domElement.clientHeight
 			};
 
-			if (e.drag.mouse === MOUSE.LEFT) {
+			if (e.drag.mouse === MOUSE.RIGHT) {
 				this.yawDelta += ndrag.x * this.rotationSpeed;
 				this.pitchDelta += ndrag.y * this.rotationSpeed;
 
 				this.stopTweens();
-			} else if (e.drag.mouse === MOUSE.RIGHT) {
+			} else if (e.drag.mouse === MOUSE.LEFT) {
 				this.panDelta.x += ndrag.x;
 				this.panDelta.y += ndrag.y;
 

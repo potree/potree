@@ -41,6 +41,7 @@ export class LasLazLoader {
 		}
 
 		let xhr = XHRFactory.createXMLHttpRequest();
+		xhr.withCredentials = XHRFactory.config.withCredentials;
 		xhr.open('GET', url, true);
 		xhr.responseType = 'arraybuffer';
 		xhr.overrideMimeType('text/plain; charset=x-user-defined');

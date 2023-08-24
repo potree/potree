@@ -74,6 +74,7 @@ Potree.PointCloudArena4DGeometryNode = class PointCloudArena4DGeometryNode{
 
 		let url = this.pcoGeometry.url + '?node=' + this.number;
 		let xhr = Potree.XHRFactory.createXMLHttpRequest();
+		xhr.withCredentials = Potree.XHRFactory.config.withCredentials;
 		xhr.open('GET', url, true);
 		xhr.responseType = 'arraybuffer';
 
@@ -208,6 +209,7 @@ Potree.PointCloudArena4DGeometry = class PointCloudArena4DGeometry extends Event
 
 	static load(url, callback) {
 		let xhr = Potree.XHRFactory.createXMLHttpRequest();
+		xhr.withCredentials = XHRFactory.config.withCredentials;
 		xhr.open('GET', url + '?info', true);
 
 		xhr.onreadystatechange = function () {
@@ -258,6 +260,7 @@ Potree.PointCloudArena4DGeometry = class PointCloudArena4DGeometry extends Event
 	loadHierarchy(){
 		let url = this.url + '?tree';
 		let xhr = Potree.XHRFactory.createXMLHttpRequest();
+		xhr.withCredentials = XHRFactory.config.withCredentials;
 		xhr.open('GET', url, true);
 		xhr.responseType = 'arraybuffer';
 

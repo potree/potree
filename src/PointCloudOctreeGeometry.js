@@ -223,6 +223,7 @@ export class PointCloudOctreeGeometryNode extends PointCloudTreeNode{
 
 			let xhr = XHRFactory.createXMLHttpRequest();
 			xhr.open('GET', hurl, true);
+			xhr.withCredentials = XHRFactory.config.withCredentials;
 			xhr.responseType = 'arraybuffer';
 			xhr.overrideMimeType('text/plain; charset=x-user-defined');
 			xhr.onreadystatechange = () => {

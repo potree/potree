@@ -123,6 +123,7 @@ export class POCLoader {
 			let pco = new PointCloudOctreeGeometry();
 			pco.url = url;
 			let xhr = XHRFactory.createXMLHttpRequest();
+			xhr.withCredentials = XHRFactory.config.withCredentials;
 			xhr.open('GET', url, true);
 
 			xhr.onreadystatechange = function () {

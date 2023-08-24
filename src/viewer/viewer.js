@@ -31,7 +31,7 @@ import {DeviceOrientationControls} from "../navigation/DeviceOrientationControls
 import {VRControls} from "../navigation/VRControls.js";
 import { EventDispatcher } from "../EventDispatcher.js";
 import { ClassificationScheme } from "../materials/ClassificationScheme.js";
-import { VRButton } from 'three/examples/jsm/webxr/VRButton.js';
+// import { VRButton } from 'three/examples/jsm/webxr/VRButton';
 
 import JSON5 from "../../libs/json5-2.1.3/json5.mjs";
 
@@ -1231,39 +1231,39 @@ export class Viewer extends EventDispatcher{
 			elButtons.append(imgMapToggle);
 
 
-			VRButton.createButton(this.renderer).then(vrButton => {
+			// VRButton.createButton(this.renderer).then(vrButton => {
 
-				if(vrButton == null){
-					console.log("VR not supported or active.");
+			// 	if(vrButton == null){
+			// 		console.log("VR not supported or active.");
 
-					return;
-				}
+			// 		return;
+			// 	}
 
-				this.renderer.xr.enabled = true;
+			// 	this.renderer.xr.enabled = true;
 
-				let element = vrButton.element;
+			// 	let element = vrButton.element;
 
-				element.style.position = "";
-				element.style.bottom = "";
-				element.style.left = "";
-				element.style.margin = "4px";
-				element.style.fontSize = "100%";
-				element.style.width = "2.5em";
-				element.style.height = "2.5em";
-				element.style.padding = "0";
-				element.style.textShadow = "black 2px 2px 2px";
-				element.style.display = "block";
+			// 	element.style.position = "";
+			// 	element.style.bottom = "";
+			// 	element.style.left = "";
+			// 	element.style.margin = "4px";
+			// 	element.style.fontSize = "100%";
+			// 	element.style.width = "2.5em";
+			// 	element.style.height = "2.5em";
+			// 	element.style.padding = "0";
+			// 	element.style.textShadow = "black 2px 2px 2px";
+			// 	element.style.display = "block";
 
-				elButtons.append(element);
+			// 	elButtons.append(element);
 
-				vrButton.onStart(() => {
-					this.dispatchEvent({type: "vr_start"});
-				});
+			// 	vrButton.onStart(() => {
+			// 		this.dispatchEvent({type: "vr_start"});
+			// 	});
 
-				vrButton.onEnd(() => {
-					this.dispatchEvent({type: "vr_end"});
-				});
-			});
+			// 	vrButton.onEnd(() => {
+			// 		this.dispatchEvent({type: "vr_end"});
+			// 	});
+			// });
 
 			this.mapView = new MapView(this);
 			this.mapView.init();

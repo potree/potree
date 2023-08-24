@@ -30,8 +30,8 @@ export class BinaryLoader{
 		}
 
 		let xhr = XHRFactory.createXMLHttpRequest();
-		xhr.open('GET', url, true);
 		xhr.withCredentials = XHRFactory.config.withCredentials;
+		xhr.open('GET', url, true);
 		xhr.responseType = 'arraybuffer';
 		xhr.overrideMimeType('text/plain; charset=x-user-defined');
 		xhr.onreadystatechange = () => {

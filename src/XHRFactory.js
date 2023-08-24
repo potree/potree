@@ -1,7 +1,7 @@
 
 const XHRFactory = {
 	config: {
-		withCredentials: false,
+		withCredentials: true,
 		customHeaders: [
 			{ header: null, value: null }
 		]

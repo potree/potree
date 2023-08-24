@@ -15,6 +15,7 @@ const XHRFactory = {
 			this.config.customHeaders.length > 0) {
 			let baseOpen = xhr.open;
 			let customHeaders = this.config.customHeaders;
+			xhr.withCredentials = this.config.withCredentials;
 			xhr.open = function () {
 				baseOpen.apply(this, [].slice.call(arguments));
 				customHeaders.forEach(function (customHeader) {

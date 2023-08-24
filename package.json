@@ -31,5 +31,8 @@
     "through": "~2.3.4"
   },
   "author": "Markus Schütz",
-  "license": "BSD-2-CLAUSE"
+  "license": "BSD-2-CLAUSE",
+  "devDependencies": {
+    "@rollup/plugin-node-resolve": "^11.2.0"
+  }
 }

@@ -1,6 +1,6 @@
 
 
-import * as THREE from "../../libs/three.js/build/three.module.js";
+import * as THREE from "three";
 import {Version} from "../Version.js";
 import {XHRFactory} from "../XHRFactory.js";
 
@@ -31,6 +31,7 @@ export class BinaryLoader{
 
 		let xhr = XHRFactory.createXMLHttpRequest();
 		xhr.open('GET', url, true);
+		xhr.withCredentials = XHRFactory.config.withCredentials;
 		xhr.responseType = 'arraybuffer';
 		xhr.overrideMimeType('text/plain; charset=x-user-defined');
 		xhr.onreadystatechange = () => {

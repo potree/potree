@@ -53,15 +53,19 @@ function createMaterial(){
 }
 
 const planeGeometry = new THREE.PlaneGeometry(1, 1);
-const lineGeometry = new THREE.Geometry();
+const lineGeometry = new THREE.BufferGeometry();
 
-lineGeometry.vertices.push(
-	new THREE.Vector3(-0.5, -0.5, 0),
-	new THREE.Vector3( 0.5, -0.5, 0),
-	new THREE.Vector3( 0.5,  0.5, 0),
-	new THREE.Vector3(-0.5,  0.5, 0),
-	new THREE.Vector3(-0.5, -0.5, 0),
+const vertices = [];
+
+vertices.push(
+	-0.5, -0.5, 0,
+	 0.5, -0.5, 0,
+	 0.5,  0.5, 0,
+	-0.5,  0.5, 0,
+	-0.5, -0.5, 0,
 );
+
+lineGeometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
 
 export class OrientedImage{
 
@@ -246,7 +250,7 @@ export class OrientedImageLoader{
 		console.log(tEnd - tStart);
 
 		// const sp = new THREE.PlaneGeometry(1, 1);
-		// const lg = new THREE.Geometry();
+		// const lg = new THREE.BufferGeometry();
 
 		// lg.vertices.push(
 		// 	new THREE.Vector3(-0.5, -0.5, 0),

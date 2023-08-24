@@ -31,7 +31,7 @@ import {DeviceOrientationControls} from "../navigation/DeviceOrientationControls
 import {VRControls} from "../navigation/VRControls.js";
 import { EventDispatcher } from "../EventDispatcher.js";
 import { ClassificationScheme } from "../materials/ClassificationScheme.js";
-import { VRButton } from 'three/examples/jsm/extra/VRButton.js';
+import { VRButton } from 'three/examples/jsm/webxr/VRButton.js';
 
 import JSON5 from "../../libs/json5-2.1.3/json5.mjs";
 

@@ -5,6 +5,7 @@
  */
 
 import * as THREE from "three";
+import {Line2} from "three/examples/jsm/lines/Line2";
 import {KeyCodes} from "../KeyCodes.js";
 import {Utils} from "../utils.js";
 import {EventDispatcher} from "../EventDispatcher.js";
@@ -308,6 +309,10 @@ export class InputHandler extends EventDispatcher {
 		let consumed = false;
 		let consume = () => { return consumed = true; };
 		if (this.hoveredElements.length === 0) {
+			this.dispatchEvent({
+				type: 'no_measurement_selected'
+			})
+
 			for (let inputListener of this.getSortedListeners()) {
 				inputListener.dispatchEvent({
 					type: 'mouseup',
@@ -402,6 +407,38 @@ export class InputHandler extends EventDispatcher {
 		this.mouse.set(x, y);
 
 		let hoveredElements = this.getHoveredElements();
+		let intersection = this.getMeasurementElement();
+
+		let hoveredMeasurement = undefined;
+
+		// if (intersection) {
+		// 	console.log({intersection});
+		// 	hoveredMeasurement = intersection.object.parent;
+		// 	hoveredMeasurement.edges.forEach((child) => {
+		// 		if (child instanceof Line2) {
+		// 			child.material.color.addScalar(0.01);
+		// 		}
+		// 	})
+		// 	hoveredMeasurement.update();
+		// } else {
+		// 	if (hoveredMeasurement) {
+		// 		hoveredMeasurement.edges.forEach((child) => {
+
+		// 		})
+		// 	}
+		// }
+
+		if (hoveredElements.length === 2) {
+			if (hoveredElements[hoveredElements.length - 1].object.name === 'right_tick') {
+				this.dispatchEvent({
+					type: 'sphere_intersected'
+				})
+			}
+		} else {
+			this.dispatchEvent({
+				type: 'sphere_not_intersected'
+			})
+		}
 		if(hoveredElements.length > 0){
 			let names = hoveredElements.map(h => h.object.name).join(", ");
 			if (this.logMessages) console.log(`${this.constructor.name}: onMouseMove; hovered: '${names}'`);
@@ -640,6 +677,42 @@ export class InputHandler extends EventDispatcher {
 		}
 	}
 
+	getMeasurementElement() {
+		let measurementElements = this.getMeasurementElements();
+		if (measurementElements.length > 0) {
+			return measurementElements[0];
+		} else {
+			return null;
+		}
+	}
+
+	getMeasurementElements() {
+		let measurements = this.viewer.scene.measurements;
+		let interactables = [];
+
+		measurements.forEach((measure) => {
+			measure.edges.forEach((edge) => {
+				if (edge instanceof Line2) {
+					// if (measure instanceof THREE.Sprite || measure instanceof Line2) {
+					interactables.push(edge);
+				}
+			})
+		});
+	
+
+		let camera = this.scene.getActiveCamera();
+		let ray = Utils.mouseToRay(this.mouse, camera, this.domElement.clientWidth, this.domElement.clientHeight);
+		
+		let raycaster = new THREE.Raycaster();
+		raycaster.ray.set(ray.origin, ray.direction);
+		raycaster.params.Line.threshold = 0.2;
+		raycaster.camera = camera;
+
+		let intersections = raycaster.intersectObjects(interactables.filter(o => o.visible), false);
+		return intersections;
+
+	}
+
 	getHoveredElement () {
 		let hoveredElements = this.getHoveredElements();
 		if (hoveredElements.length > 0) {
@@ -674,6 +747,7 @@ export class InputHandler extends EventDispatcher {
 		let raycaster = new THREE.Raycaster();
 		raycaster.ray.set(ray.origin, ray.direction);
 		raycaster.params.Line.threshold = 0.2;
+		raycaster.camera = camera;
 
 		let intersections = raycaster.intersectObjects(interactables.filter(o => o.visible), false);
 

@@ -7,7 +7,7 @@ import {PolygonClipVolume} from "../utils/PolygonClipVolume.js"
 import {PropertiesPanel} from "./PropertyPanels/PropertiesPanel.js"
 import {PointCloudTree} from "../PointCloudTree.js"
 import {Profile} from "../utils/Profile.js"
-import {Measure} from "../utils/Measure.js"
+import {Measure, MeasureTypes} from "../utils/Measure.js"
 import {Annotation} from "../Annotation.js"
 import {CameraMode, ClipTask, ClipMethod} from "../defines.js"
 import {ScreenBoxSelectTool} from "../utils/ScreenBoxSelectTool.js"
@@ -67,9 +67,9 @@ export class Sidebar{
 		elToolbar.append(this.createToolIcon(
 			Potree.resourcePath + '/icons/angle.png',
 			'[title]tt.angle_measurement',
-			() => {
+			async () => {
 				$('#menu_measurements').next().slideDown();
-				let measurement = this.measuringTool.startInsertion({
+				let measurement = await this.measuringTool.startInsertion({
 					showDistances: false,
 					showAngles: true,
 					showArea: false,
@@ -88,9 +88,9 @@ export class Sidebar{
 		elToolbar.append(this.createToolIcon(
 			Potree.resourcePath + '/icons/point.svg',
 			'[title]tt.point_measurement',
-			() => {
+			async () => {
 				$('#menu_measurements').next().slideDown();
-				let measurement = this.measuringTool.startInsertion({
+				let measurement = await this.measuringTool.startInsertion({
 					showDistances: false,
 					showAngles: false,
 					showCoordinates: true,
@@ -110,14 +110,14 @@ export class Sidebar{
 		elToolbar.append(this.createToolIcon(
 			Potree.resourcePath + '/icons/distance.svg',
 			'[title]tt.distance_measurement',
-			() => {
+			async () => {
 				$('#menu_measurements').next().slideDown();
-				let measurement = this.measuringTool.startInsertion({
+				let measurement = await this.measuringTool.startInsertion({
 					showDistances: true,
 					showArea: false,
 					closed: false,
-					name: 'Distance'});
-
+					name: MeasureTypes.LENGTH});
+					
 				let measurementsRoot = $("#jstree_scene").jstree().get_json("measurements");
 				let jsonNode = measurementsRoot.children.find(child => child.data.uuid === measurement.uuid);
 				$.jstree.reference(jsonNode.id).deselect_all();
@@ -129,15 +129,15 @@ export class Sidebar{
 		elToolbar.append(this.createToolIcon(
 			Potree.resourcePath + '/icons/height.svg',
 			'[title]tt.height_measurement',
-			() => {
+			async () => {
 				$('#menu_measurements').next().slideDown();
-				let measurement = this.measuringTool.startInsertion({
+				let measurement = await this.measuringTool.startInsertion({
 					showDistances: false,
 					showHeight: true,
 					showArea: false,
 					closed: false,
 					maxMarkers: 2,
-					name: 'Height'});
+					name: MeasureTypes.P2P_TRIANGLE});
 
 				let measurementsRoot = $("#jstree_scene").jstree().get_json("measurements");
 				let jsonNode = measurementsRoot.children.find(child => child.data.uuid === measurement.uuid);
@@ -150,9 +150,9 @@ export class Sidebar{
 		elToolbar.append(this.createToolIcon(
 			Potree.resourcePath + '/icons/circle.svg',
 			'[title]tt.circle_measurement',
-			() => {
+			async () => {
 				$('#menu_measurements').next().slideDown();
-				let measurement = this.measuringTool.startInsertion({
+				let measurement = await this.measuringTool.startInsertion({
 					showDistances: false,
 					showHeight: false,
 					showArea: false,
@@ -173,9 +173,9 @@ export class Sidebar{
 		elToolbar.append(this.createToolIcon(
 			Potree.resourcePath + '/icons/azimuth.svg',
 			'Azimuth',
-			() => {
+			async () => {
 				$('#menu_measurements').next().slideDown();
-				let measurement = this.measuringTool.startInsertion({
+				let measurement = await this.measuringTool.startInsertion({
 					showDistances: false,
 					showHeight: false,
 					showArea: false,
@@ -197,13 +197,13 @@ export class Sidebar{
 		elToolbar.append(this.createToolIcon(
 			Potree.resourcePath + '/icons/area.svg',
 			'[title]tt.area_measurement',
-			() => {
+			async () => {
 				$('#menu_measurements').next().slideDown();
-				let measurement = this.measuringTool.startInsertion({
+				let measurement = await this.measuringTool.startInsertion({
 					showDistances: true,
 					showArea: true,
 					closed: true,
-					name: 'Area'});
+					name: MeasureTypes.THREE_AREA});
 
 				let measurementsRoot = $("#jstree_scene").jstree().get_json("measurements");
 				let jsonNode = measurementsRoot.children.find(child => child.data.uuid === measurement.uuid);

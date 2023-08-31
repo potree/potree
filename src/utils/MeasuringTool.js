@@ -1,6 +1,6 @@
 
 import * as THREE from "three";
-import {Measure} from "./Measure.js";
+import {Measure, MeasureTypes, loadAllTexture} from "./Measure.js";
 import {Utils} from "../utils.js";
 import {CameraMode} from "../defines.js";
 import { EventDispatcher } from "../EventDispatcher.js";
@@ -138,6 +138,7 @@ export class MeasuringTool extends EventDispatcher{
 		this.scene.name = 'scene_measurement';
 		this.light = new THREE.PointLight(0xffffff, 1.0);
 		this.scene.add(this.light);
+		this.sphereIntersected = false;
 
 		this.viewer.inputHandler.registerInteractiveScene(this.scene);
 
@@ -152,8 +153,19 @@ export class MeasuringTool extends EventDispatcher{
 		viewer.addEventListener("render.pass.perspective_overlay", this.render.bind(this));
 		viewer.addEventListener("scene_changed", this.onSceneChange.bind(this));
 
+		this.viewer.inputHandler.addEventListener('sphere_intersected', this.onSphereIntersected.bind(this));
+		this.viewer.inputHandler.addEventListener('sphere_not_intersected', this.onSphereNotIntersected.bind(this));
+		this.viewer.inputHandler.addEventListener('no_measurement_selected', this.revertSphereAndLines.bind(this))
+
 		viewer.scene.addEventListener('measurement_added', this.onAdd);
 		viewer.scene.addEventListener('measurement_removed', this.onRemove);
+	}
+
+	onSphereIntersected() {
+		this.sphereIntersected = true;
+	}
+	onSphereNotIntersected() {
+		this.sphereIntersected = false;
 	}
 
 	onSceneChange(e){
@@ -166,80 +178,150 @@ export class MeasuringTool extends EventDispatcher{
 		e.scene.addEventListener('measurement_removed', this.onRemove);
 	}
 
-	startInsertion (args = {}) {
+	revertSphereAndLines() {
+		const measurements = this.viewer.scene.measurements;
+
+		for (const currentMeasurement of measurements) {
+		  currentMeasurement.removeAddMarker();
+		}
+		for (const measure of measurements) {
+		  measure.showDistances = false;
+		  for (const sphere of measure.spheres) {
+			sphere.visible = false;
+		  }
+		  if (measure.baseLabel && measure.heightLabel) {
+			measure.baseLabel.visible = false;
+			measure.heightLabel.visible = false;
+		  }
+		}
+	  }
+
+	async startInsertion (args = {}) {
 		let domElement = this.viewer.renderer.domElement;
+		let camera = this.viewer.scene.getActiveCamera();
 
 		let measure = new Measure();
 
-		this.dispatchEvent({
-			type: 'start_inserting_measurement',
-			measure: measure
-		});
+		const textures = await measure.loadAllTexture();
+		measure.setTextures = textures;
 
-		const pick = (defaul, alternative) => {
-			if(defaul != null){
-				return defaul;
-			}else{
-				return alternative;
-			}
-		};
+			this.dispatchEvent({
+				type: 'start_inserting_measurement',
+				measure: measure
+			});
+	
+			const pick = (defaul, alternative) => {
+				if(defaul != null){
+					return defaul;
+				}else{
+					return alternative;
+				}
+			};
+	
+			measure.showDistances = (args.showDistances === null) ? true : args.showDistances;
+	
+			measure.showArea = pick(args.showArea, false);
+			measure.showAngles = pick(args.showAngles, false);
+			measure.showCoordinates = pick(args.showCoordinates, false);
+			measure.showHeight = pick(args.showHeight, false);
+			measure.showCircle = pick(args.showCircle, false);
+			measure.showAzimuth = pick(args.showAzimuth, false);
+			measure.showEdges = pick(args.showEdges, true);
+			measure.closed = pick(args.closed, false);
+			measure.maxMarkers = pick(args.maxMarkers, Infinity);
+	
+			measure.name = args.name || 'Measurement';
+	
+			this.scene.add(measure);
+	
+			let cancel = {
+				removeLastMarker: measure.maxMarkers > 3,
+				callback: null,
+				endMeasurement: false,
+			};
+	
+			let insertionCallback = (e) => {
+				if (e.button === THREE.MOUSE.LEFT) {
+					measure.addMarker(measure.points[measure.points.length - 1].position.clone());
+	
+					if (measure.points.length >= measure.maxMarkers) {
+						cancel.callback();
+					}
 
-		measure.showDistances = (args.showDistances === null) ? true : args.showDistances;
+					measure.spheres.map(v => {
+						v.visible = true;
+						v.material = measure.createSpriteMaterial();
+						v.name = '';
+						return v;
+					  });
 
-		measure.showArea = pick(args.showArea, false);
-		measure.showAngles = pick(args.showAngles, false);
-		measure.showCoordinates = pick(args.showCoordinates, false);
-		measure.showHeight = pick(args.showHeight, false);
-		measure.showCircle = pick(args.showCircle, false);
-		measure.showAzimuth = pick(args.showAzimuth, false);
-		measure.showEdges = pick(args.showEdges, true);
-		measure.closed = pick(args.closed, false);
-		measure.maxMarkers = pick(args.maxMarkers, Infinity);
+					  this.viewer.inputHandler.startDragging(
+						measure.spheres[measure.spheres.length - 1]);
 
-		measure.name = args.name || 'Measurement';
+					if (measure.spheres.length > 2) {
+						const dragSphere = measure.spheres[measure.spheres.length - 2];
+						// const lastSphere = measure.spheres[measure.spheres.length - 1];
 
-		this.scene.add(measure);
+						dragSphere.material.map = textures.tickNodeTexture;
+						dragSphere.name = 'right_tick';
+						dragSphere.material.needsUpdate = true;
 
-		let cancel = {
-			removeLastMarker: measure.maxMarkers > 3,
-			callback: null
-		};
-
-		let insertionCallback = (e) => {
-			if (e.button === THREE.MOUSE.LEFT) {
-				measure.addMarker(measure.points[measure.points.length - 1].position.clone());
-
-				if (measure.points.length >= measure.maxMarkers) {
-					cancel.callback();
+						// if lastsphere and dragshere are on the same position call cancel.callback()
+						if (this.sphereIntersected ===  true) {
+							cancel.endMeasurement = true;
+							cancel.removeLastMarker = false;
+							cancel.callback();
+						}
+						
+					}
+	
+					
+				// } else if (e.button === THREE.MOUSE.RIGHT) {
+				// 	cancel.callback();
+				}
+			};
+	
+			cancel.callback = e => {
+				if (cancel.removeLastMarker) {
+					measure.removeMarker(measure.points.length - 1);
 				}
 
-				this.viewer.inputHandler.startDragging(
-					measure.spheres[measure.spheres.length - 1]);
-			} else if (e.button === THREE.MOUSE.RIGHT) {
-				cancel.callback();
+				if (cancel.endMeasurement) {
+					measure.removeMarker(measure.points.length - 1);
+					measure.endMeasurement(measure.points.length - 1);
+					measure.spheres[measure.spheres.length - 1].material = measure.createSpriteMaterial();
+					this.dispatchEvent({
+						type: 'end_measurement_insertion',
+						measurement: measure
+					})
+
+					if (measure.name !== MeasureTypes.P2P_TRIANGLE) {
+						const allPositions = measure.createPositions(measure.spheres);
+						allPositions.map((pos, index) => {
+							measure.updateAddMarker(pos.points, pos.index + index + 1, camera);
+						})
+					}
+					// measure.revertSphereAndLines([measure]);
+				}
+
+				this.viewer.inputHandler.removeEventListener('sphere_intersected', this.onSphereIntersected.bind(this));
+				this.viewer.inputHandler.removeEventListener('sphere_not_intersected', this.onSphereNotIntersected.bind(this))
+				domElement.removeEventListener('mouseup', insertionCallback, false);
+				this.viewer.removeEventListener('cancel_insertions', cancel.callback);
+			};
+	
+			if (measure.maxMarkers > 1) {
+				this.viewer.addEventListener('cancel_insertions', cancel.callback);
+				domElement.addEventListener('mouseup', insertionCallback, false);
 			}
-		};
+	
+			measure.addMarker(new THREE.Vector3(0, 0, 0));
+			this.viewer.inputHandler.startDragging(
+				measure.spheres[measure.spheres.length - 1]);
+	
+			this.viewer.scene.addMeasurement(measure);
+			return measure;
 
-		cancel.callback = e => {
-			if (cancel.removeLastMarker) {
-				measure.removeMarker(measure.points.length - 1);
-			}
-			domElement.removeEventListener('mouseup', insertionCallback, false);
-			this.viewer.removeEventListener('cancel_insertions', cancel.callback);
-		};
-
-		if (measure.maxMarkers > 1) {
-			this.viewer.addEventListener('cancel_insertions', cancel.callback);
-			domElement.addEventListener('mouseup', insertionCallback, false);
-		}
-
-		measure.addMarker(new THREE.Vector3(0, 0, 0));
-		this.viewer.inputHandler.startDragging(
-			measure.spheres[measure.spheres.length - 1]);
-
-		this.viewer.scene.addMeasurement(measure);
-
-		return measure;
 	}
 	
 	update(){
@@ -270,7 +352,7 @@ export class MeasuringTool extends EventDispatcher{
 			}
 
 			// labels
-			let labels = measure.edgeLabels.concat(measure.angleLabels);
+			let labels = measure.edgeLabels.concat(measure.angleLabels).concat(measure.baseLabel);
 			for(let label of labels){
 				let distance = camera.position.distanceTo(label.getWorldPosition(new THREE.Vector3()));
 				let pr = Utils.projectedRadius(1, camera, distance, clientWidth, clientHeight);

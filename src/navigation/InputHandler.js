@@ -31,6 +31,7 @@ export class InputHandler extends EventDispatcher {
 		this.selection = [];
 
 		this.hoveredElements = [];
+		this.hoveredMeasurement = undefined;
 		this.pressedKeys = {};
 
 		this.wheelDelta = 0;
@@ -305,6 +306,14 @@ export class InputHandler extends EventDispatcher {
 
 		let noMovement = this.getNormalizedDrag().length() === 0;
 
+		// if (this.hoveredMeasurement && this.hoveredElements) {
+		// 	// console.log({hover: this.hoveredMeasurement});
+		// 	this.hoveredMeasurement.updateSphereVisibility(this.scene.getActiveCamera(), false);
+		// } else {
+		// 	// console.log({hover: this.hoveredMeasurement});
+		// 	this.viewer.measuringTool.revertSphereAndLines()
+		// }
+
 		
 		let consumed = false;
 		let consume = () => { return consumed = true; };
@@ -341,6 +350,9 @@ export class InputHandler extends EventDispatcher {
 		if (this.drag) {
 			if (this.drag.object) {
 				if (this.logMessages) console.log(`${this.constructor.name}: drop ${this.drag.object.name}`);
+				// console.log(`${this.constructor.name}: drop ${this.drag.object.name}`);
+				// const parent_measurement = this.drag.object.parent;
+				// console.log({parent_measurement});
 				this.drag.object.dispatchEvent({
 					type: 'drop',
 					drag: this.drag,
@@ -409,24 +421,32 @@ export class InputHandler extends EventDispatcher {
 		let hoveredElements = this.getHoveredElements();
 		let intersection = this.getMeasurementElement();
 
-		let hoveredMeasurement = undefined;
 
-		// if (intersection) {
-		// 	console.log({intersection});
-		// 	hoveredMeasurement = intersection.object.parent;
-		// 	hoveredMeasurement.edges.forEach((child) => {
-		// 		if (child instanceof Line2) {
-		// 			child.material.color.addScalar(0.01);
-		// 		}
-		// 	})
-		// 	hoveredMeasurement.update();
-		// } else {
-		// 	if (hoveredMeasurement) {
-		// 		hoveredMeasurement.edges.forEach((child) => {
-
-		// 		})
-		// 	}
-		// }
+		if (intersection) {
+			this.hoveredMeasurement = intersection.object.parent;
+			// console.log({hoveredMeasurement});
+			this.hoveredMeasurement.userData.originalColor = this.hoveredMeasurement.contentColor.clone();
+			this.hoveredMeasurement._ishovering = true;
+			this.hoveredMeasurement.edges.forEach((child) => {
+				if (child instanceof Line2) {
+					// Store the original color
+					child.material.color.lerpColors(child.material.color, new THREE.Color(0xffffff), 0.1);
+				}
+			})
+			this.hoveredMeasurement.update();
+		} else {
+			if (this.hoveredMeasurement) {
+				this.hoveredMeasurement.edges.forEach((child) => {
+					if (child instanceof Line2) {
+						if (this.hoveredMeasurement.userData.originalColor) {
+							child.material.color.copy(this.hoveredMeasurement.userData.originalColor);
+						}
+					}
+				})
+				this.hoveredMeasurement._ishovering = false;
+				this.hoveredMeasurement = undefined;
+			}
+		}
 
 		if (hoveredElements.length === 2) {
 			if (hoveredElements[hoveredElements.length - 1].object.name === 'right_tick') {

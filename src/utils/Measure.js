@@ -310,7 +310,7 @@ function createAzimuth(){
 
 export class Measure extends THREE.Object3D {
 	constructor (
-		
+		contentType
 	) {
 		super();
 
@@ -331,10 +331,11 @@ export class Measure extends THREE.Object3D {
 		this.maxMarkers = Number.MAX_SAFE_INTEGER;
 
 		this.sphereGeometry = new THREE.SphereGeometry(0.4, 10, 10);
-		this.color =  MeasurementsPalette.three_length;
+		// this.color =  contentColor;
 		this.sphereColor = new THREE.Color(0xffffff);
-		this._contentColor =  MeasurementsPalette.three_length
+		this.contentColor =  MeasurementsPalette[contentType];
 		this.selectedSphere = undefined;
+		this._ishovering = false;
 
 		this.spheres = [];
 		this.edges = [];
@@ -383,7 +384,7 @@ export class Measure extends THREE.Object3D {
 			]);
 
 			let lineMaterial = new LineMaterial({
-				color: this.color, 
+				color: this.contentColor, 
 				linewidth: 2, 
 				resolution:  new THREE.Vector2(1000, 1000),
 			});
@@ -418,7 +419,7 @@ export class Measure extends THREE.Object3D {
 	createSphereMaterial () {
 		let sphereMaterial = new THREE.MeshLambertMaterial({
 			//shading: THREE.SmoothShading,
-			color: this.color,
+			color: this.sphereColor,
 			depthTest: false,
 			depthWrite: false}
 		);
@@ -461,6 +462,7 @@ export class Measure extends THREE.Object3D {
 					this.points[index].name = '';
 
 					this.removeAddMarker();
+
 					this.updateSphereVisibility(e.viewer.scene.getActiveCamera(), false)
 					this.update();
 					
@@ -489,6 +491,21 @@ export class Measure extends THREE.Object3D {
 
 			let drop = e => {
 				let i = this.spheres.indexOf(e.drag.object);
+
+				const parent_measurement = e.drag.object.parent;
+				if (parent_measurement && parent_measurement.userData.contentId) {
+					// console.log('already created')
+					// console.log({plusnode: this._isplusNodesAdded});
+					this.removeAddMarker();
+					// console.log({plusnode: this._isplusNodesAdded});
+					this.updateSphereVisibility(e.viewer.scene.getActiveCamera(), this.isplusNodesAdded)
+					// console.log({plusnode: this._isplusNodesAdded});
+					this.update();
+					// console.log({drop: this.points})
+				}
+				
+
+
 				if (i !== -1) {
 					this.dispatchEvent({
 						'type': 'marker_dropped',
@@ -609,6 +626,7 @@ export class Measure extends THREE.Object3D {
 			  newPosition.map((pos, index) => {
 				this.updateAddMarker(pos.points, pos.index + index + 1, camera);
 			  });
+			  this._isplusNodesAdded = true;
 			}
 		  }
 	}
@@ -712,9 +730,11 @@ export class Measure extends THREE.Object3D {
 		filterEdgeLabel.map(edgLbl => {
 		  this.remove(edgLbl);
 		});
-	
+
 		this.update();
 		this.dispatchEvent({ type: 'marker_removed', measurement: this });
+		this._isplusNodesAdded = false;
+		// console.log({removeAddmarker: this.points})
 	  }
 
 	 createPositions(currentSpheres) {
@@ -923,7 +943,9 @@ export class Measure extends THREE.Object3D {
         		let edge = filterEdges[i];
 
 				if (edge) {
-					edge.material.color = this.color;
+					if (!this._ishovering) {
+						edge.material.color = this.contentColor.clone();
+					}
 
 					edge.position.copy(point.position);
 	

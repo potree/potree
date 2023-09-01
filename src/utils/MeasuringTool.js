@@ -202,7 +202,7 @@ export class MeasuringTool extends EventDispatcher{
 		let domElement = this.viewer.renderer.domElement;
 		let camera = this.viewer.scene.getActiveCamera();
 
-		let measure = new Measure();
+		let measure = new Measure('three_length');
 
 		const textures = await measure.loadAllTexture();
 		measure.setTextures = textures;
@@ -297,13 +297,14 @@ export class MeasuringTool extends EventDispatcher{
 						type: 'end_measurement_insertion',
 						measurement: measure
 					})
+					measure.userData.contentId = THREE.Math.generateUUID();
 
-					if (measure.name !== MeasureTypes.P2P_TRIANGLE) {
-						const allPositions = measure.createPositions(measure.spheres);
-						allPositions.map((pos, index) => {
-							measure.updateAddMarker(pos.points, pos.index + index + 1, camera);
-						})
-					}
+					// if (measure.name !== MeasureTypes.P2P_TRIANGLE) {
+					// 	const allPositions = measure.createPositions(measure.spheres);
+					// 	allPositions.map((pos, index) => {
+					// 		measure.updateAddMarker(pos.points, pos.index + index + 1, camera);
+					// 	})
+					// }
 					// measure.revertSphereAndLines([measure]);
 				}
 

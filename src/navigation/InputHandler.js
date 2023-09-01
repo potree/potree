@@ -306,14 +306,6 @@ export class InputHandler extends EventDispatcher {
 
 		let noMovement = this.getNormalizedDrag().length() === 0;
 
-		// if (this.hoveredMeasurement && this.hoveredElements) {
-		// 	// console.log({hover: this.hoveredMeasurement});
-		// 	this.hoveredMeasurement.updateSphereVisibility(this.scene.getActiveCamera(), false);
-		// } else {
-		// 	// console.log({hover: this.hoveredMeasurement});
-		// 	this.viewer.measuringTool.revertSphereAndLines()
-		// }
-
 		
 		let consumed = false;
 		let consume = () => { return consumed = true; };
@@ -350,9 +342,6 @@ export class InputHandler extends EventDispatcher {
 		if (this.drag) {
 			if (this.drag.object) {
 				if (this.logMessages) console.log(`${this.constructor.name}: drop ${this.drag.object.name}`);
-				// console.log(`${this.constructor.name}: drop ${this.drag.object.name}`);
-				// const parent_measurement = this.drag.object.parent;
-				// console.log({parent_measurement});
 				this.drag.object.dispatchEvent({
 					type: 'drop',
 					drag: this.drag,
@@ -360,6 +349,12 @@ export class InputHandler extends EventDispatcher {
 
 				});
 			} else {
+				if (this.hoveredMeasurement && this.hoveredElements) {
+					this.hoveredMeasurement.updateSphereVisibility(this.scene.getActiveCamera(), false);
+				} else {
+					this.viewer.measuringTool.revertSphereAndLines()
+				}
+
 				for (let inputListener of this.getSortedListeners()) {
 					inputListener.dispatchEvent({
 						type: 'drop',
@@ -424,7 +419,6 @@ export class InputHandler extends EventDispatcher {
 
 		if (intersection) {
 			this.hoveredMeasurement = intersection.object.parent;
-			// console.log({hoveredMeasurement});
 			this.hoveredMeasurement.userData.originalColor = this.hoveredMeasurement.contentColor.clone();
 			this.hoveredMeasurement._ishovering = true;
 			this.hoveredMeasurement.edges.forEach((child) => {

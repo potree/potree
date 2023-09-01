@@ -179,7 +179,6 @@ export class MeasuringTool extends EventDispatcher{
 	}
 
 	revertSphereAndLines() {
-		console.log('revertSphereAndLines');
 		const measurements = this.viewer.scene.measurements;
 
 		for (const currentMeasurement of measurements) {
@@ -298,6 +297,8 @@ export class MeasuringTool extends EventDispatcher{
 						measurement: measure
 					})
 					measure.userData.contentId = THREE.Math.generateUUID();
+					
+					measure.updateSphereVisibility(this.viewer.scene.getActiveCamera(), false);
 
 					// if (measure.name !== MeasureTypes.P2P_TRIANGLE) {
 					// 	const allPositions = measure.createPositions(measure.spheres);

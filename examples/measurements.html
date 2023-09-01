@@ -70,7 +70,7 @@
 			
 			{ // DISTANCE MEASURE
 				let measure = new Potree.Measure('three_length');
-				console.log({measure});
+
 				measure.loadAllTexture().then((textures) => {
 					measure.setTextures = textures;
 					measure.closed = false;
@@ -78,6 +78,7 @@
 					measure.addMarker(new THREE.Vector3(589795.74, 231323.42, 746.21));
 					measure.addMarker(new THREE.Vector3(589822.50, 231315.90, 744.45));
 					measure.userData.contentId = THREE.Math.generateUUID();
+					measure.updateSphereVisibility(scene.getActiveCamera(), false);
 					
 					scene.addMeasurement(measure);
 				})

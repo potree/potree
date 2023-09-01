@@ -494,14 +494,12 @@ export class Measure extends THREE.Object3D {
 
 				const parent_measurement = e.drag.object.parent;
 				if (parent_measurement && parent_measurement.userData.contentId) {
-					// console.log('already created')
-					// console.log({plusnode: this._isplusNodesAdded});
 					this.removeAddMarker();
-					// console.log({plusnode: this._isplusNodesAdded});
+					
 					this.updateSphereVisibility(e.viewer.scene.getActiveCamera(), this.isplusNodesAdded)
-					// console.log({plusnode: this._isplusNodesAdded});
+					
 					this.update();
-					// console.log({drop: this.points})
+			
 				}
 				
 
@@ -594,8 +592,7 @@ export class Measure extends THREE.Object3D {
 
 		// let mouseover = (e) => {
 		// 	const lightenColor = this._contentColor.lerp(this._contentColor, .7);
-		// 	console.log({original: this._contentColor});
-		// 	console.log({lightenColor});
+		
 		// 	e.object.material.color.set(lightenColor);
 		// };
 		// let mouseleave = (e) => e.object.material.color.lerp(MeasurementsPalette.three_length, 1);
@@ -620,7 +617,7 @@ export class Measure extends THREE.Object3D {
 			});
 	  
 			// add spheres with plus icons nodes
-			if (!_isplusNodesAdded) {
+			if (!_isplusNodesAdded && this.name !== MeasureTypes.P2P_TRIANGLE) {
 			  const currentSpheres = this.spheres;
 			  const newPosition= this.createPositions(currentSpheres);
 			  newPosition.map((pos, index) => {
@@ -734,7 +731,6 @@ export class Measure extends THREE.Object3D {
 		this.update();
 		this.dispatchEvent({ type: 'marker_removed', measurement: this });
 		this._isplusNodesAdded = false;
-		// console.log({removeAddmarker: this.points})
 	  }
 
 	 createPositions(currentSpheres) {

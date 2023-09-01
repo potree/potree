@@ -16,7 +16,7 @@ export const MeasureTypes = {
 };
 
 
-const MeasurementsPalette = {
+export const MeasurementsPalette = {
 	'three_height' : new THREE.Color('#f66161'),
 	'three_length' : new THREE.Color('#f66161'),
 	'three_area' : new THREE.Color('#f7b500'),
@@ -59,9 +59,9 @@ function createHeightLine(){
 function createHeightLabel(){
 	const heightLabel = new TextSprite('');
 
-	heightLabel.setTextColor({r: 140, g: 250, b: 140, a: 1.0});
+	// heightLabel.setTextColor({r: 140, g: 250, b: 140, a: 1.0});
 	heightLabel.setBorderColor({r: 0, g: 0, b: 0, a: 1.0});
-	heightLabel.setBackgroundColor({r: 0, g: 0, b: 0, a: 1.0});
+	heightLabel.setBackgroundColor({r: 255, g: 255, b: 255, a: 0.9});
 	heightLabel.fontsize = 16;
 	heightLabel.material.depthTest = false;
 	heightLabel.material.opacity = 1;
@@ -73,9 +73,10 @@ function createHeightLabel(){
 function createAreaLabel(){
 	const areaLabel = new TextSprite('');
 
-	areaLabel.setTextColor({r: 140, g: 250, b: 140, a: 1.0});
+	// areaLabel.setTextColor({r: 140, g: 250, b: 140, a: 1.0});
 	areaLabel.setBorderColor({r: 0, g: 0, b: 0, a: 1.0});
-	areaLabel.setBackgroundColor({r: 0, g: 0, b: 0, a: 1.0});
+	areaLabel.setBackgroundColor({r: 255, g: 255, b: 255, a: 0.9});
+
 	areaLabel.fontsize = 16;
 	areaLabel.material.depthTest = false;
 	areaLabel.material.opacity = 1;
@@ -308,7 +309,9 @@ function createAzimuth(){
 
 
 export class Measure extends THREE.Object3D {
-	constructor () {
+	constructor (
+		
+	) {
 		super();
 
 		this.constructor.counter = (this.constructor.counter === undefined) ? 0 : this.constructor.counter + 1;
@@ -322,14 +325,15 @@ export class Measure extends THREE.Object3D {
 		this._showAngles = false;
 		this._showCircle = false;
 		this._showHeight = false;
+		this._showHeightLabel = false;
 		this._showEdges = true;
 		this._showAzimuth = false;
 		this.maxMarkers = Number.MAX_SAFE_INTEGER;
 
 		this.sphereGeometry = new THREE.SphereGeometry(0.4, 10, 10);
-		this.color = MeasurementsPalette.three_length;
+		this.color =  MeasurementsPalette.three_length;
 		this.sphereColor = new THREE.Color(0xffffff);
-		this._contentColor = MeasurementsPalette.three_length
+		this._contentColor =  MeasurementsPalette.three_length
 		this.selectedSphere = undefined;
 
 		this.spheres = [];
@@ -989,8 +993,8 @@ export class Measure extends THREE.Object3D {
 		{ // update height stuff
 			let heightEdge = this.heightEdge;
 			heightEdge.visible = this.showHeight;
-			this.heightLabel.visible = this.showHeight;
-			this.baseLabel.visible = this.showHeight;
+			this.heightLabel.visible = this.showHeightLabel;
+			this.baseLabel.visible = this.showHeightLabel;
 
 			if (this.showHeight) {
 				let sorted = this.points.slice().sort((a, b) => a.position.z - b.position.z);
@@ -1196,6 +1200,15 @@ export class Measure extends THREE.Object3D {
 
 	set showHeight (value) {
 		this._showHeight = value;
+		this.update();
+	}
+
+	get showHeightLabel () {
+		return this._showHeightLabel;
+	}
+
+	set showHeightLabel (value) {
+		this._showHeightLabel = value;
 		this.update();
 	}
 

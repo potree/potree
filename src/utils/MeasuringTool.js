@@ -1,6 +1,6 @@
 
 import * as THREE from "three";
-import {Measure, MeasureTypes, loadAllTexture} from "./Measure.js";
+import {Measure, MeasureTypes} from "./Measure.js";
 import {Utils} from "../utils.js";
 import {CameraMode} from "../defines.js";
 import { EventDispatcher } from "../EventDispatcher.js";
@@ -155,7 +155,7 @@ export class MeasuringTool extends EventDispatcher{
 
 		this.viewer.inputHandler.addEventListener('sphere_intersected', this.onSphereIntersected.bind(this));
 		this.viewer.inputHandler.addEventListener('sphere_not_intersected', this.onSphereNotIntersected.bind(this));
-		this.viewer.inputHandler.addEventListener('no_measurement_selected', this.revertSphereAndLines.bind(this))
+		// this.viewer.inputHandler.addEventListener('no_measurement_selected', this.revertSphereAndLines.bind(this))
 
 		viewer.scene.addEventListener('measurement_added', this.onAdd);
 		viewer.scene.addEventListener('measurement_removed', this.onRemove);
@@ -179,6 +179,7 @@ export class MeasuringTool extends EventDispatcher{
 	}
 
 	revertSphereAndLines() {
+		console.log('revertSphereAndLines');
 		const measurements = this.viewer.scene.measurements;
 
 		for (const currentMeasurement of measurements) {
@@ -190,6 +191,7 @@ export class MeasuringTool extends EventDispatcher{
 			sphere.visible = false;
 		  }
 		  if (measure.baseLabel && measure.heightLabel) {
+			measure.showHeightLabel = false;
 			measure.baseLabel.visible = false;
 			measure.heightLabel.visible = false;
 		  }
@@ -224,6 +226,7 @@ export class MeasuringTool extends EventDispatcher{
 			measure.showAngles = pick(args.showAngles, false);
 			measure.showCoordinates = pick(args.showCoordinates, false);
 			measure.showHeight = pick(args.showHeight, false);
+			measure.showHeightLabel = pick(args.showHeightLabel, false);
 			measure.showCircle = pick(args.showCircle, false);
 			measure.showAzimuth = pick(args.showAzimuth, false);
 			measure.showEdges = pick(args.showEdges, true);

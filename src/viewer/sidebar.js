@@ -137,6 +137,7 @@ export class Sidebar{
 					showArea: false,
 					closed: false,
 					maxMarkers: 2,
+					showHeightLabel: true,
 					name: MeasureTypes.P2P_TRIANGLE});
 
 				let measurementsRoot = $("#jstree_scene").jstree().get_json("measurements");

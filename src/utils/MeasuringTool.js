@@ -155,7 +155,7 @@ export class MeasuringTool extends EventDispatcher{
 
 		this.viewer.inputHandler.addEventListener('sphere_intersected', this.onSphereIntersected.bind(this));
 		this.viewer.inputHandler.addEventListener('sphere_not_intersected', this.onSphereNotIntersected.bind(this));
-		// this.viewer.inputHandler.addEventListener('no_measurement_selected', this.revertSphereAndLines.bind(this))
+		// this.viewer.inputHandler.addEventListener('measurement_selected', () => console.log('hi'))
 
 		viewer.scene.addEventListener('measurement_added', this.onAdd);
 		viewer.scene.addEventListener('measurement_removed', this.onRemove);
@@ -194,6 +194,9 @@ export class MeasuringTool extends EventDispatcher{
 			measure.baseLabel.visible = false;
 			measure.heightLabel.visible = false;
 		  }
+		  if (measure.areaLabel) {
+			measure.showAreaLabel = false
+		  }
 		}
 	  }
 
@@ -201,7 +204,7 @@ export class MeasuringTool extends EventDispatcher{
 		let domElement = this.viewer.renderer.domElement;
 		let camera = this.viewer.scene.getActiveCamera();
 
-		let measure = new Measure('three_length');
+		let measure = new Measure(pick(args.contentType, 'three_length'));
 
 		const textures = await measure.loadAllTexture();
 		measure.setTextures = textures;
@@ -296,7 +299,7 @@ export class MeasuringTool extends EventDispatcher{
 						type: 'end_measurement_insertion',
 						measurement: measure
 					})
-					measure.userData.contentId = THREE.Math.generateUUID();
+					// measure.userData.contentId = THREE.Math.generateUUID();
 					
 					measure.updateSphereVisibility(this.viewer.scene.getActiveCamera(), false);
 
@@ -353,7 +356,15 @@ export class MeasuringTool extends EventDispatcher{
 				let distance = camera.position.distanceTo(sphere.getWorldPosition(new THREE.Vector3()));
 				let pr = Utils.projectedRadius(1, camera, distance, clientWidth, clientHeight);
 				let scale = (15 / pr);
-				sphere.scale.set(scale, scale, scale);
+
+				if (sphere.name === 'add') {
+					sphere.scale.setScalar(scale * 0.9);
+				  } else if (sphere.name === 'right_tick') {
+					sphere.scale.setScalar(scale * 1.5);
+				  } else {
+					sphere.scale.setScalar(scale);
+				  }
+				// sphere.scale.set(scale, scale, scale);
 			}
 
 			// labels

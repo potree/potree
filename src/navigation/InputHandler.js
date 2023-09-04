@@ -310,9 +310,6 @@ export class InputHandler extends EventDispatcher {
 		let consumed = false;
 		let consume = () => { return consumed = true; };
 		if (this.hoveredElements.length === 0) {
-			this.dispatchEvent({
-				type: 'no_measurement_selected'
-			})
 
 			for (let inputListener of this.getSortedListeners()) {
 				inputListener.dispatchEvent({
@@ -351,8 +348,15 @@ export class InputHandler extends EventDispatcher {
 			} else {
 				if (this.hoveredMeasurement && this.hoveredElements) {
 					this.hoveredMeasurement.updateSphereVisibility(this.scene.getActiveCamera(), false);
+					this.dispatchEvent({
+						type: 'measurement_selected',
+						measurement: this.hoveredMeasurement
+					})
 				} else {
 					this.viewer.measuringTool.revertSphereAndLines()
+					this.dispatchEvent({
+						type: 'no_measurement_selected'
+					})
 				}
 
 				for (let inputListener of this.getSortedListeners()) {
@@ -467,6 +471,7 @@ export class InputHandler extends EventDispatcher {
 			this.drag.end.set(x, y);
 
 			if (this.drag.object) {
+				this.viewer.renderer.domElement.style.cursor = 'grab';
 				if (this.logMessages) console.log(this.constructor.name + ': drag: ' + this.drag.object.name);
 				this.drag.object.dispatchEvent({
 					type: 'drag',
@@ -491,6 +496,7 @@ export class InputHandler extends EventDispatcher {
 				}
 			}
 		}else{
+			this.viewer.renderer.domElement.style.cursor = 'auto';
 			let curr = hoveredElements.map(a => a.object).find(a => true);
 			let prev = this.hoveredElements.map(a => a.object).find(a => true);
 

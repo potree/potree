@@ -69,7 +69,7 @@
 			
 			
 			{ // DISTANCE MEASURE
-				let measure = new Potree.Measure('three_length');
+				let measure = new Potree.Measure('three_length', THREE.Math.generateUUID());
 
 				measure.loadAllTexture().then((textures) => {
 					measure.setTextures = textures;
@@ -108,17 +108,20 @@
 			// 	scene.addMeasurement(measure);
 			// }
 			
-			// { // HEIGHT MEASURE
-			// 	let measure = new Potree.Measure();
-			// 	measure.name = "Tree Height";
-			// 	measure.closed = false;
-			// 	measure.showDistances = false;
-			// 	measure.showHeight = true;
-			// 	measure.addMarker(new THREE.Vector3(589849.69, 231327.26, 766.32));
-			// 	measure.addMarker(new THREE.Vector3(589840.96, 231329.53, 744.52));
-				
-			// 	scene.addMeasurement(measure);
-			// }
+			{ // HEIGHT MEASURE
+				let measure = new Potree.Measure('three_height', THREE.Math.generateUUID());
+				measure.loadAllTexture().then((textures) => {
+					measure.setTextures = textures;
+					measure.name = "Tree Height";
+					measure.closed = false;
+					measure.showDistances = false;
+					measure.showHeight = true;
+					measure.addMarker(new THREE.Vector3(589849.69, 231327.26, 766.32));
+					measure.addMarker(new THREE.Vector3(589840.96, 231329.53, 744.52));
+					
+					scene.addMeasurement(measure);
+				})
+			}
 			
 			// { // AREA MEASURE
 			// 	let measure = new Potree.Measure();

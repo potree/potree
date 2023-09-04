@@ -6,6 +6,7 @@ import {Line2} from "three/examples/jsm/lines/Line2";
 import {LineGeometry} from "three/examples/jsm/lines/LineGeometry";
 import {LineMaterial} from "three/examples/jsm/lines/LineMaterial";
 import {sphereIcon, pointPlusIcon, pointTickIcon} from './imageBase64.js'
+import { MeasurementName } from "./MeasurementName.js";
 
 export const MeasureTypes = {
 	MARKER: 'marker',
@@ -40,10 +41,12 @@ function createHeightLine(){
 	]);
 
 	let lineMaterial = new LineMaterial({ 
-		color: 0x00ff00, 
-		dashSize: 5, 
-		gapSize: 2,
-		linewidth: 2, 
+		color: 0xffaa00, 
+		dashed: true,
+		dashSize: 0.3,
+    	gapSize: 0.3,
+		dashScale: 8,
+    	linewidth: 3,
 		resolution:  new THREE.Vector2(1000, 1000),
 	});
 
@@ -310,7 +313,8 @@ function createAzimuth(){
 
 export class Measure extends THREE.Object3D {
 	constructor (
-		contentType
+		contentType,
+		contentId,
 	) {
 		super();
 
@@ -326,6 +330,7 @@ export class Measure extends THREE.Object3D {
 		this._showCircle = false;
 		this._showHeight = false;
 		this._showHeightLabel = false;
+		this._showAreaLabel = false;
 		this._showEdges = true;
 		this._showAzimuth = false;
 		this.maxMarkers = Number.MAX_SAFE_INTEGER;
@@ -336,6 +341,10 @@ export class Measure extends THREE.Object3D {
 		this.contentColor =  MeasurementsPalette[contentType];
 		this.selectedSphere = undefined;
 		this._ishovering = false;
+		this.contentId = contentId;
+	
+		this.measurementLabel = new MeasurementName(contentId);
+		this.add(this.measurementLabel);
 
 		this.spheres = [];
 		this.edges = [];
@@ -385,7 +394,7 @@ export class Measure extends THREE.Object3D {
 
 			let lineMaterial = new LineMaterial({
 				color: this.contentColor, 
-				linewidth: 2, 
+				linewidth: 3, 
 				resolution:  new THREE.Vector2(1000, 1000),
 			});
 
@@ -443,6 +452,7 @@ export class Measure extends THREE.Object3D {
 	addSphereEvents(sphere){
 		{ // Event Listeners
 			let drag = (e) => {
+				this.measurementLabel.hide();
 				let I = Utils.getMousePointCloudIntersection(
 					e.drag.end, 
 					e.viewer.scene.getActiveCamera(), 
@@ -491,6 +501,7 @@ export class Measure extends THREE.Object3D {
 
 			let drop = e => {
 				let i = this.spheres.indexOf(e.drag.object);
+				this.measurementLabel.show();
 
 				const parent_measurement = e.drag.object.parent;
 				if (parent_measurement && parent_measurement.userData.contentId) {
@@ -609,6 +620,11 @@ export class Measure extends THREE.Object3D {
 			// updating shere material
 			this.showDistances = this.name === MeasureTypes.THREE_AREA ? false : true;
 			this.showHeightLabel = true;
+
+			if (this.showArea) {
+				this._showAreaLabel = true;
+			}
+
 			this.spheres.map(v => {
 			  v.visible = true;
 			  v.material = this.createSpriteMaterial();
@@ -890,6 +906,12 @@ export class Measure extends THREE.Object3D {
 		}
 		centroid.divideScalar(this.points.length);
 
+		const measurementLabelPosition = Utils.getMidPointFromEdges(
+			this.points.map(({ position }) => position),
+			this.getTotalDistance()
+		  );
+		  this.measurementLabel.position.copy(measurementLabelPosition);
+
 		for (let i = 0; i <= lastIndex; i++) {
 			const index = i;
 			// const nextIndex = i + 1 > lastIndex ? 0 : i + 1;
@@ -1132,7 +1154,7 @@ export class Measure extends THREE.Object3D {
 
 		{ // update area label
 			this.areaLabel.position.copy(centroid);
-			this.areaLabel.visible = this.showArea && this.points.length >= 3;
+			this.areaLabel.visible = this._showAreaLabel && this.points.length >= 3;
 			let area = this.getArea();
 
 			let suffix = "";
@@ -1230,6 +1252,15 @@ export class Measure extends THREE.Object3D {
 		this.update();
 	}
 
+	get showAreaLabel () {
+		return this._showAreaLabel;
+	}
+
+	set showAreaLabel (value) {
+		this._showAreaLabel = value;
+		this.update();
+	}
+
 	get showArea () {
 		return this._showArea;
 	}
@@ -1271,6 +1302,15 @@ export class Measure extends THREE.Object3D {
 	}
 	set isplusNodesAdded(value) {
 		this._isplusNodesAdded = value;
+	}
+
+	get edgeColor() {
+		return this.contentColor;
+	}
+
+	set edgeColor(color) {
+		this.contentColor = new THREE.Color(color);
+		this.update();
 	}
 
 }

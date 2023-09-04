@@ -280,6 +280,43 @@ export class Utils {
 
 	}
 
+	static findPointBetween(A, B, d) {
+		// Calculate the distance between the two input points.
+		const AB = A.distanceTo(B);
+	  
+		// Calculate the x and y coordinates of the point between A and B at a distance
+		// of d from A.
+		const x = A.x + (d * (B.x - A.x)) / AB;
+		const y = A.y + (d * (B.y - A.y)) / AB;
+		const z = A.z + (d * (B.z - A.z)) / AB;
+	  
+		// Return a new Vector3 object with the calculated coordinates.
+		return new THREE.Vector3(x, y, z);
+	  }
+
+	static getMidPointFromEdges(
+		points,
+		totalDistance
+	  ) {
+		const halfPoint = new THREE.Vector3();
+		let halfDistance = totalDistance / 2;
+	  
+		points.every((point, index) => {
+		  if (index >= points.length - 1) {
+			return false;
+		  }
+		  const distance = point.distanceTo(points[index + 1]);
+		  if (distance > halfDistance) {
+			halfPoint.copy(this.findPointBetween(point, points[index + 1], halfDistance));
+			return false;
+		  } else {
+			halfDistance -= distance;
+			return true;
+		  }
+		});
+		return halfPoint;
+	  }
+
 	static loadSkybox (path) {
 		let parent = new THREE.Object3D("skybox_root");
 

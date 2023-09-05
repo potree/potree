@@ -1,5 +1,7 @@
 
 import * as THREE from "three";
+import { CSS2DRenderer } from 'three/examples/jsm/renderers/CSS2DRenderer.js';
+
 import {Measure, MeasureTypes} from "./Measure.js";
 import {Utils} from "../utils.js";
 import {CameraMode} from "../defines.js";
@@ -142,8 +144,17 @@ export class MeasuringTool extends EventDispatcher{
 
 		this.viewer.inputHandler.registerInteractiveScene(this.scene);
 
+		this.labelRenderer = new CSS2DRenderer();
+		this.labelRenderer.setSize(0, 0);
+		this.labelRenderer.domElement.style.position = 'absolute';
+		this.labelRenderer.domElement.style.top = '0px';
+		this.labelRenderer.domElement.style.pointerEvents = 'none';
+		this.labelRenderer.domElement.style.display = 'block';
+
+		viewer.renderArea.appendChild(this.labelRenderer.domElement);
+
 		this.onRemove = (e) => { this.scene.remove(e.measurement);};
-		this.onAdd = e => {this.scene.add(e.measurement);};
+		this.onAdd = e => {this.scene.add(e.measurement)};
 
 		for(let measurement of viewer.scene.measurements){
 			this.onAdd({measurement: measurement});
@@ -338,10 +349,13 @@ export class MeasuringTool extends EventDispatcher{
 		let camera = this.viewer.scene.getActiveCamera();
 		let domElement = this.renderer.domElement;
 		let measurements = this.viewer.scene.measurements;
+		
 
 		const renderAreaSize = this.renderer.getSize(new THREE.Vector2());
 		let clientWidth = renderAreaSize.width;
 		let clientHeight = renderAreaSize.height;
+
+		this.labelRenderer.setSize(clientWidth, clientHeight);
 
 		this.light.position.copy(camera.position);
 
@@ -516,5 +530,7 @@ export class MeasuringTool extends EventDispatcher{
 
 	render(){
 		this.viewer.renderer.render(this.scene, this.viewer.scene.getActiveCamera());
+		// console.log({camera: this.viewer.scene.getActiveCamera()});
+		this.labelRenderer.render(this.scene, this.viewer.scene.getActiveCamera());
 	}
 };

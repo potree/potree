@@ -45,6 +45,13 @@ export class Viewer extends EventDispatcher{
 		this.guiLoaded = false;
 		this.guiLoadTasks = [];
 
+		// this.labelRenderer = new CSS2DRenderer();
+		// this.labelRenderer.setSize(0, 0);
+		// this.labelRenderer.domElement.style.position = 'absolute';
+		// this.labelRenderer.domElement.style.top = '0px';
+		// this.labelRenderer.domElement.style.pointerEvents = 'none';
+
+
 		this.onVrListeners = [];
 
 		this.messages = [];
@@ -1441,6 +1448,8 @@ export class Viewer extends EventDispatcher{
 		this.renderer.setSize(width, height);
 		this.renderer.autoClear = false;
 		this.renderArea.appendChild(this.renderer.domElement);
+		// this.renderArea.appendChild(this.labelRenderer.domElement);
+		
 		this.renderer.domElement.tabIndex = '2222';
 		this.renderer.domElement.style.position = 'absolute';
 		this.renderer.domElement.addEventListener('mousedown', () => {
@@ -2088,6 +2097,7 @@ export class Viewer extends EventDispatcher{
 			const height = this.scaleFactor * this.renderArea.clientHeight;
 
 			this.renderer.setSize(width, height);
+			// this.labelRenderer.setSize(width, height);
 			const pixelRatio = this.renderer.getPixelRatio();
 			const aspect = width / height;
 
@@ -2112,6 +2122,8 @@ export class Viewer extends EventDispatcher{
 
 		pRenderer.render(this.renderer);
 		this.renderer.render(this.overlay, this.overlayCamera);
+		// console.log({scene: this.overlay});
+		// this.labelRenderer.render(this.overlay, this.overlayCamera);
 	}
 	
 	render(){

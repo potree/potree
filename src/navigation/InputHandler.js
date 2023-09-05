@@ -5,7 +5,7 @@
  */
 
 import * as THREE from "three";
-import {Line2} from "three/examples/jsm/lines/Line2";
+import {Line2} from "three/examples/jsm/lines/Line2.js";
 import {KeyCodes} from "../KeyCodes.js";
 import {Utils} from "../utils.js";
 import {EventDispatcher} from "../EventDispatcher.js";

@@ -204,6 +204,14 @@ export class MeasuringTool extends EventDispatcher{
 		let domElement = this.viewer.renderer.domElement;
 		let camera = this.viewer.scene.getActiveCamera();
 
+		const pick = (defaul, alternative) => {
+			if(defaul != null){
+				return defaul;
+			}else{
+				return alternative;
+			}
+		};
+
 		let measure = new Measure(pick(args.contentType, 'three_length'));
 
 		const textures = await measure.loadAllTexture();
@@ -214,13 +222,7 @@ export class MeasuringTool extends EventDispatcher{
 				measure: measure
 			});
 	
-			const pick = (defaul, alternative) => {
-				if(defaul != null){
-					return defaul;
-				}else{
-					return alternative;
-				}
-			};
+			
 	
 			measure.showDistances = (args.showDistances === null) ? true : args.showDistances;
 	

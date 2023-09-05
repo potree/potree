@@ -23,14 +23,6 @@ export const MeasurementsPalette = {
 	'three_area' : new THREE.Color('#f7b500'),
   };
 
-function getBaseDistance(positions) {
-	const position0 = positions[0];
-	const position1 = positions[1];
-	position0.z = position1.z;
-	let baseDistance = position0.distanceTo(position1);
-	// baseDistance *= VALUES_PER_METER[unitType];
-	return { baseDistance: baseDistance.toFixed(2) };
-  }
 
 function createHeightLine(){
 	let lineGeometry = new LineGeometry();
@@ -1065,14 +1057,11 @@ export class Measure extends THREE.Object3D {
 				// heightEdge.material.dashSize = height / 40;
 				// heightEdge.material.gapSize = height / 40;
 
-				// baseDistance Label
-				const threePositions = this.points.map(
-					location =>
-					  new THREE.Vector3(location.position.x, location.position.y, location.position.z)
-				  );
-				const { baseDistance } = getBaseDistance(threePositions);
+				
 				const start1 = new THREE.Vector3(highPoint.x, highPoint.y, lowPoint.z);
 				const end1 = new THREE.Vector3(lowPoint.x, lowPoint.y, lowPoint.z);
+				// baseDistance Label
+				let baseDistance = start1.distanceTo(end1);
 		
 				const baseLabelPosition = start1.clone().add(end1).multiplyScalar(0.5);
 				this.baseLabel.position.copy(baseLabelPosition);
@@ -1083,13 +1072,15 @@ export class Measure extends THREE.Object3D {
 				let suffix = "";
 				if(this.lengthUnit != null && this.lengthUnitDisplay != null){
 					height = height / this.lengthUnit.unitspermeter * this.lengthUnitDisplay.unitspermeter;  //convert to meters then to the display unit
+					baseDistance = baseDistance / this.lengthUnit.unitspermeter * this.lengthUnitDisplay.unitspermeter;
 					suffix = this.lengthUnitDisplay.code;
 				}
+				
 
 				let txtHeight = Utils.addCommas(height.toFixed(2));
 				let msg = `${txtHeight} ${suffix}`;
 
-				let baseHeight = Utils.addCommas(baseDistance);
+				let baseHeight = Utils.addCommas(baseDistance.toFixed(2));
 				let baseMsg = `${baseHeight} ${suffix}`;
 
 				this.heightLabel.setText(msg);

@@ -9,6 +9,7 @@ import {Line2} from "three/examples/jsm/lines/Line2.js";
 import {KeyCodes} from "../KeyCodes.js";
 import {Utils} from "../utils.js";
 import {EventDispatcher} from "../EventDispatcher.js";
+import { MeasureTypes } from "../utils/Measure.js";
 
 export class InputHandler extends EventDispatcher {
 	constructor (viewer) {
@@ -183,9 +184,6 @@ export class InputHandler extends EventDispatcher {
 
 		if (intersectedObject && intersectedObject.object.type === 'Sprite' && intersectedObject.name !== 'add') {
 			const parent_measurement = intersectedObject.object.parent;
-			const spheres = parent_measurement.spheres;
-
-
 			
 			switch (e.keyCode) {
 				case KeyCodes.DELETE:
@@ -201,10 +199,9 @@ export class InputHandler extends EventDispatcher {
 		
 		
 					if (index > -1) {
-						if (filterPoints.length <= 2) {
+						if (filterPoints.length <= 2 || (filterPoints.length <= 3 && parent_measurement.name === MeasureTypes.THREE_AREA)) {
 							this.viewer.scene.removeMeasurement(parent_measurement);
 						} else {
-		
 							parent_measurement.removeMarker(index);
 		
 							parent_measurement.dispatchEvent({

@@ -179,6 +179,63 @@ export class InputHandler extends EventDispatcher {
 		if (this.logMessages) console.log(this.constructor.name + ': onKeyDown');
 
 		// DELETE
+		const intersectedObject = this.getHoveredElement();
+
+		if (intersectedObject && intersectedObject.object.type === 'Sprite' && intersectedObject.name !== 'add') {
+			const parent_measurement = intersectedObject.object.parent;
+			const spheres = parent_measurement.spheres;
+
+
+			
+			switch (e.keyCode) {
+				case KeyCodes.DELETE:
+				case KeyCodes.BACKSPACE: {
+					if (!parent_measurement.contentId) {
+						return ;
+					}
+
+					parent_measurement.removeAddMarker();
+		
+					const index = parent_measurement.spheres.indexOf(intersectedObject.object);
+					const filterPoints = parent_measurement.points.filter((pt) => pt.name !== 'add');
+		
+		
+					if (index > -1) {
+						if (filterPoints.length <= 2) {
+							this.viewer.scene.removeMeasurement(parent_measurement);
+						} else {
+		
+							parent_measurement.removeMarker(index);
+		
+							parent_measurement.dispatchEvent({
+								type: "marker_dropped",
+								measurement: parent_measurement,
+								index: index
+							})
+						}
+					}
+		
+					parent_measurement.updateSphereVisibility(this.scene.getActiveCamera(), false);
+				}
+				break;
+
+				case KeyCodes.ESC:{
+					if (parent_measurement.contentId) {
+						return;
+					}
+
+					this.viewer.scene.removeMeasurement(parent_measurement);
+				}
+				break;
+			
+				default:
+					break;
+			}
+			
+		}
+
+		
+
 		if (e.keyCode === KeyCodes.DELETE && this.selection.length > 0) {
 			this.dispatchEvent({
 				type: 'delete',

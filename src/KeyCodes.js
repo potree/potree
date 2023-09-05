@@ -7,6 +7,8 @@ export const KeyCodes = {
 	RIGHT: 39,
 	BOTTOM: 40,
 	DELETE: 46,
+	BACKSPACE: 8,
+	ESC: 27,
 
 	A: 'A'.charCodeAt(0),
 	S: 'S'.charCodeAt(0),

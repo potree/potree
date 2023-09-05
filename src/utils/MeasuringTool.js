@@ -168,6 +168,8 @@ export class MeasuringTool extends EventDispatcher{
 		this.viewer.inputHandler.addEventListener('sphere_not_intersected', this.onSphereNotIntersected.bind(this));
 		// this.viewer.inputHandler.addEventListener('measurement_selected', () => console.log('hi'))
 
+		// this.viewer.inputHandler.addEventListener('keydown', this.handleKeyDown.bind(this));
+
 		viewer.scene.addEventListener('measurement_added', this.onAdd);
 		viewer.scene.addEventListener('measurement_removed', this.onRemove);
 	}
@@ -177,6 +179,10 @@ export class MeasuringTool extends EventDispatcher{
 	}
 	onSphereNotIntersected() {
 		this.sphereIntersected = false;
+	}
+
+	handleKeyDown(event){
+		console.log(event);
 	}
 
 	onSceneChange(e){
@@ -259,7 +265,7 @@ export class MeasuringTool extends EventDispatcher{
 			};
 	
 			let insertionCallback = (e) => {
-				if (e.button === THREE.MOUSE.LEFT) {
+				if (e.button === THREE.MOUSE.LEFT || e.button === THREE.MOUSE.RIGHT) {
 					measure.addMarker(measure.points[measure.points.length - 1].position.clone());
 	
 					if (measure.points.length >= measure.maxMarkers) {
@@ -530,7 +536,6 @@ export class MeasuringTool extends EventDispatcher{
 
 	render(){
 		this.viewer.renderer.render(this.scene, this.viewer.scene.getActiveCamera());
-		// console.log({camera: this.viewer.scene.getActiveCamera()});
 		this.labelRenderer.render(this.scene, this.viewer.scene.getActiveCamera());
 	}
 };

@@ -77,16 +77,15 @@
 					measure.closed = false;
 					measure.addMarker(new THREE.Vector3(589803.18, 231357.35, 745.38));
 					measure.addMarker(new THREE.Vector3(589795.74, 231323.42, 746.21));
-					// measure.addMarker(new THREE.Vector3(589822.50, 231315.90, 744.45));
+					measure.addMarker(new THREE.Vector3(589822.50, 231315.90, 744.45));
+
 					const measureID = THREE.Math.generateUUID();
 					measure.userData.contentId = measureID;
 					measure.updateSphereVisibility(scene.getActiveCamera(), false);
 
 					
 					scene.addMeasurement(measure);
-					console.log({viewer});
 					const div = document.getElementById(measureID);
-					console.log({div});
 					// viewer.overlay.add(measure.measurementLabel);
 					// viewer.labelRenderer.domElement.appendChild(measure.measurementLabel.measurementDiv);
 					

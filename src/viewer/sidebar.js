@@ -116,7 +116,9 @@ export class Sidebar{
 					showDistances: true,
 					showArea: false,
 					closed: false,
-					name: MeasureTypes.LENGTH});
+					name: MeasureTypes.LENGTH,
+					showTotalDistances: true,
+				});
 					
 				let measurementsRoot = $("#jstree_scene").jstree().get_json("measurements");
 				let jsonNode = measurementsRoot.children.find(child => child.data.uuid === measurement.uuid);

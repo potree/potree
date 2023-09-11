@@ -31,7 +31,13 @@ export class MeasurementName extends THREE.Object3D {
   //   // this.position.set(x, y, z);
   // }
 
-    update() {
+    update(id) {
     // this.measurementDiv.innerText = this.innterText;
+    if (id) {
+      this.measurementDiv.id = `measurement-${id}`;
+      const measure = this.measurementLabel.parent.parent;
+      // this.add(this.measurementLabel);
+      measure.update();
+    }
   }
 }

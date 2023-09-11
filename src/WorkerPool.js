@@ -10,7 +10,13 @@ export class WorkerPool{
 		}
 
 		if (this.workers[url].length === 0){
-			let worker = new Worker(url);
+			const workerUrl = url;
+			const workerBlob = new Blob(['importScripts(' + JSON.stringify(workerUrl) + ')'], {
+			type: 'application/javascript',
+			});
+			const blobUrl = window.URL.createObjectURL(workerBlob);
+			let worker = new Worker(blobUrl);
+			// let worker = new Worker(url);
 			this.workers[url].push(worker);
 		}
 

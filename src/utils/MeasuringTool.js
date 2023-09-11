@@ -242,7 +242,8 @@ export class MeasuringTool extends EventDispatcher{
 			
 	
 			measure.showDistances = (args.showDistances === null) ? true : args.showDistances;
-	
+			measure.showTotalDistances = pick(args.showTotalDistances, false);
+
 			measure.showArea = pick(args.showArea, false);
 			measure.showAngles = pick(args.showAngles, false);
 			measure.showCoordinates = pick(args.showCoordinates, false);
@@ -318,6 +319,7 @@ export class MeasuringTool extends EventDispatcher{
 						type: 'end_measurement_insertion',
 						measurement: measure
 					})
+					// measure.measurementLabel.update(THREE.Math.generateUUID());
 					// measure.userData.contentId = THREE.Math.generateUUID();
 					
 					measure.updateSphereVisibility(this.viewer.scene.getActiveCamera(), false);
@@ -390,7 +392,7 @@ export class MeasuringTool extends EventDispatcher{
 			}
 
 			// labels
-			let labels = measure.edgeLabels.concat(measure.angleLabels).concat(measure.baseLabel);
+			let labels = measure.edgeLabels.concat(measure.angleLabels).concat(measure.baseLabel).concat(measure.totalDistanceLabel);
 			for(let label of labels){
 				let distance = camera.position.distanceTo(label.getWorldPosition(new THREE.Vector3()));
 				let pr = Utils.projectedRadius(1, camera, distance, clientWidth, clientHeight);

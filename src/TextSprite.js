@@ -27,7 +27,7 @@ export class TextSprite extends THREE.Object3D{
 		this.add(this.sprite);
 
 		this.borderThickness = 4;
-		this.fontface = 'Arial';
+		this.fontface = 'Noto Sans KR';
 		this.fontsize = 28;
 		this.borderColor = { r: 0, g: 0, b: 0, a: 1.0 };
 		this.backgroundColor = { r: 255, g: 255, b: 255, a: 0.9 };

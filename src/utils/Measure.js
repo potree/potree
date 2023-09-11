@@ -349,6 +349,14 @@ export class Measure extends THREE.Object3D {
 		this.heightLabel = createHeightLabel();
 		this.baseLabel = createHeightLabel();
 
+		this.totalDistanceLabel = new TextSprite('');
+		this.totalDistanceLabel .setBorderColor({r: 0, g: 0, b: 0, a: 1.0});
+		this.totalDistanceLabel .setBackgroundColor({r: 255, g: 255, b: 255, a: 0.9});
+		this.totalDistanceLabel.material.depthTest = false;
+		this.totalDistanceLabel.visible = false;
+		this.totalDistanceLabel.fontsize = 16;
+		this.add(this.totalDistanceLabel);
+
 		this.areaLabel = createAreaLabel();
 		this.circleRadiusLabel = createCircleRadiusLabel();
 		this.circleRadiusLine = createCircleRadiusLine();
@@ -356,13 +364,10 @@ export class Measure extends THREE.Object3D {
 		this.circleCenter = createCircleCenter();
 
 		this.azimuth = createAzimuth();
-		// this.texture = loadAllTexture();
 		this._textures = null;
 
 		this._isplusNodesAdded = false;
-		// this.defaultTexture = null;
-		// this.plusNodeTexture = null;
-		// this.tickNodeTexture = null;
+		this._showTotalDistances = false;
 
 		this.add(this.heightEdge);
 		this.add(this.heightLabel);
@@ -904,6 +909,21 @@ export class Measure extends THREE.Object3D {
 		  );
 		  this.measurementLabel.position.copy(measurementLabelPosition);
 
+		  this.totalDistanceLabel.position.copy(this.points[lastIndex].position);
+
+		  let suffix = "";
+		  let totalDistance = this.getTotalDistance();
+		  if(this.lengthUnit != null && this.lengthUnitDisplay != null){
+			  totalDistance = totalDistance / this.lengthUnit.unitspermeter * this.lengthUnitDisplay.unitspermeter;  //convert to meters then to the display unit
+			  suffix = this.lengthUnitDisplay.code;
+		  }
+		  
+			this.totalDistanceLabel.setText(
+			`Total: ${totalDistance.toFixed(2)} ${suffix}`
+			);
+			this.totalDistanceLabel.visible = this.showTotalDistances && this.points.length >= 2;
+	  
+
 		for (let i = 0; i <= lastIndex; i++) {
 			const index = i;
 			// const nextIndex = i + 1 > lastIndex ? 0 : i + 1;
@@ -1303,5 +1323,14 @@ export class Measure extends THREE.Object3D {
 		this.contentColor = new THREE.Color(color);
 		this.update();
 	}
+
+	get showTotalDistances() {
+		return this._showTotalDistances;
+	  }
+	
+	set showTotalDistances(value) {
+		this._showTotalDistances = value;
+		// this.update();
+	  }
 
 }

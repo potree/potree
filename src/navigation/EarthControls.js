@@ -82,7 +82,7 @@ export class EarthControls extends EventDispatcher {
 						this.viewer.setMoveSpeed(speed);
 					}
 				}
-			} else if (e.drag.mouse === MOUSE.RIGHT) {
+			} else if (e.drag.mouse === MOUSE.MIDDLE) {
 				let ndrag = {
 					x: e.drag.lastDrag.x / this.renderer.domElement.clientWidth,
 					y: e.drag.lastDrag.y / this.renderer.domElement.clientHeight

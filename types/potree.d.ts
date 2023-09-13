@@ -97,10 +97,17 @@ export class RezocassiniTool extends Tool {
 }
 
 export type MarkerEvent = TBaseEvent<'marker_dropped', Measure, 'measurement', Measure>;
+export class TextSprite extends Object3D {
+	setText(text: string): void;
+	setTextColor(color: string): void;
+	setBorderColor(color: string): void;
+	setBackgroundColor(color: string): void;
+}
 export class Measure extends Object3D {
 	getTotalDistance(): number;
 	events$: Observable<MarkerEvent>;
 	spheres: Mesh[];
+	edgeLabels: TextSprite[];
 	get setEdgesTo(): number | null;
 	set setEdgesTo(value: number | null);
 	get showEdges(): boolean;

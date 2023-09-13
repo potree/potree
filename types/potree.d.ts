@@ -1,5 +1,5 @@
 import { Subject, Observable } from "rxjs";
-import { Box3, BufferGeometry, Camera, DataTexture, Intersection, Light, Line, LineSegments, Material, Matrix4, Mesh, Object3D, OrthographicCamera, PerspectiveCamera, RawShaderMaterial, Ray, Renderer, Scene as THREEScene, Vector2, Vector3, WebGLRenderer } from "three";
+import { Box3, BufferGeometry, Camera, DataTexture, Event, Intersection, Light, Line, LineSegments, Material, Matrix4, Mesh, Object3D, OrthographicCamera, PerspectiveCamera, RawShaderMaterial, Ray, Renderer, Scene as THREEScene, Vector2, Vector3, WebGLRenderer } from "three";
 
 export interface BoundingBox {
 	lx: number;
@@ -102,6 +102,7 @@ export class TextSprite extends Object3D {
 	setTextColor(color: string): void;
 	setBorderColor(color: string): void;
 	setBackgroundColor(color: string): void;
+	events$: Observable<Event>;
 }
 export class Measure extends Object3D {
 	getTotalDistance(): number;

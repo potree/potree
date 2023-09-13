@@ -4,6 +4,7 @@
 //  * adapted from http://stemkoski.github.io/Three.js/Sprite-Text-Labels.html
 //  */
 
+import { Subject } from 'rxjs';
 import * as THREE from  'three';
 
 export class TextSprite extends THREE.Object3D{
@@ -34,7 +35,12 @@ export class TextSprite extends THREE.Object3D{
 		this.textColor = {r: 255, g: 255, b: 255, a: 1.0};
 		this.text = '';
 
+		this._subject = new Subject();
+		this.events$ = this._subject.asObservable();
+
 		this.setText(text);
+
+		this.addEventListener('click', (event) => this._subject.next(event));
 	}
 
 	setText(text){

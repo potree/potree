@@ -52,7 +52,9 @@ export class TextSprite extends THREE.Object3D{
 					this.setBackgroundColor({r: 0, g: 0, b: 0, a: 1.0});
 				});
 			}
-			catch (e) { }
+			catch (e) {
+				console.error(e);
+			}
 		}
 
 	}

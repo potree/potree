@@ -9,7 +9,7 @@ import * as THREE from  'three';
 
 export class TextSprite extends THREE.Object3D{
 	
-	constructor(text){
+	constructor(text, interactable = true){
 		super();
 
 		let texture = new THREE.Texture();
@@ -35,12 +35,26 @@ export class TextSprite extends THREE.Object3D{
 		this.textColor = {r: 255, g: 255, b: 255, a: 1.0};
 		this.text = '';
 
-		this._subject = new Subject();
-		this.events$ = this._subject.asObservable();
 
 		this.setText(text);
 
-		this.addEventListener('click', (event) => this._subject.next(event));
+		if (interactable) {
+			try {
+				this._subject = new Subject();
+				this.events$ = this._subject.asObservable();
+				this.sprite.addEventListener('mousedown', event => {
+					this._subject.next(event);
+				});
+				this.sprite.addEventListener('mouseover', e => {
+					this.setBackgroundColor({r: 255, g: 255, b: 255, a: 1.0});
+				});
+				this.sprite.addEventListener('mouseleave', e => {
+					this.setBackgroundColor({r: 0, g: 0, b: 0, a: 1.0});
+				});
+			}
+			catch (e) { }
+		}
+
 	}
 
 	setText(text){
@@ -88,6 +102,7 @@ export class TextSprite extends THREE.Object3D{
 		// background color
 		context.fillStyle = 'rgba(' + this.backgroundColor.r + ',' + this.backgroundColor.g + ',' +
 			this.backgroundColor.b + ',' + this.backgroundColor.a + ')';
+
 		// border color
 		context.strokeStyle = 'rgba(' + this.borderColor.r + ',' + this.borderColor.g + ',' +
 			this.borderColor.b + ',' + this.borderColor.a + ')';

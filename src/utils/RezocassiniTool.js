@@ -68,6 +68,10 @@ export class RezocassiniTool extends EventDispatcher {
 			if (e.button === THREE.MOUSE.LEFT) {
 				this.insertPoint(this.s.position);
 			}
+			if (e.button === THREE.MOUSE.RIGHT) {
+				console.log('pauseInsertion');
+				this.pauseInsertion();
+			}
 		};
 	}
 

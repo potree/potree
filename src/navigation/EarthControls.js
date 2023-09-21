@@ -16,7 +16,7 @@ export class EarthControls extends EventDispatcher {
 
 		this.rotationSpeed = 10;
 
-		this.fadeFactor = 20;
+		this.fadeFactor = 20; //衰减因子，各个相机设定的貌似都是20，在缩放中使用，但不知道起何作用
 		this.wheelDelta = 0;
 		this.zoomDelta = new THREE.Vector3();
 		this.camStart = null;
@@ -52,26 +52,29 @@ export class EarthControls extends EventDispatcher {
 
 			// let camera = this.viewer.scene.camera;
 			let mouse = e.drag.end;
-			let domElement = this.viewer.renderer.domElement;
+			let domElement = this.viewer.renderer.domElement; //画布而非容器，应代表整个页面；可尝试看看是不是都不在动
 
-			if (e.drag.mouse === MOUSE.LEFT) {
+			if (e.drag.mouse === MOUSE.LEFT) { //左键是平移
 
-				let ray = Utils.mouseToRay(mouse, camera, domElement.clientWidth, domElement.clientHeight);
-				let plane = new THREE.Plane().setFromNormalAndCoplanarPoint(
+				let ray = Utils.mouseToRay(mouse, camera, domElement.clientWidth, domElement.clientHeight);  //返回一个射线；鼠标点击处三维坐标与相机位置处的方向向量
+				
+				//原点是相机位置，指向鼠标点击处
+				let plane = new THREE.Plane().setFromNormalAndCoplanarPoint( //通过平面上一点以及法线创建平面
 					new THREE.Vector3(0, 0, 1),
 					this.pivot);
-
-				let distanceToPlane = ray.distanceToPlane(plane);
+                //pivot应理解为鼠标按下处与点云的交点，移动过程中保持不变
+				let distanceToPlane = ray.distanceToPlane(plane);  //获取射线原点（origin）到平面（Plane）之间的距离；这个可能是按射线距离
 
 				if (distanceToPlane > 0) {
-					let I = new THREE.Vector3().addVectors(
-						camStart.position,
-						ray.direction.clone().multiplyScalar(distanceToPlane));
-
+					let I = new THREE.Vector3().addVectors( //将该向量设置成a+b
+						camStart.position,  //this.camStart = this.scene.getActiveCamera().clone();
+						ray.direction.clone().multiplyScalar(distanceToPlane));//direction是经过标准化的方向向量，方向向量乘以标量
+                    //返回的结果I是由相机位置加相机到垂面距离的向量，得出的结果应该是
 					let movedBy = new THREE.Vector3().subVectors(
+						//subVectors是a-b，设置了新的相机点？
 						I, this.pivot);
-
-					let newCamPos = camStart.position.clone().sub(movedBy);
+ 
+					let newCamPos = camStart.position.clone().sub(movedBy); //sub，从该向量处减取括号内向量
 
 					view.position.copy(newCamPos);
 
@@ -81,7 +84,7 @@ export class EarthControls extends EventDispatcher {
 						let speed = view.radius / 2.5;
 						this.viewer.setMoveSpeed(speed);
 					}
-				}
+				} //计算鼠标移动前与点云交点处z平面，与移动后在此平面上的射线距离，平移相机，过程中保证z不变
 			} else if (e.drag.mouse === MOUSE.RIGHT) {
 				let ndrag = {
 					x: e.drag.lastDrag.x / this.renderer.domElement.clientWidth,
@@ -104,7 +107,7 @@ export class EarthControls extends EventDispatcher {
 				pivotToCamTarget.applyAxisAngle(side, pitchDelta);
 
 				pivotToCam.applyAxisAngle(new THREE.Vector3(0, 0, 1), yawDelta);
-				pivotToCamTarget.applyAxisAngle(new THREE.Vector3(0, 0, 1), yawDelta);
+				pivotToCamTarget.applyAxisAngle(new THREE.Vector3(0, 0, 1), yawDelta); //旋转角度为弧度制，将归一化的向量和角度表示的旋转应用到该向量中（向量可能包含起点与终点？）
 
 				let newCam = new THREE.Vector3().addVectors(this.pivot, pivotToCam);
 				// TODO: Unused: let newCamTarget = new THREE.Vector3().addVectors(this.pivot, pivotToCamTarget);
@@ -122,7 +125,7 @@ export class EarthControls extends EventDispatcher {
 				this.viewer, 
 				this.scene.pointclouds, 
 				{pickClipped: false});
-
+            //获取鼠标与点云交点；待细看
 			if (I) {
 				this.pivot = I.location;
 				this.camStart = this.scene.getActiveCamera().clone();
@@ -228,30 +231,33 @@ export class EarthControls extends EventDispatcher {
 			tween.start();
 		}
 	}
-
+    //delta应该是变量的意思，增量
 	update (delta) {
+		//这玩意是每时每刻都在触发，检测变化更新？delta也在每时每刻变化
 		let view = this.scene.view;
-		let fade = Math.pow(0.5, this.fadeFactor * delta);
+		let fade = Math.pow(0.5, this.fadeFactor * delta);  //fadeFactor定义20
 		let progression = 1 - fade;
 		let camera = this.scene.getActiveCamera();
 		
-		// compute zoom
+		// compute zoom 某一瞬间存在缩放；先计算zoomDelta变化；这里只是计算相机移动的向量，包括方向，但此处未移动相机位置
 		if (this.wheelDelta !== 0) {
+			//wheelDelta，滚轮向上为正，滚轮向下为负，设计要符合缩放认知，数值与滚动速率有关，一般是1，极快时会有2或3，都是整数
 			let I = Utils.getMousePointCloudIntersection(
-				this.viewer.inputHandler.mouse, 
+				this.viewer.inputHandler.mouse,   //这里因为不是鼠标点击获取的点坐标，所以要通过view.inputHandler获取鼠标悬停坐标
 				this.scene.getActiveCamera(), 
 				this.viewer, 
 				this.scene.pointclouds);
-
+            //I为当前鼠标悬停位置与点云的交点
+			//如果I处有点云存在
 			if (I) {
-				let resolvedPos = new THREE.Vector3().addVectors(view.position, this.zoomDelta);
-				let distance = I.location.distanceTo(resolvedPos);
-				let jumpDistance = distance * 0.2 * this.wheelDelta;
-				let targetDir = new THREE.Vector3().subVectors(I.location, view.position);
+				let resolvedPos = new THREE.Vector3().addVectors(view.position, this.zoomDelta);    //这个是计算根据当前相机坐标增量到哪个位置，包含方向吗？ --最初为0
+				let distance = I.location.distanceTo(resolvedPos);  //鼠标点云交汇位置与增量后位置的距离？
+				let jumpDistance = distance * 0.2 * this.wheelDelta;  //这里应该是设定，由当前位置移动，0.2是缩放速率；故近处缩放慢，远处缩放快，但一直是五分之一
+				let targetDir = new THREE.Vector3().subVectors(I.location, view.position); //新视角方向保持鼠标点云交汇点和当前视角连线方向；该向量设置为a-b
 				targetDir.normalize();
 
-				resolvedPos.add(targetDir.multiplyScalar(jumpDistance));
-				this.zoomDelta.subVectors(resolvedPos, view.position);
+				resolvedPos.add(targetDir.multiplyScalar(jumpDistance)); //将该向量与所传入的标量相乘
+				this.zoomDelta.subVectors(resolvedPos, view.position); //此处记录了相机位置移动的向量
 
 				{
 					let distance = resolvedPos.distanceTo(I.location);
@@ -262,10 +268,10 @@ export class EarthControls extends EventDispatcher {
 			}
 		}
 
-		// apply zoom
+		// apply zoom 此处记录了移动相机位置的过程
 		if (this.zoomDelta.length() !== 0) {
 			let p = this.zoomDelta.clone().multiplyScalar(progression);
-
+            //delta意义不明，此处为何要乘一个衰减因子不明 --这是做一个动画过程？让移动有个递进，最后减速至停止？
 			let newPos = new THREE.Vector3().addVectors(view.position, p);
 			view.position.copy(newPos);
 		}
@@ -279,9 +285,9 @@ export class EarthControls extends EventDispatcher {
 			this.pivotIndicator.scale.set(scale, scale, scale);
 		}
 
-		// decelerate over time
+		// decelerate over time 随着时间的推移减速
 		{
-			this.zoomDelta.multiplyScalar(fade);
+			this.zoomDelta.multiplyScalar(fade); //不断乘一个小于1的数，直至停止？
 			this.wheelDelta = 0;
 		}
 	}

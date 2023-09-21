@@ -553,6 +553,7 @@ export class Measure extends THREE.Object3D {
 
 		// sphere
 		let sphere = new THREE.Sprite(this.createSpriteMaterial(this._textures.defaultTexture));
+		sphere.visible = false;
 		sphere.updateMatrixWorld(true);
 		sphere.material.needsUpdate = true;
 		this.add(sphere);

@@ -238,7 +238,7 @@ export class MeasuringTool extends EventDispatcher{
 				type: 'start_inserting_measurement',
 				measure: measure
 			});
-	
+			this.viewer.renderer.domElement.style.cursor = 'crosshair';
 			
 	
 			measure.showDistances = (args.showDistances === null) ? true : args.showDistances;
@@ -274,7 +274,7 @@ export class MeasuringTool extends EventDispatcher{
 					}
 
 					measure.spheres.map(v => {
-						v.visible = true;
+						v.visible = true; 
 						v.material = measure.createSpriteMaterial();
 						v.name = '';
 						return v;
@@ -285,11 +285,13 @@ export class MeasuringTool extends EventDispatcher{
 
 					if (measure.spheres.length > 2) {
 						const dragSphere = measure.spheres[measure.spheres.length - 2];
+						measure.spheres[measure.spheres.length - 2].visible = true;
 						// const lastSphere = measure.spheres[measure.spheres.length - 1];
 
 						dragSphere.material.map = textures.tickNodeTexture;
 						dragSphere.name = 'right_tick';
 						dragSphere.material.needsUpdate = true;
+						// dragSphere.visible = true;
 
 						// if lastsphere and dragshere are on the same position call cancel.callback()
 						if (this.sphereIntersected ===  true) {
@@ -319,6 +321,7 @@ export class MeasuringTool extends EventDispatcher{
 						type: 'end_measurement_insertion',
 						measurement: measure
 					})
+					this.viewer.renderer.domElement.style.cursor = 'auto';
 					// measure.measurementLabel.update(THREE.Math.generateUUID());
 					// measure.userData.contentId = THREE.Math.generateUUID();
 					

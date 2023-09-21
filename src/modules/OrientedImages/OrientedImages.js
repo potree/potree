@@ -158,7 +158,12 @@ export class OrientedImages extends EventDispatcher{
 export class OrientedImageLoader{
 
 	static async loadCameraParams(path){
-		const res = await fetch(path);
+		const fetchOptions = { headers: {} };
+		Potree.XHRFactory.config.customHeaders?.forEach(function (header) {
+			fetchOptions.headers[header.header] = header.value;
+		});
+
+		const res = await fetch(path, fetchOptions);
 		const text = await res.text();
 
 		const parser = new DOMParser();
@@ -184,7 +189,12 @@ export class OrientedImageLoader{
 
 	static async loadImageParams(path){
 
-		const response = await fetch(path);
+		const fetchOptions = { headers: {} };
+		Potree.XHRFactory.config.customHeaders?.forEach(function (header) {
+			fetchOptions.headers[header.header] = header.value;
+		});
+
+		const response = await fetch(path, fetchOptions);
 		if(!response.ok){
 			console.error(`failed to load ${path}`);
 			return;

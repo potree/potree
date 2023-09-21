@@ -264,8 +264,13 @@ export class Images360Loader{
 				forward: a => a,
 			};
 		}
+
+		const fetchOptions = { headers: {} };
+		Potree.XHRFactory.config.customHeaders?.forEach(function (header) {
+			fetchOptions.headers[header.header] = header.value;
+		});
 		
-		let response = await fetch(`${url}/coordinates.txt`);
+		let response = await fetch(`${url}/coordinates.txt`, fetchOptions);
 		let text = await response.text();
 
 		let lines = text.split(/\r?\n/);

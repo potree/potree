@@ -46,12 +46,18 @@ export class NodeLoader{
 				buffer = new ArrayBuffer(0);
 				console.warn(`loaded node with 0 bytes: ${node.name}`);
 			}else{
-				let response = await fetch(urlOctree, {
+				const fetchOptions = {
 					headers: {
 						'content-type': 'multipart/byteranges',
 						'Range': `bytes=${first}-${last}`,
 					},
+				};
+
+				Potree.XHRFactory.config.customHeaders?.forEach(function (header) {
+					fetchOptions.headers[header.header] = header.value;
 				});
+
+				let response = await fetch(urlOctree, fetchOptions);
 
 				buffer = await response.arrayBuffer();
 			}
@@ -250,12 +256,18 @@ export class NodeLoader{
 		let first = hierarchyByteOffset;
 		let last = first + hierarchyByteSize - 1n;
 
-		let response = await fetch(hierarchyPath, {
+		const fetchOptions = {
 			headers: {
 				'content-type': 'multipart/byteranges',
 				'Range': `bytes=${first}-${last}`,
 			},
+		};
+
+		Potree.XHRFactory.config.customHeaders?.forEach(function (header) {
+			fetchOptions.headers[header.header] = header.value;
 		});
+
+		let response = await fetch(hierarchyPath, fetchOptions);
 
 
 
@@ -385,8 +397,15 @@ export class OctreeLoader{
 	}
 
 	static async load(url){
+		const  fetchOptions = {
+			headers: {},
+		};
 
-		let response = await fetch(url);
+		Potree.XHRFactory.config.customHeaders?.forEach(function (header) {
+			fetchOptions.headers[header.header] = header.value;
+		});
+
+		let response = await fetch(url, fetchOptions);
 		let metadata = await response.json();
 
 		let attributes = OctreeLoader.parseAttributes(metadata.attributes);

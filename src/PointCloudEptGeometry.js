@@ -255,7 +255,12 @@ export class PointCloudEptGeometryNode extends PointCloudTreeNode {
 		let eptHierarchyFile =
 			`${this.ept.url}ept-hierarchy/${this.filename()}.json`;
 
-		let response = await fetch(eptHierarchyFile);
+		const fetchOptions = {headers: {}};
+		Potree.XHRFactory.config.customHeaders?.forEach(function (header) {
+			fetchOptions.headers[header.header] = header.value;
+		});
+
+		let response = await fetch(eptHierarchyFile, fetchOptions);
 		let hier = await response.json();
 
 		// Since we want to traverse top-down, and 10 comes

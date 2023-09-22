@@ -69,28 +69,28 @@
 
 			
 			
-			// { // DISTANCE MEASURE
-			// 	let measure = new Potree.Measure('three_length', THREE.Math.generateUUID());
+			{ // DISTANCE MEASURE
+				let measure = new Potree.Measure('three_length', THREE.Math.generateUUID());
 
-			// 	measure.loadAllTexture().then((textures) => {
-			// 		measure.setTextures = textures;
-			// 		measure.closed = false;
-			// 		measure.addMarker(new THREE.Vector3(589803.18, 231357.35, 745.38));
-			// 		measure.addMarker(new THREE.Vector3(589795.74, 231323.42, 746.21));
-			// 		measure.addMarker(new THREE.Vector3(589822.50, 231315.90, 744.45));
+				measure.loadAllTexture().then((textures) => {
+					measure.setTextures = textures;
+					measure.closed = false;
+					measure.addMarker(new THREE.Vector3(589803.18, 231357.35, 745.38));
+					measure.addMarker(new THREE.Vector3(589795.74, 231323.42, 746.21));
+					measure.addMarker(new THREE.Vector3(589822.50, 231315.90, 744.45));
 
-			// 		const measureID = THREE.Math.generateUUID();
-			// 		measure.userData.contentId = measureID;
-			// 		measure.updateSphereVisibility(scene.getActiveCamera(), false);
+					const measureID = THREE.Math.generateUUID();
+					measure.userData.contentId = measureID;
+					// measure.updateSphereVisibility(scene.getActiveCamera(), false);
 
 					
-			// 		scene.addMeasurement(measure);
-			// 		const div = document.getElementById(measureID);
-			// 		// viewer.overlay.add(measure.measurementLabel);
-			// 		// viewer.labelRenderer.domElement.appendChild(measure.measurementLabel.measurementDiv);
+					scene.addMeasurement(measure);
+					const div = document.getElementById(measureID);
+					// viewer.overlay.add(measure.measurementLabel);
+					// viewer.labelRenderer.domElement.appendChild(measure.measurementLabel.measurementDiv);
 					
-			// 	})
-			// }
+				})
+			}
 			
 			// { // ANGLE MEASURE
 			// 	let measure = new Potree.Measure();

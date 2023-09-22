@@ -310,6 +310,24 @@ export class InputHandler extends EventDispatcher {
 		e.preventDefault();
 
 		let consumed = false;
+		if (this.hoveredElements.length === 1) {
+			if (this.hoveredElements[0].object.name === 'right_tick') {
+				this.dispatchEvent({
+					type: 'sphere_intersected'
+				})
+			}
+		} else if (this.hoveredElements.length === 2) {
+			if (this.hoveredElements[this.hoveredElements.length - 1].object.name === 'right_tick') {
+				this.dispatchEvent({
+					type: 'sphere_intersected'
+				})
+			}
+		} else {
+			this.dispatchEvent({
+				type: 'not_intersected'
+			})
+		}
+
 		let consume = () => { return consumed = true; };
 		if (this.hoveredElements.length === 0) {
 			for (let inputListener of this.getSortedListeners()) {
@@ -342,6 +360,7 @@ export class InputHandler extends EventDispatcher {
 					el.object._listeners['drag'].length > 0));
 
 			if (target) {
+				this.viewer.renderer.domElement.style.cursor = 'grab';
 				this.startDragging(target.object, {location: target.point});
 			} else {
 				this.startDragging(null);
@@ -500,17 +519,23 @@ export class InputHandler extends EventDispatcher {
 			}
 		}
 
-		if (hoveredElements.length === 2) {
-			if (hoveredElements[hoveredElements.length - 1].object.name === 'right_tick') {
-				this.dispatchEvent({
-					type: 'sphere_intersected'
-				})
-			}
-		} else {
+		if (!hoveredElements.length) {
 			this.dispatchEvent({
 				type: 'sphere_not_intersected'
 			})
 		}
+
+		// if (hoveredElements.length === 2) {
+		// 	if (hoveredElements[hoveredElements.length - 1].object.name === 'right_tick') {
+		// 		this.dispatchEvent({
+		// 			type: 'sphere_intersected'
+		// 		})
+		// 	}
+		// } else {
+		// 	this.dispatchEvent({
+		// 		type: 'sphere_not_intersected'
+		// 	})
+		// }
 		if(hoveredElements.length > 0){
 			let names = hoveredElements.map(h => h.object.name).join(", ");
 			if (this.logMessages) console.log(`${this.constructor.name}: onMouseMove; hovered: '${names}'`);
@@ -525,7 +550,7 @@ export class InputHandler extends EventDispatcher {
 			this.drag.end.set(x, y);
 
 			if (this.drag.object) {
-				this.viewer.renderer.domElement.style.cursor = 'grab';
+				// this.viewer.renderer.domElement.style.cursor = 'grab';
 				if (this.logMessages) console.log(this.constructor.name + ': drag: ' + this.drag.object.name);
 				this.drag.object.dispatchEvent({
 					type: 'drag',
@@ -550,7 +575,7 @@ export class InputHandler extends EventDispatcher {
 				}
 			}
 		}else{
-			this.viewer.renderer.domElement.style.cursor = 'auto';
+			// this.viewer.renderer.domElement.style.cursor = 'auto';
 			let curr = hoveredElements.map(a => a.object).find(a => true);
 			let prev = this.hoveredElements.map(a => a.object).find(a => true);
 

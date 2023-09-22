@@ -551,6 +551,7 @@ export class InputHandler extends EventDispatcher {
 
 			if (this.drag.object) {
 				// this.viewer.renderer.domElement.style.cursor = 'grab';
+				// this.viewer.renderer.domElement.style.cursor = 'grab';
 				if (this.logMessages) console.log(this.constructor.name + ': drag: ' + this.drag.object.name);
 				this.drag.object.dispatchEvent({
 					type: 'drag',
@@ -575,6 +576,7 @@ export class InputHandler extends EventDispatcher {
 				}
 			}
 		}else{
+			// this.viewer.renderer.domElement.style.cursor = 'auto';
 			// this.viewer.renderer.domElement.style.cursor = 'auto';
 			let curr = hoveredElements.map(a => a.object).find(a => true);
 			let prev = this.hoveredElements.map(a => a.object).find(a => true);

@@ -1,5 +1,6 @@
 
 import * as THREE from "../../../../libs/three.js/build/three.module.js";
+import { gizilCustomEvent, GizilEvent } from "../../../gizil/GizilCustomEvent.js";
 import {PointAttribute, PointAttributes, PointAttributeTypes} from "../../../loader/PointAttributes.js";
 import {OctreeGeometry, OctreeGeometryNode} from "./OctreeGeometry.js";
 
@@ -44,6 +45,7 @@ export class NodeLoader{
 
 			if(byteSize === 0n){
 				buffer = new ArrayBuffer(0);
+				gizilCustomEvent.emit(GizilEvent.OCTREE_LOADER, { url: this.url, state: 'LOADING' });
 				console.warn(`loaded node with 0 bytes: ${node.name}`);
 			}else{
 				let response = await fetch(urlOctree, {
@@ -54,6 +56,7 @@ export class NodeLoader{
 				});
 
 				buffer = await response.arrayBuffer();
+				gizilCustomEvent.emit(GizilEvent.OCTREE_LOADER, { url: this.url, state: 'SUCCESS' });
 			}
 
 			let workerPath;
@@ -145,6 +148,7 @@ export class NodeLoader{
 			console.log(`failed to load ${node.name}`);
 			console.log(e);
 			console.log(`trying again!`);
+			gizilCustomEvent.emit(GizilEvent.OCTREE_LOADER, { url: this.url, state: 'FAILURE', error: e });
 		}
 	}
 

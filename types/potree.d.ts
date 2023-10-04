@@ -217,6 +217,12 @@ export type ControlsOptionsValues = 'earthControls' /* | 'fpControls' */ | 'orbi
 export type ControlsOptionsType = KeyValueBaseType<ControlsOptionsKeys, ControlsOptionsValues>;
 export const ControlsOptions: ControlsOptionsType;
 
+export class PolygonClipVolume extends Object3D {
+	constructor(camera: Camera);
+	addMarker(): void;
+	removeLastMarker(): void;
+}
+
 export class Volume extends Object3D {
 	constructor(args?: { clip?: boolean, modifiable?: boolean });
 	get clip(): boolean;
@@ -361,6 +367,7 @@ export class Scene extends EventDispatcher {
 	addMeasurement(measure: Measure): void;
 	removeMeasurement(measure: Measure | any): void;
 	addVolume(volume: Volume): void;
+	addPolygonClipVolume(volume: PolygonClipVolume): void;
 	annotations: any[];
 	scene: THREEScene;
 	sceneBG: Scene;

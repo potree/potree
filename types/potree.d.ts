@@ -141,6 +141,11 @@ export class CameraSyncTool extends Tool {
 	stopSync(): void;
 }
 
+export class ClippingTool extends Tool {
+	startInsertion(args: { type: string }): PolygonClipVolume;
+	createClipping(args: { positions: { x: number, y: number, z: number }[], type: string }): PolygonClipVolume;
+}
+
 export class Controls extends EventDispatcher {
 	constructor(viewer: Viewer);
 	setScene(scene: Scene): void;
@@ -249,7 +254,7 @@ export class Viewer extends EventDispatcher {
 	classifications: { [key: string]: Classification };
 	clipMethod: ClipMethodValues;
 	clipTask: ClipTaskValues;
-	clippingTool: Tool;
+	clippingTool: ClippingTool;
 	compass: any; // @TODO
 	controls: Controls;
 	customControls: CustomControls;

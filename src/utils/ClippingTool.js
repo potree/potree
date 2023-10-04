@@ -61,6 +61,72 @@ export class ClippingTool extends EventDispatcher{
 		this.scene.addEventListener("polygon_clip_volume_removed", this.onRemove);
 	}
 
+	createClipping(args = {}) {
+		let type = args.type || null;
+		let positions = args.positions || null;
+
+		if(!type || !positions) return null;
+
+		let domElement = this.viewer.renderer.domElement;
+		let canvasSize = this.viewer.renderer.getSize(new THREE.Vector2());
+
+		let svg = $(`
+		<svg height="${canvasSize.height}" width="${canvasSize.width}" style="position:absolute; pointer-events: none">
+
+			<defs>
+				 <marker id="diamond" markerWidth="24" markerHeight="24" refX="12" refY="12"
+						markerUnits="userSpaceOnUse">
+					<circle cx="12" cy="12" r="6" fill="white" stroke="black" stroke-width="3"/>
+				</marker>
+			</defs>
+
+			<polyline fill="none" stroke="black" 
+				style="stroke:rgb(0, 0, 0);
+				stroke-width:6;"
+				stroke-dasharray="9, 6"
+				stroke-dashoffset="2"
+				/>
+
+			<polyline fill="none" stroke="black" 
+				style="stroke:rgb(255, 255, 255);
+				stroke-width:2;"
+				stroke-dasharray="5, 10"
+				marker-start="url(#diamond)" 
+				marker-mid="url(#diamond)" 
+				marker-end="url(#diamond)" 
+				/>
+		</svg>`);
+		$(domElement.parentElement).append(svg);
+
+		let polyClipVol = new PolygonClipVolume(this.viewer.scene.getActiveCamera().clone());
+
+		this.viewer.scene.addPolygonClipVolume(polyClipVol);
+		this.sceneMarker.add(polyClipVol);
+		
+		args.positions.forEach((position, index) => {
+			polyClipVol.addMarker();
+
+			// SVC Screen Line
+			svg.find("polyline").each((index, target) => {
+				let newPoint = svg[0].createSVGPoint();
+				newPoint.x = e.offsetX;
+				newPoint.y = e.offsetY;
+				let polyline = target.points.appendItem(newPoint);
+			});
+
+			polyClipVol.markers[polyClipVol.markers.length - 1].position.set(position.x, position.y, position.z);
+
+			if (index === args.positions.length) {
+				svg.remove();
+				polyClipVol.removeLastMarker();
+				polyClipVol.initialized = true;
+				this.viewer.inputHandler.enabled = true;
+			}
+		});
+
+		return polyClipVol;
+	}
+
 	startInsertion(args = {}) {	
 		let type = args.type || null;
 

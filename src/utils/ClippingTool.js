@@ -107,12 +107,12 @@ export class ClippingTool extends EventDispatcher{
 			polyClipVol.addMarker();
 
 			// SVC Screen Line
-			svg.find("polyline").each((index, target) => {
-				let newPoint = svg[0].createSVGPoint();
-				newPoint.x = e.offsetX;
-				newPoint.y = e.offsetY;
-				let polyline = target.points.appendItem(newPoint);
-			});
+			// svg.find("polyline").each((index, target) => {
+			// 	let newPoint = svg[0].createSVGPoint();
+			// 	newPoint.x = e.offsetX;
+			// 	newPoint.y = e.offsetY;
+			// 	let polyline = target.points.appendItem(newPoint);
+			// });
 
 			polyClipVol.markers[polyClipVol.markers.length - 1].position.set(position.x, position.y, position.z);
 

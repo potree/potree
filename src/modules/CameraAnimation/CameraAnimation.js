@@ -41,11 +41,15 @@ export class CameraAnimation extends EventDispatcher{
 		this.node.add(this.frustum);
 
 		this.name = "Camera Animation";
-		this.duration = 5;
 		this.t = 0;
 		// "centripetal", "chordal", "catmullrom"
 		this.curveType = "centripetal" 
 		this.visible = true;
+
+		this.repeat = true;
+		this.current_dist = 0;
+		this.speed = 300;
+		this.acceleration = this.speed; // This means it takes 1 second to reach target speed
 
 		this.createUpdateHook();
 		this.createPath();
@@ -344,6 +348,7 @@ export class CameraAnimation extends EventDispatcher{
 			this.line.computeLineDistances();
 
 			this.cameraCurve = curve;
+			this.curveLength = curve.getLength();
 		}
 
 		{ // targets
@@ -482,48 +487,77 @@ export class CameraAnimation extends EventDispatcher{
 		this.visible = visible;
 	}
 
-	setDuration(duration){
-		this.duration = duration;
+	setSpeed(speed){
+		this.speed = speed;
+	}
+	getSpeed(){
+		return this.speed;
 	}
 
-	getDuration(duration){
-		return this.duration;
+	stopAnimation(){
+		this.stop = true;
 	}
 
 	play(){
+		this.stop = false;
 
-		const tStart = performance.now();
-		const duration = this.duration;
-
+		// this is for showing the animation handles when done
 		const originalyVisible = this.visible;
 		this.setVisible(false);
 
-		const onUpdate = (delta) => {
+		// start timing
+		this.time_previous_frame = performance.now();
+		
+		// for acceleration effect. current_speed is increasing linearly until it reaches target_speed
+		this._current_speed = 0;
 
+		const onUpdate = () => {
 			let tNow = performance.now();
-			let elapsed = (tNow - tStart) / 1000;
-			let t = elapsed / duration;
 
-			this.set(t);
+			// Assign target speed. The direction sign is for driving in reverse
+			let target_speed = this.speed
 
-			const frame = this.at(t);
-
-			viewer.scene.view.position.copy(frame.position);
-			viewer.scene.view.lookAt(frame.target);
-
-
-			if(t > 1){
-				this.setVisible(originalyVisible);
-
-				this.viewer.removeEventListener("update", onUpdate);
+			// acceleration effect
+			if(this._current_speed != target_speed){
+				this._current_speed += this.acceleration * (tNow - this.time_previous_frame) / 1000;
+				if(this._current_speed > target_speed){ // if we overshot the target speed
+					this._current_speed = target_speed;
+				}
 			}
+			// update speed
+			let delta_dist = this._current_speed * (tNow - this.time_previous_frame) / 1000;
+			let dist = this.current_dist + delta_dist;
+			let t = dist / this.curveLength;
+			
+			// update frame
+			this.current_dist = dist;
+			this.time_previous_frame = tNow;
+			this.set(t);
+			const frame = this.at(t);
+			this.viewer.scene.view.position.copy(frame.position);
+			this.viewer.scene.view.lookAt(frame.target);
 
+			// if animation reached end
+			if(t > 1){
+				if(this.repeat){
+					this.current_dist = 0;
+					this.play();
+				} else {
+					this.stopAnimation();
+					this.current_dist = 0;
+					this.setVisible(originalyVisible);
+					this.viewer.removeEventListener("update", onUpdate);
+				}
+			}
+			// if stop was called
+			if(this.stop){
+				this.viewer.removeEventListener("update", onUpdate);
+				this.setVisible(originalyVisible);
+			}
 		};
 
 		this.viewer.addEventListener("update", onUpdate);
-
 	}
-
 }
 
 

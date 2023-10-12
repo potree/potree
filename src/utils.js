@@ -396,6 +396,27 @@ export class Utils {
 		return texture;
 	}
 
+	static getMousePositionFromPointCloudPosition(position, viewer) {
+		let camera = viewer.scene.getActiveCamera();
+		let width = viewer.renderer.getSize().width;
+		let height = viewer.renderer.getSize().height;
+		let widthHalf = width / 2;
+		let heightHalf = height / 2;
+		let size = viewer.renderer.getSize(new THREE.Vector2());
+		let pos = new THREE.Vector3(position.x, position.y, 0);
+		pos.project(camera);
+		pos.x = (pos.x * widthHalf) + widthHalf;
+		pos.y = - (pos.y * heightHalf) + heightHalf;
+		pos.z = 0;
+
+		return new THREE.Vector3(
+			2.0 * (pos.x / size.width) - 1.0,
+			-2.0 * (pos.y / size.height) + 1.0,
+			0
+		);
+
+	}
+
 	static getMousePointCloudIntersection (mouse, camera, viewer, pointclouds, params = {}) {
 		
 		let renderer = viewer.renderer;

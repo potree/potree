@@ -573,6 +573,9 @@ export class InputHandler extends EventDispatcher {
 
 	startDragging (object, args = null) {
 
+		console.log('dragging', object);
+		console.log('mouse', this.mouse);
+
 		let name = object ? object.name : "no name";
 		if (this.logMessages) console.log(`${this.constructor.name}: startDragging: '${name}'`);
 

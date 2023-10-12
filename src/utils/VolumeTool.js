@@ -3,6 +3,7 @@ import * as THREE from  'three';
 import {Volume, BoxVolume} from "./Volume.js";
 import {Utils} from "../utils.js";
 import { EventDispatcher } from "../EventDispatcher.js";
+import { Subject } from 'rxjs';
 
 export class VolumeTool extends EventDispatcher{
 	constructor (viewer) {
@@ -45,6 +46,9 @@ export class VolumeTool extends EventDispatcher{
 
 		viewer.scene.addEventListener('volume_added', this.onAdd);
 		viewer.scene.addEventListener('volume_removed', this.onRemove);
+
+		this._subject = new Subject();
+		this.events$ = this._subject.asObservable();
 	}
 
 	onSceneChange(e){
@@ -68,10 +72,12 @@ export class VolumeTool extends EventDispatcher{
 		volume.clip = args.clip || false;
 		volume.name = args.name || 'Volume';
 
-		this.dispatchEvent({
+		const event = {
 			type: 'start_inserting_volume',
 			volume: volume
-		});
+		};
+		this.dispatchEvent(event);
+		this._subject.next(event);
 
 		this.viewer.scene.addVolume(volume);
 		this.scene.add(volume);
@@ -111,6 +117,7 @@ export class VolumeTool extends EventDispatcher{
 			volume.removeEventListener('drag', drag);
 			volume.removeEventListener('drop', drop);
 			this.viewer.removeEventListener('cancel_insertions', cancel.callback);
+			this._subject.next({ type: 'inserting_volume_done', volume });
 		};
 
 		volume.addEventListener('drag', drag);

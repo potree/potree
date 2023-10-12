@@ -1,5 +1,6 @@
 
 import * as THREE from  'three';
+import { Utils } from '../utils';
 
 export class PolygonClipVolume extends THREE.Object3D{
 	
@@ -21,12 +22,17 @@ export class PolygonClipVolume extends THREE.Object3D{
 
 		// projected markers
 		this.markers = [];
+		// actual pointcloud positions
+		this.positions = [];
 		this.initialized = false;
 	}
 
 	addMarker() {
 
+		console.log('addMarker');
+
 		let marker = new THREE.Mesh();
+		let position = new THREE.Vector3();
 
 		let cancel;
 
@@ -38,10 +44,32 @@ export class PolygonClipVolume extends THREE.Object3D{
 				0
 			);
 
+			console.log('projectedPos', projectedPos);
+
+			let I = Utils.getMousePointCloudIntersection(
+				e.drag.end,
+				e.viewer.scene.getActiveCamera(),
+				e.viewer,
+				e.viewer.scene.pointclouds,
+				{ pickClipped: true });
+
+			console.log('I', I);
+
+
+			if (I) {
+				position.x = I.location.x;
+				position.y = I.location.y;
+				position.z = I.location.z;
+				console.log('I.location', I.location);
+			}
+
 			marker.position.copy(projectedPos);
 		};
 		
-		let drop = e => {	
+		let drop = e => {
+			console.log('drop position', position);
+			console.log('drop projectedPos', marker.position);
+			console.log('drop marker', marker);
 			cancel();
 		};
 		
@@ -55,6 +83,14 @@ export class PolygonClipVolume extends THREE.Object3D{
 
 
 		this.markers.push(marker);
+		console.log('marker added', marker);
+		console.log('markers length', this.markers.length);
+		this.positions.push(position);
+	}
+
+	removeMarker(i) {
+		this.markers.splice(i, 1);
+		this.positions.splice(i, 1);
 	}
 
 	removeLastMarker() {

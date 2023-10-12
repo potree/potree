@@ -141,9 +141,28 @@ export class CameraSyncTool extends Tool {
 	stopSync(): void;
 }
 
+type StartInsertingClippingVolumeEvent = {
+	type: 'start_inserting_clipping_volume'
+};
+type ClippingVolumeDoneEvent = {
+	type: 'clipping_volume_done',
+	volume: PolygonClipVolume
+};
+type ClippingVolumeCancelledEvent = {
+	type: 'clipping_volume_cancelled'
+};
+type ClippingVolumeEvent = StartInsertingClippingVolumeEvent | ClippingVolumeCancelledEvent | ClippingVolumeDoneEvent;
 export class ClippingTool extends Tool {
 	startInsertion(args: { type: string }): PolygonClipVolume;
 	createClipping(args: { positions: { x: number, y: number, z: number }[], type: string }): PolygonClipVolume;
+	private _subject: Subject<ClippingVolumeEvent>;
+	events$: Observable<ClippingVolumeEvent>;
+}
+
+export class VolumeTool extends Tool {
+	startInsertion(args: { clip: boolean }): Volume;
+	private _subject: Subject<{type: 'start_inserting_volume' | 'inserting_volume_done', volume: Volume}>;
+	events$: Observable<{type: 'start_inserting_volume' | 'inserting_volume_done', volume: Volume}>;
 }
 
 export class Controls extends EventDispatcher {
@@ -226,6 +245,10 @@ export class PolygonClipVolume extends Object3D {
 	constructor(camera: Camera);
 	addMarker(): void;
 	removeLastMarker(): void;
+	removeMarker(i: number): void;
+	markers: Mesh[];
+	/* actual pointcloud positions of the marked points */
+	positions: Vector3[];
 }
 
 export class Volume extends Object3D {
@@ -334,7 +357,7 @@ export class Viewer extends EventDispatcher {
 	useDEMCollisions: boolean;
 	useEDL: boolean;
 	useHQ: boolean;
-	volumeTool: Tool;
+	volumeTool: VolumeTool;
 	vrControls: Controls;
 	fitToScreen(): void;
 }
@@ -458,12 +481,13 @@ export class Utils {
 	static loadSkybox(path: any): { camera: PerspectiveCamera, scene: Scene, parent: Object3D };
 	static createGrid(width: any, length: any, spacing: any, color: any): LineSegments;
 	static createBackgroundTexture(width: any, height: any): DataTexture;
-	static getMousePointCloudIntersection(mouse: any, camera: Camera, viewer: Viewer, pointclouds: PointCloudOctree, params?: {}): {
-		location: any;
+	static getMousePointCloudIntersection(mouse: any, camera: Camera, viewer: Viewer, pointclouds: PointCloudOctree | PointCloudTree[], params?: {}): {
+		location: Vector3;
 		distance: number;
 		pointcloud: any;
 		point: any;
 	} | null;
+	static getMousePositionFromPointCloudPosition(position: Vector3, viewer: Viewer): Vector3;
 	static pixelsArrayToImage(pixels: any, width: any, height: any): HTMLImageElement;
 	static pixelsArrayToDataUrl(pixels: any, width: any, height: any): string;
 	static pixelsArrayToCanvas(pixels: any, width: any, height: any): HTMLCanvasElement;
@@ -492,3 +516,4 @@ export class Utils {
 	static createSvgGradient(scheme: any): SVGSVGElement;
 	static waitAny(promises: any): Promise<any>;
 }
+

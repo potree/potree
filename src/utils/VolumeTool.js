@@ -1,5 +1,5 @@
 
-import * as THREE from "../../libs/three.js/build/three.module.js";
+import * as THREE from "three";
 import {Volume, BoxVolume} from "./Volume.js";
 import {Utils} from "../utils.js";
 import { EventDispatcher } from "../EventDispatcher.js";

@@ -14,7 +14,7 @@
  *
  */
 
-import * as THREE from "../../libs/three.js/build/three.module.js";
+import * as THREE from "three";
 import {EventDispatcher} from "../EventDispatcher.js";
 
 export class DeviceOrientationControls extends EventDispatcher{

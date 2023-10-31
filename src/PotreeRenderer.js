@@ -867,8 +867,8 @@ export class Renderer {
 				let globalRange = attGPS.range;
 				let globalRangeSize = globalRange[1] - globalRange[0];
 
-				let scale = initialRangeSize / globalRangeSize;
-				let offset = -(globalRange[0] - initialRange[0]) / initialRangeSize;
+				let scale = 1.0 / globalRangeSize;
+				let offset = -globalRange[0];
 
 				scale = Number.isNaN(scale) ? 1 : scale;
 				offset = Number.isNaN(offset) ? 0 : offset;
@@ -995,8 +995,8 @@ export class Renderer {
 					let globalRange = range;
 					let globalRangeSize = globalRange[1] - globalRange[0];
 
-					let scale = initialRangeSize / globalRangeSize;
-					let offset = -(globalRange[0] - initialRange[0]) / initialRangeSize;
+				        let scale = 1.0 / globalRangeSize;
+				        let offset = -globalRange[0];
 
 					scale = Number.isNaN(scale) ? 1 : scale;
 					offset = Number.isNaN(offset) ? 0 : offset;

@@ -21,6 +21,9 @@
     "build": "gulp build pack",
     "postinstall": "npm run build"
   },
+   "overrides": {
+    "graceful-fs": "^4.2.11"
+  },
   "dependencies": {
     "gulp": "^4.0.2",
     "gulp-concat": "^2.6.1",

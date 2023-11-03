@@ -45,6 +45,8 @@ export class Annotation extends EventDispatcher {
 		this.boundingBox = new THREE.Box3();
 
 		let iconClose = exports.resourcePath + '/icons/close.svg';
+		let iconOK = exports.resourcePath + '/icons/ok.svg';
+		let iconEdit = exports.resourcePath + '/icons/edit.svg';
 
 		this.domElement = $(`
 			<div class="annotation" oncontextmenu="return false;">
@@ -52,10 +54,11 @@ export class Annotation extends EventDispatcher {
 					<span class="annotation-label"></span>
 				</div>
 				<div class="annotation-description">
-					<span class="annotation-description-close">
-						<img src="${iconClose}" width="16px">
-					</span>
 					<span class="annotation-description-content">${this._description}</span>
+					<textarea class="annotation-desc-input" rows="2" cols="50">${this._description}</textarea>
+
+					<button class="annotation-description-edit"><img src="${iconEdit}" width="24" height="24" style="pointer:cursor;" /></button>
+					<button class="annotation-description-ok"><img src="${iconOK}" width="24" height="24" style="pointer:cursor;" /></button>
 				</div>
 			</div>
 		`);
@@ -65,7 +68,39 @@ export class Annotation extends EventDispatcher {
 		this.elTitle.append(this._title);
 		this.elDescription = this.domElement.find('.annotation-description');
 		this.elDescriptionClose = this.elDescription.find('.annotation-description-close');
-		// this.elDescriptionContent = this.elDescription.find(".annotation-description-content");
+		this.elDescriptionContent = this.elDescription.find(".annotation-description-content");
+		this.elDescriptionEdit = this.elDescription.find('.annotation-description-edit');
+		this.elDescriptionEditOk = this.elDescription.find('.annotation-description-ok');
+		this.elDescriptionInput= this.elDescription.find('.annotation-desc-input');
+
+		this.isEdit = false;
+		this.clickDescriptionEditButton = () => {
+			this.isEdit = !this.isEdit;
+			if(this.isEdit) {
+				this.elDescriptionInput.css('display', 'block');
+				this.elDescriptionContent.css('display', 'none');
+				this.elDescriptionEdit.css('display', 'none');
+				this.elDescriptionEditOk.css('display', 'block');
+			} else {
+				this.elDescriptionInput.css('display', 'none');
+				this.elDescriptionContent.css('display', 'block');
+				this.elDescriptionEdit.css('display', 'block');
+				this.elDescriptionEditOk.css('display', 'none');
+
+			}
+		}
+
+		this.inputDescription = (e) => {
+			const value = e.target.value;
+			this._description = value;
+			this.elDescriptionContent.empty();
+			this.elDescriptionContent.append(this._description);
+		}
+
+		this.elDescriptionInput.on('input',this.inputDescription);
+
+		this.elDescriptionEdit.click(this.clickDescriptionEditButton);
+		this.elDescriptionEditOk.click(this.clickDescriptionEditButton);
 
 		this.clickTitle = () => {
 			if(this.hasView()){

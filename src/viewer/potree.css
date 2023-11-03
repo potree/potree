@@ -793,3 +793,31 @@ body{
 	padding-top: 0.6em;
 	padding-bottom: 0.1em;
 }
+
+.annotation-description {
+	/* display: flex; */
+	align-items: center !important;
+	justify-content: space-between !important;
+}
+
+.annotation-description-edit {
+	background: none;
+	border: none;
+	cursor: pointer;
+}
+.annotation-description-ok {
+	background: none;
+	border: none;
+	cursor: pointer;
+	display: none;
+}
+
+.annotation-desc-input {
+	display: none;
+	background-color: black;
+	color: white;
+	font-family: 'Roboto', sans-serif;
+	/* font-family: Arial; */
+	resize: none;
+	line-height: 24px;
+}

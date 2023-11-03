@@ -45,9 +45,9 @@ export class NodeLoader{
 
 			if(byteSize === 0n){
 				buffer = new ArrayBuffer(0);
-				gizilCustomEvent.emit(GizilEvent.OCTREE_LOADER, { url: this.url, state: 'LOADING' });
 				console.warn(`loaded node with 0 bytes: ${node.name}`);
 			}else{
+				gizilCustomEvent.emit(GizilEvent.OCTREE_LOADER, { url: this.url, state: 'LOADING' });
 				let response = await fetch(urlOctree, {
 					headers: {
 						'content-type': 'multipart/byteranges',

@@ -329,6 +329,10 @@ export class Measure extends THREE.Object3D {
 
 		this.add(this.azimuth.node);
 
+		// GIZIL START
+		// This is nullable function variable, that we use it in update method
+		this._gizil_updateCallbackFunction = null
+		// GIZIL END
 	}
 
 	createSphereMaterial () {
@@ -603,6 +607,12 @@ export class Measure extends THREE.Object3D {
 		
 	// }
 
+
+	// GIZIL START
+	_gizil_setUpdateCallbackFunction (callback) {
+		this._gizil_updateCallbackFunction = callback;
+	}
+	// GIZIL END
 	update () {
 		if (this.points.length === 0) {
 			return;
@@ -613,10 +623,15 @@ export class Measure extends THREE.Object3D {
 
 			{ // coordinate labels
 				let coordinateLabel = this.coordinateLabels[0];
-				
-				let msg = position.toArray().map(p => Utils.addCommas(p.toFixed(2))).join(" / ");
-				coordinateLabel.setText(msg);
-
+				// GIZIL START
+				if(this._gizil_updateCallbackFunction) {
+					const value = this._gizil_updateCallbackFunction(position);
+					coordinateLabel.setText(value);
+				} else {
+					let msg = position.toArray().map(p => Utils.addCommas(p.toFixed(2))).join(" / ");
+					coordinateLabel.setText(msg);
+				}
+				// GIZIL END
 				coordinateLabel.visible = this.showCoordinates;
 			}
 

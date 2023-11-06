@@ -196,11 +196,11 @@ export class Viewer extends EventDispatcher{
 		}
 
 		if(typeof Stats !== "undefined"){
-			this.stats = new Stats();
-			this.stats.showPanel( 0 ); // 0: fps, 1: ms, 2: mb, 3+: custom
-			this.stats.domElement.removeAttribute('style');
-			this.stats.domElement.classList.add('threejs_stats');
-			document.body.appendChild(this.stats.dom);
+			// this.stats = new Stats();
+			// this.stats.showPanel( 0 ); // 0: fps, 1: ms, 2: mb, 3+: custom
+			// this.stats.domElement.removeAttribute('style');
+			// this.stats.domElement.classList.add('threejs_stats');
+			// document.body.appendChild(this.stats.dom);
 		}
 
 		{
@@ -2251,9 +2251,9 @@ export class Viewer extends EventDispatcher{
 
 	loop(timestamp){
 
-		if(this.stats){
-			this.stats.begin();
-		}
+		// if(this.stats){
+		// 	this.stats.begin();
+		// }
 
 		if(Potree.measureTimings){
 			performance.mark("loop-start");
@@ -2282,9 +2282,9 @@ export class Viewer extends EventDispatcher{
 
 		Potree.framenumber++;
 
-		if(this.stats){
-			this.stats.end();
-		}
+		// if(this.stats){
+		// 	this.stats.end();
+		// }
 	}
 
 	postError(content, params = {}){

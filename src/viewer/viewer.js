@@ -76,7 +76,7 @@ export class Viewer extends EventDispatcher{
 			if ($(domElement).find('#potree_annotations').length === 0) {
 				let potreeAnnotationContainer = $(`
 					<div id="potree_annotation_container" 
-						style="position: absolute; z-index: 100000; width: 100%; height: 100%; pointer-events: none;"></div>`);
+						style="position: absolute; z-index: 100000; width: 100%; height: 100%; pointer-events: none; overflow: hidden;"></div>`);
 				$(domElement).append(potreeAnnotationContainer);
 			}
 

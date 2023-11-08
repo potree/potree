@@ -286,7 +286,7 @@ a:hover, a:visited, a:link, a:active{
 	border-radius:	4px;
 	display:		none;
 	max-width:		500px;
-	width:			500px;
+	width:			fit-content;
 }
 
 .annotation-description-close{

@@ -525,6 +525,7 @@ export class Annotation extends EventDispatcher {
 				this.descriptionVisible = true;
 				this.elDescription.fadeIn(200);
 				this.elDescription.css('position', 'relative');
+				this.elDescription.css('display', 'flex');
 			}
 		} else {
 			this.domElement.css('opacity', '0.5');
@@ -532,6 +533,10 @@ export class Annotation extends EventDispatcher {
 			this.domElement.css('z-index', '100');
 			this.descriptionVisible = false;
 			this.elDescription.css('display', 'none');
+			this.elDescriptionInput.css('display', 'none');
+			this.elDescriptionContent.css('display', 'block');
+			this.elDescriptionEdit.css('display', 'block');
+			this.elDescriptionEditOk.css('display', 'none');
 		}
 
 		this.isHighlighted = highlighted;

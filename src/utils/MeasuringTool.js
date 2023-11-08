@@ -226,11 +226,24 @@ export class MeasuringTool extends EventDispatcher{
 			}
 			domElement.removeEventListener('mouseup', insertionCallback, false);
 			this.viewer.removeEventListener('cancel_insertions', cancel.callback);
+			// GIZIL START
+			if (typeof args._gizil_onDrawComplete === "function") {
+				args._gizil_onDrawComplete();
+			}
+			// GIZIL END
 		};
 
 		if (measure.maxMarkers > 1) {
 			this.viewer.addEventListener('cancel_insertions', cancel.callback);
 			domElement.addEventListener('mouseup', insertionCallback, false);
+		}
+
+		if(measure.maxMarkers  === 1) {
+			// GIZIL START
+			if (typeof args._gizil_onDrawComplete === "function") {
+				args._gizil_onDrawComplete();
+			}
+			// GIZIL END
 		}
 
 		measure.addMarker(new THREE.Vector3(0, 0, 0));

@@ -8,7 +8,8 @@ import * as THREE from "../../libs/three.js/build/three.module.js";
 import {KeyCodes} from "../KeyCodes.js";
 import {Utils} from "../utils.js";
 import {EventDispatcher} from "../EventDispatcher.js";
-
+let timeout;
+let lastTap = 0;
 export class InputHandler extends EventDispatcher {
 	constructor (viewer) {
 		super();
@@ -100,6 +101,33 @@ export class InputHandler extends EventDispatcher {
 
 	onTouchEnd (e) {
 		if (this.logMessages) console.log(this.constructor.name + ': onTouchEnd');
+
+		//double tap yakalamma
+
+		if(!this.isTouchMoved) {
+			const currentTime = new Date().getTime();
+			const tapLength = currentTime - lastTap;
+			clearTimeout(timeout);
+			if (tapLength < 300 && tapLength > 150) {
+				console.log('Double Tap!');
+				this.onDoubleClick(e);
+				// try {
+				// 	this.onDoubleClick(e);
+				// } catch (error) {
+				// 	window.alert('Android Double Click Error!')
+				// 	window.location.reload();
+				// }
+				e.preventDefault();
+			} else {
+				timeout = setTimeout(function() {
+					console.log('Single Tap!');
+					clearTimeout(timeout);
+				}, 300);
+			}
+			lastTap = currentTime;
+		} else {
+			this.isTouchMoved = false;
+		}
 
 		e.preventDefault();
 

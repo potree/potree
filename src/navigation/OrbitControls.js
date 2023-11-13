@@ -110,11 +110,36 @@ export class OrbitControls extends EventDispatcher{
 				let currDX = curr.touches[0].pageX - curr.touches[1].pageX;
 				let currDY = curr.touches[0].pageY - curr.touches[1].pageY;
 				let currDist = Math.sqrt(currDX * currDX + currDY * currDY);
+				const threshold = +localStorage.getItem('threshold') || 0.8;
+				const totalMovements = Math.abs(prevDist - currDist);
+				// console.log('currDist', Math.abs(prevDist - currDist));
+				// console.log('totalMovements', totalMovements);
+				if( totalMovements > threshold) {
+					//console.log('ZOOM')
+					let delta = currDist / prevDist;
+					// console.log('delta:' , delta);
+					let resolvedRadius = this.scene.view.radius + this.radiusDelta;
+					let newRadius = resolvedRadius / delta;
+					this.radiusDelta = newRadius - resolvedRadius;
+						
+				} else {
 
-				let delta = currDist / prevDist;
-				let resolvedRadius = this.scene.view.radius + this.radiusDelta;
-				let newRadius = resolvedRadius / delta;
-				this.radiusDelta = newRadius - resolvedRadius;
+					//console.log('PAN')
+					let prevMeanX = (prev.touches[0].pageX + prev.touches[1].pageX ) / 2;
+					let prevMeanY = (prev.touches[0].pageY + prev.touches[1].pageY ) / 2;
+	
+					let currMeanX = (curr.touches[0].pageX + curr.touches[1].pageX) / 2;
+					let currMeanY = (curr.touches[0].pageY + curr.touches[1].pageY) / 2;
+	
+					let deltaPan = {
+						x: (currMeanX - prevMeanX) / this.renderer.domElement.clientWidth,
+						y: (currMeanY - prevMeanY) / this.renderer.domElement.clientHeight
+					};
+	
+					this.panDelta.x += deltaPan.x;
+					this.panDelta.y += deltaPan.y;
+				}
+
 
 				this.stopTweens();
 			}else if(e.touches.length === 3 && previousTouch.touches.length === 3){

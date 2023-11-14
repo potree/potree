@@ -329,6 +329,8 @@ export class Images360 extends EventDispatcher{
 			texture.repeat.x = -1;
 
 			image360.texture = texture;
+		},(reject) => {
+			console.error('IMAGES LOAD ERROR', reject);
 		});
 
 	}

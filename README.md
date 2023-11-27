@@ -1,4 +1,6 @@
 
+# Gizil Changelogs
+- scripts içine `postbuild` ekledik ve build sonrasında `source map` dosyalarını siliyoruz. Bu işlemi yapmak için 2 tane kütüphane eklendi. `del-cli` ve `npm-run-all`. `postbuild` içinde `delete-sourcemap` scriptini çağırıyoruz.
 
 # About
 

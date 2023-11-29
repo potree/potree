@@ -82,7 +82,7 @@ import "./extensions/Ray.js";
 import {LRU} from "./LRU.js";
 import {OctreeLoader} from "./modules/loader/2.0/OctreeLoader.js";
 import {POCLoader} from "./loader/POCLoader.js";
-import {EptLoader} from "./loader/EptLoader.js";
+import {CopcLoader, EptLoader} from "./loader/EptLoader.js";
 import {PointCloudOctree} from "./PointCloudOctree.js";
 import {WorkerPool} from "./WorkerPool.js";
 
@@ -139,14 +139,23 @@ export function loadPointCloud(path, name, callback){
 		// load pointcloud
 		if (!path){
 			// TODO: callback? comment? Hello? Bueller? Anyone?
-		} else if (path.indexOf('ept.json') > 0) {
+		} else if (path.includes('ept.json')) {
 			EptLoader.load(path, function(geometry) {
 				if (!geometry) {
 					console.error(new Error(`failed to load point cloud from URL: ${path}`));
 				}
 				else {
 					let pointcloud = new PointCloudOctree(geometry);
-					//loaded(pointcloud);
+					resolve({type: 'pointcloud_loaded', pointcloud: pointcloud});
+				}
+			});
+		} else if (path.includes('.copc.laz')) {
+			CopcLoader.load(path, function(geometry) {
+				if (!geometry) {
+					console.error(new Error(`failed to load point cloud from URL: ${path}`));
+				}
+				else {
+					let pointcloud = new PointCloudOctree(geometry);
 					resolve({type: 'pointcloud_loaded', pointcloud: pointcloud});
 				}
 			});

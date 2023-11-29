@@ -38,7 +38,8 @@ let workers = {
 		"src/workers/LASDecoderWorker.js"
 	],
 	"EptLaszipDecoderWorker": [
-		"src/workers/EptLaszipDecoderWorker.js"
+		"libs/copc/index.js",
+		"src/workers/EptLaszipDecoderWorker.js",
 	],
 	"EptBinaryDecoderWorker": [
 		"libs/ept/ParseBuffer.js",
@@ -113,6 +114,9 @@ gulp.task("workers", async function(done){
 			.pipe(concat(`${workerName}.js`))
 			.pipe(gulp.dest('build/potree/workers'));
 	}
+
+	gulp.src('./libs/copc/laz-perf.wasm')
+		.pipe(gulp.dest('./build/potree/workers'));
 
 	done();
 });

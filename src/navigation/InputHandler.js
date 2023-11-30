@@ -440,18 +440,6 @@ export class InputHandler extends EventDispatcher {
 		let hoveredElements = this.getHoveredElements();
 		if(hoveredElements.length > 0){
 
-			let selectable = hoveredElements
-				.find(el => el.object._listeners && el.object._listeners['select']);
-				
-			if (selectable) {
-
-				if(selectable.object instanceof Potree.BoxVolume && !selectable.object._modifiable) {
-					selectable.object.dispatchEvent({
-						type: 'gizil_volume_hover'
-					});
-				}
-			}
-
 			let names = hoveredElements.map(h => h.object.name).join(", ");
 			if (this.logMessages) console.log(`${this.constructor.name}: onMouseMove; hovered: '${names}'`);
 		}

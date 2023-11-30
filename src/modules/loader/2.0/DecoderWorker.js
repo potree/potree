@@ -99,6 +99,22 @@ onmessage = function (event) {
 			}
 
 			attributeBuffers[pointAttribute.name] = { buffer: buff, attribute: pointAttribute };
+		}else if(["NORMAL", "normal"].includes(pointAttribute.name)){
+			let buff = new ArrayBuffer(numPoints * 4 * 3);
+			let normals = new Float32Array(buff);
+
+			for (let j = 0; j < numPoints; j++) {
+				let pointOffset = j * bytesPerPoint;
+
+				let x = view.getFloat32(pointOffset + attributeOffset + 0, true);
+				let y = view.getFloat32(pointOffset + attributeOffset + 1, true);
+				let z = view.getFloat32(pointOffset + attributeOffset + 2, true);
+
+				normals[3 * j + 0] = x;
+				normals[3 * j + 1] = y;
+				normals[3 * j + 2] = z;
+			}
+			attributeBuffers[pointAttribute.name] = { buffer: buff, attribute: pointAttribute };
 		}else{
 			let buff = new ArrayBuffer(numPoints * 4);
 			let f32 = new Float32Array(buff);

@@ -103,10 +103,10 @@ export class Annotation extends EventDispatcher {
 		this.elDescriptionEditOk.click(this.clickDescriptionEditButton);
 
 		this.clickTitle = () => {
+			this.dispatchEvent({type: 'click', target: this});
 			if(this.hasView()){
 				this.moveHere(this.scene.getActiveCamera());
 			}
-			this.dispatchEvent({type: 'click', target: this});
 		};
 
 		this.elTitle.click(this.clickTitle);

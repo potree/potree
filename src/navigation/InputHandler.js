@@ -399,8 +399,16 @@ export class InputHandler extends EventDispatcher {
 				if (noMovement) {
 					let selectable = this.hoveredElements
 						.find(el => el.object._listeners && el.object._listeners['select']);
-
+						
 					if (selectable) {
+						
+						if(selectable.object instanceof Potree.BoxVolume && !selectable.object._modifiable) {
+							selectable.object.dispatchEvent({
+								type: 'gizil_unmodifiable_select'
+							});
+							return;
+						}
+
 						selectable = selectable.object;
 
 						if (this.isSelected(selectable)) {

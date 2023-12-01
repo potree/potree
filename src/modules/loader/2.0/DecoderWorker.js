@@ -106,13 +106,13 @@ onmessage = function (event) {
 			for (let j = 0; j < numPoints; j++) {
 				let pointOffset = j * bytesPerPoint;
 
-				let x = view.getFloat32(pointOffset + attributeOffset + 0, true);
-				let y = view.getFloat32(pointOffset + attributeOffset + 1, true);
-				let z = view.getFloat32(pointOffset + attributeOffset + 2, true);
+				let nx = view.getFloat32(pointOffset + attributeOffset + 0, true);
+				let ny = view.getFloat32(pointOffset + attributeOffset + 4, true);
+				let nz = view.getFloat32(pointOffset + attributeOffset + 8, true);
 
-				normals[3 * j + 0] = x;
-				normals[3 * j + 1] = y;
-				normals[3 * j + 2] = z;
+				normals[3 * j + 0] = nx;
+				normals[3 * j + 1] = ny;
+				normals[3 * j + 2] = nz;
 			}
 			attributeBuffers[pointAttribute.name] = { buffer: buff, attribute: pointAttribute };
 		}else{

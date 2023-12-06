@@ -51,7 +51,12 @@ export class CopcLaszipLoader {
 		// isolate the compressed data buffer, which is passed to the worker.
 		// The time-consuming decompression and extracting the data into 
 		// GPU-compatible buffers happens in the worker.
-		const { pointDataOffset, pointDataLength } = node.nodeinfo
+		const { pointCount, pointDataOffset, pointDataLength } = node.nodeinfo
+
+		// Note that COPC explicitly allows nodes to exist with no data.  They
+		// may have children, but there is no point cloud data.  Make sure we
+		// don't try to fetch a slice of point data in this case.
+		if (!pointCount) return this.parse(node, new ArrayBuffer())
 		const compressed = await node.owner.getter(
 			pointDataOffset, 
 			pointDataOffset + pointDataLength)

@@ -54,7 +54,7 @@
 			$("#menu_appearance").next().show();
 		});
 
-        var path = "../pointclouds/lion_takanawa_ept_laz/ept.json";
+        var path = "../pointclouds/lion_takanawa_ept_laz_14/ept.json";
 		var name = "lion";
 
 		var getQueryParam = function(name) {
@@ -73,14 +73,12 @@
             else path = "../pointclouds/" + name + "/ept.json";
         }
 
-		var c = getQueryParam('c');
 		Potree.loadPointCloud(path, name, function(e){
 			viewer.scene.addPointCloud(e.pointcloud);
 
 			let material = e.pointcloud.material;
 			material.size = 1;
 			material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
-			if (c) material.activeAttributeName = c;
 
 			viewer.fitToScreen(0.5);
 		});

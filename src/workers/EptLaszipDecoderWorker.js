@@ -1,155 +1,165 @@
-function readUsingDataView(event) {
+/* global onmessage:true postMessage:false Copc */
+/* exported onmessage */
+// ept-laszip-decoder-worker.js
+//
+
+// importScripts('/libs/copc/index.js');
+
+async function readUsingDataView(event) {
 	performance.mark("laslaz-start");
 
-	let buffer = event.data.buffer;
-	let numPoints = event.data.numPoints;
-	let pointSize = event.data.pointSize;
-	let pointFormat = event.data.pointFormatID;
+	// TODO: Handle extra-bytes.
+	const { isFullFile, compressed, header, eb, pointCount, nodemin } = event.data
+	const { pointDataRecordFormat, pointDataRecordLength } = header
 
-	// gps time byte offsets from LAS specification
-	let gpsOffsets = [null, 20, null, 20, 20, 20, 22, 22, 22, 22, 22] 
-	let gpsOffset = gpsOffsets[pointFormat];
+	// Note that for the chunk version, we use the point count passed in the
+	// event rather than the point count from the header, since the header has
+	// the point count for the entire file, not just our slice.
+	const u = new Uint8Array(compressed)
+	const buffer = isFullFile
+		? await Copc.Las.PointData.decompressFile(u)
+		: await Copc.Las.PointData.decompressChunk(
+			u,
+			{ pointDataRecordFormat, pointDataRecordLength, pointCount },
+		)
 
-	let scale = event.data.scale;
-	let offset = event.data.offset;
+	const view = Copc.Las.View.create(buffer, header, eb)
 
-	let sourceUint8 = new Uint8Array(buffer);
-	let sourceView = new DataView(buffer);
+	const buffers = {
+		position: new ArrayBuffer(pointCount * 3 * 4),
+		color: new ArrayBuffer(pointCount * 3 * 2),
+		intensity: new ArrayBuffer(pointCount * 4),
+		classification: new ArrayBuffer(pointCount),
+		returnNumber: new ArrayBuffer(pointCount),
+		numberOfReturns: new ArrayBuffer(pointCount),
+		pointSourceId: new ArrayBuffer(pointCount * 2),
+		gpsTime: new ArrayBuffer(pointCount * 4),
+		indices: new ArrayBuffer(pointCount * 4),
+	}
+	const tempBuffers = {
+		gpsTime64: new ArrayBuffer(pointCount * 8),
+		color16: new ArrayBuffer(pointCount * 3 * 2), // Does not include alpha.
+	}
 
-	let tightBoundingBox = {
-		min: [
-			Number.POSITIVE_INFINITY,
-			Number.POSITIVE_INFINITY,
-			Number.POSITIVE_INFINITY
-		],
-		max: [
-			Number.NEGATIVE_INFINITY,
-			Number.NEGATIVE_INFINITY,
-			Number.NEGATIVE_INFINITY
-		]
-	};
+	const views = {
+		position: new Float32Array(buffers.position),
+		color16: new Uint16Array(tempBuffers.color16),
+		color8: new Uint8Array(buffers.color),
+		intensity: new Float32Array(buffers.intensity),
+		classification: new Uint8Array(buffers.classification),
+		returnNumber: new Uint8Array(buffers.returnNumber),
+		numberOfReturns: new Uint8Array(buffers.numberOfReturns),
+		pointSourceId: new Uint16Array(buffers.pointSourceId),
+		gpsTime64: new Float64Array(tempBuffers.gpsTime64),
+		gpsTime32: new Float32Array(buffers.gpsTime),
+		indices: new Uint32Array(buffers.indices),
+	}
 
-	let mean = [0, 0, 0];
+	const mean = [0, 0, 0];
 
-	let pBuff = new ArrayBuffer(numPoints * 3 * 4);
-	let cBuff = new ArrayBuffer(numPoints * 4);
-	let iBuff = new ArrayBuffer(numPoints * 4);
-	let clBuff = new ArrayBuffer(numPoints);
-	let rnBuff = new ArrayBuffer(numPoints);
-	let nrBuff = new ArrayBuffer(numPoints);
-	let psBuff = new ArrayBuffer(numPoints * 2);
-	let gpsBuff64 = new ArrayBuffer(numPoints * 8);
-	let gpsBuff32 = new ArrayBuffer(numPoints * 4);
+	const get = {
+		x: view.getter('X'),
+		y: view.getter('Y'),
+		z: view.getter('Z'),
+		intensity: view.getter('Intensity'),
+		classification: view.getter('Classification'),
+		returnNumber: view.getter('ReturnNumber'),
+		numberOfReturns: view.getter('NumberOfReturns'),
+		pointSourceId: view.getter('PointSourceId'),
+		...(view.dimensions.GpsTime && { gpsTime: view.getter('GpsTime') }),
+		...(view.dimensions.Red && {
+			red: view.getter('Red'),
+			green: view.getter('Green'),
+			blue: view.getter('Blue'),
+		}),
+	}
 
-	let positions = new Float32Array(pBuff);
-	let colors = new Uint8Array(cBuff);
-	let intensities = new Float32Array(iBuff);
-	let classifications = new Uint8Array(clBuff);
-	let returnNumbers = new Uint8Array(rnBuff);
-	let numberOfReturns = new Uint8Array(nrBuff);
-	let pointSourceIDs = new Uint16Array(psBuff);
-	let gpsTime64 = new Float64Array(gpsBuff64)
-	let gpsTime32 = new Float32Array(gpsBuff32)
+	const ranges = [
+		'x', 
+		'y', 
+		'z', 
+		'intensity', 
+		'classification',
+		'returnNumber',
+		'numberOfReturns',
+		'pointSourceId',
+		'gpsTime',
+		'color',
+	].reduce((map, name) => ({ ...map, [name]: [Infinity, -Infinity] }), {})
 
-	// Point format 3 contains an 8-byte GpsTime before RGB values, so make
-	// sure we have the correct color offset.
-	let hasColor = pointFormat == 2 || pointFormat == 3;
-	let co = pointFormat == 2 ? 20 : 28;
+	function update(range, value) {
+		range[0] = Math.min(range[0], value)
+		range[1] = Math.max(range[1], value)
+	}
 
-	// TODO This should be cached per-resource since this is an expensive check.
-	let twoByteColor = false;
-	if (hasColor) {
-		let r, g, b, pos;
-		for (let i = 0; i < numPoints && !twoByteColor; ++i) {
-			pos = i * pointSize;
-			r = sourceView.getUint16(pos + co, true)
-			g = sourceView.getUint16(pos + co + 2, true)
-			b = sourceView.getUint16(pos + co + 4, true)
-			if (r > 255 || g > 255 || b > 255) twoByteColor = true;
+	for (let i = 0; i < pointCount; i++) {
+		views.indices[i] = i;
+
+		const x = get.x(i) - nodemin[0];
+		const y = get.y(i) - nodemin[1];
+		const z = get.z(i) - nodemin[2];
+
+		views.position[3 * i + 0] = x;
+		views.position[3 * i + 1] = y;
+		views.position[3 * i + 2] = z;
+
+		mean[0] += x / pointCount;
+		mean[1] += y / pointCount;
+		mean[2] += z / pointCount;
+
+		update(ranges.x, x)
+		update(ranges.y, y)
+		update(ranges.z, z)
+
+		views.intensity[i] = get.intensity(i)
+		update(ranges.intensity, views.intensity[i])
+
+		views.returnNumber[i] = get.returnNumber(i)
+		update(ranges.returnNumber, views.returnNumber[i])
+
+		views.numberOfReturns[i] = get.numberOfReturns(i)
+		update(ranges.numberOfReturns, views.numberOfReturns[i])
+
+		views.classification[i] = get.classification(i)
+		update(ranges.classification, views.classification[i])
+
+		views.classification[i] = get.classification(i)
+		update(ranges.classification, views.classification[i])
+
+		views.pointSourceId[i] = get.pointSourceId(i)
+		update(ranges.pointSourceId, views.pointSourceId[i])
+
+		if (get.gpsTime) {
+			views.gpsTime64[i] = get.gpsTime(i)
+			update(ranges.gpsTime, views.gpsTime64[i])
+		}
+
+		if (get.red) {
+			let r = get.red(i)
+			let g = get.green(i)
+			let b = get.blue(i)
+
+			// We only really care about the max here to decide if we will need
+			// to normalize the colors downward to 8-bit values.
+			update(ranges.color, Math.max(r, g, b))
+
+			views.color16[3 * i + 0] = r
+			views.color16[3 * i + 1] = g
+			views.color16[3 * i + 2] = b
 		}
 	}
 
-	for (let i = 0; i < numPoints; i++) {
-		// POSITION
-		let ux = sourceView.getInt32(i * pointSize + 0, true);
-		let uy = sourceView.getInt32(i * pointSize + 4, true);
-		let uz = sourceView.getInt32(i * pointSize + 8, true);
-
-		x = ux * scale[0] + offset[0] - event.data.mins[0];
-		y = uy * scale[1] + offset[1] - event.data.mins[1];
-		z = uz * scale[2] + offset[2] - event.data.mins[2];
-
-		positions[3 * i + 0] = x;
-		positions[3 * i + 1] = y;
-		positions[3 * i + 2] = z;
-
-		mean[0] += x / numPoints;
-		mean[1] += y / numPoints;
-		mean[2] += z / numPoints;
-
-		tightBoundingBox.min[0] = Math.min(tightBoundingBox.min[0], x);
-		tightBoundingBox.min[1] = Math.min(tightBoundingBox.min[1], y);
-		tightBoundingBox.min[2] = Math.min(tightBoundingBox.min[2], z);
-
-		tightBoundingBox.max[0] = Math.max(tightBoundingBox.max[0], x);
-		tightBoundingBox.max[1] = Math.max(tightBoundingBox.max[1], y);
-		tightBoundingBox.max[2] = Math.max(tightBoundingBox.max[2], z);
-
-		// INTENSITY
-		let intensity = sourceView.getUint16(i * pointSize + 12, true);
-		intensities[i] = intensity;
-
-		// RETURN NUMBER, stored in the first 3 bits - 00000111
-		// number of returns stored in next 3 bits	 - 00111000
-		let returnNumberAndNumberOfReturns = sourceView.getUint8(i * pointSize + 14, true);
-		let returnNumber = returnNumberAndNumberOfReturns & 0b0111;
-		let numberOfReturn = (returnNumberAndNumberOfReturns & 0b00111000) >> 3;
-		returnNumbers[i] = returnNumber;
-		numberOfReturns[i] = numberOfReturn;
-
-		// CLASSIFICATION
-		let classification = sourceView.getUint8(i * pointSize + 15, true);
-		classifications[i] = classification;
-
-		// POINT SOURCE ID
-		let pointSourceID = sourceView.getUint16(i * pointSize + 18, true);
-		pointSourceIDs[i] = pointSourceID;
-
-		// COLOR, if available
-		if (hasColor) {
-			let r = sourceView.getUint16(i * pointSize + co, true)
-			let g = sourceView.getUint16(i * pointSize + co + 2, true)
-			let b = sourceView.getUint16(i * pointSize + co + 4, true)
-
-			if (twoByteColor) {
-				r /= 256;
-				g /= 256;
-				b /= 256;
-			}
-
-			colors[4 * i + 0] = r;
-			colors[4 * i + 1] = g;
-			colors[4 * i + 2] = b;
-			colors[4 * i + 3] = 255;
-		}
-	}
-
-	let min = Infinity
-	let max = -Infinity
-
-	for (let i = 0; i < numPoints; i++) {
-		min = Math.min(min, gpsTime64[i])
-		max = Math.max(max, gpsTime64[i])
-	}
-
-	for (let i = 0; i < numPoints; i++) {
-		gpsTime32[i] = gpsTime64[i] = min
-	}
-
-	let indices = new ArrayBuffer(numPoints * 4);
-	let iIndices = new Uint32Array(indices);
-	for (let i = 0; i < numPoints; i++) {
-		iIndices[i] = i;
+	// Do some normalizations:
+	// 	- if colors are 16-bit, normalize them down to 8-bit
+	// 	- normalize the GPS times to 32-bit offset values.
+	const normalizeColor = ranges.color[1] > 255 ? (c) => c / 256 : c => c
+	ranges.color[0] = normalizeColor(ranges.color[0])
+	ranges.color[1] = normalizeColor(ranges.color[1])
+	for (let i = 0; i < pointCount; i++) {
+		views.color8[4 * i + 0] = normalizeColor(views.color16[3 * i + 0]);
+		views.color8[4 * i + 1] = normalizeColor(views.color16[3 * i + 1]);
+		views.color8[4 * i + 2] = normalizeColor(views.color16[3 * i + 2]);
+		views.gpsTime32[i] = views.gpsTime64[i] - ranges.gpsTime[0]
 	}
 
 	performance.mark("laslaz-end");
@@ -165,36 +175,29 @@ function readUsingDataView(event) {
 	performance.clearMeasures();
 
 	let message = {
-		mean: mean,
-		position: pBuff,
-		color: cBuff,
-		intensity: iBuff,
-		classification: clBuff,
-		returnNumber: rnBuff,
-		numberOfReturns: nrBuff,
-		pointSourceID: psBuff,
-		tightBoundingBox: tightBoundingBox,
-		indices: indices,
-		gpsTime: gpsBuff32,
-		gpsMeta: { offset: min, range: max-min }
+		...buffers,
+		mean,
+		tightBoundingBox: {
+			min: [ranges.x[0], ranges.y[0], ranges.z[0]],
+			max: [ranges.x[1], ranges.y[1], ranges.z[1]],
+		},
+		gpsMeta: { 
+			offset: ranges.gpsTime[0], 
+			range: ranges.gpsTime[1] - ranges.gpsTime[0]
+		},
+		ranges: { 
+			intensity: ranges.intensity,
+			classification: ranges.classification,
+			'return number': ranges.returnNumber,
+			'number of returns': ranges.numberOfReturns,
+			'source id': ranges.pointSourceId,
+			'gps-time': ranges.gpsTime,
+		}
 	};
 
-	let transferables = [
-		message.position,
-		message.color,
-		message.intensity,
-		message.classification,
-		message.returnNumber,
-		message.numberOfReturns,
-		message.pointSourceID,
-		message.indices,
-		message.gpsTime
-	];
+	let transferables = Object.values(buffers)
 
 	postMessage(message, transferables);
 };
 
-
-
 onmessage = readUsingDataView;
-

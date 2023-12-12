@@ -47,14 +47,14 @@
 		viewer.setPointBudget(2_000_000);
 		viewer.loadSettingsFromURL();
 
-		viewer.setDescription("Loading Entwine-generated EPT format");
+		viewer.setDescription("Loading COPC format");
 
 		viewer.loadGUI(() => {
 			viewer.setLanguage('en');
 			$("#menu_appearance").next().show();
 		});
 
-        var path = "../pointclouds/lion_takanawa_ept_laz/ept.json";
+        var path = "../pointclouds/lion_takanawa.copc.laz";
 		var name = "lion";
 
 		var getQueryParam = function(name) {

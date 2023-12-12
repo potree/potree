@@ -253,7 +253,7 @@ export class MeasuringTool extends EventDispatcher{
 
 		this.light.position.copy(camera.position);
 
-		// make size independant of distance
+		// make size independent of distance
 		for (let measure of measurements) {
 			measure.lengthUnit = this.viewer.lengthUnit;
 			measure.lengthUnitDisplay = this.viewer.lengthUnitDisplay;

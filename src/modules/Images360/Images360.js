@@ -317,8 +317,8 @@ export class Images360 extends EventDispatcher{
 		this.isFocused= false;
 
 		// panoromik görüntüden çıkarken zoom resetleme yapıyoruz
-		const myactivecamera = viewer.scene.getActiveCamera();
-		myactivecamera.zoom = this.viewerZoom;
+		// const myactivecamera = viewer.scene.getActiveCamera();
+		// myactivecamera.zoom = this.viewerZoom;
 	}
 
 	load(image360){

@@ -59,4 +59,6 @@ class CustomEvent {
 export const gizilCustomEvent = new CustomEvent();
 export const GizilEvent = {
 	OCTREE_LOADER: 'OCTREE_LOADER',
+	IMAGE_FOCUSED: 'IMAGE_FOCUSED',
+
 }

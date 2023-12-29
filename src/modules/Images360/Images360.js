@@ -2,6 +2,7 @@
 import * as THREE from "../../../libs/three.js/build/three.module.js";
 import { EventDispatcher } from "../../EventDispatcher.js";
 import {TextSprite} from "../../TextSprite.js";
+import { gizilCustomEvent } from "../../gizil/GizilCustomEvent.js";
 
 let sg = new THREE.SphereGeometry(1, 8, 8);
 let sgHigh = new THREE.SphereGeometry(1, 128, 128);
@@ -268,6 +269,7 @@ export class Images360 extends EventDispatcher{
 		);
 
 		this.focusedImage = image360;
+		gizilCustomEvent.emit(GizilEvent.IMAGE_FOCUSED, { image: image360, state: 'FOCUSED' });
 		/** */
 		this.isFocused = true;
 
@@ -311,6 +313,8 @@ export class Images360 extends EventDispatcher{
 
 
 		this.focusedImage = null;
+		gizilCustomEvent.emit(GizilEvent.IMAGE_FOCUSED, { image: null, state: 'UNFOCUSED' });
+
 
 		this.elUnfocus.style.display = "none";
 		/** */

@@ -2,7 +2,7 @@
 import * as THREE from "../../../libs/three.js/build/three.module.js";
 import { EventDispatcher } from "../../EventDispatcher.js";
 import {TextSprite} from "../../TextSprite.js";
-import { gizilCustomEvent } from "../../gizil/GizilCustomEvent.js";
+import { gizilCustomEvent, GizilEvent } from "../../gizil/GizilCustomEvent.js";
 
 let sg = new THREE.SphereGeometry(1, 8, 8);
 let sgHigh = new THREE.SphereGeometry(1, 128, 128);

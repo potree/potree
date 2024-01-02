@@ -546,6 +546,7 @@ We would like to thank our sponsors for their financial contributions that keep 
 
 # Bibtex 
 
+```
 @article{SCHUETZ-2020-MPC,
 	title =      "Fast Out-of-Core Octree Generation for Massive Point Clouds",
 	author =     "Markus Schütz and Stefan Ohrhallinger and Michael Wimmer",
@@ -560,3 +561,4 @@ We would like to thank our sponsors for their financial contributions that keep 
 	pages =      "1--13",
 	keywords =   "point clouds, point-based rendering, level of detail",
 }
+```

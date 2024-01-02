@@ -83,7 +83,6 @@ export class NodeLoader{
 					}else if(property === "rgba"){
 						geometry.setAttribute('rgba', new THREE.BufferAttribute(new Uint8Array(buffer), 4, true));
 					}else if(property === "NORMAL"){
-						//geometry.setAttribute('rgba', new THREE.BufferAttribute(new Uint8Array(buffer), 4, true));
 						geometry.setAttribute('normal', new THREE.BufferAttribute(new Float32Array(buffer), 3));
 					}else if (property === "INDICES") {
 						let bufferAttribute = new THREE.BufferAttribute(new Uint8Array(buffer), 4);

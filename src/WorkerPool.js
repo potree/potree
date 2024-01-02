@@ -10,7 +10,19 @@ export class WorkerPool{
 		}
 
 		if (this.workers[url].length === 0){
-			let worker = new Worker(url);
+			/* CORS FIX - https://stackoverflow.com/a/62914052 */
+			// Returns a blob:// URL which points
+			// to a javascript file which will call
+			// importScripts with the given URL
+			function getWorkerURL(url) 
+			{
+				const content = `importScripts( "${url}" );`;
+				return URL.createObjectURL(
+					new Blob([content], { type: "text/javascript" })
+				);
+			}
+
+			let worker = new Worker(getWorkerURL(url));
 			this.workers[url].push(worker);
 		}
 

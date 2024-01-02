@@ -543,3 +543,20 @@ We would like to thank our sponsors for their financial contributions that keep 
 * Christian Boucheny (EDL developer) and Daniel Girardeau-Montaut ([CloudCompare](http://www.danielgm.net/cc/)). The EDL shader was adapted from the CloudCompare source code!
 * [Martin Isenburg](http://rapidlasso.com/), [Georepublic](http://georepublic.de/en/),
 [Veesus](http://veesus.com/), [Sigeom Sa](http://www.sigeom.ch/), [SITN](http://www.ne.ch/sitn), [LBI ArchPro](http://archpro.lbg.ac.at/),  [Pix4D](http://pix4d.com/) as well as all the contributers to potree and PotreeConverter and many more for their support.
+
+# Bibtex 
+
+@article{SCHUETZ-2020-MPC,
+	title =      "Fast Out-of-Core Octree Generation for Massive Point Clouds",
+	author =     "Markus Schütz and Stefan Ohrhallinger and Michael Wimmer",
+	year =       "2020",
+	month =      nov,
+	journal =    "Computer Graphics Forum",
+	volume =     "39",
+	number =     "7",
+	doi =        "10.1111/cgf.14134",
+	pages =      "13",
+	publisher =  "John Wiley & Sons, Inc.",
+	pages =      "1--13",
+	keywords =   "point clouds, point-based rendering, level of detail",
+}

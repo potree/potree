@@ -67,6 +67,7 @@ export class NavigationCube extends THREE.Object3D {
 		this.add(this.top);
 
 		this.width = 150; // in px
+		this.yOffset = 0; // in px
 
 		this.camera = new THREE.OrthographicCamera(-1, 1, 1, -1, -1, 1);
 		this.camera.position.copy(new THREE.Vector3(0, 0, 0));
@@ -81,8 +82,9 @@ export class NavigationCube extends THREE.Object3D {
 			
 			this.pickedFace = null;
 			let mouse = new THREE.Vector2();
-			mouse.x = event.clientX - (window.innerWidth - this.width);
-			mouse.y = event.clientY;
+			var viewportOffset = event.toElement.getBoundingClientRect();
+			mouse.x = (event.clientX - viewportOffset.x) - (event.toElement.clientWidth - this.width);
+			mouse.y = (event.clientY - viewportOffset.y) - this.yOffset;
 
 			if(mouse.x < 0 || mouse.y > this.width) return;
 

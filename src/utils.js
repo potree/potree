@@ -308,7 +308,8 @@ export class Utils {
 				materialArray.push(material);
 
 				let loader = new THREE.TextureLoader();
-				loader.load(urls[i],
+				// Add a random number to avoid browser caching, and force loading from possibly updated textures again
+				loader.load(urls[i] + '?' + Math.random(),
 					function loaded (texture) {
 						material.map = texture;
 						material.needsUpdate = true;
@@ -322,7 +323,7 @@ export class Utils {
 			}
 		}
 
-		let skyGeometry = new THREE.CubeGeometry(700, 700, 700);
+		let skyGeometry = new THREE.BoxGeometry(700, 700, 700);
 		let skybox = new THREE.Mesh(skyGeometry, materialArray);
 
 		scene.add(skybox);
@@ -331,6 +332,12 @@ export class Utils {
 
 		// z up
 		scene.rotation.x = Math.PI / 2;
+		// If the skybox North has any angle against our model north, e.g. UTM grid convergence angle, 
+		// fix that with an URL parameter skyboxNorth [giving model azimuth (angle north->east) of skybox north]
+		if (Utils.getParameterByName('skyboxNorth')) {
+			var convergenceRotation = -Utils.getParameterByName('skyboxNorth');
+			scene.rotation.y = Math.PI/180. * convergenceRotation; // GZ: Add negative UTM convergence angle here!
+		}
 
 		parent.children.push(camera);
 		camera.parent = parent;

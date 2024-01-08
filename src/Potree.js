@@ -85,6 +85,7 @@ import {POCLoader} from "./loader/POCLoader.js";
 import {CopcLoader, EptLoader} from "./loader/EptLoader.js";
 import {PointCloudOctree} from "./PointCloudOctree.js";
 import {WorkerPool} from "./WorkerPool.js";
+import { VpcLoader } from "./loader/VpcLoader.js";
 
 export const workerPool = new WorkerPool();
 
@@ -203,16 +204,19 @@ export function loadPointCloud(path, name, callback){
 				}
 			});
 		} else if (path.indexOf('.vpc') > 0) {
-			PointCloudArena4DGeometry.load(path, function (geometry) {
-				if (!geometry) {
-					//callback({type: 'loading_failed'});
+			VpcLoader.load(path, function(geometries) {
+				if (!geometries) {
 					console.error(new Error(`failed to load point cloud from URL: ${path}`));
-				} else {
-					let pointcloud = new PointCloudArena4D(geometry);
-					// loaded(pointcloud);
-					resolve({type: 'pointcloud_loaded', pointcloud: pointcloud});
 				}
-			});
+				else {
+					const pointclouds = [];
+					for (const geometry of geometries) {
+						const pointcloud = new PointCloudOctree(geometry);
+						pointclouds.push(pointcloud);
+					}
+					resolve({type: 'pointclouds_loaded', pointcloud: pointclouds});
+				}
+			})
 		} else {
 			//callback({'type': 'loading_failed'});
 			console.error(new Error(`failed to load point cloud from URL: ${path}`));

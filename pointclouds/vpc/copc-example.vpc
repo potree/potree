@@ -1,0 +1,369 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "stac_version": "1.0.0",
+      "stac_extensions": [
+        "https://stac-extensions.github.io/pointcloud/v1.0.0/schema.json",
+        "https://stac-extensions.github.io/projection/v1.1.0/schema.json"
+      ],
+      "id": "C_01CZ1.copc",
+      "geometry": {
+        "coordinates": [
+          [
+            [
+              5.178686930504275,
+              53.386162190765134,
+              -1.833
+            ],
+            [
+              5.178601150752053,
+              53.403864344138626,
+              -1.833
+            ],
+            [
+              5.236856739937009,
+              53.403951115360634,
+              30.391
+            ],
+            [
+              5.236918545824707,
+              53.38624891647776,
+              30.391
+            ],
+            [
+              5.178686930504275,
+              53.386162190765134,
+              -1.833
+            ]
+          ]
+        ],
+        "type": "Polygon"
+      },
+      "bbox": [
+        5.178601150752053,
+        53.386162190765134,
+        -1.833,
+        5.236918545824707,
+        53.403951115360634,
+        30.391
+      ],
+      "properties": {
+        "datetime": "2014-09-15T00:00:00Z",
+        "pc:count": 68515887,
+        "pc:encoding": "?",
+        "pc:schemas": [
+          {
+            "name": "X",
+            "size": 8,
+            "type": "floating"
+          },
+          {
+            "name": "Y",
+            "size": 8,
+            "type": "floating"
+          },
+          {
+            "name": "Z",
+            "size": 8,
+            "type": "floating"
+          },
+          {
+            "name": "Intensity",
+            "size": 2,
+            "type": "unsigned"
+          },
+          {
+            "name": "ReturnNumber",
+            "size": 1,
+            "type": "unsigned"
+          },
+          {
+            "name": "NumberOfReturns",
+            "size": 1,
+            "type": "unsigned"
+          },
+          {
+            "name": "ScanDirectionFlag",
+            "size": 1,
+            "type": "unsigned"
+          },
+          {
+            "name": "EdgeOfFlightLine",
+            "size": 1,
+            "type": "unsigned"
+          },
+          {
+            "name": "Classification",
+            "size": 1,
+            "type": "unsigned"
+          },
+          {
+            "name": "ScanAngleRank",
+            "size": 4,
+            "type": "floating"
+          },
+          {
+            "name": "UserData",
+            "size": 1,
+            "type": "unsigned"
+          },
+          {
+            "name": "PointSourceId",
+            "size": 2,
+            "type": "unsigned"
+          },
+          {
+            "name": "GpsTime",
+            "size": 8,
+            "type": "floating"
+          },
+          {
+            "name": "ScanChannel",
+            "size": 1,
+            "type": "unsigned"
+          },
+          {
+            "name": "ClassFlags",
+            "size": 1,
+            "type": "unsigned"
+          }
+        ],
+        "pc:type": "lidar",
+        "proj:bbox": [
+          141125.351,
+          600000.0,
+          -1.833,
+          144999.999,
+          601970.202,
+          30.391
+        ],
+        "proj:geometry": {
+          "coordinates": [
+            [
+              [
+                141125.351,
+                600000.0,
+                -1.833
+              ],
+              [
+                141125.351,
+                601970.202,
+                -1.833
+              ],
+              [
+                144999.999,
+                601970.202,
+                30.391
+              ],
+              [
+                144999.999,
+                600000.0,
+                30.391
+              ],
+              [
+                141125.351,
+                600000.0,
+                -1.833
+              ]
+            ]
+          ],
+          "type": "Polygon"
+        },
+        "proj:wkt2": "COMPD_CS[\"Amersfoort / RD New + NAP height\",PROJCS[\"Amersfoort / RD New\",GEOGCS[\"Amersfoort\",DATUM[\"Amersfoort\",SPHEROID[\"Bessel 1841\",6377397.155,299.1528128,AUTHORITY[\"EPSG\",\"7004\"]],AUTHORITY[\"EPSG\",\"6289\"]],PRIMEM[\"Greenwich\",0,AUTHORITY[\"EPSG\",\"8901\"]],UNIT[\"degree\",0.0174532925199433,AUTHORITY[\"EPSG\",\"9122\"]],AUTHORITY[\"EPSG\",\"4289\"]],PROJECTION[\"Oblique_Stereographic\"],PARAMETER[\"latitude_of_origin\",52.1561605555556],PARAMETER[\"central_meridian\",5.38763888888889],PARAMETER[\"scale_factor\",0.9999079],PARAMETER[\"false_easting\",155000],PARAMETER[\"false_northing\",463000],UNIT[\"metre\",1,AUTHORITY[\"EPSG\",\"9001\"]],AXIS[\"Easting\",EAST],AXIS[\"Northing\",NORTH],AUTHORITY[\"EPSG\",\"28992\"]],VERT_CS[\"NAP height\",VERT_DATUM[\"Normaal Amsterdams Peil\",2005,AUTHORITY[\"EPSG\",\"5109\"]],UNIT[\"metre\",1,AUTHORITY[\"EPSG\",\"9001\"]],AXIS[\"Gravity-related height\",UP],AUTHORITY[\"EPSG\",\"5709\"]],AUTHORITY[\"EPSG\",\"7415\"]]"
+      },
+      "links": [],
+      "assets": {
+        "data": {
+          "href": "./..\\copc\\C_01CZ1.copc.laz",
+          "roles": [
+            "data"
+          ]
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "stac_version": "1.0.0",
+      "stac_extensions": [
+        "https://stac-extensions.github.io/pointcloud/v1.0.0/schema.json",
+        "https://stac-extensions.github.io/projection/v1.1.0/schema.json"
+      ],
+      "id": "C_01CZ2.copc",
+      "geometry": {
+        "coordinates": [
+          [
+            [
+              5.236918560736253,
+              53.38624891129924,
+              -1.872
+            ],
+            [
+              5.236813887963025,
+              53.41621901874672,
+              -1.872
+            ],
+            [
+              5.312010981940747,
+              53.41628935919008,
+              42.573
+            ],
+            [
+              5.3120632601944,
+              53.3863191892694,
+              42.573
+            ],
+            [
+              5.236918560736253,
+              53.38624891129924,
+              -1.872
+            ]
+          ]
+        ],
+        "type": "Polygon"
+      },
+      "bbox": [
+        5.236813887963025,
+        53.38624891129924,
+        -1.872,
+        5.3120632601944,
+        53.41628935919008,
+        42.573
+      ],
+      "properties": {
+        "datetime": "2014-09-15T00:00:00Z",
+        "pc:count": 227066354,
+        "pc:encoding": "?",
+        "pc:schemas": [
+          {
+            "name": "X",
+            "size": 8,
+            "type": "floating"
+          },
+          {
+            "name": "Y",
+            "size": 8,
+            "type": "floating"
+          },
+          {
+            "name": "Z",
+            "size": 8,
+            "type": "floating"
+          },
+          {
+            "name": "Intensity",
+            "size": 2,
+            "type": "unsigned"
+          },
+          {
+            "name": "ReturnNumber",
+            "size": 1,
+            "type": "unsigned"
+          },
+          {
+            "name": "NumberOfReturns",
+            "size": 1,
+            "type": "unsigned"
+          },
+          {
+            "name": "ScanDirectionFlag",
+            "size": 1,
+            "type": "unsigned"
+          },
+          {
+            "name": "EdgeOfFlightLine",
+            "size": 1,
+            "type": "unsigned"
+          },
+          {
+            "name": "Classification",
+            "size": 1,
+            "type": "unsigned"
+          },
+          {
+            "name": "ScanAngleRank",
+            "size": 4,
+            "type": "floating"
+          },
+          {
+            "name": "UserData",
+            "size": 1,
+            "type": "unsigned"
+          },
+          {
+            "name": "PointSourceId",
+            "size": 2,
+            "type": "unsigned"
+          },
+          {
+            "name": "GpsTime",
+            "size": 8,
+            "type": "floating"
+          },
+          {
+            "name": "ScanChannel",
+            "size": 1,
+            "type": "unsigned"
+          },
+          {
+            "name": "ClassFlags",
+            "size": 1,
+            "type": "unsigned"
+          }
+        ],
+        "pc:type": "lidar",
+        "proj:bbox": [
+          145000.0,
+          600000.0,
+          -1.872,
+          149999.999,
+          603335.591,
+          42.573
+        ],
+        "proj:geometry": {
+          "coordinates": [
+            [
+              [
+                145000.0,
+                600000.0,
+                -1.872
+              ],
+              [
+                145000.0,
+                603335.591,
+                -1.872
+              ],
+              [
+                149999.999,
+                603335.591,
+                42.573
+              ],
+              [
+                149999.999,
+                600000.0,
+                42.573
+              ],
+              [
+                145000.0,
+                600000.0,
+                -1.872
+              ]
+            ]
+          ],
+          "type": "Polygon"
+        },
+        "proj:wkt2": "COMPD_CS[\"Amersfoort / RD New + NAP height\",PROJCS[\"Amersfoort / RD New\",GEOGCS[\"Amersfoort\",DATUM[\"Amersfoort\",SPHEROID[\"Bessel 1841\",6377397.155,299.1528128,AUTHORITY[\"EPSG\",\"7004\"]],AUTHORITY[\"EPSG\",\"6289\"]],PRIMEM[\"Greenwich\",0,AUTHORITY[\"EPSG\",\"8901\"]],UNIT[\"degree\",0.0174532925199433,AUTHORITY[\"EPSG\",\"9122\"]],AUTHORITY[\"EPSG\",\"4289\"]],PROJECTION[\"Oblique_Stereographic\"],PARAMETER[\"latitude_of_origin\",52.1561605555556],PARAMETER[\"central_meridian\",5.38763888888889],PARAMETER[\"scale_factor\",0.9999079],PARAMETER[\"false_easting\",155000],PARAMETER[\"false_northing\",463000],UNIT[\"metre\",1,AUTHORITY[\"EPSG\",\"9001\"]],AXIS[\"Easting\",EAST],AXIS[\"Northing\",NORTH],AUTHORITY[\"EPSG\",\"28992\"]],VERT_CS[\"NAP height\",VERT_DATUM[\"Normaal Amsterdams Peil\",2005,AUTHORITY[\"EPSG\",\"5109\"]],UNIT[\"metre\",1,AUTHORITY[\"EPSG\",\"9001\"]],AXIS[\"Gravity-related height\",UP],AUTHORITY[\"EPSG\",\"5709\"]],AUTHORITY[\"EPSG\",\"7415\"]]"
+      },
+      "links": [],
+      "assets": {
+        "data": {
+          "href": "./..\\copc\\C_01CZ2.copc.laz",
+          "roles": [
+            "data"
+          ]
+        }
+      }
+    }
+  ]
+}

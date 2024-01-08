@@ -316,4 +316,37 @@ export class PointCloudCopcGeometryNode extends PointCloudTreeNode {
 	}
 }
 
+export class PointCloudVpcGeometry extends BaseGeometry {
+	static parse(json) {
+		let xmin, ymin, zmin, xmax, ymax, zmax;
+
+		for(const feature of json.features) {
+			const box = feature.properties['proj:bbox'];
+			xmin = xmin === undefined ? box[0] : Math.min(box[0], xmin);
+			ymin = ymin === undefined ? box[1] : Math.min(box[1], ymin);
+			zmin = zmin === undefined ? box[2] : Math.min(box[2], zmin);
+			xmax = xmax === undefined ? box[3] : Math.max(box[3], xmax);
+			ymax = ymax === undefined ? box[4] : Math.max(box[4], ymax);
+			zmax = zmax === undefined ? box[5] : Math.max(box[5], zmax);
+		}
+
+		const cube = {xmin, ymin, zmin, xmax, ymax, zmax};
+		const boundsConforming = cube;
+		return ({cube, boundsConforming, spacing: null, srs: null});
+	}
+
+	constructor(json) {
+		super(PointCloudVpcGeometry.parse(json));
+
+		this.type = 'vpc';
+		this.json = json;
+		this.linksToCopcFiles = [];
+
+		for(const feature of json.features) {
+			const url = feature.assets.data.href;
+			this.linksToCopcFiles.push(url);
+		}
+	}
+}
+
 PointCloudCopcGeometryNode.IDCount = 0;

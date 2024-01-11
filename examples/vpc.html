@@ -75,10 +75,10 @@
 	
 			var c = getQueryParam('c');
 			Potree.loadPointCloud(path, name, function(e){
-				for (const pointcloud of e.pointcloud) {
-					viewer.scene.addPointCloud(pointcloud);
+				// for (const pointcloud of e.pointcloud) {
+					viewer.scene.addPointCloud(e.pointcloud);
 		
-					let material = pointcloud.material;
+					let material = e.pointcloud.material;
 					material.size = 1;
 					material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
 					if (c) material.activeAttributeName = c;
@@ -86,7 +86,7 @@
 					viewer.fitToScreen(0.5);
 	
 					material.activeAttributeName = "elevation";
-				}
+				// }
 			});
 		</script>
 

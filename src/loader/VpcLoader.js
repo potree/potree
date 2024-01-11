@@ -1,5 +1,6 @@
 import { CopcLoader } from './EptLoader';
 import { POCLoader } from './POCLoader';
+import { VpcNode } from '../PointCloudEptGeometry';
 
 export class VpcLoader {
 	static async load(file, callback) {
@@ -28,7 +29,39 @@ export class VpcLoader {
 			}
 		}
 
-		callback(geometries);
+		const loadingPromises = [];
+		for (const g of geometries) {
+			if (g.root.isLoaded()) {
+				continue;
+			}
+			let resolve;
+			const promise = new Promise(res => resolve = res);
+			g.root._loaded = g.root.loaded;
+			Object.defineProperty(g.root, "loaded", {
+				set(b) {
+					this._loaded = b;
+					if (b === true) {
+						resolve();
+					}
+				},
+				get() {
+					return this._loaded;
+				}
+			});
+			loadingPromises.push(promise);
+		}
+
+		await Promise.allSettled(loadingPromises);
+
+
+		for (const g of geometries) {
+			geometry.add(g);
+		}
+		console.log(geometry.pointAttributes.attributes);
+		geometry.root = new VpcNode(geometry);
+		geometry.root.load();
+
+		callback(geometry);
 
 	// 	// depends on type?
 	// 	// let root = new Potree.PointCloudCopcGeometryNode(geometry);

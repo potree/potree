@@ -341,11 +341,93 @@ export class PointCloudVpcGeometry extends BaseGeometry {
 		this.type = 'vpc';
 		this.json = json;
 		this.linksToCopcFiles = [];
+		this.attributes = this.pointAttributes;
+		this.children = [];
 
 		for(const feature of json.features) {
 			const url = feature.assets.data.href;
 			this.linksToCopcFiles.push(url);
 		}
+	}
+
+	async add(geomeotry) {
+		this.children.push(geomeotry);
+		console.log(geomeotry.pointAttributes.attributes);
+
+		for (const attribute of geomeotry.pointAttributes.attributes) {
+			const name = attribute.name;
+			const range = attribute.range;
+			// console.log(attribute);
+			console.log(range);
+			// await new Promise(res => setTimeout(res, 500));
+			// console.log(range['0']);
+			// console.log(range['1']);
+			console.log(JSON.stringify(range));
+			const currentAttribute = this.pointAttributes.attributes.find(a => a.name === name);
+			const currentRange = currentAttribute.range;
+			// console.log(currentRange);
+			currentRange[0] = Math.min(currentRange[0], range[0]);
+			currentRange[1] = Math.max(currentRange[1], range[1]);
+		}
+	}
+
+	isTreeNode() {
+		return true;
+	}
+
+	// getBoundingBox() {
+	// 	return this.boundingBox;
+	// }
+
+	// getLevel() {
+	// 	return 0;
+	// }
+}
+
+export class VpcNode extends PointCloudTreeNode {
+	constructor(geometry) {
+		super();
+		this.geometry = geometry;
+		this.boundingBox = geometry.boundingBox;
+		this.children = [];
+		this.oneTimeDisposeHandlers = [];
+		this.boundingSphere = U.sphereFrom(this.boundingBox);
+	}
+
+	async load() {
+		// ???
+	}
+
+	getChildren () {
+		return this.children;
+	}
+
+	getBoundingBox () {
+		return this.boundingBox;
+	}
+
+	isLoaded () {
+		return true;
+	}
+
+	isGeometryNode () {
+		return true;
+	}
+
+	isTreeNode () {
+		return false;
+	}
+
+	getLevel () {
+		return null;
+	}
+
+	getBoundingSphere () {
+		return this.boundingSphere;
+	}
+
+	getNumPoints() {
+		return 0;
 	}
 }
 

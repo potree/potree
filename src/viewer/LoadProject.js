@@ -184,7 +184,12 @@ function loadGeopackage(viewer, geopackage){
 		return;
 	}
 
-	const projection = viewer.getProjection();
+	var projection = viewer.getProjection();
+	try {
+		proj.def("pointcloud", projection);
+	} catch (e) {
+		projection = viewer.getFallbackProjection();
+	}
 
 	proj4.defs("WGS84", "+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs");
 	proj4.defs("pointcloud", projection);

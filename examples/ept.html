@@ -75,6 +75,13 @@
 
 		var c = getQueryParam('c');
 		Potree.loadPointCloud(path, name, function(e){
+			debugger
+			console.group("ept.html")
+			console.log("path...", path)
+			console.log("name...", name)
+			console.log("e.pointcloud", e.pointcloud)
+			console.groupEnd()
+
 			viewer.scene.addPointCloud(e.pointcloud);
 
 			let material = e.pointcloud.material;

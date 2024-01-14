@@ -49,7 +49,7 @@ export class CopcLaszipLoader {
 		// however we must split things out a bit to accommodate the expensive
 		// calls to go in the worker.  So in this non-worker context, we just
 		// isolate the compressed data buffer, which is passed to the worker.
-		// The time-consuming decompression and extracting the data into 
+		// The time-consuming decompression and extracting the data into
 		// GPU-compatible buffers happens in the worker.
 		const { pointCount, pointDataOffset, pointDataLength } = node.nodeinfo
 
@@ -57,8 +57,9 @@ export class CopcLaszipLoader {
 		// may have children, but there is no point cloud data.  Make sure we
 		// don't try to fetch a slice of point data in this case.
 		if (!pointCount) return this.parse(node, new ArrayBuffer())
+		// debugger
 		const compressed = await node.owner.getter(
-			pointDataOffset, 
+			pointDataOffset,
 			pointDataOffset + pointDataLength)
 		this.parse(node, compressed.buffer);
 	}
@@ -97,7 +98,7 @@ export class EptLazBatcher {
 
 			let positions = new Float32Array(e.data.position);
 			let colors = new Uint8Array(e.data.color);
-			
+
 			let intensities = new Float32Array(e.data.intensity);
 			let classifications = new Uint8Array(e.data.classification);
 			let returnNumbers = new Uint8Array(e.data.returnNumber);
@@ -146,7 +147,7 @@ export class EptLazBatcher {
 				new THREE.Vector3().fromArray(e.data.tightBoundingBox.min),
 				new THREE.Vector3().fromArray(e.data.tightBoundingBox.max)
 			);
-
+			// debugger
 			this.node.doneLoading(
 				g,
 				tightBoundingBox,

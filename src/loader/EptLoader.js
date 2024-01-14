@@ -2,6 +2,8 @@
  * @author Connor Manning
  */
 
+import {PointCloudCopcGeometryNode} from "../PointCloudCopcGeometry"
+
 export class EptLoader {
 	static async load(file, callback) {
 
@@ -10,7 +12,7 @@ export class EptLoader {
 
 		let url = file.substr(0, file.lastIndexOf('/ept.json'));
 		let geometry = new Potree.PointCloudEptGeometry(url, json);
-		let root = new Potree.PointCloudCopcGeometryNode(geometry);
+		let root = new PointCloudCopcGeometryNode(geometry);
 
 		geometry.root = root;
 		geometry.root.load();
@@ -19,20 +21,20 @@ export class EptLoader {
 	}
 };
 
-export class CopcLoader {
-	static async load(file, callback) {
-		const { Copc, Getter } = window.Copc
+// export class CopcLoader {
+// 	static async load(file, callback) {
+// 		const { Copc, Getter } = window.Copc
 
-		const url = file;
-		const getter = Getter.http(url);
-		const copc = await Copc.create(getter);
+// 		const url = file;
+// 		const getter = Getter.http(url);
+// 		const copc = await Copc.create(getter);
 
-		let geometry = new Potree.PointCloudCopcGeometry(getter, copc);
-		let root = new Potree.PointCloudCopcGeometryNode(geometry);
+// 		let baseGeometry = new Potree.PointCloudCopcGeometry(getter, copc);
+// 		// let root = new Potree.PointCloudCopcGeometryNode(baseGeometry);
+// 		baseGeometry.root = new Potree.PointCloudCopcGeometryNode(baseGeometry);
+// 		// baseGeometry.root = root;
+// 		baseGeometry.root.load();
 
-		geometry.root = root;
-		geometry.root.load();
-
-		callback(geometry);
-	}
-}
+// 		callback(baseGeometry);
+// 	}
+// }

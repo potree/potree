@@ -9,6 +9,8 @@ export * from "./Features.js";
 export * from "./KeyCodes.js";
 export * from "./LRU.js";
 export * from "./PointCloudEptGeometry.js";
+export * from "./PointCloudCopcGeometry.js";
+export * from "./PointCloudVpcGeometry.js";
 export * from "./PointCloudOctree.js";
 export * from "./PointCloudOctreeGeometry.js";
 export * from "./PointCloudTree.js";
@@ -34,6 +36,8 @@ export * from "./materials/PointCloudMaterial.js";
 export * from "./loader/POCLoader.js";
 export * from "./modules/loader/2.0/OctreeLoader.js";
 export * from "./loader/EptLoader.js";
+export * from "./loader/CopcLoader.js";
+export * from "./loader/VpcLoader.js";
 export * from "./loader/ept/BinaryLoader.js";
 export * from "./loader/ept/LaszipLoader.js";
 export * from "./loader/ept/ZstandardLoader.js";
@@ -82,7 +86,8 @@ import "./extensions/Ray.js";
 import {LRU} from "./LRU.js";
 import {OctreeLoader} from "./modules/loader/2.0/OctreeLoader.js";
 import {POCLoader} from "./loader/POCLoader.js";
-import {CopcLoader, EptLoader} from "./loader/EptLoader.js";
+import {EptLoader} from "./loader/EptLoader.js";
+import {CopcLoader} from "./loader/CopcLoader.js";
 import {PointCloudOctree} from "./PointCloudOctree.js";
 import {WorkerPool} from "./WorkerPool.js";
 import { VpcLoader } from "./loader/VpcLoader.js";
@@ -131,8 +136,15 @@ export {scriptPath, resourcePath};
 
 export function loadPointCloud(path, name, callback){
 	let loaded = function(e){
-		e.pointcloud.name = name;
-		callback(e);
+		if (e.pointclouds){
+			for (const [pos, pointcloud] of e.pointclouds.entries()){
+				pointcloud.name = `name-${pos}`
+			}
+			callback(e)
+		}else{
+			e.pointcloud.name = name;
+			callback(e);
+		}
 	};
 
 	let promise = new Promise( resolve => {
@@ -209,13 +221,18 @@ export function loadPointCloud(path, name, callback){
 					console.error(new Error(`failed to load point cloud from URL: ${path}`));
 				}
 				else {
-					const pointcloud = new PointCloudOctree(geometries);
-					// const pointclouds = [];
-					// for (const geometry of geometries) {
-					// 	const pointcloud = new PointCloudOctree(geometry);
-					// 	pointclouds.push(pointcloud);
-					// }
-					resolve({type: 'pointclouds_loaded', pointcloud: pointcloud});
+					// debugger
+					const pointclouds = [];
+					for (const geometry of geometries) {
+						const pointcloud = new PointCloudOctree(geometry);
+						pointclouds.push(pointcloud);
+					}
+					console.group("Potree.loadPointCloud")
+					console.log("geometries...", geometries)
+					console.log("pointclouds...", pointclouds)
+					console.groupEnd()
+					resolve({type: 'pointclouds_loaded', pointclouds});
+
 				}
 			})
 		} else {

@@ -1,74 +1,43 @@
-import { CopcLoader } from './EptLoader';
-import { POCLoader } from './POCLoader';
-import { VpcNode } from '../PointCloudEptGeometry';
+import {VpcBaseGeometry} from '../PointCloudVpcGeometry';
+import {PointCloudCopcGeometryNode} from "../PointCloudCopcGeometry"
 
 export class VpcLoader {
 	static async load(file, callback) {
 		const response = await fetch(file)
+
 		if(!response.ok) {
 			console.error(`Failed to load file form ${file}`);
 			callback(null);
 			return;
 		}
 
-		const json = await response.json();
+		const vpc = await response.json();
+		const vpcGeometries = []
 
-		const geometry = new Potree.PointCloudVpcGeometry(json);
-		const geometries = [];
-		const callbackGeom = g => geometries.push(g);
-		for (const url of geometry.linksToCopcFiles) {
-			if (url.endsWith('copc.laz')) {
-				await CopcLoader.load(url, callbackGeom)
-				// if (url.includes('lion')) {
-				// 	setTimeout(() => CopcLoader.load(url, callback), 100);
-				// } else {
-				// 	setTimeout(() => CopcLoader.load(url, callback), 5000);
-				// }
-			} else if (url.endsWith('cloud.js')) {
-				POCLoader.load(url, callbackGeom);
+		// start group logging
+		console.group("VpcLoader.load")
+
+		// debugger
+		for (const feature of vpc.features){
+			const baseGeometry = new VpcBaseGeometry(vpc,feature);
+
+			// load propper copc getter for this file
+			if (await baseGeometry.loadGetter()===false){
+				throw Error("Failed to load getter in baseGeometry")
 			}
+			// assign root tree node to base geometry class
+			baseGeometry.root = new PointCloudCopcGeometryNode(baseGeometry);
+			await baseGeometry.root.load();
+
+			console.log("baseGeometry...", baseGeometry)
+			// add this geometry
+			vpcGeometries.push(baseGeometry)
 		}
 
-		const loadingPromises = [];
-		for (const g of geometries) {
-			if (g.root.isLoaded()) {
-				continue;
-			}
-			let resolve;
-			const promise = new Promise(res => resolve = res);
-			g.root._loaded = g.root.loaded;
-			Object.defineProperty(g.root, "loaded", {
-				set(b) {
-					this._loaded = b;
-					if (b === true) {
-						resolve();
-					}
-				},
-				get() {
-					return this._loaded;
-				}
-			});
-			loadingPromises.push(promise);
-		}
+		console.log("vpcGemometries...", vpcGeometries)
+		console.groupEnd()
 
-		await Promise.allSettled(loadingPromises);
-
-
-		for (const g of geometries) {
-			geometry.add(g);
-		}
-		console.log(geometry.pointAttributes.attributes);
-		geometry.root = new VpcNode(geometry);
-		geometry.root.load();
-
-		callback(geometry);
-
-	// 	// depends on type?
-	// 	// let root = new Potree.PointCloudCopcGeometryNode(geometry);
-
-	// 	// geometry.root = root;
-	// 	// geometry.root.load();
-
-	// 	callback(geometry);
+		// return vpc geometry
+		callback(vpcGeometries);
 	}
 }

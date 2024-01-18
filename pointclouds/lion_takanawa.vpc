@@ -1,0 +1,222 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "stac_version": "1.0.0",
+      "stac_extensions": [
+        "https://stac-extensions.github.io/pointcloud/v1.0.0/schema.json",
+        "https://stac-extensions.github.io/projection/v1.1.0/schema.json"
+      ],
+      "id": "lion_takanawa.copc",
+      "geometry": {
+        "coordinates": [
+          [
+            [
+              -4.985,
+              1.039,
+              -3.445
+            ],
+            [
+              -4.985,
+              6.724,
+              -3.445
+            ],
+            [
+              -0.789,
+              6.724,
+              1.124
+            ],
+            [
+              -0.789,
+              1.039,
+              1.124
+            ],
+            [
+              -4.985,
+              1.039,
+              -3.445
+            ]
+          ]
+        ],
+        "type": "Polygon"
+      },
+      "bbox": [
+        -4.985,
+        1.039,
+        -3.445,
+        -0.789,
+        6.724,
+        1.124
+      ],
+      "properties": {
+        "datetime": "2023-11-28T00:00:00Z",
+        "pc:count": 341989,
+        "pc:encoding": "?",
+        "pc:schemas": [
+          {
+            "name": "X",
+            "size": 8,
+            "type": "floating"
+          },
+          {
+            "name": "Y",
+            "size": 8,
+            "type": "floating"
+          },
+          {
+            "name": "Z",
+            "size": 8,
+            "type": "floating"
+          },
+          {
+            "name": "Intensity",
+            "size": 2,
+            "type": "unsigned"
+          },
+          {
+            "name": "ReturnNumber",
+            "size": 1,
+            "type": "unsigned"
+          },
+          {
+            "name": "NumberOfReturns",
+            "size": 1,
+            "type": "unsigned"
+          },
+          {
+            "name": "ScanDirectionFlag",
+            "size": 1,
+            "type": "unsigned"
+          },
+          {
+            "name": "EdgeOfFlightLine",
+            "size": 1,
+            "type": "unsigned"
+          },
+          {
+            "name": "Classification",
+            "size": 1,
+            "type": "unsigned"
+          },
+          {
+            "name": "Synthetic",
+            "size": 1,
+            "type": "unsigned"
+          },
+          {
+            "name": "KeyPoint",
+            "size": 1,
+            "type": "unsigned"
+          },
+          {
+            "name": "Withheld",
+            "size": 1,
+            "type": "unsigned"
+          },
+          {
+            "name": "Overlap",
+            "size": 1,
+            "type": "unsigned"
+          },
+          {
+            "name": "ScanAngleRank",
+            "size": 4,
+            "type": "floating"
+          },
+          {
+            "name": "UserData",
+            "size": 1,
+            "type": "unsigned"
+          },
+          {
+            "name": "PointSourceId",
+            "size": 2,
+            "type": "unsigned"
+          },
+          {
+            "name": "GpsTime",
+            "size": 8,
+            "type": "floating"
+          },
+          {
+            "name": "ScanChannel",
+            "size": 1,
+            "type": "unsigned"
+          },
+          {
+            "name": "Red",
+            "size": 2,
+            "type": "unsigned"
+          },
+          {
+            "name": "Green",
+            "size": 2,
+            "type": "unsigned"
+          },
+          {
+            "name": "Blue",
+            "size": 2,
+            "type": "unsigned"
+          },
+          {
+            "name": "OriginId",
+            "size": 4,
+            "type": "unsigned"
+          }
+        ],
+        "pc:type": "lidar",
+        "proj:bbox": [
+          -4.985,
+          1.039,
+          -3.445,
+          -0.789,
+          6.724,
+          1.124
+        ],
+        "proj:geometry": {
+          "coordinates": [
+            [
+              [
+                -4.985,
+                1.039,
+                -3.445
+              ],
+              [
+                -4.985,
+                6.724,
+                -3.445
+              ],
+              [
+                -0.789,
+                6.724,
+                1.124
+              ],
+              [
+                -0.789,
+                1.039,
+                1.124
+              ],
+              [
+                -4.985,
+                1.039,
+                -3.445
+              ]
+            ]
+          ],
+          "type": "Polygon"
+        },
+        "proj:wkt2": ""
+      },
+      "links": [],
+      "assets": {
+        "data": {
+          "href": "./..\\pointclouds/lion_takanawa.copc.laz",
+          "roles": [
+            "data"
+          ]
+        }
+      }
+    }
+  ]
+}

@@ -47,6 +47,7 @@ export class NodeLoader{
 				console.warn(`loaded node with 0 bytes: ${node.name}`);
 			}else{
 				let response = await fetch(urlOctree, {
+					credentials: 'include',
 					headers: {
 						'content-type': 'multipart/byteranges',
 						'Range': `bytes=${first}-${last}`,
@@ -251,6 +252,7 @@ export class NodeLoader{
 		let last = first + hierarchyByteSize - 1n;
 
 		let response = await fetch(hierarchyPath, {
+			credentials: 'include',
 			headers: {
 				'content-type': 'multipart/byteranges',
 				'Range': `bytes=${first}-${last}`,
@@ -386,7 +388,7 @@ export class OctreeLoader{
 
 	static async load(url){
 
-		let response = await fetch(url);
+		let response = await fetch(url, {credentials: 'include'});
 		let metadata = await response.json();
 
 		let attributes = OctreeLoader.parseAttributes(metadata.attributes);

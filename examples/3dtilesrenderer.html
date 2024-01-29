@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="utf-8">
+	<meta name="description" content="">
+	<meta name="author" content="">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+	<title>Potree Viewer</title>
+
+	<link rel="stylesheet" type="text/css" href="../build/potree/potree.css">
+	<link rel="stylesheet" type="text/css" href="../libs/jquery-ui/jquery-ui.min.css">
+	<link rel="stylesheet" type="text/css" href="../libs/openlayers3/ol.css">
+	<link rel="stylesheet" type="text/css" href="../libs/spectrum/spectrum.css">
+	<link rel="stylesheet" type="text/css" href="../libs/jstree/themes/mixed/style.css">
+</head>
+
+<body>
+	<script src="../libs/jquery/jquery-3.1.1.min.js"></script>
+	<script src="../libs/spectrum/spectrum.js"></script>
+	<script src="../libs/jquery-ui/jquery-ui.min.js"></script>
+
+
+	<script src="../libs/other/BinaryHeap.js"></script>
+	<script src="../libs/tween/tween.min.js"></script>
+	<script src="../libs/d3/d3.js"></script>
+	<script src="../libs/proj4/proj4.js"></script>
+	<script src="../libs/openlayers3/ol.js"></script>
+	<script src="../libs/i18next/i18next.js"></script>
+	<script src="../libs/jstree/jstree.js"></script>
+	<script src="../build/potree/potree.js"></script>
+	<script src="../libs/plasio/js/laslaz.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/proj4js/2.10.0/proj4.js"></script>
+
+	<!-- INCLUDE ADDITIONAL DEPENDENCIES HERE -->
+	<!-- INCLUDE SETTINGS HERE -->
+
+	<div class="potree_container" style="position: absolute; width: 100%; height: 100%; left: 0px; top: 0px; ">
+		<div id="potree_render_area" style="background-image: url('../build/potree/resources/images/background.jpg');">
+		</div>
+		<div id="potree_sidebar_container"> </div>
+	</div>
+
+	<script type="module">
+
+		import * as THREE from "../libs/three.js/build/three.module.js";
+		import { GeoUtils, WGS84_ELLIPSOID, GoogleTilesRenderer } from 'https://unpkg.com/3d-tiles-renderer/src/index.js?module';
+		import { GLTFLoader } from 'https://unpkg.com/three/examples/jsm/loaders/GLTFLoader.js?module';
+		import { DRACOLoader } from 'https://unpkg.com/three/examples/jsm/loaders/DRACOLoader.js?module';
+		import { GUI } from 'https://unpkg.com/three/examples/jsm/libs/lil-gui.module.min.js';
+
+		// Override Potree xhr request to handle SAS key within the pointcloud URL. Unrelated to the 3d-tiles-renderer integration.
+		const originalCreateXMLHttpRequest = Potree.XHRFactory.createXMLHttpRequest;
+		Potree.XHRFactory.createXMLHttpRequest = () => {
+			let xhr = originalCreateXMLHttpRequest.call(Potree.XHRFactory);
+			const originalOpen = xhr.open;
+			xhr.open = function (method, url, ...rest) {
+				if (url.indexOf("?") >= 0) {
+					const tmpUrl = url.split(/(\?.*?\/)/);
+					if (tmpUrl.length > 1) {
+						// Put back SAS key at the end of the url
+						url = tmpUrl[0] + "/" + tmpUrl[2] + tmpUrl[1].slice(0, -1);
+					}
+				}
+				originalOpen.call(this, method, url, ...rest);
+			};
+
+			return xhr;
+		}
+
+		window.viewer = new Potree.Viewer(document.getElementById("potree_render_area"));
+
+		viewer.setEDLEnabled(true);
+		viewer.setFOV(60);
+		viewer.setPointBudget(1_000_000);
+		viewer.loadSettingsFromURL();
+
+		viewer.setDescription("");
+		viewer.setBackground('skybox');
+
+		viewer.loadGUI(() => {
+			viewer.setLanguage('en');
+			$("#menu_appearance").next().show();
+		});
+
+		const googleApiKey = localStorage.getItem('googleApiKey') ?? 'put-your-api-key-here';
+		const pointcloudUrl = localStorage.getItem('pointcloudUrl') ?? 'put-your-pointcloud-url-here';
+		const heightOffset = localStorage.getItem('heightOffset') ?? 0;
+		const params = {
+			'googleApiKey': googleApiKey,
+			'pointcloudUrl': pointcloudUrl,
+			'heightOffset': heightOffset,
+			'editClippingVolume': () => {
+				const clippingVolume = viewer.scene.scene.getObjectByName('Google3DTilesClippingVolume');
+				clippingVolume.visible = !clippingVolume.visible;
+			},
+			'reload': () => {
+				init();
+			}
+		};
+		const gui = new GUI();
+		gui.width = 300;
+		gui.add(params, 'googleApiKey');
+		gui.add(params, 'pointcloudUrl');
+		gui.add(params, 'heightOffset').onChange(offset => {
+			viewer.scene.scene.children.find(
+				(el) => el.name === 'googleTileGeospatialOffset'
+			).position.z = viewer.scene.scenePointCloud.getObjectByName('Pointcloud').position.z - offset;
+			localStorage.setItem('heightOffset', offset);
+		});
+		gui.add(params, 'editClippingVolume');
+		gui.add(params, 'reload');
+		gui.open();
+
+		let tiles;
+		let clippingPlanes = [];
+
+		const init = () => {
+			// Clear potree scene and tiles renderer when reloading
+			localStorage.setItem('googleApiKey', params.googleApiKey);
+			localStorage.setItem('pointcloudUrl', params.pointcloudUrl);
+			localStorage.setItem('heightOffset', params.heightOffset);
+			viewer.scene.scenePointCloud.remove(viewer.scene.pointclouds[0]);
+			viewer.scene.pointclouds.pop();
+			tiles && tiles.dispose();
+			viewer.scene.scene.remove(viewer.scene.scene.children.find(
+				(el) => el.name === 'googleTileGeospatialOffset'
+			));
+			viewer.scene.scene.remove(viewer.scene.scene.children.find(
+				(el) => el.name === 'Google3DTilesClippingVolume'
+			));
+
+			Potree.loadPointCloud(params.pointcloudUrl, "Pointcloud", function (e) {
+				viewer.scene.addPointCloud(e.pointcloud);
+
+				let material = e.pointcloud.material;
+				material.size = 1;
+				material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
+
+				viewer.fitToScreen();
+
+				if (params.googleApiKey !== 'put-your-api-key-here') {
+					init3DTilesRenderer();
+					addClippingVolume();
+				}
+			});
+		}
+
+		if (params.pointcloudURL !== 'put-your-pointcloud-url-here') init();
+
+		const init3DTilesRenderer = () => {
+			// https://github.com/NASA-AMMOS/3DTilesRendererJS/tree/master
+			tiles = new GoogleTilesRenderer(params.googleApiKey);
+			const dracoLoader = new DRACOLoader();
+			dracoLoader.setDecoderPath('https://unpkg.com/three@0.153.0/examples/jsm/libs/draco/gltf/');
+			const loader = new GLTFLoader(tiles.manager);
+			loader.setDRACOLoader(dracoLoader);
+			tiles.manager.addHandler(/\.gltf$/, loader);
+
+			// Enable localClipping in order to hide Google tiles mesh within the clipping volume (based on the scene bounding box by default)
+			viewer.renderer.localClippingEnabled = true;
+
+			// Offset the Google tiles group container to potree pointcloud position
+			const potreePos = viewer.scene.scenePointCloud.getObjectByName('Pointcloud').position;
+			const googleTileGeospatialOffset = new THREE.Group();
+			googleTileGeospatialOffset.name = 'googleTileGeospatialOffset';
+			googleTileGeospatialOffset.add(tiles.group);
+			googleTileGeospatialOffset.position.add(potreePos);
+			// Height offset (can be "estimated" raycasting on the tiles group if necessary)
+			googleTileGeospatialOffset.position.z -= params.heightOffset;
+			// Set Google tiles group location using pointcloud position and scene projection
+			function potreePosToLatLong(pos) {
+				const xy = [pos.x, pos.y];
+				const [long, lat] = PotreeToDeg.forward(xy).map((el) => el * THREE.MathUtils.DEG2RAD);
+				return { lat, long };
+			}
+			// Similar to the setLatLonToYUp from the library https://github.com/NASA-AMMOS/3DTilesRendererJS/blob/eaceb4684ccedcbfe3b3cc3029acde6a8c42ddd3/src/three/renderers/GoogleTilesRenderer.js#L95
+			// But Potree is Z-Up
+			tiles.setLatLon = (lat, lon) => {
+				const { ellipsoid, group } = tiles;
+				ellipsoid
+					.constructLatLonFrame(lat, lon, group.matrix)
+					.invert()
+					.decompose(group.position, group.quaternion, group.scale);
+				group.updateMatrixWorld(true);
+			};
+			let PotreeToDeg = proj4(viewer.getProjection(), proj4.defs('WGS84'));
+			const { lat, long } = potreePosToLatLong(potreePos);
+			tiles.setLatLon(lat, long);
+			viewer.scene.scene.add(googleTileGeospatialOffset);
+
+			tiles.onLoadModel = (scene) => {
+				scene.traverse((c) => {
+					if (c.isMesh) {
+						// Needed because of the current threejs version used by Potree.
+						c.material.map.colorSpace = THREE.sRGBEncoding;
+
+						// Set the clippingPlanes computed from the potree scene bounding box on each tile mesh
+						c.material.clippingPlanes = clippingPlanes;
+						c.material.clipIntersection = true;
+						c.material.needsUpdate = true;
+					}
+				});
+			};
+
+			function loop(timestamp) {
+				requestAnimationFrame(loop);
+				tiles.setResolutionFromRenderer(viewer.scene.getActiveCamera(), viewer.renderer);
+				tiles.setCamera(viewer.scene.getActiveCamera());
+				tiles.update();
+			}
+
+			requestAnimationFrame(loop);
+			return tiles;
+		}
+
+		// Add a Potree ClippingVolume using the scene bounding box. Compute clipping planes to be used for local clipping of each tiles mesh in order to clip them if they are inside the volume (hence showing only the pointcloud)
+		const addClippingVolume = () => {
+			const clippingVolume = new Potree.BoxVolume();
+			clippingVolume.name = 'Google3DTilesClippingVolume';
+			const bbox = viewer.scene.getBoundingBox();
+			const center = new THREE.Vector3();
+			bbox.getCenter(center);
+			const size = new THREE.Vector3();
+			bbox.getSize(size);
+			clippingVolume.position.copy(center);
+			clippingVolume.scale.set(size.x, size.y, size.z);
+			clippingVolume.visible = false;
+			clippingVolume.showVolumeLabel = false;
+			clippingVolume.material.color.setRGB(0, 0, 0);
+			clippingVolume.visible = false;
+
+			const handleClippingChange = () => {
+				clippingPlanes = [];
+				const normals = [
+					new THREE.Vector3(-1, 0, 0),
+					new THREE.Vector3(1, 0, 0),
+					new THREE.Vector3(0, -1, 0),
+					new THREE.Vector3(0, 1, 0),
+					new THREE.Vector3(0, 0, -1),
+					new THREE.Vector3(0, 0, 1)
+				];
+				for (let i = 0; i < normals.length; i++) {
+					const normal = normals[i];
+					const facePoint = new THREE.Vector3();
+					facePoint.addScaledVector(
+						normal,
+						clippingVolume.scale.getComponent(Math.floor(i / 2)) / 2
+					);
+					const rotationMatrix = new THREE.Matrix4().extractRotation(clippingVolume.matrixWorld);
+					const transformedNormal = normal.clone().applyMatrix4(rotationMatrix).normalize();
+					const transformedFacePoint = facePoint
+						.clone()
+						.applyMatrix4(rotationMatrix)
+						.add(clippingVolume.position);
+					const constant = -transformedFacePoint.dot(transformedNormal);
+					clippingPlanes.push(new THREE.Plane(transformedNormal, constant));
+				}
+
+				tiles.group.traverse((c) => {
+					if (c.isMesh) {
+						c.material.clippingPlanes = clippingPlanes;
+						c.material.needsUpdate = true;
+					}
+				});
+				viewer.scene.scene.children.find(
+					(el) => el.name === 'googleTileGeospatialOffset'
+				).traverse((c) => {
+					if (c.isMesh) {
+						c.material.clippingPlanes = clippingPlanes;
+						c.material.needsUpdate = true;
+					}
+				});
+			};
+
+			['position_changed', 'scale_changed', 'orientation_changed'].forEach((eventType) => {
+				clippingVolume.addEventListener(eventType, () => {
+					handleClippingChange();
+				});
+			});
+
+			viewer.scene.scene.add(clippingVolume);
+			handleClippingChange();
+
+		}
+
+	</script>
+
+
+</body>
+
+</html>

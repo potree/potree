@@ -49,25 +49,6 @@
 		import { DRACOLoader } from 'https://unpkg.com/three/examples/jsm/loaders/DRACOLoader.js?module';
 		import { GUI } from 'https://unpkg.com/three/examples/jsm/libs/lil-gui.module.min.js';
 
-		// Override Potree xhr request to handle SAS key within the pointcloud URL. Unrelated to the 3d-tiles-renderer integration.
-		const originalCreateXMLHttpRequest = Potree.XHRFactory.createXMLHttpRequest;
-		Potree.XHRFactory.createXMLHttpRequest = () => {
-			let xhr = originalCreateXMLHttpRequest.call(Potree.XHRFactory);
-			const originalOpen = xhr.open;
-			xhr.open = function (method, url, ...rest) {
-				if (url.indexOf("?") >= 0) {
-					const tmpUrl = url.split(/(\?.*?\/)/);
-					if (tmpUrl.length > 1) {
-						// Put back SAS key at the end of the url
-						url = tmpUrl[0] + "/" + tmpUrl[2] + tmpUrl[1].slice(0, -1);
-					}
-				}
-				originalOpen.call(this, method, url, ...rest);
-			};
-
-			return xhr;
-		}
-
 		window.viewer = new Potree.Viewer(document.getElementById("potree_render_area"));
 
 		viewer.setEDLEnabled(true);

@@ -141,6 +141,13 @@ export class MeasuringTool extends EventDispatcher{
 		this.light = new THREE.PointLight(0xffffff, 1.0);
 		this.scene.add(this.light);
 		this.sphereIntersected = false;
+		this.measure = null;
+		this.cancel = {
+			removeLastMarker: false,
+			isMarker: false,
+			endMeasurement: false,
+			callback: null
+		  };
 
 		this.viewer.inputHandler.registerInteractiveScene(this.scene);
 
@@ -230,6 +237,7 @@ export class MeasuringTool extends EventDispatcher{
 		};
 
 		let measure = new Measure(pick(args.contentType, 'three_length'));
+		this.measure = measure;
 
 		const textures = await measure.loadAllTexture();
 		measure.setTextures = textures;
@@ -259,92 +267,16 @@ export class MeasuringTool extends EventDispatcher{
 	
 			this.scene.add(measure);
 	
-			let cancel = {
-				removeLastMarker: measure.maxMarkers > 3,
-				callback: null,
-				endMeasurement: false,
-			};
-	
-			let insertionCallback = (e) => {
-				if (e.button === THREE.MOUSE.LEFT || e.button === THREE.MOUSE.RIGHT) {
-					measure.addMarker(measure.points[measure.points.length - 1].position.clone());
-	
-					if (measure.points.length >= measure.maxMarkers) {
-						cancel.callback();
-					}
-
-					measure.spheres.map(v => {
-						v.visible = true; 
-						v.material = measure.createSpriteMaterial();
-						v.name = '';
-						return v;
-					  });
-
-					  this.viewer.inputHandler.startDragging(
-						measure.spheres[measure.spheres.length - 1]);
-
-					if (measure.spheres.length > 2) {
-						const dragSphere = measure.spheres[measure.spheres.length - 2];
-						measure.spheres[measure.spheres.length - 2].visible = true;
-						// const lastSphere = measure.spheres[measure.spheres.length - 1];
-
-						dragSphere.material.map = textures.tickNodeTexture;
-						dragSphere.name = 'right_tick';
-						dragSphere.material.needsUpdate = true;
-						// dragSphere.visible = true;
-
-						// if lastsphere and dragshere are on the same position call cancel.callback()
-						if (this.sphereIntersected ===  true) {
-							cancel.endMeasurement = true;
-							cancel.removeLastMarker = false;
-							cancel.callback();
-						}
-						
-					}
-	
-					
-				// } else if (e.button === THREE.MOUSE.RIGHT) {
-				// 	cancel.callback();
-				}
-			};
-	
-			cancel.callback = e => {
-				if (cancel.removeLastMarker) {
-					measure.removeMarker(measure.points.length - 1);
-				}
-
-				if (cancel.endMeasurement) {
-					measure.removeMarker(measure.points.length - 1);
-					measure.endMeasurement(measure.points.length - 1);
-					measure.spheres[measure.spheres.length - 1].material = measure.createSpriteMaterial();
-					this.dispatchEvent({
-						type: 'end_measurement_insertion',
-						measurement: measure
-					})
-					this.viewer.renderer.domElement.style.cursor = 'auto';
-					// measure.measurementLabel.update(THREE.Math.generateUUID());
-					// measure.userData.contentId = THREE.Math.generateUUID();
-					
-					measure.updateSphereVisibility(this.viewer.scene.getActiveCamera(), false);
-
-					// if (measure.name !== MeasureTypes.P2P_TRIANGLE) {
-					// 	const allPositions = measure.createPositions(measure.spheres);
-					// 	allPositions.map((pos, index) => {
-					// 		measure.updateAddMarker(pos.points, pos.index + index + 1, camera);
-					// 	})
-					// }
-					// measure.revertSphereAndLines([measure]);
-				}
-
-				this.viewer.inputHandler.removeEventListener('sphere_intersected', this.onSphereIntersected.bind(this));
-				this.viewer.inputHandler.removeEventListener('sphere_not_intersected', this.onSphereNotIntersected.bind(this))
-				domElement.removeEventListener('mouseup', insertionCallback, false);
-				this.viewer.removeEventListener('cancel_insertions', cancel.callback);
-			};
+			// let cancel = {
+			// 	removeLastMarker: measure.maxMarkers > 3,
+			// 	callback: null,
+			// 	endMeasurement: false,
+			// };
+			this.cancel.removeLastMarker = measure.maxMarkers > 3
 	
 			if (measure.maxMarkers > 1) {
-				this.viewer.addEventListener('cancel_insertions', cancel.callback);
-				domElement.addEventListener('mouseup', insertionCallback, false);
+				this.viewer.addEventListener('cancel_insertions', this.callback.bind(this));
+				domElement.addEventListener('mouseup', this.insertionCallback.bind(this), false);
 			}
 	
 			measure.addMarker(new THREE.Vector3(0, 0, 0));
@@ -355,6 +287,89 @@ export class MeasuringTool extends EventDispatcher{
 			return measure;
 
 	}
+
+	insertionCallback(e) {
+		if(!this.measure) {
+			return
+		}
+
+		if (e.button === THREE.MOUSE.LEFT || e.button === THREE.MOUSE.RIGHT) {
+			this.measure.addMarker(this.measure.points[this.measure.points.length - 1].position.clone());
+
+			if (this.measure.points.length >= this.measure.maxMarkers) {
+				this.callback();
+			}
+
+			this.measure.spheres.map(v => {
+				v.visible = true; 
+				v.material = this.measure.createSpriteMaterial();
+				v.name = '';
+				return v;
+			  });
+
+			  this.viewer.inputHandler.startDragging(
+				this.measure.spheres[this.measure.spheres.length - 1]);
+
+			if (this.measure.spheres.length > 2) {
+				const dragSphere = this.measure.spheres[this.measure.spheres.length - 2];
+				this.measure.spheres[this.measure.spheres.length - 2].visible = true;
+				// const lastSphere = measure.spheres[measure.spheres.length - 1];
+
+				dragSphere.material.map = textures.tickNodeTexture;
+				dragSphere.name = 'right_tick';
+				dragSphere.material.needsUpdate = true;
+				// dragSphere.visible = true;
+
+				// if lastsphere and dragshere are on the same position call cancel.callback()
+				if (this.sphereIntersected ===  true) {
+					this.cancel.endMeasurement = true;
+					this.cancel.removeLastMarker = false;
+					this.callback();
+				}
+				
+			}
+
+			
+		// } else if (e.button === THREE.MOUSE.RIGHT) {
+		// 	cancel.callback();
+		}
+	};
+
+	callback() {
+		if(!this.measure) {
+			return
+		}
+
+		if (this.cancel.removeLastMarker) {
+			this.measure.removeMarker(this.measure.points.length - 1);
+		}
+
+		if (this.cancel.endMeasurement) {
+			this.measure.removeMarker(this.measure.points.length - 1);
+			this.measure.endMeasurement(this.measure.points.length - 1);
+			this.measure.spheres[this.measure.spheres.length - 1].material = this.measure.createSpriteMaterial();
+			this.dispatchEvent({
+				type: 'end_measurement_insertion',
+				measurement: this.measure
+			})
+			this.viewer.renderer.domElement.style.cursor = 'auto';
+			// measure.measurementLabel.update(THREE.Math.generateUUID());
+			// measure.userData.contentId = THREE.Math.generateUUID();
+			
+			this.measure.updateSphereVisibility(this.viewer.scene.getActiveCamera(), false);
+
+			// if (measure.name !== MeasureTypes.P2P_TRIANGLE) {
+			// 	const allPositions = measure.createPositions(measure.spheres);
+			// 	allPositions.map((pos, index) => {
+			// 		measure.updateAddMarker(pos.points, pos.index + index + 1, camera);
+			// 	})
+			// }
+			// measure.revertSphereAndLines([measure]);
+		}
+
+		this.dispose();
+
+	};
 	
 	update(){
 		let camera = this.viewer.scene.getActiveCamera();
@@ -537,6 +552,27 @@ export class MeasuringTool extends EventDispatcher{
 				}
 			}
 		}
+	}
+
+	dispose() {
+		this.viewer.renderer.domElement.style.cursor = 'auto';
+
+		this.viewer.inputHandler.removeEventListener('sphere_intersected', this.onSphereIntersected.bind(this));
+		this.viewer.inputHandler.removeEventListener('sphere_not_intersected', this.onSphereNotIntersected.bind(this))
+		this.viewer.renderer.domElement.removeEventListener('mouseup', this.insertionCallback.bind(this), false);
+		this.viewer.removeEventListener('cancel_insertions', this.callback.bind(this));
+
+		if (this.measure) {
+			this.viewer.scene.removeMeasurement(this.measure);
+		  }
+		 // resetting values
+		 this.measure = null;
+		 this.cancel = {
+		   removeLastMarker: false,
+		   isMarker: false,
+		   endMeasurement: false,
+		   callback: null
+		 };
 	}
 
 	render(){

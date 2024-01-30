@@ -175,11 +175,17 @@
 					if (c.isMesh) {
 						// Needed because of the current threejs version used by Potree.
 						c.material.map.colorSpace = THREE.sRGBEncoding;
+					}
+				});
+			};
 
-						// Set the clippingPlanes computed from the potree scene bounding box on each tile mesh
-						c.material.clippingPlanes = clippingPlanes;
-						c.material.clipIntersection = true;
-						c.material.needsUpdate = true;
+			tiles.onTileVisibilityChange = (scene) => {
+				scene.traverse((c) => {
+					if (c.isMesh) {
+						if (clippingPlanes) {
+							c.material.clippingPlanes = clippingPlanes;
+							c.material.clipIntersection = true;
+						}
 					}
 				});
 			};
@@ -239,14 +245,6 @@
 				}
 
 				tiles.group.traverse((c) => {
-					if (c.isMesh) {
-						c.material.clippingPlanes = clippingPlanes;
-						c.material.needsUpdate = true;
-					}
-				});
-				viewer.scene.scene.children.find(
-					(el) => el.name === 'googleTileGeospatialOffset'
-				).traverse((c) => {
 					if (c.isMesh) {
 						c.material.clippingPlanes = clippingPlanes;
 						c.material.needsUpdate = true;

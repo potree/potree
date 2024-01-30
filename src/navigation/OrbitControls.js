@@ -77,7 +77,6 @@ export class OrbitControls extends EventDispatcher{
 
 		let scroll = (e) => {
 			let resolvedRadius = this.scene.view.radius + this.radiusDelta;
-
 			this.radiusDelta += -e.delta * resolvedRadius * 0.1;
 
 			this.stopTweens();
@@ -256,6 +255,14 @@ export class OrbitControls extends EventDispatcher{
 			let progression = Math.min(1, this.fadeFactor * delta);
 			let panDistance = progression * view.radius * 3;
 
+			// Define a threshold zoom level beyond which panning becomes faster
+			const zoomThreshold = 10; // Set your desired threshold zoom level
+
+			// Increase panning speed when zoomed in beyond the threshold
+			if (view.radius < zoomThreshold) {
+				panDistance *= 2; // Adjust the factor to increase panning speed
+			}
+
 			let px = -this.panDelta.x * panDistance;
 			let py = this.panDelta.y * panDistance;
 
@@ -267,6 +274,12 @@ export class OrbitControls extends EventDispatcher{
 
 			// let radius = view.radius + progression * this.radiusDelta * view.radius * 0.1;
 			let radius = view.radius + progression * this.radiusDelta;
+
+			// Define the minimum allowed zoom level
+			const minZoom = 10; // Set your desired minimum zoom level
+
+			// Ensure the newRadius doesn't go below the minimum zoom level
+			radius = Math.max(minZoom, radius);
 
 			let V = view.direction.multiplyScalar(-radius);
 			let position = new THREE.Vector3().addVectors(view.getPivot(), V);

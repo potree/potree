@@ -19,6 +19,7 @@ export class InputHandler extends EventDispatcher {
 		this.renderer = viewer.renderer;
 		this.domElement = this.renderer.domElement;
 		this.enabled = true;
+		this.LONG_MOUSE_PRESS_TIMER = 300;
 		
 		this.scene = null;
 		this.interactiveScenes = [];
@@ -34,6 +35,8 @@ export class InputHandler extends EventDispatcher {
 		this.hoveredElements = [];
 		this.hoveredMeasurement = undefined;
 		this.pressedKeys = {};
+		this.longPressTimer = undefined;
+		this.isLongPress = false;
 
 		this.wheelDelta = 0;
 
@@ -44,6 +47,7 @@ export class InputHandler extends EventDispatcher {
 		if (this.domElement.tabIndex === -1) {
 			this.domElement.tabIndex = 2222;
 		}
+		this.clearLongPressFunc = this.clearLongPress.bind(this);
 
 		this.domElement.addEventListener('contextmenu', (event) => { event.preventDefault(); }, false);
 		this.domElement.addEventListener('click', this.onMouseClick.bind(this), false);
@@ -304,8 +308,22 @@ export class InputHandler extends EventDispatcher {
 		e.preventDefault();
 	}
 
+	clearLongPress() {
+		if (this.longPressTimer) {
+		  clearTimeout(this.longPressTimer);
+		  this.isLongPress = false;
+		//   this.viewer.measuringTool.isLongPress = false;
+		}
+		this.longPressTimer = undefined;
+	  }
+
 	onMouseDown (e) {
 		if (this.logMessages) console.log(this.constructor.name + ': onMouseDown');
+		// this.clearLongPressFunc();
+		this.longPressTimer = setTimeout(() => {
+		  this.isLongPress = true;
+		  this.viewer.measuringTool.isLongPress = true;
+		}, this.LONG_MOUSE_PRESS_TIMER);
 
 		e.preventDefault();
 
@@ -374,6 +392,7 @@ export class InputHandler extends EventDispatcher {
 
 	onMouseUp (e) {
 		if (this.logMessages) console.log(this.constructor.name + ': onMouseUp');
+		this.clearLongPressFunc();
 
 		e.preventDefault();
 
@@ -485,6 +504,9 @@ export class InputHandler extends EventDispatcher {
 	onMouseMove (e) {
 		e.preventDefault();
 
+		if (this.isLongPress) {
+			this.viewer.controls.enabled = true;
+		  }
 		let rect = this.domElement.getBoundingClientRect();
 		let x = e.clientX - rect.left;
 		let y = e.clientY - rect.top;
@@ -549,7 +571,7 @@ export class InputHandler extends EventDispatcher {
 
 			this.drag.end.set(x, y);
 
-			if (this.drag.object) {
+			if (this.drag.object && !this.isLongPress) {
 				// this.viewer.renderer.domElement.style.cursor = 'grab';
 				// this.viewer.renderer.domElement.style.cursor = 'grab';
 				if (this.logMessages) console.log(this.constructor.name + ': drag: ' + this.drag.object.name);
@@ -560,6 +582,10 @@ export class InputHandler extends EventDispatcher {
 				});
 			} else {
 				if (this.logMessages) console.log(this.constructor.name + ': drag: ');
+
+				if (this.isLongPress) {
+					this.drag.object = null;
+				}
 
 				let dragConsumed = false;
 				for (let inputListener of this.getSortedListeners()) {

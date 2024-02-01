@@ -38,14 +38,18 @@ export class OrbitControls extends EventDispatcher{
 		this.panDelta = new THREE.Vector2(0, 0);
 		this.radiusDelta = 0;
 
-		this.doubleClockZoomEnabled = true;
+		this.doubleClockZoomEnabled = false;
 
 		this.tweens = [];
+		this.enabled = true;
 
 		let drag = (e) => {
-			if (e.drag.object !== null) {
-				return;
+			if (!this.enabled) {
+				return
 			}
+			// if (e.drag.object !== null) {
+			// 	return;
+			// }
 
 			if (e.drag.startHandled === undefined) {
 				e.drag.startHandled = true;

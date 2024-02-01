@@ -128,6 +128,7 @@ export class MeasuringTool extends EventDispatcher{
 
 		this.viewer = viewer;
 		this.renderer = viewer.renderer;
+		this.isLongPress = false;
 
 		this.addEventListener('start_inserting_measurement', e => {
 			this.viewer.dispatchEvent({
@@ -293,8 +294,14 @@ export class MeasuringTool extends EventDispatcher{
 			return
 		}
 
+		
+
 		if (e.button === THREE.MOUSE.LEFT || e.button === THREE.MOUSE.RIGHT) {
-			this.measure.addMarker(this.measure.points[this.measure.points.length - 1].position.clone());
+			if (this.measure.points.length > 1 && this.isLongPress) {
+				// do nothing
+			} else {
+				this.measure.addMarker(this.measure.points[this.measure.points.length - 1].position.clone());
+			}
 
 			if (this.measure.points.length >= this.measure.maxMarkers) {
 				this.callback();
@@ -315,13 +322,13 @@ export class MeasuringTool extends EventDispatcher{
 				this.measure.spheres[this.measure.spheres.length - 2].visible = true;
 				// const lastSphere = measure.spheres[measure.spheres.length - 1];
 
-				dragSphere.material.map = textures.tickNodeTexture;
+				dragSphere.material.map = this.measure._textures.tickNodeTexture;
 				dragSphere.name = 'right_tick';
 				dragSphere.material.needsUpdate = true;
 				// dragSphere.visible = true;
 
 				// if lastsphere and dragshere are on the same position call cancel.callback()
-				if (this.sphereIntersected ===  true) {
+				if (this.sphereIntersected) {
 					this.cancel.endMeasurement = true;
 					this.cancel.removeLastMarker = false;
 					this.callback();
@@ -333,6 +340,7 @@ export class MeasuringTool extends EventDispatcher{
 		// } else if (e.button === THREE.MOUSE.RIGHT) {
 		// 	cancel.callback();
 		}
+		this.isLongPress = false;
 	};
 
 	callback() {

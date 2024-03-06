@@ -52,7 +52,7 @@
 }
 
 #potree_sidebar_container{
-	position:	absolute;
+	/* position:	absolute; remove this line so you can resize the sidebar */
 	z-index:	0;
 	width:		350px;
 	height:		100%;
@@ -164,7 +164,7 @@
 }
 
 #potree_render_area{
-	position: 	absolute;
+	/* position: 	absolute; Remove this line so you can resize the render area */
 	/*background: linear-gradient(-90deg, red, yellow);*/
 	top: 		0px;
 	bottom: 	0px;
@@ -793,3 +793,68 @@ body{
 	padding-top: 0.6em;
 	padding-bottom: 0.1em;
 }
+
+
+/* Start Youssef code*/
+
+/* Container for Potree */
+.potree_container {
+	position: absolute; /* Position the container absolutely within the viewport */
+	width: 100%; /* Occupy the full width of the viewport */
+	height: 100%; /* Occupy the full height of the viewport */
+	display: flex; /* Use flexbox for layout */
+	flex-direction: row; /* Arrange items in a row */
+	top: 0; /* Position at the top of the viewport */
+	left: 0; /* Position at the left of the viewport */
+}
+
+/* Sidebar container for Potree */
+#potree_sidebar_container{
+	order: 1; /* Specify the order of the flex item */
+}
+
+/* Resizer for Potree */
+#resizer {
+	background: #ccc; /* Set the background color to light grey */
+	cursor: ew-resize; /* Set the cursor to an east-west resize cursor */
+	width: 5px; /* Adjusted for a more standard resizer width */
+	height: 100%; /* Occupy the full height of the parent container */
+	flex-shrink: 0; /* Prevent the resizer from shrinking */
+	order: 2; /* Specify the order of the flex item */
+}
+
+/* Render area for Potree */
+#potree_render_area {
+	overflow: auto; /* Allow the content to be scrolled if needed */
+	flex-grow: 1; /* Allow the container to grow to fill the available space */
+	order: 3; /* Specify the order of the flex item */
+}
+
+/* Sidebar container for Potree */
+#potree_sidebar_container {
+	width: 300px; /* Set the width of the sidebar container */
+}
+
+/* Menu toggle for Potree */
+.potree_menu_toggle {
+	position: absolute; /* Position the menu toggle absolutely within its containing element */
+	left: 300px; /* Position the menu toggle 300px from the left */
+	
+}
+
+/* Map toggle for Potree */
+#potree_map_toggle{
+	position: absolute; /* Position the map toggle absolutely within its containing element */
+	left: 300px; /* Position the map toggle 300px from the left */
+	top: 50px; /* Position the map toggle 50px from the top */
+	
+}
+
+/* Map for Potree */
+#potree_map{
+	position: absolute; /* Position the map absolutely within its containing element */
+	left: 350px; /* Position the map 350px from the left */
+	top: 50px; /* Position the map 50px from the top */
+}
+
+/* End Youssef code*/ 

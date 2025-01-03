@@ -1,6 +1,7 @@
 
 import * as THREE from "../../../../libs/three.js/build/three.module.js";
 import {PointAttribute, PointAttributes, PointAttributeTypes} from "../../../loader/PointAttributes.js";
+import { XHRFactory } from "../../../XHRFactory.js";
 import {OctreeGeometry, OctreeGeometryNode} from "./OctreeGeometry.js";
 
 // let loadedNodes = new Set();
@@ -46,10 +47,17 @@ export class NodeLoader{
 				buffer = new ArrayBuffer(0);
 				console.warn(`loaded node with 0 bytes: ${node.name}`);
 			}else{
+				let config = XHRFactory.config
+				let headers = config.customHeaders.reduce((acc, val) => { 
+					acc[val.header] = val.value
+					return acc
+				}, {});
 				let response = await fetch(urlOctree, {
+					credentials: config.withCredentials ? 'include' : undefined,
 					headers: {
 						'content-type': 'multipart/byteranges',
 						'Range': `bytes=${first}-${last}`,
+						...headers
 					},
 				});
 
@@ -250,10 +258,17 @@ export class NodeLoader{
 		let first = hierarchyByteOffset;
 		let last = first + hierarchyByteSize - 1n;
 
+		let config = XHRFactory.config
+		let headers = config.customHeaders.reduce((acc, val) => { 
+			acc[val.header] = val.value
+			return acc
+		}, {});
 		let response = await fetch(hierarchyPath, {
+			credentials: config.withCredentials ? 'include' : undefined,
 			headers: {
 				'content-type': 'multipart/byteranges',
 				'Range': `bytes=${first}-${last}`,
+				...headers
 			},
 		});
 
@@ -385,9 +400,14 @@ export class OctreeLoader{
 	}
 
 	static async load(url){
-
-		let response = await fetch(url);
+		let config = XHRFactory.config
+		let headers = config.customHeaders.reduce((acc, val) => { 
+			acc[val.header] = val.value
+			return acc
+		}, {});
+		let response = await fetch(url, {credentials: config.withCredentials ? 'include' : undefined, headers: headers});
 		let metadata = await response.json();
+		
 
 		let attributes = OctreeLoader.parseAttributes(metadata.attributes);
 

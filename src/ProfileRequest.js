@@ -325,6 +325,7 @@ export class ProfileRequest {
 
 					let attribute = geometry.attributes[attributeName];
 					let numElements = attribute.array.length / numPoints;
+					if (attributeName == "rgba") numElements = attribute.itemSize;
 
 					if(numElements !== parseInt(numElements)){
 						debugger;

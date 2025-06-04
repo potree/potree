@@ -57,6 +57,9 @@ export class PointCloudMaterial extends THREE.RawShaderMaterial {
 		this._defaultIntensityRangeChanged = false;
 		this._defaultElevationRangeChanged = false;
 
+		this.pointIdVsClassificationMap = {};
+        this.pointIdVsClassificationMapVersion = -1;
+
 		{
 			const [width, height] = [256, 1];
 			let data = new Uint8Array(width * 4);
@@ -1121,6 +1124,11 @@ export class PointCloudMaterial extends THREE.RawShaderMaterial {
 				target: this
 			});
 		}
+	}
+
+	updatePointIdVsClassificationMapAndVersion(classification_map, map_verison){
+		this.pointIdVsClassificationMap = classification_map;
+		this.pointIdVsClassificationMapVersion = map_verison;
 	}
 
 	static generateGradientTexture (gradient) {

@@ -695,6 +695,46 @@ export class Renderer {
 
 
 
+	applyClassificationMapToGeometry(geometry, sourceAttr = 'pointSourceID', classAttr = 'classification', mapping = {}, mapVersion=-1) {
+		const lastAppliedVersion =
+		geometry.userData.sourceToClassMapVersion ?? -1;
+        if (lastAppliedVersion === mapVersion) {
+			return; // already applied — skip
+        }
+        const sourceIdArray = geometry.attributes[sourceAttr]
+            ? geometry.attributes[sourceAttr].array
+            : null;
+        const classificationArray = geometry.attributes[classAttr]
+            ? geometry.attributes[classAttr].array
+            : null;
+
+        if (!sourceIdArray || !classificationArray) {
+            console.log("Missing source or classification attribute");
+            return;
+        }
+
+        const updatedClassification = new classificationArray.constructor(
+            classificationArray.length
+        );
+
+        for (let i = 0; i < sourceIdArray.length; i++) {
+            const src = sourceIdArray[i];
+            const mapped = mapping[src];
+
+            updatedClassification[i] =
+                mapped !== undefined ? mapped+50 : classificationArray[i];
+        }
+
+        // Replace the arrays in the geometry
+        geometry.attributes[classAttr].array = updatedClassification;
+        // Mark buffers dirty
+        geometry.attributes[classAttr].version += 1;
+
+        // Store the version we applied
+        geometry.userData.sourceToClassMapVersion = mapVersion;
+    }
+	
+
 	renderNodes(octree, nodes, visibilityTextureData, camera, target, shader, params) {
 
 		if (exports.measureTimings) performance.mark("renderNodes-start");
@@ -856,7 +896,13 @@ export class Renderer {
 			}
 
 			const geometry = node.geometryNode.geometry;
-
+			this.applyClassificationMapToGeometry(
+                geometry,
+                "point source id",
+                "classification",
+                material.pointIdVsClassificationMap,
+                material.pointIdVsClassificationMapVersion
+            );
 			if (!geometry) console.log('Missing geometry', node)
 			if(geometry.attributes["gps-time"]){
 				const bufferAttribute = geometry.attributes["gps-time"];

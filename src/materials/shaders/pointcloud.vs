@@ -442,10 +442,15 @@ vec3 getElevation(){
 }
 
 vec4 getClassification(){
-	vec2 uv = vec2(classification / 255.0, 0.5);
-	vec4 classColor = texture2D(classificationLUT, uv);
-	
-	return classColor;
+    float adjustedClassification = classification;
+    if (adjustedClassification > 49.0) {
+        adjustedClassification -= 50.0;
+    }
+
+    vec2 uv = vec2(float(adjustedClassification) / 255.0, 0.5);
+    vec4 classColor = texture2D(classificationLUT, uv);
+
+    return classColor;
 }
 
 vec3 getReturns(){
@@ -513,8 +518,12 @@ vec3 getNumberOfReturns(){
 }
 
 vec3 getSourceID(){
-	float w = mod(pointSourceID, 10.0) / 10.0;
-	return texture2D(gradient, vec2(w,1.0 - w)).rgb;
+    if (classification > 49.0) {
+        return getClassification().rgb;
+    }
+
+    float w = mod(pointSourceID, 10.0) / 10.0;
+    return texture2D(gradient, vec2(w, 1.0 - w)).rgb;
 }
 
 vec3 getCompositeColor(){

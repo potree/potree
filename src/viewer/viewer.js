@@ -179,6 +179,10 @@ export class Viewer extends EventDispatcher{
 		this.skybox = null;
 		this.clock = new THREE.Clock();
 		this.background = null;
+		this.labelingFor = null;
+		this.pointIdVsClassificationMap = {};
+		this.pointIdVsViewMap = {};
+		this.pointIdVsClassificationMapVersion = -1;
 
 		this.initThree();
 
@@ -1006,6 +1010,11 @@ export class Viewer extends EventDispatcher{
 		}
 
 		//Potree.loadProject(this, url);
+	}
+
+	async loadAnnotationFromJson(text){
+		const data = JSON5.parse(text);
+		Potree.loadAnnotationFromJson(viewer, data);
 	}
 
 	saveProject(){
@@ -1857,6 +1866,7 @@ export class Viewer extends EventDispatcher{
 				pointcloud.material.setClipPolygons(clipPolygons, this.clippingTool.maxPolygonVertices);
 				pointcloud.material.clipTask = this.clipTask;
 				pointcloud.material.clipMethod = this.clipMethod;
+				pointcloud.material.updatePointIdVsClassificationMapAndVersion(this.pointIdVsClassificationMap, this.pointIdVsClassificationMapVersion);
 			}
 		}
 
@@ -2314,5 +2324,58 @@ export class Viewer extends EventDispatcher{
 		}
 
 		return message;
+	}
+
+	classifySegment(point) {
+		try {
+			if (this.labelingFor === null) {
+				console.log("Labeling for not selected");
+				return;
+			}
+			if (!point || !point["point source id"]) {
+				throw new Error("Invalid point object: missing 'point source id'");
+			}
+	
+			this.pointIdVsClassificationMap[point["point source id"]] = parseInt(this.labelingFor);
+			this.pointIdVsViewMap[point["point source id"]] = this.createSegmentView();
+			this.pointIdVsClassificationMapVersion += 1;
+		} catch (error) {
+			console.error("Error in classifySegment:", error.message);
+			console.error("Point that caused error:", point);
+		}
+	}	
+
+	createSegmentView(){
+		const view = this.scene.view;
+		const view_data = {
+            position: view.position.toArray(),
+            target: view.getPivot().toArray(),
+        };
+		const classification_turned_off = Object.entries(this.classifications).flatMap(
+            ([key, val]) =>
+                key === "DEFAULT"
+                    ? val.visible === false
+                        ? [-1]
+                        : []
+                    : val.visible === false
+                    ? [parseInt(key)]
+                    : []
+        );
+
+		return {
+			"view": view_data,
+			"classes_turned_off": classification_turned_off
+		}
+	}
+
+	setPointIdVsClassificationMap(labelMap){
+		console.log("Setting label Map");
+		this.pointIdVsClassificationMap = labelMap;
+		this.pointIdVsClassificationMapVersion += 1;
+	}
+
+	setPointIdVsViewMap(labelViewMap){
+		console.log("SettingView Map")
+		this.pointIdVsViewMap = labelViewMap;
 	}
 };

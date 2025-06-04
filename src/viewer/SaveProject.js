@@ -247,6 +247,18 @@ function createClassificationData(viewer){
 	return data;
 }
 
+function createLabelData(viewer){
+	const manually_labelled = viewer.pointIdVsClassificationMap;
+	const data = manually_labelled
+	return data;
+}
+
+function createLabelDataViews(viewer) {
+    const manually_labelled_view = viewer.pointIdVsViewMap;
+    const data = manually_labelled_view;
+    return data;
+}
+
 export function saveProject(viewer) {
 
 	const scene = viewer.scene;
@@ -265,6 +277,8 @@ export function saveProject(viewer) {
 		annotations: createAnnotationsData(viewer),
 		orientedImages: scene.orientedImages.map(createOrientedImagesData),
 		geopackages: scene.geopackages.map(createGeopackageData),
+		labels: createLabelData(viewer),
+		label_views: createLabelDataViews(viewer)
 		// objects: createSceneContentData(viewer),
 	};
 

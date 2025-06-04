@@ -54,11 +54,113 @@ export class Sidebar{
 		this.initFilters();
 		this.initClippingTool();
 		this.initSettings();
+		this.initLabeling();
 		
 		$('#potree_version_number').html(Potree.version.major + "." + Potree.version.minor + Potree.version.suffix);
 	}
 
 		
+
+	initLabelingClassificationList() {
+		let elLabelingClassificationList = $("#labelClassificationList");
+		elLabelingClassificationList.empty(); // Clear previous entries
+	
+		// Display for current labeling target
+		let elLabelingForDisplay = $(`
+			<li id="labelingForDisplay" style="font-weight: bold; margin-bottom: 10px;">
+				Current Labeling: <span id="labelingForValue">None</span>
+			</li>
+		`);
+		elLabelingClassificationList.append(elLabelingForDisplay);
+	
+		const updateLabelingDisplay = () => {
+			let val = "None";
+            if (
+                this.viewer.labelingFor &&
+                this.viewer.classifications[this.viewer.labelingFor] &&
+                this.viewer.classifications[this.viewer.labelingFor].name
+            ) {
+                val = this.viewer.classifications[this.viewer.labelingFor].name;
+            }
+            $("#labelingForValue").text(val);
+		};
+	
+		const addLabelingClassificationItem = (code, name) => {
+			const labelingClassification = this.viewer.classifications[code];
+			const inputID = 'chkLabelingClassification_' + code;
+			const colorPickerID = 'colorPickerLabelingClassification_' + code;
+	
+			const checked = labelingClassification.visible ? "checked" : "";
+	
+			let element = $(`
+				<li style="white-space: nowrap; display: flex; align-items: center; cursor: default;">
+					<input id="${inputID}" type="checkbox" ${checked} style="flex: none; margin-right: 8px;" />
+					<span style="flex-grow: 1; user-select: none; cursor: pointer;">${name}</span>
+					<input id="${colorPickerID}" type="color" style="zoom: 0.5;" disabled />
+				</li>
+			`);
+	
+			const elInput = element.find(`#${inputID}`);
+			const elColorPicker = element.find(`#${colorPickerID}`);
+	
+			// Handle visibility toggle
+			elInput.click(event => {
+				event.stopPropagation();
+				// this.viewer.setClassificationVisibility(code, event.target.checked);
+			});
+	
+			// Set labeling target
+			element.click(() => {
+				this.viewer.labelingFor = code;
+				updateLabelingDisplay();
+			});
+	
+			// Set up color picker (disabled)
+			let defaultColor = labelingClassification.color.map(c => c * 255).join(", ");
+			defaultColor = `rgb(${defaultColor})`;
+	
+			elColorPicker.spectrum({
+				color: defaultColor,
+				showInput: true,
+				preferredFormat: 'rgb',
+				disabled: true
+			});
+	
+			elLabelingClassificationList.append(element);
+		};
+	
+		const populate = () => {
+			for (let classID in this.viewer.classifications) {
+				addLabelingClassificationItem(classID, this.viewer.classifications[classID].name);
+			}
+			updateLabelingDisplay();
+		};
+	
+		populate();
+	}
+	
+
+	initLabeling(){
+		let elToolbar = $("#labelingTools");
+		elToolbar.append(
+            this.createToolIcon(
+                Potree.resourcePath + "/icons/arrow_up.svg",
+                "[title]tt.point_measurement",
+                (isActive) => {
+                    let measurement = this.measuringTool.startAddingPoint({
+                        showDistances: false,
+                        showAngles: false,
+                        showCoordinates: false,
+                        showArea: false,
+                        closed: true,
+                        // maxMarkers: 1,
+                        name: "Point",
+                    });
+                }
+            )
+        );
+		this.initLabelingClassificationList();
+	}
 
 	initToolbar(){
 

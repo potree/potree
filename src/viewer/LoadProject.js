@@ -314,6 +314,26 @@ function loadClassification(viewer, data){
 	viewer.setClassifications(classifications);
 }
 
+function loadManualLabels(viewer, data) {
+    if (!data) {
+        return;
+    }
+
+    const labelMap = data;
+
+    viewer.setPointIdVsClassificationMap(labelMap);
+}
+
+function loadManualLabelsViews(viewer, data) {
+    if (!data) {
+        return;
+    }
+
+    const labelView = data;
+
+    viewer.setPointIdVsViewMap(labelView);
+}
+
 export async function loadProject(viewer, data){
 
 	if(data.type !== "Potree"){
@@ -357,6 +377,8 @@ export async function loadProject(viewer, data){
 
 	loadClassification(viewer, data.classification);
 
+	loadManualLabels(viewer, data.labels);
+	loadManualLabelsViews(viewer, data.label_views);
 	// need to load at least one point cloud that defines the scene projection,
 	// before we can load stuff in other projections such as geopackages
 	//await Promise.any(pointcloudPromises); // (not yet supported)
@@ -369,4 +391,29 @@ export async function loadProject(viewer, data){
 	});
 
 	await Promise.all(pointcloudPromises);
+}
+
+export async function loadAnnotationFromJson(viewer, data){
+	for (const measure of data.measurements) {
+        loadMeasurement(viewer, measure);
+    }
+
+    for (const volume of data.volumes) {
+        loadVolume(viewer, volume);
+    }
+
+    for (const animation of data.cameraAnimations) {
+        loadCameraAnimation(viewer, animation);
+    }
+
+    for (const profile of data.profiles) {
+        loadProfile(viewer, profile);
+    }
+
+    if (data.orientedImages) {
+        for (const images of data.orientedImages) {
+            loadOrientedImages(viewer, images);
+        }
+    }
+	loadAnnotations(viewer, data.annotations);
 }

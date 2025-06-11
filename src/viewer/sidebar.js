@@ -90,7 +90,8 @@ export class Sidebar{
 			const inputID = 'chkLabelingClassification_' + code;
 			const colorPickerID = 'colorPickerLabelingClassification_' + code;
 	
-			const checked = labelingClassification.visible ? "checked" : "";
+			const locked = this.viewer.classificationLocked[code];
+			const checked = locked ? "checked" : "";
 	
 			let element = $(`
 				<li style="white-space: nowrap; display: flex; align-items: center; cursor: default;">
@@ -106,7 +107,7 @@ export class Sidebar{
 			// Handle visibility toggle
 			elInput.click(event => {
 				event.stopPropagation();
-				// this.viewer.setClassificationVisibility(code, event.target.checked);
+				this.viewer.setLabelingLock(code, event.target.checked);
 			});
 	
 			// Set labeling target

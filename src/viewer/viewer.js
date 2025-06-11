@@ -182,6 +182,9 @@ export class Viewer extends EventDispatcher{
 		this.labelingFor = null;
 		this.pointIdVsClassificationMap = {};
 		this.pointIdVsViewMap = {};
+		this.classificationLocked = Object.fromEntries(
+            Object.keys(this.classifications).map((key) => [key, 0])
+        );
 		this.pointIdVsClassificationMapVersion = -1;
 
 		this.initThree();
@@ -680,6 +683,9 @@ export class Viewer extends EventDispatcher{
 
 	setClassifications(classifications){
 		this.classifications = classifications;
+		this.classificationLocked = Object.fromEntries(
+            Object.keys(this.classifications).map((key) => [key, 0])
+        );
 
 		this.dispatchEvent({'type': 'classifications_changed', 'viewer': this});
 	}
@@ -691,6 +697,12 @@ export class Viewer extends EventDispatcher{
 		} else if (this.classifications[key].visible !== value) {
 			this.classifications[key].visible = value;
 			this.dispatchEvent({'type': 'classification_visibility_changed', 'viewer': this});
+		}
+	}
+
+	setLabelingLock(key, value){
+		if (this.classificationLocked[key] !== value) {
+			this.classificationLocked[key] = value;
 		}
 	}
 
@@ -2332,8 +2344,18 @@ export class Viewer extends EventDispatcher{
 				console.log("Labeling for not selected");
 				return;
 			}
-			if (!point || !point["point source id"]) {
+			if (!point || !point["point source id"] || !point["classification"]) {
 				throw new Error("Invalid point object: missing 'point source id'");
+			}
+			const classification_code = point["classification"] % 50;
+			if (!(classification_code in this.classificationLocked)){
+				if (this.classificationLocked["DEFAULT"]){
+					console.warn("Default classification is locked, cannot classify segment");
+					return;
+				}
+			} else if (this.classificationLocked[classification_code]){
+				console.warn(`Classification ${classification_code} is locked, cannot classify segment`);
+				return;
 			}
 	
 			this.pointIdVsClassificationMap[point["point source id"]] = parseInt(this.labelingFor);

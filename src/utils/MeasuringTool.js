@@ -190,6 +190,7 @@ export class MeasuringTool extends EventDispatcher{
 		measure.showAngles = pick(args.showAngles, false);
 		measure.showCoordinates = pick(args.showCoordinates, false);
 		measure.showHeight = pick(args.showHeight, false);
+		measure.showHeightBase = pick(args.showHeightBase, false);		
 		measure.showCircle = pick(args.showCircle, false);
 		measure.showAzimuth = pick(args.showAzimuth, false);
 		measure.showEdges = pick(args.showEdges, true);
@@ -364,6 +365,57 @@ export class MeasuringTool extends EventDispatcher{
 				}
 			}
 
+			if (measure.showHeightBase) {
+				let label = measure.heightBaseLabel;
+
+				{
+					let distance = label.position.distanceTo(camera.position);
+					let pr = Utils.projectedRadius(1, camera, distance, clientWidth, clientHeight);
+					let scale = (70 / pr);
+					label.scale.set(scale, scale, scale);
+				}
+			   
+
+				{ // height edge
+					let edge = measure.heightBase;
+
+					let sorted = measure.points.slice().sort((a, b) => a.position.z - b.position.z);
+					let lowPoint = sorted[0].position.clone();
+					let highPoint = sorted[sorted.length - 1].position.clone();
+					let min = lowPoint.z;
+					let max = highPoint.z;
+
+					let start = new THREE.Vector3(highPoint.x, highPoint.y, min);
+					let end = new THREE.Vector3(highPoint.x, highPoint.y, max);
+
+					let lowScreen = lowPoint.clone().project(camera);
+					let startScreen = start.clone().project(camera);
+					let endScreen = end.clone().project(camera);
+
+					let toPixelCoordinates = v => {
+						let r = v.clone().addScalar(1).divideScalar(2);
+						r.x = r.x * clientWidth;
+						r.y = r.y * clientHeight;
+						r.z = 0;
+
+						return r;
+					};
+
+					let lowEL = toPixelCoordinates(lowScreen);
+					let startEL = toPixelCoordinates(startScreen);
+					let endEL = toPixelCoordinates(endScreen);
+
+					let lToS = lowEL.distanceTo(startEL);
+					let sToE = startEL.distanceTo(endEL);
+
+					edge.geometry.lineDistances = [0, lToS, lToS, lToS + sToE];
+					edge.geometry.lineDistancesNeedUpdate = true;
+
+					edge.material.dashSize = 10;
+					edge.material.gapSize = 10;
+				}
+			}
+
 			{ // area label
 				let label = measure.areaLabel;
 				let distance = label.position.distanceTo(camera.position);
@@ -403,6 +455,7 @@ export class MeasuringTool extends EventDispatcher{
 					...measure.angleLabels, 
 					...measure.coordinateLabels,
 					measure.heightLabel,
+					measure.heightBaseLabel,
 					measure.areaLabel,
 					measure.circleRadiusLabel,
 				];

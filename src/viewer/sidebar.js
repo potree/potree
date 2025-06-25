@@ -57,6 +57,12 @@ export class Sidebar{
 		this.initLabeling();
 		
 		$('#potree_version_number').html(Potree.version.major + "." + Potree.version.minor + Potree.version.suffix);
+
+		document.addEventListener('keydown', (e) => {
+			if(e.key === "a" || e.key === "A"){
+				this.triggerLabelingTool();
+			}
+		});
 	}
 
 		
@@ -140,6 +146,17 @@ export class Sidebar{
 		populate();
 	}
 	
+	triggerLabelingTool() {
+		let measurement = this.measuringTool.startAddingPoint({
+            showDistances: false,
+            showAngles: false,
+            showCoordinates: false,
+            showArea: false,
+            closed: true,
+            // maxMarkers: 1,
+            name: "Point",
+        });
+	};
 
 	initLabeling(){
 		let elToolbar = $("#labelingTools");
@@ -148,15 +165,7 @@ export class Sidebar{
                 Potree.resourcePath + "/icons/arrow_up.svg",
                 "[title]tt.point_measurement",
                 (isActive) => {
-                    let measurement = this.measuringTool.startAddingPoint({
-                        showDistances: false,
-                        showAngles: false,
-                        showCoordinates: false,
-                        showArea: false,
-                        closed: true,
-                        // maxMarkers: 1,
-                        name: "Point",
-                    });
+                    this.triggerLabelingTool();
                 }
             )
         );

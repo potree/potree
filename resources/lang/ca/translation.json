@@ -48,7 +48,9 @@
 		"navigation_cube_control": "Cub de navegació",
 		"remove_all_clipping_volumes": "Eliminar tots els volums retallats",
 		"compass": "Brúixola",
-		"camera_animation": "Moviment de càmera" 
+		"camera_animation": "Moviment de càmera",
+		"label": "Label",
+		"show_labeled": "Show Labeled" 
 	},
 	"appearance": {
 		"nb_max_pts": "Densitat de punts", 

@@ -40,7 +40,9 @@
 		"orthographic_camera_control": "Vista ortografica",
 		"remove_all_clipping_volumes": "Rimuovere tutti i volumi ritagliati",
 		"compass": "Bussola",
-		"camera_animation": "Animazione"
+		"camera_animation": "Animazione",
+        "label": "Label",
+        "show_labeled": "Show Labeled"
     },
     "appearance": {
         "nb_max_pts": "Numero di punti", 

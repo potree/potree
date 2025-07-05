@@ -186,6 +186,7 @@ export class Viewer extends EventDispatcher{
             Object.keys(this.classifications).map((key) => [key, 0])
         );
 		this.pointIdVsClassificationMapVersion = -1;
+		this.showLabeled = 0;
 
 		this.initThree();
 
@@ -1665,6 +1666,7 @@ export class Viewer extends EventDispatcher{
 			material.uniforms.uFilterNumberOfReturnsRange.value = this.filterNumberOfReturnsRange;
 			material.uniforms.uFilterGPSTimeClipRange.value = this.filterGPSTimeRange;
 			material.uniforms.uFilterPointSourceIDClipRange.value = this.filterPointSourceIDRange;
+			material.uniforms.showOnlyLabeled.value = this.showLabeled;
 
 			material.classification = this.classifications;
 			material.recomputeClassification();
@@ -2399,5 +2401,9 @@ export class Viewer extends EventDispatcher{
 	setPointIdVsViewMap(labelViewMap){
 		console.log("SettingView Map")
 		this.pointIdVsViewMap = labelViewMap;
+	}
+
+	toggleVisibleLabeled(){
+		this.showLabeled = 1 - this.showLabeled;
 	}
 };

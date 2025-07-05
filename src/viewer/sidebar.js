@@ -158,14 +158,27 @@ export class Sidebar{
         });
 	};
 
+	toggleLabel() {
+		this.viewer.toggleVisibleLabeled();
+	}
+
 	initLabeling(){
 		let elToolbar = $("#labelingTools");
 		elToolbar.append(
             this.createToolIcon(
-                Potree.resourcePath + "/icons/arrow_up.svg",
-                "[title]tt.point_measurement",
+                Potree.resourcePath + "/icons/edit.svg",
+                "[title]tt.label",
                 (isActive) => {
                     this.triggerLabelingTool();
+                }
+            )
+        );
+		elToolbar.append(
+            this.createToolIcon(
+                Potree.resourcePath + "/icons/zoom.svg",
+                "[title]tt.show_labeled",
+                (isActive) => {
+                    this.toggleLabel();
                 }
             )
         );

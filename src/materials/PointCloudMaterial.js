@@ -170,6 +170,7 @@ export class PointCloudMaterial extends THREE.RawShaderMaterial {
 			uFilterPointSourceIDClipRange:		{ type: "fv", value: [0, 65535]},
 			matcapTextureUniform: 	{ type: "t", value: this.matcapTexture },
 			backfaceCulling: { type: "b", value: false },
+			showOnlyLabeled:			{ type: "i", value: 0 },
 		};
 
 		this.classification = ClassificationScheme.DEFAULT;

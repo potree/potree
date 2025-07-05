@@ -1295,6 +1295,7 @@ export class Renderer {
 
 			shader.setUniform1i("clipMethod", material.clipMethod);
 
+			shader.setUniform1i("showOnlyLabeled", material.uniforms.showOnlyLabeled.value);
 			if (material.clipBoxes && material.clipBoxes.length > 0) {
 				//let flattenedMatrices = [].concat(...material.clipBoxes.map(c => c.inverse.elements));
 

@@ -41,7 +41,9 @@
 		"perspective_camera_control": "Perspectiva de la cámara",
 		"orthographic_camera_control": "Cámara ortográfica",
 		"navigation_cube_control": "Cubo de navegación",
-		"remove_all_clipping_volumes": "Eliminar todos los volúmenes de recorte"
+		"remove_all_clipping_volumes": "Eliminar todos los volúmenes de recorte",
+		"label": "Label",
+		"show_labeled": "Show Labeled"
 	},
 	"appearance": {
 		"nb_max_pts": "Presupuesto de puntos", 

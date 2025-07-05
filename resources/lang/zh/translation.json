@@ -46,7 +46,9 @@
 		"navigation_cube_control": "导航立方体",
 		"remove_all_clipping_volumes": "移除裁剪对象",
 		"compass": "指北针",
-		"camera_animation": "相机动画"
+		"camera_animation": "相机动画",
+		"label": "Label",
+		"show_labeled": "Show Labeled"
 	},
 	"appearance": {
 		"nb_max_pts": "显示点数",

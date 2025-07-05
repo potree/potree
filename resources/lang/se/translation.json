@@ -42,7 +42,9 @@
 		"perspective_camera_control": "Kamera perspektiv",
 		"orthographic_camera_control": "Kamera ortogonal",
 		"navigation_cube_control": "Navigeringskub",
-		"remove_all_clipping_volumes": "Ta bort alla klippytor"
+		"remove_all_clipping_volumes": "Ta bort alla klippytor",
+		"label": "Label",
+		"show_labeled": "Show Labeled"
 	},
 	"appearance": {
 		"nb_max_pts": "Punktbudget",

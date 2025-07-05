@@ -131,6 +131,7 @@ varying vec3	vViewPosition;
 varying float 	vRadius;
 varying float 	vPointSize;
 
+uniform int showOnlyLabeled;
 
 float round(float number){
 	return floor(number + 0.5);
@@ -782,6 +783,14 @@ void doClipping(){
 		if(cl.a == 0.0){
 			gl_Position = vec4(100.0, 100.0, 100.0, 0.0);
 			
+			return;
+		}
+	}
+
+	{
+		float adjustedClassification = classification;
+		if((adjustedClassification < 50.0) && (showOnlyLabeled == 1)){
+			gl_Position = vec4(100.0, 100.0, 100.0, 0.0);
 			return;
 		}
 	}

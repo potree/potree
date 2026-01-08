@@ -4,9 +4,11 @@
         "rendering_opt": "Apparence",
         "tools_opt": "Outils",
         "measurments_opt": "Mesures",
+        "clipping_opt": "Rognage",
         "materials_opt": "Matériaux",
         "scene_opt": "Scène",
         "classification_filter_opt": "Filtre de classification",
+        "filters_opt": "Filtres",
         "parameters_opt": "Autres paramètres",
         "about_opt": "À propos"
     },
@@ -14,39 +16,65 @@
         "angle_measurement": "Mesurer un angle",
         "distance_measurement": "Mesurer une distance",
         "area_measurement": "Mesurer une surface",
+        "height_measurement": "Mesurer une hauteur",
         "volume_measurement": "Mesurer un volume",
+        "circle_measurement": "Mesurer un cercle",
         "height_profile": "Mesurer un profil",
         "clip_volume": "Sélectionner des points par un volume",
+		"clip_polygon": "Sélectionner des points par un polygone",
+		"screen_clip_box": "Dessine une boîte de sélection. Nécessite d'être en vue orthographique!",
+		"clip_plane_x": "Tronquer le plan sur l'axe X",
+		"clip_plane_y": "Tronquer le plan sur l'axe Y",
+		"clip_plane_z": "Tronquer le plan sur l'axe Z",
         "remove_all_measurement": "Supprimer toutes les mesures",
         "left_view_control": "Vue de la gauche",
+        "right_view_control": "Vue de droite",
+		"back_view_control": "Vue de dos",
         "front_view_control": "Vue de face",
         "top_view_control": "Vue de dessus",
+        "bottom_view_control": "Vue de dessous",
         "focus_control": "Vue complète",
         "orbit_control": "Orbite",
         "flight_control": "Vol",
-        "earth_control": "Earth"
+        "heli_control": "Hélicoptère",
+        "earth_control": "Terre"
+        "perspective_camera_control": "Caméra en perspective",
+		"orthographic_camera_control": "Caméra orthographique",
+		"navigation_cube_control": "Cube de navigation",
+		"remove_all_clipping_volumes": "Supprimer tous les volumes d'intersection",
+		"compass": "Boussole",
+		"camera_animation": "Animation de caméra"
     },
     "appearance": {
         "nb_max_pts": "Nb points max", 
         "point_size": "Taille des points",
+   		"min_point_size": "Taille minimum des points",
         "point_opacity": "Opacité",
-        "field_view": "Angle de vue",
+        "field_view": "Champ de vision",
         "point_size_type": "Type de taille",
         "point_material": "Matériaux",
         "elevation_range": "Plage altimétrique",
+        "extra_range": "Plage scalaire",
         "point_quality": "Qualité",
         "edl_radius": "Rayon",
         "edl_strength": "Intensité",
         "edl_enable": "Activer",
         "min_node_size": "Taille minimum des noeuds",
         "clip_mode": "Mode d'intersection",
-        "move_speed": "Vitesse",
+        "move_speed": "Vitesse de déplacement",
         "skybox": "Ciel",
         "bottom_lock": "Rester au-dessus du sol",
         "box": "Boite",
-        "freeze": "Vérouiller la vue",
+        "freeze": "Verrouiller la vue",
         "language": "Choix de la langue"
     },
+    "measurements": {
+		"clip": "Couper",
+		"show": "Montrer le volume"
+	},
+	"annotations": {
+		"show3D": "Montrer en 3D",
+		"showMap": "Montrer sur la carte"
     "profile": {
         "nb_points": "Nombre de points",
         "title": "Profil altimétrique",
@@ -55,4 +83,19 @@
     "settings": {
         "language": "Langue"
     }
+    },
+	"scene": {
+		"camera_position": "Position de caméra",
+		"camera_target": "Cible de caméra"
+	},
+	"filters": {
+		"return_number": "Numéro de rebond",
+		"number_of_returns": "Nombre de rebonds",
+		"gps_min": "min",
+		"gps_max": "max",
+		"gps_time": "Temps GPS"
+	},
+	"settings": {
+		"language": "Language"
+	}
 }

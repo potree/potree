@@ -76,10 +76,6 @@ export class PointCloudOctreeGeometryNode extends PointCloudTreeNode{
 		return children;
 	}
 
-	getBoundingBox(){
-		return this.boundingBox;
-	}
-
 	getURL(){
 		let url = '';
 

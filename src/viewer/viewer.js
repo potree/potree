@@ -993,6 +993,16 @@ export class Viewer extends EventDispatcher{
 		}
 	}
 
+	getFallbackProjection(){
+		const pointcloud = this.scene.pointclouds[0];
+
+		if(pointcloud){
+			return pointcloud.fallbackProjection;
+		}else{
+			return null;
+		}
+	}
+
 	async loadProject(url){
 
 		const response = await fetch(url);

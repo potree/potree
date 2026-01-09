@@ -1158,16 +1158,61 @@ export class Viewer extends EventDispatcher{
 
 	};
 
-	toggleSidebar () {
-		let renderArea = $('#potree_render_area');
-		let isVisible = renderArea.css('left') !== '0px';
+	// toggleSidebar () {
+	// 	let renderArea = $('#potree_render_area');
+	// 	let isVisible = renderArea.css('left') !== '0px';
 
+	// 	if (isVisible) {
+	// 		renderArea.css('left', '0px');
+	// 	} else {
+	// 		renderArea.css('left', '300px');
+	// 	}
+	// };
+
+
+	/* Start Youssef code*/ 
+	/**
+	 * Toggles the sidebar and updates the visibility of the elements accordingly
+	 */
+	toggleSidebar() {
+		// Get the sidebar element by its ID
+		let sidebar = $('#potree_sidebar_container');
+		// Check if the sidebar is currently visible
+		let isVisible = sidebar.width() > 0;
+		// Get the toggle button element by its class
+		let toggleButton = $('.potree_menu_toggle');
+		// Get the map toggle button element by its ID
+		let mapToggleButton = $('#potree_map_toggle');
+		// Get the potree map element by its ID
+		let potreeMap = $('#potree_map');
+		
+		// If the sidebar is currently visible
 		if (isVisible) {
-			renderArea.css('left', '0px');
+			// Animate the sidebar width to 0px over 500 milliseconds
+			sidebar.animate({width: '0px'}, 500);
+			// Animate the toggle button to the left edge over 500 milliseconds
+			toggleButton.animate({left: '0px'}, 500);
+			// Animate the map toggle button to the left edge over 500 milliseconds
+			mapToggleButton.animate({left: '0px'}, 500);
+			// Optionally hide the map toggle button when the sidebar is hidden
+			mapToggleButton.css('display', 'none');
+			// Animate the potree map to the left edge over 500 milliseconds
+			potreeMap.animate({left: '50px'}, 500);
 		} else {
-			renderArea.css('left', '300px');
+			// Animate the sidebar width to 300px over 500 milliseconds
+			sidebar.animate({width: '300px'}, 500);
+			// Animate the toggle button to the right edge of the sidebar over 500 milliseconds
+			toggleButton.animate({left: '300px'}, 500);
+			// Animate the map toggle button to the right edge of the sidebar over 500 milliseconds
+			mapToggleButton.animate({left: '300px'}, 500);
+			// Show the map toggle button when the sidebar is visible
+			mapToggleButton.css('display', 'block');
+			// Animate the potree map next to the sidebar over 500 milliseconds
+			potreeMap.animate({left: '350px'}, 500);
 		}
-	};
+	}
+	
+	/* End Youssef code*/
 
 	toggleMap () {
 		// let map = $('#potree_map');
@@ -1204,6 +1249,55 @@ export class Viewer extends EventDispatcher{
 			this.onGUILoaded(callback);
 		}
 
+
+		/* Start Youssef code*/ 
+		// Initialize the flag for resizing
+		let isResizing = false;
+		
+		// Add an event listener for when the DOM is fully loaded
+		document.addEventListener('DOMContentLoaded', (event) => {
+			// Get the elements for the resizer, sidebar, and main content
+			const resizer = document.getElementById('resizer');
+			const sidebar = document.getElementById('potree_sidebar_container');
+			const mainContent = document.getElementById('potree_render_area');
+		
+			// Add an event listener for when the resizer is clicked
+			resizer.addEventListener('mousedown', (e) => {
+				e.preventDefault();
+				// Set the resizing flag to true
+				isResizing = true;
+				// Add event listeners for mousemove and mouseup to handle resizing
+				document.addEventListener('mousemove', handleMouseMove);
+				document.addEventListener('mouseup', () => {
+					// Set the resizing flag to false and remove the event listener for mousemove
+					isResizing = false;
+					document.removeEventListener('mousemove', handleMouseMove);
+				});
+			});
+		
+			// Function to handle the mousemove event for resizing
+			function handleMouseMove(e) {
+				// If not resizing, return
+				if (!isResizing) {
+					return;
+				}
+				// Calculate the new width for the sidebar and main content
+				let newWidth = Math.max(300, Math.min(e.clientX, window.innerWidth / 2));
+				sidebar.style.width = newWidth + 'px';
+				mainContent.style.width = `calc(100% - ${newWidth}px)`;
+		
+				// Update the position of the toggle button
+				let toggleButton = document.querySelector('.potree_menu_toggle');
+				let mapToggleButton = document.querySelector('#potree_map_toggle');
+				let potreeMap = document.querySelector("#potree_map")
+				if (toggleButton) {
+					toggleButton.style.left = newWidth + 'px';
+					mapToggleButton.style.left = newWidth + 'px';
+					potreeMap.style.left = newWidth + 50 + 'px';
+				}
+			}
+		});
+	/* End Youssef code*/
 		let viewer = this;
 		let sidebarContainer = $('#potree_sidebar_container');
 		sidebarContainer.load(new URL(Potree.scriptPath + '/sidebar.html').href, () => {

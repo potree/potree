@@ -303,6 +303,24 @@ onmessage = function (event) {
 			// console.log(`rgb: ${duration.toFixed(1)}ms`);
 
 			attributeBuffers[pointAttribute.name] = { buffer: buff, attribute: pointAttribute };
+		} else if(["NORMAL", "normal"].includes(pointAttribute.name)){
+
+			let buff = new ArrayBuffer(numPoints * 4 * 3);
+			let normals = new Float32Array(buff);
+		
+			for (let j = 0; j < numPoints; j++) {
+				// TODO: decode normals from brotli
+				let nx = view.getFloat32(byteOffset + 0, true);
+				let ny = view.getFloat32(byteOffset + 4, true);
+				let nz = view.getFloat32(byteOffset + 8, true);
+				byteOffset += 12;
+			
+				normals[3 * j + 0] = nx;
+				normals[3 * j + 1] = ny;
+				normals[3 * j + 2] = nz;
+			}
+
+			attributeBuffers[pointAttribute.name] = { buffer: buff, attribute: pointAttribute };
 		}else{
 			let buff = new ArrayBuffer(numPoints * 4);
 			let f32 = new Float32Array(buff);

@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<meta name="description" content="">
+	<meta name="author" content="">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+	<title>Potree Viewer</title>
+
+	<link rel="stylesheet" type="text/css" href="../build/potree/potree.css">
+	<link rel="stylesheet" type="text/css" href="../libs/jquery-ui/jquery-ui.min.css">
+	<link rel="stylesheet" type="text/css" href="../libs/openlayers3/ol.css">
+	<link rel="stylesheet" type="text/css" href="../libs/spectrum/spectrum.css">
+	<link rel="stylesheet" type="text/css" href="../libs/jstree/themes/mixed/style.css">
+</head>
+
+<body>
+	<script src="../libs/jquery/jquery-3.1.1.min.js"></script>
+	<script src="../libs/spectrum/spectrum.js"></script>
+	<script src="../libs/jquery-ui/jquery-ui.min.js"></script>
+	<script src="../libs/other/BinaryHeap.js"></script>
+	<script src="../libs/tween/tween.min.js"></script>
+	<script src="../libs/d3/d3.js"></script>
+	<script src="../libs/proj4/proj4.js"></script>
+	<script src="../libs/openlayers3/ol.js"></script>
+	<script src="../libs/i18next/i18next.js"></script>
+	<script src="../libs/jstree/jstree.js"></script>
+	<script src="../libs/copc/index.js"></script>
+	<script src="../build/potree/potree.js"></script>
+	<script src="../libs/plasio/js/laslaz.js"></script>
+
+	<!-- INCLUDE ADDITIONAL DEPENDENCIES HERE -->
+	<!-- INCLUDE SETTINGS HERE -->
+
+	<div class="potree_container" style="position: absolute; width: 100%; height: 100%; left: 0px; top: 0px; ">
+		<div id="potree_render_area" style="background-image: url('../build/potree/resources/images/background.jpg');"></div>
+		<div id="potree_sidebar_container"> </div>
+	</div>
+
+	<script type="module">
+
+		import * as THREE from "../libs/three.js/build/three.module.js";
+			window.viewer = new Potree.Viewer(document.getElementById("potree_render_area"));
+	
+			viewer.setEDLEnabled(true);
+			viewer.setFOV(60);
+			viewer.setPointBudget(2_000_000);
+			viewer.loadSettingsFromURL();
+	
+			viewer.setDescription("Loading VPC format");
+	
+			viewer.loadGUI(() => {
+				viewer.setLanguage('en');
+				$("#menu_appearance").next().show();
+			});
+	
+			var path = "../pointclouds/vpc/ahn3_focus.copc.vpc";
+			var name = "AHN3";
+	
+			var getQueryParam = function(name) {
+				name = name.replace(/[\[\]]/g, "\\$&");
+				var regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)"),
+					results = regex.exec(window.location.href);
+				if (!results || !results[2]) return null;
+				return decodeURIComponent(results[2].replace(/\+/g, " "));
+			}
+	
+			var r = getQueryParam('r');
+			if (r) {
+				name = r;
+				var http = 'http';
+				if (r.substr(0, http.length) == http) path = name;
+				else path = "../pointclouds/" + name + "/ept.json";
+			}
+	
+			var c = getQueryParam('c');
+			var elevationRange = null;
+			elevationRange = [-20, 220];
+			Potree.loadPointCloud(path, name, function(e){
+				for (const pointcloud of e.pointcloud) {
+					viewer.scene.addPointCloud(pointcloud);
+
+					let material = pointcloud.material;
+					material.minSize = 2.0;
+					material.shape = Potree.PointShape.CIRCLE;
+					material.size = 0.8;
+					material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
+					if (c) material.activeAttributeName = c;
+					else material.activeAttributeName = "elevation";
+					if (elevationRange != null) material.elevationRange = elevationRange;
+		
+					viewer.fitToScreen(0.5);
+				}
+			});
+
+			// TODO properly integrate this? Or leave it out?
+			function changeAttribute(name) {
+				for (const pointcloud of viewer.scene.pointclouds) {
+					pointcloud.material.activeAttributeName = name;
+				}
+			}
+
+			const attributeNames = ['rgba', 'intensity', 'intensity gradient', 'classification', 'gps-time', 'returnNumber', 'number of returns', 'return number', 'elevation', 'color', 'source id', 'matcap', 'indices', 'level of detail', 'composite'];
+			const attributesListElement = document.createElement('div');
+			for (const attributeName of attributeNames) {
+				const attributeElement = document.createElement('div');
+				attributeElement.innerText = attributeName;
+				attributeElement.style.color = 'white';
+				attributeElement.addEventListener('click', () => changeAttribute(attributeName));
+				attributesListElement.insertAdjacentElement('beforeend', attributeElement)
+			}
+
+			const sidebar = document.getElementById("potree_sidebar_container");
+			// timeout found by experiment
+			setTimeout(() => sidebar.insertAdjacentElement('beforeend', attributesListElement), 1000);
+		</script>
+  </body>
+</html>

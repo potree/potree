@@ -85,6 +85,7 @@ import {POCLoader} from "./loader/POCLoader.js";
 import {CopcLoader, EptLoader} from "./loader/EptLoader.js";
 import {PointCloudOctree} from "./PointCloudOctree.js";
 import {WorkerPool} from "./WorkerPool.js";
+import {VpcLoader} from "./loader/VpcLoader.js";
 
 export const workerPool = new WorkerPool();
 
@@ -130,7 +131,20 @@ export {scriptPath, resourcePath};
 
 export function loadPointCloud(path, name, callback){
 	let loaded = function(e){
-		e.pointcloud.name = name;
+		if (Array.isArray(e.pointcloud)) {
+			let idx = 0;
+			for (const pointcloud of e.pointcloud) {
+				if (pointcloud.name.charAt(0) === '!') {
+					pointcloud.name = pointcloud.name.substring(1);
+				}
+				else {
+					pointcloud.name = name + idx.toString();
+					idx += 1;
+				}
+			}
+		} else {
+			e.pointcloud.name = name;
+		}
 		callback(e);
 	};
 
@@ -203,14 +217,40 @@ export function loadPointCloud(path, name, callback){
 				}
 			});
 		} else if (path.indexOf('.vpc') > 0) {
-			PointCloudArena4DGeometry.load(path, function (geometry) {
-				if (!geometry) {
-					//callback({type: 'loading_failed'});
+			// TODO: how to handle Veesus Point Cloud as well as Virtual Point Cloud files?
+			// PointCloudArena4DGeometry.load(path, function (geometry) {
+			// 	if (!geometry) {
+			// 		//callback({type: 'loading_failed'});
+			// 		console.error(new Error(`failed to load point cloud from URL: ${path}`));
+			// 	} else {
+			// 		let pointcloud = new PointCloudArena4D(geometry);
+			// 		// loaded(pointcloud);
+			// 		resolve({type: 'pointcloud_loaded', pointcloud: pointcloud});
+			// 	}
+			// });
+
+			VpcLoader.load(path, function(nodes) {
+				if (!nodes) {
 					console.error(new Error(`failed to load point cloud from URL: ${path}`));
 				} else {
-					let pointcloud = new PointCloudArena4D(geometry);
-					// loaded(pointcloud);
-					resolve({type: 'pointcloud_loaded', pointcloud: pointcloud});
+					const pointclouds = [];
+					let minRange, maxRange;
+					for (const node of nodes) {
+						if (!node || !node.geometry) {
+							continue;
+						}
+						
+						const pointcloud = new PointCloudOctree(node.geometry);
+						pointcloud.name = "!" + name + "_" + node.id;
+
+						minRange = minRange === undefined ? pointcloud.material.elevationRange[0] : Math.min(minRange, pointcloud.material.elevationRange[0]);
+						maxRange = maxRange === undefined ? pointcloud.material.elevationRange[1] : Math.min(maxRange, pointcloud.material.elevationRange[1]);
+						pointclouds.push(pointcloud);
+					}
+					for (const pointcloud of pointclouds) {
+						pointcloud.material.elevationRange = [minRange, maxRange];
+					}
+					resolve({type: 'pointclouds_loaded', pointcloud: pointclouds});
 				}
 			});
 		} else {

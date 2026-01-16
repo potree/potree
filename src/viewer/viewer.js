@@ -468,7 +468,11 @@ export class Viewer extends EventDispatcher{
 		}
 
 		if(bg === "skybox"){
-			this.skybox = Utils.loadSkybox(new URL(Potree.resourcePath + '/textures/skybox2/').href);
+			var skyboxName="skybox2";
+			if (Utils.getParameterByName('skybox')) {
+				skyboxName = Utils.getParameterByName('skybox');
+			}
+			this.skybox = Utils.loadSkybox(new URL(Potree.resourcePath + '/textures/' + skyboxName + '/').href);
 		}
 
 		this.background = bg;

@@ -2293,6 +2293,7 @@ export class Viewer extends EventDispatcher{
 			let index = this.messages.indexOf(message);
 			if(index >= 0){
 				this.messages.splice(index, 1);
+				message.element.remove();
 			}
 		});
 

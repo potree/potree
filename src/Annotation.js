@@ -408,7 +408,13 @@ export class Annotation extends EventDispatcher {
 	}
 
 	remove (annotation) {
-		if (this.hasChild(annotation)) {
+		if (this.hasChild(annotation)) {		
+			this.dispatchEvent({
+				'type': 'annotation_removed',
+				'scene': this,
+				'annotation': annotation
+			});
+
 			annotation.removeAllChildren();
 			annotation.dispose();
 			this.children = this.children.filter(e => e !== annotation);

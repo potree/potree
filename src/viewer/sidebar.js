@@ -279,6 +279,15 @@ export class Sidebar{
 			}
 		));
 
+		// REMOVE ALL ANNOTATIONS
+		elToolbar.append(this.createToolIcon(
+			Potree.resourcePath + '/icons/reset_annotations.svg',
+			'[title]tt.remove_all_annotations',
+			() => {
+				this.viewer.scene.annotations.removeAllChildren();
+			}
+		));
+
 
 		{ // SHOW / HIDE Measurements
 			let elShow = $("#measurement_options_show");
@@ -676,6 +685,12 @@ export class Sidebar{
 		this.viewer.scene.addEventListener("polygon_clip_volume_added", onVolumeAdded);
 		this.viewer.scene.annotations.addEventListener("annotation_added", onAnnotationAdded);
 
+		let onAnnotationRemoved = (e) => {
+			let annotationsRoot = $("#jstree_scene").jstree().get_json("annotations");
+			let jsonNode = annotationsRoot.children.find(child => child.data.uuid === e.annotation.uuid);
+
+			tree.jstree("delete_node", jsonNode.id);
+		}
 		let onMeasurementRemoved = (e) => {
 			let measurementsRoot = $("#jstree_scene").jstree().get_json("measurements");
 			let jsonNode = measurementsRoot.children.find(child => child.data.uuid === e.measurement.uuid);
@@ -708,6 +723,7 @@ export class Sidebar{
 		this.viewer.scene.addEventListener("volume_removed", onVolumeRemoved);
 		this.viewer.scene.addEventListener("polygon_clip_volume_removed", onPolygonClipVolumeRemoved);
 		this.viewer.scene.addEventListener("profile_removed", onProfileRemoved);
+		this.viewer.scene.annotations.addEventListener("annotation_removed", onAnnotationRemoved);
 
 		{
 			let annotationIcon = `${Potree.resourcePath}/icons/annotation.svg`;

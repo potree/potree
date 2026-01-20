@@ -30,6 +30,7 @@
 		"clip_plane_y": "Clip plane on y axis",
 		"clip_plane_z": "Clip plane on z axis",
 		"remove_all_measurement": "Remove all measurements",
+		"remove_all_annotations": "Remove all annotations",
 		"left_view_control": "Left view",
 		"right_view_control": "Righ view",
 		"front_view_control": "Front view",

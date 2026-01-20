@@ -23,6 +23,7 @@
         "clip_plane_y": "Clipebene auf y-Achse",
         "clip_plane_z": "Clipebene auf z-Achse",
         "remove_all_measurement": "Alle Messungen entfernen",
+        "remove_all_annotations": "Alle Annotationen entfernen",
         "left_view_control": "Linke Seite",
         "front_view_control": "Vorderseite",
         "top_view_control": "Draufsicht",

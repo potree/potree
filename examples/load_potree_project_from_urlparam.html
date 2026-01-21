@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<meta name="description" content="">
+	<meta name="author" content="">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+	<title>Potree Viewer</title>
+
+	<link rel="stylesheet" type="text/css" href="../build/potree/potree.css">
+	<link rel="stylesheet" type="text/css" href="../libs/jquery-ui/jquery-ui.min.css">
+	<link rel="stylesheet" type="text/css" href="../libs/openlayers3/ol.css">
+	<link rel="stylesheet" type="text/css" href="../libs/spectrum/spectrum.css">
+	<link rel="stylesheet" type="text/css" href="../libs/jstree/themes/mixed/style.css">
+</head>
+
+<body>
+	<script src="../libs/jquery/jquery-3.1.1.min.js"></script>
+	<script src="../libs/spectrum/spectrum.js"></script>
+	<script src="../libs/jquery-ui/jquery-ui.min.js"></script>
+	
+	
+	<script src="../libs/other/BinaryHeap.js"></script>
+	<script src="../libs/tween/tween.min.js"></script>
+	<script src="../libs/d3/d3.js"></script>
+	<script src="../libs/proj4/proj4.js"></script>
+	<script src="../libs/openlayers3/ol.js"></script>
+	<script src="../libs/i18next/i18next.js"></script>
+	<script src="../libs/jstree/jstree.js"></script>
+	<script src="../libs/copc/index.js"></script>
+	<script src="../libs/plasio/js/laslaz.js"></script>
+	<script src="../build/potree/potree.js"></script>
+
+	<div class="potree_container" style="position: absolute; width: 100%; height: 100%; left: 0px; top: 0px; ">
+		<div id="potree_render_area" style="background-image: url('../build/potree/resources/images/background.jpg');"></div>
+		<div id="potree_sidebar_container"> </div>
+	</div>
+	
+	<script type="module">
+
+	import * as THREE from "../libs/three.js/build/three.module.js";
+	
+		window.viewer = new Potree.Viewer(document.getElementById("potree_render_area"));
+		
+		viewer.setDescription("This webapp parse url-params datasetsUrls (json array [\"url1\", \"url2\"], or shortcut r), potreeProjectJson or potreeProjectUrl and loads the corresponding potree projects. Potree projects that were exported (Scene → Export → Potree) can be loaded with viewer.loadProject(url). ");
+		
+		const potreeProjectJson = Potree.Utils.getParameterByName("potreeProjectJson")
+		const potreeProjectUrl = Potree.Utils.getParameterByName("potreeProjectUrl")
+
+		const potreeDatasetsUrls_str = Potree.Utils.getParameterByName("r") || Potree.Utils.getParameterByName("datasetsUrls")
+		const activeAttributeName = Potree.Utils.getParameterByName("c")
+		const fitToScreen = Potree.Utils.getParameterByName("fit")
+		
+		if (potreeDatasetsUrls_str) {
+			const potreeDatasetsUrls = JSON.parse(potreeDatasetsUrls_str);
+			for (let potreeDatasetUrl of potreeDatasetsUrls) {
+				Potree.loadPointCloud(potreeDatasetUrl, 'dataset', function(e){
+					viewer.scene.addPointCloud(e.pointcloud);
+					e.pointcloud.material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
+					if (activeAttributeName) 
+						e.pointcloud.material.activeAttributeName = activeAttributeName;
+					if (JSON.parse(fitToScreen)) 
+						viewer.fitToScreen()
+				})
+			}
+		}
+		else if (potreeProjectUrl) {
+			console.log('Loading Potree Project from potreeProjectUrl', potreeProjectUrl)
+			viewer.loadProject(potreeProjectUrl).then( () => {
+				console.log("Potree project loaded from url!");
+			}).catch(() => {
+				console.log('Error when loading Potree project at given URL, probable the server wont allow cross-origin requests, please use a plugin like Allow-Cors')
+			});
+		} else if (potreeProjectJson) {
+			console.log('Loading Potree Project from potreeProjectJson', potreeProjectJson)
+			const json = JSON.parse(decodeURI(potreeProjectJson));
+			if(json.type === "Potree"){
+				Potree.loadProject(viewer, json);
+				console.log("Potree project loaded from json!");
+			}
+		} else {
+			console.log('Neither potreeDatasetUrl (or shortcut r), nor potreeProjectUrl, nor potreeProjectUrl url-params found, will not load any Potree Project')
+		}
+		
+		if (JSON.parse(fitToScreen) && !potreeDatasetsUrls_str) {
+			setTimeout(() => viewer.fitToScreen(), 2000)
+		}
+
+		viewer.loadGUI().then( () => {
+			viewer.setLanguage('en');
+			$("#menu_appearance").next().show();
+			$("#menu_scene").next().show();
+			$("#menu_tools").next().show();
+			viewer.toggleSidebar();
+		});
+		// Default settings 
+		viewer.setEDLEnabled(true);
+		viewer.setFOV(60);
+		viewer.setPointBudget(5_000_000);
+		// Load other params from url
+		viewer.loadSettingsFromURL();
+		// Available url-params: pointSize, FOV, opacity, edlEnabled, edlRadius, edlStrength, pointBudget, showBoundingBox, material, pointSizing, quality, position, target, background
+		
+	</script>
+  </body>
+</html>

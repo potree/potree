@@ -72,6 +72,7 @@
 		"box": "Box",
 		"length_unit": "Length unit",
 		"freeze": "Lock view",
+		"show_node_name": "Show node name",
 		"language": "Language",
 		"backface_culling": "Backface Culling"
 	},

@@ -147,6 +147,7 @@ export class Viewer extends EventDispatcher{
 
 		this.showBoundingBox = false;
 		this.showAnnotations = true;
+		this.debugShowNodeName = false;
 		this.freeze = false;
 		this.clipTask = ClipTask.HIGHLIGHT;
 		this.clipMethod = ClipMethod.INSIDE_ANY;
@@ -1633,10 +1634,10 @@ export class Viewer extends EventDispatcher{
 
 
 		for (let pointcloud of visiblePointClouds) {
-
 			pointcloud.showBoundingBox = this.showBoundingBox;
 			pointcloud.generateDEM = this.generateDEM;
 			pointcloud.minimumNodePixelSize = this.minNodeSize;
+			pointcloud.debugShowNodeName = this.debugShowNodeName;
 
 			let material = pointcloud.material;
 
@@ -1670,6 +1671,18 @@ export class Viewer extends EventDispatcher{
 				}
 
 				bbRoot.children = visibleBoxes;
+			}
+		}
+
+		if(this.debugShowNodeName) {
+			for(let pointcloud of this.scene.pointclouds){
+				if(!pointcloud.debugShowNodeName)
+					continue;
+
+				for(let node of pointcloud.visibleNodes.filter(vn => vn.nameAnnotation !== undefined)){
+					if(!this.scene.annotations.hasChild(node.nameAnnotation))
+						this.scene.annotations.add(node.nameAnnotation);
+				}
 			}
 		}
 

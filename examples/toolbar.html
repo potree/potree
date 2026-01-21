@@ -300,6 +300,7 @@
 		const onBudgetChange = () => {
 			let budget = (viewer.getPointBudget() / (1000_000)).toFixed(1) + "M";
 			elToolbar.find('span[name=lblPointBudget]').html(budget);
+			elToolbar.find('#sldPointBudget').slider({value: viewer.getPointBudget()});
 		};
 
 		onBudgetChange();

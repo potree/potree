@@ -265,11 +265,25 @@ export class Images360Loader{
 			};
 		}
 		
-		let response = await fetch(`${url}/coordinates.txt`);
-		let text = await response.text();
+		let coordinateLines;
+		if (Array.isArray(url)) {
+			let responses = await Promise.all(url.map(u => fetch(`${u}/coordinates.txt`)));
+			let texts = await Promise.all(responses.map(r => r.text()));
+			let allLines = texts.map(t => t.split(/\r?\n/));
 
-		let lines = text.split(/\r?\n/);
-		let coordinateLines = lines.slice(1);
+			let allLinesAbsolute = allLines.map((ls, idx) => ls.map(l => `${url[idx]}/${l}`));
+			params.absolute = true;
+
+			// Remove first line from all files
+			let allCoordinateLines = allLinesAbsolute.map(l => l.slice(1));
+			coordinateLines = [].concat.apply([], allCoordinateLines);
+		} else {
+			let response = await fetch(`${url}/coordinates.txt`);
+			let text = await response.text();
+
+			let lines = text.split(/\r?\n/);
+			coordinateLines = lines.slice(1);
+		}
 
 		let images360 = new Images360(viewer);
 
@@ -291,7 +305,12 @@ export class Images360Loader{
 			roll = parseFloat(roll);
 
 			filename = filename.replace(/"/g, "");
-			let file = `${url}/${filename}`;
+			let file;
+			if (!params.absolute) {
+				file = `${url}/${filename}`;
+			} else {
+				file = filename;
+			}
 
 			let image360 = new Image360(file, time, long, lat, alt, course, pitch, roll);
 

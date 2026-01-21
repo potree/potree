@@ -40565,8 +40565,15 @@ const LoaderUtils = {
 	decodeText: function ( array ) {
 
 		if ( typeof TextDecoder !== 'undefined' ) {
+			 let text = "", decoder = new TextDecoder();
+			 const chunkSize = 10000;
+             const numOfRepetitions = Math.ceil(array.length / chunkSize);
 
-			return new TextDecoder().decode( array );
+			for (let index = 0; index <  numOfRepetitions; index+=chunkSize) {
+				 const chunkBufferData = array?.slice(index, index + chunkSize);
+				text += decoder.decode(chunkBufferData, {stream:true});
+			}
+			return text
 
 		}
 

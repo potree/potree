@@ -1,4 +1,3 @@
-
 import * as THREE from "../../../libs/three.js/build/three.module.js";
 import {Utils} from "../../utils.js";
 import {Volume, BoxVolume, SphereVolume} from "../../utils/Volume.js";
@@ -95,6 +94,20 @@ export class VolumePanel extends MeasurePanel{
 					<input id="volume_reset_orientation" type="button" value="reset orientation"/>
 					<input id="volume_make_uniform" type="button" value="make uniform"/>
 				</li>
+				<li style="display: flex; justify-content: space-around; align-items: center; margin-top: 10px">
+				    <span style="flex-grow: 1">Step movement:</span>
+				    <input id="volume_shift_number" name="volume_shift_number" type="number" value="5"/>
+				</li>
+				<li style="display: flex;margin-top: 10px;justify-content: start;align-items: center;">
+					<span>X:</span> 
+					<button id="volume_move_to_left" style="width: 65px;height: 35px;background: #e2e3e3;border-radius: 5px;margin-left: 8px;"><i style="border: solid black;border-width: 0 3px 3px 0;display: inline-block;padding: 3px; transform: rotate(135deg);-webkit-transform: rotate(135deg);"></i></button>
+					<button id="volume_move_to_right" style="width: 65px;height: 35px;background: #e2e3e3;border-radius: 5px;margin-left: 8px;"><i style="border: solid black;border-width: 0 3px 3px 0;display: inline-block;padding: 3px;transform: rotate(-45deg);-webkit-transform: rotate(-45deg);"></i></button>
+				</li>
+				<li style="display: flex;margin-top: 10px;justify-content: start;align-items: center;">
+					<span>Y:</span> 
+					<button id="volume_move_to_down" style="width: 65px;height: 35px;background: #e2e3e3;border-radius: 5px;margin-left: 8px;"><i style="border: solid black;border-width: 0 3px 3px 0;display: inline-block;padding: 3px;transform: rotate(45deg);-webkit-transform: rotate(45deg);"></i></button>
+					<button id="volume_move_to_up" style="width: 65px;height: 35px;background: #e2e3e3;border-radius: 5px;margin-left: 8px;"><i style="border: solid black;border-width: 0 3px 3px 0;display: inline-block;padding: 3px;transform: rotate(-135deg);-webkit-transform: rotate(-135deg);"></i></button>
+				</li>
 				<div style="display: flex; margin-top: 12px">
 					<span></span>
 					<span style="flex-grow: 1"></span>
@@ -115,7 +128,7 @@ export class VolumePanel extends MeasurePanel{
 
 		this.elCopyRotation = this.elContent.find("img[name=copyRotation]");
 		this.elCopyRotation.click( () => {
-			let rotation = this.measurement.rotation.toArray().slice(0, 3);
+      let rotation = this.measurement.rotation.toArray().slice(0, 3);
 			let msg = rotation.map(c => c.toFixed(3)).join(", ");
 			Utils.clipboardCopy(msg);
 
@@ -140,9 +153,63 @@ export class VolumePanel extends MeasurePanel{
 			this.viewer.scene.removeVolume(measurement);
 		});
 
-		this.elContent.find("#volume_reset_orientation").click(() => {
-			measurement.rotation.set(0, 0, 0);
-		});
+    this.elContent.find("#volume_reset_orientation").click(() => {
+        measurement.rotation.set(0, 0, 0);
+    });
+
+    const handleVolumeMoveXAxis = (direction = 1) => {
+      if (!this.measurement._selected) {
+        return;
+      }
+      const shiftElement = document.getElementById("volume_shift_number");
+      const shiftNumber = direction * Number(shiftElement.value || 5);
+      const pos = this.measurement.position;
+      this.measurement.position.set(pos.x + shiftNumber, pos.y, pos.z);
+      this.update();
+    };
+    const handleVolumeMoveYAxis = (direction = 1) => {
+      if (!this.measurement._selected) {
+        return;
+      }
+      const shiftElement = document.getElementById("volume_shift_number");
+      const shiftNumber = direction * Number(shiftElement.value || 5);
+      const pos = this.measurement.position;
+      this.measurement.position.set(pos.x, pos.y + shiftNumber, pos.z);
+      this.update();
+    };
+
+    $("canvas")[1].addEventListener("keydown", (e) => {
+      switch (e.keyCode) {
+        case 37:
+          handleVolumeMoveXAxis(-1);
+          break;
+        case 39:
+          handleVolumeMoveXAxis();
+          break;
+        case 40:
+          handleVolumeMoveYAxis(-1);
+          break;
+        case 38:
+          handleVolumeMoveYAxis();
+          break;
+        default:
+          break;
+      }
+    });
+
+    this.elContent.find("#volume_move_to_left").click(() => {
+      handleVolumeMoveXAxis(-1);
+    });
+    this.elContent.find("#volume_move_to_right").click(() => {
+      handleVolumeMoveXAxis();
+    });
+
+    this.elContent.find("#volume_move_to_down").click(() => {
+      handleVolumeMoveYAxis(-1);
+    });
+    this.elContent.find("#volume_move_to_up").click(() => {
+      handleVolumeMoveYAxis();
+    });
 
 		this.elContent.find("#volume_make_uniform").click(() => {
 			let mean = (measurement.scale.x + measurement.scale.y + measurement.scale.z) / 3;

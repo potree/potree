@@ -20,6 +20,7 @@ Install [node.js](http://nodejs.org/)
 Install dependencies, as specified in package.json, and create a build in ./build/potree.
 
 ```bash
+npm i -g gulp 
 npm install
 ```
 

@@ -1,4 +1,3 @@
-
 import * as THREE from "../../libs/three.js/build/three.module.js";
 import {GeoJSONExporter} from "../exporter/GeoJSONExporter.js"
 import {DXFExporter} from "../exporter/DXFExporter.js"
@@ -304,15 +303,18 @@ export class Sidebar{
 		{
 			let elExport = elScene.next().find("#scene_export");
 
-			let geoJSONIcon = `${Potree.resourcePath}/icons/file_geojson.svg`;
-			let dxfIcon = `${Potree.resourcePath}/icons/file_dxf.svg`;
-			let potreeIcon = `${Potree.resourcePath}/icons/file_potree.svg`;
-
-			elExport.append(`
+      let geoJSONIcon = `${Potree.resourcePath}/icons/file_geojson.svg`;
+      let dxfIcon = `${Potree.resourcePath}/icons/file_dxf.svg`;
+      let potreeIcon = `${Potree.resourcePath}/icons/file_potree.svg`;
+      const styledButton = "background: transparent;padding: 4px;border: none";
+      elExport.append(`
 				Export: <br>
-				<a href="#" download="measure.json"><img name="geojson_export_button" src="${geoJSONIcon}" class="button-icon" style="height: 24px" /></a>
-				<a href="#" download="measure.dxf"><img name="dxf_export_button" src="${dxfIcon}" class="button-icon" style="height: 24px" /></a>
-				<a href="#" download="potree.json5"><img name="potree_export_button" src="${potreeIcon}" class="button-icon" style="height: 24px" /></a>
+				<div style="display: flex;align-items: center;">
+					<a href="#" download="measure.json"><img name="geojson_export_button" src="${geoJSONIcon}" class="button-icon" style="height: 24px" /></a>
+					<a href="#" download="measure.dxf"><img name="dxf_export_button" src="${dxfIcon}" class="button-icon" style="height: 24px" /></a>
+					<a href="#" download="potree.json5"><img name="potree_export_button" src="${potreeIcon}" class="button-icon" style="height: 24px" /></a>
+					<button style="${styledButton}"><a href="#" id="export_targets_button" download="targets.json" style="color: white;font-weight: 600;font-size: 14px;">Export Target</a></button>
+				</div>
 			`);
 
 			let elDownloadJSON = elExport.find("img[name=geojson_export_button]").parent();
@@ -326,8 +328,86 @@ export class Sidebar{
 					let url = window.URL.createObjectURL(new Blob([geoJson], {type: 'data:application/octet-stream'}));
 					elDownloadJSON.attr('href', url);
 				}else{
-					this.viewer.postError("no measurements to export");
+                 this.viewer.postError("no measurements to export");
+				 event.preventDefault();
+				}
+			});
+
+			let elExportTarget = $("#export_targets_button");
+			elExportTarget.click((event) => {
+				try {
+				let scene = this.viewer.scene;
+				if (
+					scene.measurements.filter((item) => item.visible).length !== 1 ||
+					scene.volumes.filter((item) => item._visible).length !== 1 ||
+					scene.annotations.children.filter((item) => item._visible)
+					.length !== 1
+				) {
+					this.viewer.postError(
+					"You must have one Volume, one Point and one Annotation for export."
+					);
 					event.preventDefault();
+					return;
+				}
+				const point = scene.measurements[0];
+				const boxVolume = scene.volumes[0];
+				const annotation = scene.annotations.children[0];
+				let angles = boxVolume.rotation.toVector3();
+				angles = angles.toArray();
+				//angles = [angles.z, angles.x, angles.y];
+				angles = angles.map((v) => (180 * v) / Math.PI);
+				angles = angles.map((a) => a.toFixed(1) + "\u00B0");
+				let dimensions = boxVolume.scale.toArray();
+				dimensions = dimensions.map((v) => Utils.addCommas(v.toFixed(2)));
+				let volume = boxVolume.getVolume();
+				let camera = scene.getActiveCamera();
+				let view = scene.view;
+				let cameraPos = camera.position
+					.toArray()
+					.map((c) => Utils.addCommas(c.toFixed(3)));
+				let cameraTarget = view
+					.getPivot()
+					.toArray()
+					.map((c) => Utils.addCommas(c.toFixed(3)));
+				const base64 = $("canvas")[1].toDataURL("png");
+				let data = {
+					point: {
+					position: point.points[0].position,
+					rgba: point.points[0].rgba,
+					},
+					boxVolume: {
+					position: boxVolume.position,
+					angles: {
+						alpha: angles[0],
+						betta: angles[1],
+						gamma: angles[2],
+					},
+					length: dimensions[0],
+					width: dimensions[1],
+					height: dimensions[2],
+					volume: Utils.addCommas(volume.toFixed(2)),
+					},
+					annotation: {
+					title: annotation._title,
+					description: annotation._description,
+					position: annotation.position,
+					},
+					camera: {
+					position: cameraPos,
+					target: cameraTarget,
+					base64,
+					},
+				};
+				const str = JSON.stringify(data);
+				const bytes = new TextEncoder().encode(str);
+				const blob = new Blob([bytes], {
+					type: "application/json;charset=utf-8",
+				});
+				let url = window.URL.createObjectURL(blob);
+				elExportTarget.attr("href", url);
+				} catch (error) {
+				console.log("Failed export_targets_button on click(), Error:", error);
+				event.preventDefault();
 				}
 			});
 

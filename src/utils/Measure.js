@@ -294,6 +294,7 @@ export class Measure extends THREE.Object3D {
 		this._closed = true;
 		this._showAngles = false;
 		this._showCircle = false;
+		this._showHeightBase = false;
 		this._showHeight = false;
 		this._showEdges = true;
 		this._showAzimuth = false;
@@ -309,6 +310,8 @@ export class Measure extends THREE.Object3D {
 		this.angleLabels = [];
 		this.coordinateLabels = [];
 
+		this.heightBase = createHeightLine();
+		this.heightBaseLabel = createHeightLabel();
 		this.heightEdge = createHeightLine();
 		this.heightLabel = createHeightLabel();
 		this.areaLabel = createAreaLabel();
@@ -319,6 +322,8 @@ export class Measure extends THREE.Object3D {
 
 		this.azimuth = createAzimuth();
 
+		this.add(this.heightBase);
+		this.add(this.heightBaseLabel);
 		this.add(this.heightEdge);
 		this.add(this.heightLabel);
 		this.add(this.areaLabel);
@@ -760,6 +765,54 @@ export class Measure extends THREE.Object3D {
 			}
 		}
 
+		{ // update heightbase stuff
+			let heightBase = this.heightBase;
+			heightBase.visible = this.showHeightBase;
+			this.heightBaseLabel.visible = this.showHeightBase;
+
+			if (this.showHeightBase) {
+				let sorted = this.points.slice().sort((a, b) => a.position.z - b.position.z);
+				let lowPoint = sorted[0].position.clone();
+				let highPoint = sorted[sorted.length - 1].position.clone();
+
+				
+				let start = new THREE.Vector3(lowPoint.x, lowPoint.y, lowPoint.z);
+				let end = new THREE.Vector3(highPoint.x, highPoint.y, lowPoint.z);
+
+				heightBase.position.copy(lowPoint);
+				let height = start.distanceTo(end);
+			
+				heightBase.geometry.setPositions([
+					0, 0, 0,
+					...start.clone().sub(lowPoint).toArray(),
+					...start.clone().sub(lowPoint).toArray(),
+					...end.clone().sub(lowPoint).toArray(),
+				]);
+
+				heightBase.geometry.verticesNeedUpdate = true;
+				// heightEdge.geometry.computeLineDistances();
+				// heightEdge.geometry.lineDistancesNeedUpdate = true;
+				heightBase.geometry.computeBoundingSphere();
+				heightBase.computeLineDistances();
+
+				// heightEdge.material.dashSize = height / 40;
+				// heightEdge.material.gapSize = height / 40;
+
+				let heightBaseLabelPosition = start.clone().add(end).multiplyScalar(0.5);
+				this.heightBaseLabel.position.copy(heightBaseLabelPosition);
+
+				let suffix = "";
+				if(this.lengthUnit != null && this.lengthUnitDisplay != null){
+					height = height / this.lengthUnit.unitspermeter * this.lengthUnitDisplay.unitspermeter;  //convert to meters then to the display unit
+					suffix = this.lengthUnitDisplay.code;
+				}
+
+				let txtHeight = Utils.addCommas(height.toFixed(2));
+				let msg = `${txtHeight} ${suffix}`;
+				this.heightBaseLabel.setText(msg);
+			}
+		}
+
 		{ // update circle stuff
 			const circleRadiusLabel = this.circleRadiusLabel;
 			const circleRadiusLine = this.circleRadiusLine;
@@ -903,6 +956,15 @@ export class Measure extends THREE.Object3D {
 
 	set showHeight (value) {
 		this._showHeight = value;
+		this.update();
+	}
+
+	get showHeightBase () {
+		return this._showHeightBase;
+	}
+
+	set showHeightBase (value) {
+		this._showHeightBase = value;
 		this.update();
 	}
 

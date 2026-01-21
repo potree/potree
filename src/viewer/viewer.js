@@ -1160,12 +1160,17 @@ export class Viewer extends EventDispatcher{
 
 	toggleSidebar () {
 		let renderArea = $('#potree_render_area');
+		let sidebarContainer = $('#potree_sidebar_container');
 		let isVisible = renderArea.css('left') !== '0px';
 
 		if (isVisible) {
 			renderArea.css('left', '0px');
+			sidebarContainer.css('width', '0px');
+			sidebarContainer.css('border', 'none');
 		} else {
 			renderArea.css('left', '300px');
+			sidebarContainer.css('width', '300px');
+			sidebarContainer.css('border', '');
 		}
 	};
 
@@ -1207,8 +1212,9 @@ export class Viewer extends EventDispatcher{
 		let viewer = this;
 		let sidebarContainer = $('#potree_sidebar_container');
 		sidebarContainer.load(new URL(Potree.scriptPath + '/sidebar.html').href, () => {
-			sidebarContainer.css('width', '300px');
+			sidebarContainer.css('width', '0px');
 			sidebarContainer.css('height', '100%');
+			sidebarContainer.css('border', 'none');
 
 			let imgMenuToggle = document.createElement('img');
 			imgMenuToggle.src = new URL(Potree.resourcePath + '/icons/menu_button.svg').href;

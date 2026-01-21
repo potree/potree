@@ -868,35 +868,54 @@ export class PointCloudOctree extends PointCloudTree {
 		// find closest hit inside pixelWindow boundaries
 		let min = Number.MAX_VALUE;
 		let hits = [];
-		for (let u = 0; u < pickWindowSize; u++) {
-			for (let v = 0; v < pickWindowSize; v++) {
-				let offset = (u + v * pickWindowSize);
-				let distance = Math.pow(u - (pickWindowSize - 1) / 2, 2) + Math.pow(v - (pickWindowSize - 1) / 2, 2);
-
-				let pcIndex = pixels[4 * offset + 3];
-				pixels[4 * offset + 3] = 0;
-				let pIndex = ibuffer[offset];
-
-				if(!(pcIndex === 0 && pIndex === 0) && (pcIndex !== undefined) && (pIndex !== undefined)){
-					let hit = {
-						pIndex: pIndex,
-						pcIndex: pcIndex,
-						distanceToCenter: distance
-					};
-
-					if(params.all){
-						hits.push(hit);
-					}else{
-						if(hits.length > 0){
-							if(distance < hits[0].distanceToCenter){
-								hits[0] = hit;
+		const getHit = (r0, c0) => {
+			let offset = (r0 + c0 * pickWindowSize);
+			let distance = Math.pow(r0 - (pickWindowSize - 1) / 2, 2) + Math.pow(c0 - (pickWindowSize - 1) / 2, 2);
+			
+			let pcIndex = pixels[4 * offset + 3];
+			pixels[4 * offset + 3] = 0;
+			let pIndex = ibuffer[offset];
+			
+			if (!(pcIndex === 0 && pIndex === 0) && (pcIndex !== undefined) && (pIndex !== undefined)) {
+				let hit = {
+					pIndex: pIndex,
+					pcIndex: pcIndex,
+					distanceToCenter: distance,
+				};
+				return hit
+			}
+			return null
+		}
+		if (!params.all) {
+			const dr = [0, 1, 0, -1]
+			const dc = [1, 0, -1, 0]
+			let r0 = Math.ceil(pickWindowSize / 2)
+			let c0 = Math.ceil(pickWindowSize / 2)
+			pickFor:
+			for (let k = 1; k < 2 * (pickWindowSize + pickWindowSize); k += 2) {
+				for (let i = 0; i < 4; ++i) {  // i: direction index
+					let dk = k + (i / 2);  // number of steps in this direction
+					for (let j = 0; j < dk; ++j) {  // for each step in this direction...
+						// step in the i-th direction
+						r0 += dr[i];
+						c0 += dc[i];
+						if (0 <= r0 && r0 < pickWindowSize && 0 <= c0 && c0 < pickWindowSize) {
+							const hit = getHit(r0, c0)
+							if (hit) {
+								hits.push(hit)
+								break pickFor;
 							}
-						}else{
-							hits.push(hit);
 						}
 					}
-
-
+				}
+			}
+		} else {
+			for (let u = 0; u < pickWindowSize; u++) {
+				for (let v = 0; v < pickWindowSize; v++) {
+					const hit = getHit(u, v)
+					if (hit) {
+						hits.push(hit)
+					}
 				}
 			}
 		}

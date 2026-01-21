@@ -750,6 +750,10 @@ export class Viewer extends EventDispatcher{
 				this.lengthUnit = LengthUnits.FEET;
 				this.lengthUnitDisplay = LengthUnits.FEET;
 				break;
+			case 'us-ft':
+				this.lengthUnit = LengthUnits.USFEET;
+				this.lengthUnitDisplay = LengthUnits.USFEET;
+				break;
 			case 'in':
 				this.lengthUnit = LengthUnits.INCH;
 				this.lengthUnitDisplay = LengthUnits.INCH;
@@ -767,6 +771,9 @@ export class Viewer extends EventDispatcher{
 			case 'ft':
 				this.lengthUnit = LengthUnits.FEET;
 				break;
+			case 'us-ft':
+				this.lengthUnit = LengthUnits.USFEET;
+				break;
 			case 'in':
 				this.lengthUnit = LengthUnits.INCH;
 				break;
@@ -778,6 +785,9 @@ export class Viewer extends EventDispatcher{
 				break;
 			case 'ft':
 				this.lengthUnitDisplay = LengthUnits.FEET;
+				break;
+			case 'us-ft':
+				this.lengthUnitDisplay = LengthUnits.USFEET;
 				break;
 			case 'in':
 				this.lengthUnitDisplay = LengthUnits.INCH;

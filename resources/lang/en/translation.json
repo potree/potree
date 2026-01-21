@@ -11,7 +11,10 @@
 		"classification_filter_opt": "Classification filter",
 		"filters_opt": "Filters",
 		"parameters_opt": "Other settings",
-		"about_opt": "About"
+		"about_opt": "About",
+		"returns": "Returns",
+		"gps_time": "GPS Time",
+		"point_source_id": "Point Source ID"
 	},
 	"tt": {
 		"angle_measurement": "Angle measurement",
@@ -31,7 +34,7 @@
 		"clip_plane_z": "Clip plane on z axis",
 		"remove_all_measurement": "Remove all measurements",
 		"left_view_control": "Left view",
-		"right_view_control": "Righ view",
+		"right_view_control": "Right view",
 		"front_view_control": "Front view",
 		"back_view_control": "Back view",
 		"top_view_control": "Top view",
@@ -49,7 +52,7 @@
 		"camera_animation": "Camera Animation"
 	},
 	"appearance": {
-		"nb_max_pts": "Point budget", 
+		"nb_max_pts": "Point budget",
 		"point_size": "Point size",
 		"min_point_size": "Minimum size",
 		"point_opacity": "Opacity",
@@ -73,32 +76,58 @@
 		"length_unit": "Length unit",
 		"freeze": "Lock view",
 		"language": "Language",
-		"backface_culling": "Backface Culling"
+		"backface_culling": "Backface Culling",
+		"eye_dome_lighting": "Eye-Dome-Lighting",
+		"background": "Background",
+		"other": "Other",
+		"none": "None",
+		"white": "White",
+		"black": "Black",
+		"gradient": "Gradient",
+		"standard": "Standard",
+		"high_quality": "High Quality",
+		"highlight": "Highlight",
+		"inside": "Inside",
+		"outside": "Outside",
+		"inside_any": "Inside Any",
+		"inside_all": "Inside All",
+		"splat_quality": "Splat Quality"
 	},
 	"measurements": {
 		"clip": "clip",
-		"show": "show volume"
+		"show": "show volume",
+		"show_labels": "Show",
+		"hide_labels": "Hide",
+		"perspective": "Perspective",
+		"orthographic": "Orthographic",
+		"show_hide_labels": "Show/Hide labels",
+		"clip_task": "Clip Task",
+		"clip_method": "Clip Method",
+		"camera_projection": "Camera Projection"
 	},
 	"annotations": {
 		"show3D": "show in 3D",
 		"showMap": "show on map"
-	}, 
+	},
 	"profile": {
 		"nb_points": "Number of Points",
 		"title": "Height profile",
 		"save_las": "Save LAS(3D)",
-		"save_ortho": "Save CSV(2D)"
+		"save_ortho": "Save CSV(2D)",
+		"save": "Save"
 	},
 	"scene": {
 		"camera_position": "Camera Position",
-		"camera_target": "Camera Target"
+		"camera_target": "Camera Target",
+		"objects": "Objects",
+		"properties": "Properties"
 	},
 	"filters": {
 		"return_number": "Return Number",
 		"number_of_returns": "Number of Returns",
 		"gps_min": "min",
 		"gps_max": "max",
-		"gps_time": "GPS Time"
+		"time":  "Time"
 	},
 	"settings": {
 		"language": "Language"

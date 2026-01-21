@@ -282,7 +282,7 @@ export class Sidebar{
 
 		{ // SHOW / HIDE Measurements
 			let elShow = $("#measurement_options_show");
-			elShow.selectgroup({title: "Show/Hide labels"});
+			elShow.selectgroup({ title: "measurements.show_hide_labels"});
 
 			elShow.find("input").click( (e) => {
 				const show = e.target.value === "SHOW";
@@ -790,7 +790,7 @@ export class Sidebar{
 
 		{
 			let elClipTask = $("#cliptask_options");
-			elClipTask.selectgroup({title: "Clip Task"});
+			elClipTask.selectgroup({ title: "measurements.clip_task"});
 
 			elClipTask.find("input").click( (e) => {
 				this.viewer.setClipTask(ClipTask[e.target.value]);
@@ -803,7 +803,7 @@ export class Sidebar{
 
 		{
 			let elClipMethod = $("#clipmethod_options");
-			elClipMethod.selectgroup({title: "Clip Method"});
+			elClipMethod.selectgroup({ title: "measurements.clip_method"});
 
 			elClipMethod.find("input").click( (e) => {
 				this.viewer.setClipMethod(ClipMethod[e.target.value]);
@@ -1478,12 +1478,12 @@ export class Sidebar{
 
 		let elCameraProjection = $(`
 			<selectgroup id="camera_projection_options">
-				<option id="camera_projection_options_perspective" value="PERSPECTIVE">Perspective</option>
-				<option id="camera_projection_options_orthigraphic" value="ORTHOGRAPHIC">Orthographic</option>
+				<option id="camera_projection_options_perspective" value="PERSPECTIVE"><span data-i18n="measurements.perspective"></span></option>
+				<option id="camera_projection_options_orthigraphic" value="ORTHOGRAPHIC"><span data-i18n="measurements.orthographic"></span></option>
 			</selectgroup>
 		`);
 		elNavigation.append(elCameraProjection);
-		elCameraProjection.selectgroup({title: "Camera Projection"});
+		elCameraProjection.selectgroup({ title: "measurements.camera_projection"});
 		elCameraProjection.find("input").click( (e) => {
 			this.viewer.setCameraMode(CameraMode[e.target.value]);
 		});
@@ -1538,7 +1538,7 @@ export class Sidebar{
 
 		{
 			let elSplatQuality = $("#splat_quality_options");
-			elSplatQuality.selectgroup({title: "Splat Quality"});
+			elSplatQuality.selectgroup({ title: "appearance.splat_quality"});
 
 			elSplatQuality.find("input").click( (e) => {
 				if(e.target.value === "standard"){

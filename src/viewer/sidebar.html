@@ -24,31 +24,31 @@
 				<li><span data-i18n="appearance.nb_max_pts"></span>: <span id="lblPointBudget"></span> <div id="sldPointBudget"></div></li>
 				<li><span data-i18n="appearance.field_view"></span>: <span id="lblFOV"></span><div id="sldFOV"></div></li>
 
-				<div class="divider"><span>Eye-Dome-Lighting</span></div>
+				<div class="divider"><span data-i18n="appearance.eye_dome_lighting"></span></div>
 
 				<li><label><input type="checkbox" id="chkEDLEnabled"/><span data-i18n="appearance.edl_enable"></span></label></li>
 				<li><span data-i18n="appearance.edl_radius"></span>: <span id="lblEDLRadius"></span><div id="sldEDLRadius"></div></li>
 				<li><span data-i18n="appearance.edl_strength"></span>: <span id="lblEDLStrength"></span><div id="sldEDLStrength"></div></li>
 				<li><span data-i18n="appearance.edl_opacity"></span>: <span id="lblEDLOpacity"></span><div id="sldEDLOpacity"></div></li>
 				
-				<div class="divider"><span>Background</span></div>
+				<div class="divider"><span data-i18n="appearance.background"></span></div>
 
 				<li>
 					<selectgroup id="background_options">
-						<option id="background_options_skybox" value="skybox">Skybox</option>
-						<option id="background_options_gradient" value="gradient">Gradient</option>
-						<option id="background_options_black" value="black">Black</option>
-						<option id="background_options_white" value="white">White</option>
-						<option id="background_options_none" value="null">None</option>
+						<option id="background_options_skybox" value="skybox"><span data-i18n="appearance.skybox"></option>
+						<option id="background_options_gradient" value="gradient"><span data-i18n="appearance.gradient"></option>
+						<option id="background_options_black" value="black"><span data-i18n="appearance.black"></option>
+						<option id="background_options_white" value="white"><span data-i18n="appearance.white"></option>
+						<option id="background_options_none" value="null"><span data-i18n="appearance.none"></option>
 					</selectgroup>
 				</li>
 
-				<div class="divider"><span>Other</span></div>
+				<div class="divider"><span data-i18n="appearance.other"></span></div>
 
 				<li>
 					<selectgroup id="splat_quality_options">
-						<option id="splat_quality_options_standard" value="standard">Standard</option>
-						<option id="splat_quality_options_hq" value="hq">High Quality</option>
+						<option id="splat_quality_options_standard" value="standard"><span data-i18n="appearance.standard"></option>
+						<option id="splat_quality_options_hq" value="hq"><span data-i18n="appearance.high_quality"></option>
 					</selectgroup>
 				</li>
 				
@@ -63,38 +63,38 @@
 		<h3 id="menu_tools"><span data-i18n="tb.tools_opt"></span></h3>
 		<div class="pv-menu-list">
 
-			<div class="divider"><span>Measurement</span></div>
+			<div class="divider"><span data-i18n="tb.measurments_opt"></span></div>
 
 			<li id="tools"></li>
 
 			<li>
 				<selectgroup id="measurement_options_show">
-					<option id="measurement_options_show_yes" value="SHOW">Show</option>
-					<option id="measurement_options_show_no" value="HIDE">Hide</option>
+					<option id="measurement_options_show_yes" value="SHOW"><span data-i18n="measurements.show_labels"></option>
+					<option id="measurement_options_show_no" value="HIDE"><span data-i18n="measurements.hide_labels"></option>
 				</selectgroup>
 			</li>
 
-			<div class="divider"><span>Clipping</span></div>
+			<div class="divider"><span data-i18n="tb.clipping_opt"></span></div>
 
 			<li id="clipping_tools"></li>
 
 			<li>
 				<selectgroup id="cliptask_options">
-					<option id="cliptask_options_none" value="NONE">None</option>
-					<option id="cliptask_options_highlight" value="HIGHLIGHT">Highlight</option>
-					<option id="cliptask_options_show_inside" value="SHOW_INSIDE">Inside</option>
-					<option id="cliptask_options_show_outside" value="SHOW_OUTSIDE">Outside</option>
+					<option id="cliptask_options_none" value="NONE"><span data-i18n="appearance.none"></option>
+					<option id="cliptask_options_highlight" value="HIGHLIGHT"><span data-i18n="appearance.highlight"></option>
+					<option id="cliptask_options_show_inside" value="SHOW_INSIDE"><span data-i18n="appearance.inside"></option>
+					<option id="cliptask_options_show_outside" value="SHOW_OUTSIDE"><span data-i18n="appearance.outside"></option>
 				</selectgroup>
 			</li>
 
 			<li>
 				<selectgroup id="clipmethod_options">
-					<option id="clipmethod_options_any" value="INSIDE_ANY">Inside Any</option>
-					<option id="clipmethod_options_all" value="INSIDE_ALL">Inside All</option>
+					<option id="clipmethod_options_any" value="INSIDE_ANY"><span data-i18n="appearance.inside_any"></option>
+					<option id="clipmethod_options_all" value="INSIDE_ALL"><span data-i18n="appearance.inside_all"></option>
 				</selectgroup>
 			</li>
 			
-			<div class="divider"><span>Navigation</span></div>
+			<div class="divider"><span data-i18n="tb.navigation_opt"></span></div>
 
 			<li id="navigation"></li>
 
@@ -107,11 +107,11 @@
 
 			<div id="scene_export"></div>
 
-			<div class="divider"><span>Objects</span></div>
+			<div class="divider"><span data-i18n="scene.objects"></span></div>
 
 			<div id="scene_objects"></div>
 
-			<div class="divider"><span>Properties</span></div>
+			<div class="divider"><span data-i18n="scene.properties"></span></div>
 
 			<div id="scene_object_properties"></div>
 		</div>
@@ -120,11 +120,11 @@
 		<h3 id="menu_filters"><span data-i18n="tb.filters_opt"></span></h3>
 		<div>
 
-			<div class="divider"><span>Classification</span></div>
+			<div class="divider"><span data-i18n="tb.classification_filter_opt"></span></div>
 
 			<ul id="classificationList" class="pv-menu-list"></ul>
 
-			<div class="divider"><span>Returns</span></div>
+			<div class="divider"><span data-i18n="tb.returns"></span></div>
 
 			<div id="return_filter_panel">
 				<ul class="pv-menu-list">
@@ -135,7 +135,7 @@
 				</ul>
 			</div>
 
-			<div class="divider"><span>Point Source ID</span></div>
+			<div class="divider"><span data-i18n="tb.point_source_id"></span></div>
 
 			<div>
 				<ul class="pv-menu-list" id="pointsourceid_filter_panel">
@@ -143,7 +143,7 @@
 				</ul>
 			</div>
 
-			<div class="divider"><span>GPS Time</span></div>
+			<div class="divider"><span data-i18n="tb.gps_time"></span></div>
 
 			<div id="gpstime_filter_panel">
 
@@ -152,7 +152,7 @@
 
 						<li>
 							<span style="display: flex">
-								<span>Time: </span>
+								<span data-i18n="filters.time"></span>
 								<input id="txtGpsTime" type="text" style="margin: auto 10px"/>
 								<input id="btnFindGpsTime" type="button" value="find" />
 							</span>

@@ -822,7 +822,7 @@ export class PropertiesPanel{
 
 			{
 				let elGradientRepeat = panel.find("#gradient_repeat_option");
-				elGradientRepeat.selectgroup({title: "Gradient"});
+				elGradientRepeat.selectgroup({ title: "appearance.gradient"});
 
 				elGradientRepeat.find("input").click( (e) => {
 					this.viewer.setElevationGradientRepeat(ElevationGradientRepeat[e.target.value]);

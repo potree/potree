@@ -218,7 +218,10 @@ function cancel() {
 
 var readMultiPoint = function(record) {
   var i = 40, j, n = record.getInt32(36, true), coordinates = new Array(n);
-  for (j = 0; j < n; ++j, i += 16) coordinates[j] = [record.getFloat64(i, true), record.getFloat64(i + 8, true)];
+  for (j = 0; j < n; ++j, i += 16) {
+    coordinates[j] = [record.getFloat64(i, true), record.getFloat64(i + 8, true)];
+    if (record.byteLength > i + 16) coordinates[j].push(record.getFloat64(i + 16, true))
+  }
   return {type: "MultiPoint", coordinates: coordinates};
 };
 
@@ -227,14 +230,23 @@ var readNull = function() {
 };
 
 var readPoint = function(record) {
-  return {type: "Point", coordinates: [record.getFloat64(4, true), record.getFloat64(12, true)]};
+  //will read both point and pointZ
+  const coordinates=[record.getFloat64(4, true), record.getFloat64(12, true)]
+  if (record.byteLength > 20) coordinates.push(record.getFloat64(20, true))
+  return {type: "Point", coordinates};
 };
 
 var readPolygon = function(record) {
+  //will read both polygon and polygonz
   var i = 44, j, n = record.getInt32(36, true), m = record.getInt32(40, true), parts = new Array(n), points = new Array(m), polygons = [], holes = [];
+  var hasZValues = record.byteLength >= 44 + 4 * n + 24 * m; // Check if there are enough bytes for z values
+  
   for (j = 0; j < n; ++j, i += 4) parts[j] = record.getInt32(i, true);
   for (j = 0; j < m; ++j, i += 16) points[j] = [record.getFloat64(i, true), record.getFloat64(i + 8, true)];
 
+  if (hasZValues) {
+    for (j = 0; j < m; ++j, i += 8) points[j].push(record.getFloat64(i, true));
+  }
   parts.forEach(function(i, j) {
     var ring = points.slice(i, parts[j + 1]);
     if (ringClockwise(ring)) polygons.push([ring]);

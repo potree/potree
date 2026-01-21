@@ -54,107 +54,202 @@ export class ShapefileLoader{
 			let sg = new THREE.SphereGeometry(1, 18, 18);
 			let sm = new THREE.MeshNormalMaterial();
 			let s = new THREE.Mesh(sg, sm);
-			
-			let [long, lat] = geometry.coordinates;
+
+			let [long, lat, height = 20] = geometry.coordinates;
 			let pos = transform.forward([long, lat]);
 			
-			s.position.set(...pos, 20);
-			
+			s.position.set(...pos, height);
 			s.scale.set(10, 10, 10);
-			
+
 			return s;
-		}else if(geometry.type === "LineString"){
-			let coordinates = [];
-			
-			let min = new THREE.Vector3(Infinity, Infinity, Infinity);
-			for(let i = 0; i < geometry.coordinates.length; i++){
-				let [long, lat] = geometry.coordinates[i];
+		} else if (geometry.type === "MultiPoint") {
+			let group = new THREE.Group();
+			for (let coord of geometry.coordinates) {
+				let sg = new THREE.SphereGeometry(1, 18, 18);
+				let sm = new THREE.MeshNormalMaterial();
+				let s = new THREE.Mesh(sg, sm);
+
+				let [long, lat, height = 20] = coord;
 				let pos = transform.forward([long, lat]);
-				
+
+				s.position.set(...pos, height);
+				s.scale.set(10, 10, 10);
+				console.log(pos);
+
+				group.add(s);
+			}
+			return group;
+		} else if (geometry.type === "LineString" || geometry.type === "LineStringZ") {
+			let coordinates = [];
+			let min = new THREE.Vector3(Infinity, Infinity, Infinity);
+			for (let i = 0; i < geometry.coordinates.length; i++) {
+				let [long, lat, height = 20] = geometry.coordinates[i];
+				let pos = transform.forward([long, lat]);
+
 				min.x = Math.min(min.x, pos[0]);
 				min.y = Math.min(min.y, pos[1]);
-				min.z = Math.min(min.z, 20);
-				
-				coordinates.push(...pos, 20);
-				if(i > 0 && i < geometry.coordinates.length - 1){
-					coordinates.push(...pos, 20);
+				min.z = Math.min(min.z, height);
+
+				coordinates.push(...pos, height);
+				if (i > 0 && i < geometry.coordinates.length - 1) {
+					coordinates.push(...pos, height);
 				}
 			}
-			
-			for(let i = 0; i < coordinates.length; i += 3){
-				coordinates[i+0] -= min.x;
-				coordinates[i+1] -= min.y;
-				coordinates[i+2] -= min.z;
-			}
-			
-			const lineGeometry = new LineGeometry();
-			lineGeometry.setPositions( coordinates );
 
-			const line = new Line2( lineGeometry, matLine );
+			for (let i = 0; i < coordinates.length; i += 3) {
+				coordinates[i + 0] -= min.x;
+				coordinates[i + 1] -= min.y;
+				coordinates[i + 2] -= min.z;
+			}
+
+			const lineGeometry = new LineGeometry();
+			lineGeometry.setPositions(coordinates);
+
+			const line = new Line2(lineGeometry, matLine);
 			line.computeLineDistances();
-			line.scale.set( 1, 1, 1 );
+			line.scale.set(1, 1, 1);
 			line.position.copy(min);
-			
+
 			return line;
-		}else if(geometry.type === "Polygon"){
-			for(let pc of geometry.coordinates){
+		} else if (geometry.type === "Polygon" || geometry.type === "PolygonZ") {
+			let group = new THREE.Group();
+			for (let pc of geometry.coordinates) {
 				let coordinates = [];
-				
 				let min = new THREE.Vector3(Infinity, Infinity, Infinity);
-				for(let i = 0; i < pc.length; i++){
-					let [long, lat] = pc[i];
+				for (let i = 0; i < pc.length; i++) {
+					let [long, lat, height = 20] = pc[i];
 					let pos = transform.forward([long, lat]);
-					
+
 					min.x = Math.min(min.x, pos[0]);
 					min.y = Math.min(min.y, pos[1]);
-					min.z = Math.min(min.z, 20);
-					
-					coordinates.push(...pos, 20);
-					if(i > 0 && i < pc.length - 1){
-						coordinates.push(...pos, 20);
+					min.z = Math.min(min.z, height);
+
+					coordinates.push(...pos, height);
+					if (i > 0 && i < pc.length - 1) {
+						coordinates.push(...pos, height);
 					}
 				}
-				
-				for(let i = 0; i < coordinates.length; i += 3){
-					coordinates[i+0] -= min.x;
-					coordinates[i+1] -= min.y;
-					coordinates[i+2] -= min.z;
+
+				for (let i = 0; i < coordinates.length; i += 3) {
+					coordinates[i + 0] -= min.x;
+					coordinates[i + 1] -= min.y;
+					coordinates[i + 2] -= min.z;
 				}
 
 				const lineGeometry = new LineGeometry();
-				lineGeometry.setPositions( coordinates );
+				lineGeometry.setPositions(coordinates);
 
-				const line = new Line2( lineGeometry, matLine );
+				const line = new Line2(lineGeometry, matLine);
 				line.computeLineDistances();
-				line.scale.set( 1, 1, 1 );
+				line.scale.set(1, 1, 1);
 				line.position.copy(min);
-				
-				return line;
+
+				group.add(line);
 			}
-		}else{
-			console.log("unhandled feature: ", feature);
+			return group;
+		} else if (geometry.type === "MultiLineString") {
+			let group = new THREE.Group();
+			for (let lineString of geometry.coordinates) {
+				let coordinates = [];
+				let min = new THREE.Vector3(Infinity, Infinity, Infinity);
+				for (let i = 0; i < lineString.length; i++) {
+					let [long, lat, height = 20] = lineString[i];
+					let pos = transform.forward([long, lat]);
+
+					min.x = Math.min(min.x, pos[0]);
+					min.y = Math.min(min.y, pos[1]);
+					min.z = Math.min(min.z, height);
+
+					coordinates.push(...pos, height);
+					if (i > 0 && i < lineString.length - 1) {
+						coordinates.push(...pos, height);
+					}
+				}
+
+				for (let i = 0; i < coordinates.length; i += 3) {
+					coordinates[i + 0] -= min.x;
+					coordinates[i + 1] -= min.y;
+					coordinates[i + 2] -= min.z;
+				}
+
+				const lineGeometry = new LineGeometry();
+				lineGeometry.setPositions(coordinates);
+
+				const line = new Line2(lineGeometry, matLine);
+				line.computeLineDistances();
+				line.scale.set(1, 1, 1);
+				line.position.copy(min);
+
+				group.add(line);
+			}
+			return group;
+		} else if (geometry.type === "MultiPolygon") {
+			let group = new THREE.Group();
+			for (let polygon of geometry.coordinates) {
+				for (let pc of polygon) {
+					let coordinates = [];
+					let min = new THREE.Vector3(Infinity, Infinity, Infinity);
+					for (let i = 0; i < pc.length; i++) {
+						let [long, lat, height = 20] = pc[i];
+						let pos = transform.forward([long, lat]);
+
+						min.x = Math.min(min.x, pos[0]);
+						min.y = Math.min(min.y, pos[1]);
+						min.z = Math.min(min.z, height);
+
+						coordinates.push(...pos, height);
+						if (i > 0 && i < pc.length - 1) {
+							coordinates.push(...pos, height);
+						}
+					}
+
+					for (let i = 0; i < coordinates.length; i += 3) {
+						coordinates[i + 0] -= min.x;
+						coordinates[i + 1] -= min.y;
+						coordinates[i + 2] -= min.z;
+					}
+
+					const lineGeometry = new LineGeometry();
+					lineGeometry.setPositions(coordinates);
+
+					const line = new Line2(lineGeometry, matLine);
+					line.computeLineDistances();
+					line.scale.set(1, 1, 1);
+					line.position.copy(min);
+
+					group.add(line);
+				}
+			}
+			return group;
+		} else if (geometry.type === "MultiPatch") {
+			console.log("MultiPatch geometry type is not yet implemented.");
+		} else {
+			console.log("Unhandled feature: ", feature);
 		}
 	}
 
-	async loadShapefileFeatures(file){
+	async loadShapefileFeatures(file) {
 		let features = [];
 
 		let source = await shapefile.open(file);
 
-		while(true){
+		while (true) {
 			let result = await source.read();
 
 			if (result.done) {
 				break;
 			}
 
-			if (result.value && result.value.type === 'Feature' && result.value.geometry !== undefined) {
+			if (
+				result.value &&
+				result.value.type === "Feature" &&
+				result.value.geometry !== undefined
+			) {
+				result.value
 				features.push(result.value);
 			}
 		}
 
 		return features;
 	}
-
-};
-
+}

@@ -399,7 +399,7 @@ Copy the converted directory into &lt;potreeDirectory&gt;/pointclouds/data_conve
 
 Potree is funded by a combination of research projects, companies and institutions. 
 
-Research projects who's funding contributes to Potree:
+Research projects whose funding contributes to Potree:
 
 <table>
 	<tr>

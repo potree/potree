@@ -302,6 +302,49 @@ export class Sidebar{
 		
 
 		{
+			let elImport = elScene.next().find("#scene_import");
+			let potreeIcon = `${Potree.resourcePath}/icons/file_potree.svg`;
+			
+			elImport.append(`
+				Import: <br>
+				<img name="potree_import_button" src="${potreeIcon}" class="button-icon" style="height: 24px; cursor: pointer;" title="Import Potree JSON5 project file" />
+			`);
+
+			let elImportButton = elImport.find("img[name=potree_import_button]");
+			elImportButton.click(() => {
+				let fileInput = $("#potree_import_file_input");
+				fileInput.click();
+			});
+
+			let fileInput = $("#potree_import_file_input");
+			fileInput.on("change", async (event) => {
+				const file = event.target.files[0];
+				if (file && file.name.toLowerCase().endsWith(".json5")) {
+					try {
+						const text = await file.text();
+						const json = JSON5.parse(text);
+
+						if (json.type === "Potree") {
+							Potree.loadProject(this.viewer, json);
+							this.viewer.postMessage(`Project "${file.name}" loaded successfully.`);
+						} else {
+							this.viewer.postError("Invalid Potree project file format.");
+						}
+					} catch (e) {
+						console.error("Failed to parse the imported file as JSON5:");
+						console.error(e);
+						this.viewer.postError("Failed to parse the imported file. Please ensure it's a valid JSON5 file.");
+					}
+				} else {
+					this.viewer.postError("Please select a valid .json5 file.");
+				}
+				
+				// Reset the file input
+				event.target.value = '';
+			});
+		}
+
+		{
 			let elExport = elScene.next().find("#scene_export");
 
 			let geoJSONIcon = `${Potree.resourcePath}/icons/file_geojson.svg`;

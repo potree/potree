@@ -401,12 +401,6 @@ export class InputHandler extends EventDispatcher {
 		let y = e.clientY - rect.top;
 		this.mouse.set(x, y);
 
-		let hoveredElements = this.getHoveredElements();
-		if(hoveredElements.length > 0){
-			let names = hoveredElements.map(h => h.object.name).join(", ");
-			if (this.logMessages) console.log(`${this.constructor.name}: onMouseMove; hovered: '${names}'`);
-		}
-
 		if (this.drag) {
 			this.drag.mouse = e.buttons;
 
@@ -440,6 +434,11 @@ export class InputHandler extends EventDispatcher {
 				}
 			}
 		}else{
+			let hoveredElements = this.getHoveredElements();
+			if(hoveredElements.length > 0){
+				let names = hoveredElements.map(h => h.object.name).join(", ");
+				if (this.logMessages) console.log(`${this.constructor.name}: onMouseMove; hovered: '${names}'`);
+			}
 			let curr = hoveredElements.map(a => a.object).find(a => true);
 			let prev = this.hoveredElements.map(a => a.object).find(a => true);
 
@@ -472,6 +471,7 @@ export class InputHandler extends EventDispatcher {
 					});
 				}
 			}
+			this.hoveredElements = hoveredElements;
 
 		}
 		
@@ -483,7 +483,6 @@ export class InputHandler extends EventDispatcher {
 		// }
 		
 
-		this.hoveredElements = hoveredElements;
 	}
 	
 	onMouseWheel(e){

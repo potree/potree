@@ -47,12 +47,32 @@
         "freeze": "Vérouiller la vue",
         "language": "Choix de la langue"
     },
-    "profile": {
+    "annotations": {
+		"annotation_position": "Position",
+		"annotation_title": "Titre",
+		"annotation_description": "Description",		
+		"annotation_save_camera": "Sauvegarder la caméra",
+		"annotation_move" : "Déplacer l'annotation",
+		"annotation_hierarchy" : "Parent de l'annotation",
+		"show3D": "Afficher en 3D",
+		"showMap": "Afficher sur la carte"
+	}, 
+	"profile": {
         "nb_points": "Nombre de points",
         "title": "Profil altimétrique",
         "save": "Enregistrer"
     },
-    "settings": {
+    "scene": {
+		"camera_position": "Position de la caméra",
+		"camera_target": "Position de la cible",
+		"camera_copy": "Valeur copiée dans le presse-papier",
+		
+		"button_copy": "Copier",
+		"button_edit": "Editer",
+		"button_valid": "Valider",
+		"button_remove": "Supprimer"
+	},
+	"settings": {
         "language": "Langue"
     }
 }

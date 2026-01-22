@@ -595,6 +595,9 @@ export class Sidebar{
 
 			let annotationIcon = `${Potree.resourcePath}/icons/annotation.svg`;
 			let parentID = this.annotationMapping.get(annotation.parent);
+			if(parentID == undefined)
+				parentID = annotationsID;
+			
 			let annotationID = createNode(parentID, annotation.title, annotationIcon, annotation);
 			this.annotationMapping.set(annotation, annotationID);
 
@@ -703,11 +706,18 @@ export class Sidebar{
 			
 			tree.jstree("delete_node", jsonNode.id);
 		};
+		
+		let onAnnotationRemoved = (e) => {
+			tree.jstree("delete_node", this.annotationMapping.get(e.annotation));
+			this.annotationMapping.delete(e.annotation);
+			tree.i18n();
+		};
 
 		this.viewer.scene.addEventListener("measurement_removed", onMeasurementRemoved);
 		this.viewer.scene.addEventListener("volume_removed", onVolumeRemoved);
 		this.viewer.scene.addEventListener("polygon_clip_volume_removed", onPolygonClipVolumeRemoved);
 		this.viewer.scene.addEventListener("profile_removed", onProfileRemoved);
+		this.viewer.scene.annotations.addEventListener("annotation_removed", onAnnotationRemoved);
 
 		{
 			let annotationIcon = `${Potree.resourcePath}/icons/annotation.svg`;
@@ -766,6 +776,8 @@ export class Sidebar{
 			e.oldScene.removeEventListener("volume_added", onVolumeAdded);
 			e.oldScene.removeEventListener("polygon_clip_volume_added", onVolumeAdded);
 			e.oldScene.removeEventListener("measurement_removed", onMeasurementRemoved);
+			e.oldScene.annotations.removeEventListener("annotation_removed", onAnnotationRemoved);
+			e.oldScene.annotations.removeEventListener("annotation_added", onAnnotationAdded);
 
 			e.scene.addEventListener("pointcloud_added", onPointCloudAdded);
 			e.scene.addEventListener("measurement_added", onMeasurementAdded);
@@ -773,6 +785,8 @@ export class Sidebar{
 			e.scene.addEventListener("volume_added", onVolumeAdded);
 			e.scene.addEventListener("polygon_clip_volume_added", onVolumeAdded);
 			e.scene.addEventListener("measurement_removed", onMeasurementRemoved);
+			e.scene.annotations.addEventListener("annotation_removed", onAnnotationRemoved);
+			e.scene.annotations.addEventListener("annotation_added", onAnnotationAdded);
 		});
 
 	}

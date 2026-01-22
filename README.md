@@ -35,7 +35,7 @@ Go to http://localhost:1234/examples/ to test the examples.
 
 ### Deploy to a server
 
-* Simply upload the Potree folderm with all your point clouds, the build directory, and your html files to a web server.
+* Simply upload the Potree folder with all your point clouds, the build directory, and your html files to a web server.
 * It is not required to install node.js on your webserver. All you need is to host your files online. 
 
 ### Convert Point Clouds to Potree Format

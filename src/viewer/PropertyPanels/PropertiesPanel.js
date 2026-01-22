@@ -278,7 +278,7 @@ export class PropertiesPanel{
 			let lblMinPointSize = panel.find(`#lblMinPointSize`);
 
 			sldMinPointSize.slider({
-				value: material.size,
+				value: material.minSize,
 				min: 0,
 				max: 3,
 				step: 0.01,

@@ -176,9 +176,9 @@ export class MeasuringTool extends EventDispatcher{
 			measure: measure
 		});
 
-		const pick = (defaul, alternative) => {
-			if(defaul != null){
-				return defaul;
+		const pick = (default, alternative) => {
+			if(default != null){
+				return default;
 			}else{
 				return alternative;
 			}

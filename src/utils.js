@@ -1002,6 +1002,11 @@ export class Utils {
 		});
 	}
 
+	static excludeUriParameters(uri) {
+		if ((typeof uri === "undefined") || (uri == null)) return uri;
+		return (uri.indexOf('?') > 0) ? uri.substring(0, uri.indexOf('?')) : uri
+	}	
+
 	static createSvgGradient(scheme){
 
 		// this is what we are creating:

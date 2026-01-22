@@ -80,6 +80,7 @@ import "./extensions/PerspectiveCamera.js";
 import "./extensions/Ray.js";
 
 import {LRU} from "./LRU.js";
+import {Utils} from "./utils.js";
 import {OctreeLoader} from "./modules/loader/2.0/OctreeLoader.js";
 import {POCLoader} from "./loader/POCLoader.js";
 import {CopcLoader, EptLoader} from "./loader/EptLoader.js";
@@ -107,8 +108,8 @@ export const debug = {};
 
 let scriptPath = "";
 
-if (document.currentScript && document.currentScript.src) {
-	scriptPath = new URL(document.currentScript.src + '/..').href;
+if (document.currentScript && Utils.excludeUriParameters(document.currentScript.src)) {
+	scriptPath = new URL(Utils.excludeUriParameters(document.currentScript.src) + '/..').href;
 	if (scriptPath.slice(-1) === '/') {
 		scriptPath = scriptPath.slice(0, -1);
 	}

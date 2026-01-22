@@ -49,21 +49,38 @@
 		"camera_animation": "Camera Animation"
 	},
 	"appearance": {
-		"nb_max_pts": "Point budget", 
+		"nb_max_pts": "Point budget",
 		"point_size": "Point size",
 		"min_point_size": "Minimum size",
 		"point_opacity": "Opacity",
 		"field_view": "Field of view",
 		"point_size_type": "Point sizing",
+		"point_size_type_options_fixed": "Fixed",
+		"point_size_type_options_attenuated": "Attenuted",
+		"point_size_type_options_adaptive": "Adaptive",
 		"point_material": "Materials",
 		"elevation_range": "Elevation range",
 		"extra_range": "Scalar range",
 		"point_quality": "Quality",
 		"point_shape": "Shape",
+		"point_shape_options_square": "Square",
+		"point_shape_options_circle": "Circle",
+		"point_shape_options_paraboloid": "Paraboloid",
+		"edl_title": "Eye-Dome Lighting",
 		"edl_radius": "Radius",
 		"edl_strength": "Strength",
 		"edl_opacity": "Opacity",
 		"edl_enable": "Enable",
+		"background_title": "Background",
+		"background_options_skybox": "SkyBox",
+		"background_options_gradient": "Gradient",
+		"background_options_black": "Black",
+		"background_options_white": "White",
+		"background_options_none": "None",
+		"other_title": "Others",
+		"splat_quality_title": "Splat Quality",
+		"splat_quality_options_standard": "Standard",
+		"splat_quality_options_hq": "High Quality",
 		"min_node_size": "Min node size",
 		"clip_mode": "Clip mode",
 		"move_speed": "Speed",
@@ -76,31 +93,166 @@
 		"backface_culling": "Backface Culling"
 	},
 	"measurements": {
+		"title": "Measurements",
+		"label_options_title": "Show/Hide Labels",
+		"label_options_show": "Show",
+		"label_options_hide": "Hide",
 		"clip": "clip",
 		"show": "show volume"
+	},
+	"clipping": {
+		"title": "Clipping",
+		"clip_task_title": "Clip Task",
+		"cliptask_options_none": "None",
+		"cliptask_options_highlight": "Highlight",
+		"cliptask_options_show_inside": "Inside",
+		"cliptask_options_show_outside": "Outside",
+		"clip_method_title": "Clip Method",
+		"clipmethod_options_any": "Inside Any",
+		"clipmethod_options_all": "Inside All"
+	},
+	"navigation": {
+		"title": "Navigation",
+		"camera_projection_title": "Camera Projection",
+		"camera_projection_options_perspective": "Perspective",
+		"camera_projection_options_orthographic": "Orthographic"
 	},
 	"annotations": {
 		"show3D": "show in 3D",
 		"showMap": "show on map"
-	}, 
+	},
 	"profile": {
 		"nb_points": "Number of Points",
 		"title": "Height profile",
 		"save_las": "Save LAS(3D)",
-		"save_ortho": "Save CSV(2D)"
+		"save_ortho": "Save CSV(2D)",
+		"width": "Width:",
+		"prepare_download": "preparar download",
+		"show_2d_profile": "show 2d profile"
 	},
 	"scene": {
 		"camera_position": "Camera Position",
-		"camera_target": "Camera Target"
+		"camera_target": "Camera Target",
+		"export": {
+			"title": "Export:"
+		},
+		"objects": {
+			"title": "Objects",
+			"type_pointcloud": "Point Clouds",
+			"type_measurements": "Measurements",
+			"type_annotations": "Annotations",
+			"type_others": "Others",
+			"type_vectors": "Vectors",
+			"type_images": "Images",
+			"type_others_camera": "Camera"
+		},
+		"properties": {
+			"title": "Properties"
+		},
+		"attributes": {
+			"title": "Attributes",
+			"attribute_weights": {
+				"title": "Attribute Weights",
+				"option_rgb": "RGB:",
+				"option_intensity": "Intensity:",
+				"option_elevation": "Elevation:",
+				"option_classification": "Classification:",
+				"option_return_number": "Return Number:",
+				"option_source_id": "Source ID"
+			},
+			"rgb": {
+				"title": "RGB",
+				"gamma": "Gamma:",
+				"brightness": "Brightness:",
+				"contrast": "Contrast:"
+			},
+			"elevation": {
+				"title": "Elevation",
+				"elevation_range": "Elevation range:",
+				"elevation_range_to": "to",
+				"gradient_title": "Gradient",
+				"gradient_option_clamp": "Clamp",
+				"gradient_option_repeat": "Repeat",
+				"gradient_option_mirrored_repeat": "Mirrored Repeat",
+				"gradient_scheme_title": "Gradient Scheme:"
+			},
+			"color": {
+				"title": "Color"
+			},
+			"matcap": {
+				"title": "MATCAP"
+			},
+			"indexes": {
+				"title": "Indices"
+			},
+			"extra": {
+				"title": "Extra Attribute",
+				"range": "Scalar range",
+				"range_to": "to",
+				"gradient_title": "Gradient",
+				"gradient_option_clamp": "Clamp",
+				"gradient_option_repeat": "Repeat",
+				"gradient_option_mirrored_repeat": "Mirrored Repeat",
+				"gradient_scheme_title": "Gradient Scheme:"
+			},
+			"intensity": {
+				"title": "Intensity",
+				"range": "Range:",
+				"range_to": "to",
+				"gamma": "Gamma:",
+				"brightness": "Brightness:",
+				"contrast": "Contrast:"
+			}
+		}
 	},
 	"filters": {
 		"return_number": "Return Number",
+		"return_number_to": "to",
 		"number_of_returns": "Number of Returns",
+		"number_of_returns_to": "to",
 		"gps_min": "min",
 		"gps_max": "max",
-		"gps_time": "GPS Time"
+		"classification": {
+			"title": "Classification",
+			"invert_button": "invert",
+			"show_hide_all": "show/hide all"
+		},
+		"returns": {
+			"title": "Returns"
+		},
+		"point_source_id": {
+			"title": "Point Source ID",
+			"range": "Range:",
+			"range_to": "to"
+		},
+		"gps_time": {
+			"title": "GPS Time",
+			"time": "Time:",
+			"find": "find"
+		}
 	},
 	"settings": {
 		"language": "Language"
+	},
+	"about": {
+		"description": "is a viewer for large point cloud / LIDAR data sets, developed at the Vienna University of Technology.",
+		"author": "Author:",
+		"license": "License:",
+		"license_type": "FreeBSD (2-clause BSD)",
+		"dep_license": "Dependency Licenses:",
+		"dep_license_see_github": "See github",
+		"funding": "Funding:",
+		"funding_text1": "Potree is funded by a combination of research projects, companies, institutions and individuals. If you're making good use of Potree, please consider funding its future development",
+		"funding_text2": "via Github Sponsors",
+		"funding_text3": "or by directly inquiring",
+		"funding_text4": "via e-mail",
+		"research": "Research projects who's funding contributes to Potree:",
+		"research_col1": "Project Name",
+		"research_col2": "Funding Agency",
+		"thanks": "Thanks to all the companies and institutions funding Potree:",
+		"thanks_diamond": "Diamond",
+		"thanks_gold": "Gold",
+		"thanks_silver": "Silver",
+		"thanks_bronze": "Bronze"
 	}
 }

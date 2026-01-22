@@ -282,7 +282,7 @@ export class Sidebar{
 
 		{ // SHOW / HIDE Measurements
 			let elShow = $("#measurement_options_show");
-			elShow.selectgroup({title: "Show/Hide labels"});
+			elShow.selectgroup({title: i18n.t("measurements.label_options_title")});
 
 			elShow.find("input").click( (e) => {
 				const show = e.target.value === "SHOW";
@@ -309,7 +309,7 @@ export class Sidebar{
 			let potreeIcon = `${Potree.resourcePath}/icons/file_potree.svg`;
 
 			elExport.append(`
-				Export: <br>
+				<span data-i18n="scene.export.title"></span> <br>
 				<a href="#" download="measure.json"><img name="geojson_export_button" src="${geoJSONIcon}" class="button-icon" style="height: 24px" /></a>
 				<a href="#" download="measure.dxf"><img name="dxf_export_button" src="${dxfIcon}" class="button-icon" style="height: 24px" /></a>
 				<a href="#" download="potree.json5"><img name="potree_export_button" src="${potreeIcon}" class="button-icon" style="height: 24px" /></a>
@@ -401,12 +401,12 @@ export class Sidebar{
 			return nodeID;
 		}
 
-		let pcID = tree.jstree('create_node', "#", { "text": "<b>Point Clouds</b>", "id": "pointclouds"}, "last", false, false);
-		let measurementID = tree.jstree('create_node', "#", { "text": "<b>Measurements</b>", "id": "measurements" }, "last", false, false);
-		let annotationsID = tree.jstree('create_node', "#", { "text": "<b>Annotations</b>", "id": "annotations" }, "last", false, false);
-		let otherID = tree.jstree('create_node', "#", { "text": "<b>Other</b>", "id": "other" }, "last", false, false);
-		let vectorsID = tree.jstree('create_node', "#", { "text": "<b>Vectors</b>", "id": "vectors" }, "last", false, false);
-		let imagesID = tree.jstree('create_node', "#", { "text": "<b> Images</b>", "id": "images" }, "last", false, false);
+		let pcID = tree.jstree('create_node', "#", { "text": `<b><span data-i18n="scene.objects.type_pointcloud"></span></b>`, "id": "pointclouds"}, "last", false, false);
+		let measurementID = tree.jstree('create_node', "#", { "text": `<b><span data-i18n="scene.objects.type_measurements"></span></b>`, "id": "measurements" }, "last", false, false);
+		let annotationsID = tree.jstree('create_node', "#", { "text": `<b><span data-i18n="scene.objects.type_annotations"></span></b>`, "id": "annotations" }, "last", false, false);
+		let otherID = tree.jstree('create_node', "#", { "text": `<b><span data-i18n="scene.objects.type_others"></span></b>`, "id": "other" }, "last", false, false);
+		let vectorsID = tree.jstree('create_node', "#", { "text": `<b><span data-i18n="scene.objects.type_vectors"></span></b>`, "id": "vectors" }, "last", false, false);
+		let imagesID = tree.jstree('create_node', "#", { "text": `<b><span data-i18n="scene.objects.type_images"></span></b>`, "id": "images" }, "last", false, false);
 
 		tree.jstree("check_node", pcID);
 		tree.jstree("check_node", measurementID);
@@ -754,7 +754,7 @@ export class Sidebar{
 		}
 
 		{
-			createNode(otherID, "Camera", null, new THREE.Camera());
+			createNode(otherID, i18n.t("scene.objects.type_others_camera"), null, new THREE.Camera());
 		}
 
 		this.viewer.addEventListener("scene_changed", (e) => {
@@ -790,7 +790,7 @@ export class Sidebar{
 
 		{
 			let elClipTask = $("#cliptask_options");
-			elClipTask.selectgroup({title: "Clip Task"});
+			elClipTask.selectgroup({title: i18n.t("clipping.clip_task_title")});
 
 			elClipTask.find("input").click( (e) => {
 				this.viewer.setClipTask(ClipTask[e.target.value]);
@@ -803,7 +803,7 @@ export class Sidebar{
 
 		{
 			let elClipMethod = $("#clipmethod_options");
-			elClipMethod.selectgroup({title: "Clip Method"});
+			elClipMethod.selectgroup({title: i18n.t("clipping.clip_method_title")});
 
 			elClipMethod.find("input").click( (e) => {
 				this.viewer.setClipMethod(ClipMethod[e.target.value]);
@@ -907,7 +907,7 @@ export class Sidebar{
 			let onReturnNumberChanged = (event) => {
 				let [from, to] = this.viewer.filterReturnNumberRange;
 
-				lblReturnNumber[0].innerHTML = `${from} to ${to}`;
+				lblReturnNumber[0].innerHTML = `${from} ${i18n.t("filters.return_number_to")} ${to}`;
 				sldReturnNumber.slider({values: [from, to]});
 			};
 
@@ -932,7 +932,7 @@ export class Sidebar{
 			let onNumberOfReturnsChanged = (event) => {
 				let [from, to] = this.viewer.filterNumberOfReturnsRange;
 
-				lblNumberOfReturns[0].innerHTML = `${from} to ${to}`;
+				lblNumberOfReturns[0].innerHTML = `${from} ${i18n.t("filters.number_of_returns_to")} ${to}`;
 				sldNumberOfReturns.slider({values: [from, to]});
 			};
 
@@ -1024,6 +1024,8 @@ export class Sidebar{
 				levels: 4,
 				range: [0, 65535],
 				precision: 1,
+				range_label: i18n.t("filters.point_source_id.range"),
+				range_label_to: i18n.t("filters.point_source_id.range_to"),
 				slide: (event) => {
 					let values = event.values;
 					this.viewer.setFilterPointSourceIDRange(values[0], values[1]);
@@ -1141,7 +1143,7 @@ export class Sidebar{
 				<li>
 					<label style="whitespace: nowrap">
 						<input id="toggleClassificationFilters" type="checkbox" checked/>
-						<span>show/hide all</span>
+						<span>${i18n.t("filters.classification.show_hide_all")}</span>
 					</label>
 				</li>
 			`);
@@ -1158,11 +1160,13 @@ export class Sidebar{
 		const addInvertButton = () => { 
 			const element = $(`
 				<li>
-					<input type="button" value="invert" />
+					<button type="button">
+						<span data-i18n="filters.classification.invert_button"></div>
+					</button>					
 				</li>
 			`);
 
-			let elInput = element.find('input');
+			let elInput = element.find('button');
 
 			elInput.click( () => {
 				const classifications = this.viewer.classifications;
@@ -1243,7 +1247,8 @@ export class Sidebar{
 			["SE", "se"],
 			["ZH", "zh"],
 			["IT", "it"],
-			["CA", "ca"]
+			["CA", "ca"],
+			["PT-BR", "pt-BR"],
 		];
 
 		let elLanguages = $('#potree_languages');
@@ -1472,18 +1477,15 @@ export class Sidebar{
 			() => {this.viewer.setBottomView()}
 		));
 
-
-
-
-
 		let elCameraProjection = $(`
 			<selectgroup id="camera_projection_options">
-				<option id="camera_projection_options_perspective" value="PERSPECTIVE">Perspective</option>
-				<option id="camera_projection_options_orthigraphic" value="ORTHOGRAPHIC">Orthographic</option>
+				<option id="camera_projection_options_perspective" value="PERSPECTIVE"><span data-i18n="navigation.camera_projection_options_perspective"></span></option>
+				<option id="camera_projection_options_orthographic" value="ORTHOGRAPHIC"><span data-i18n="navigation.camera_projection_options_orthographic"></span></option>
 			</selectgroup>
 		`);
+
 		elNavigation.append(elCameraProjection);
-		elCameraProjection.selectgroup({title: "Camera Projection"});
+		elCameraProjection.selectgroup({title: i18n.t("navigation.camera_projection_title")});
 		elCameraProjection.find("input").click( (e) => {
 			this.viewer.setCameraMode(CameraMode[e.target.value]);
 		});
@@ -1538,7 +1540,7 @@ export class Sidebar{
 
 		{
 			let elSplatQuality = $("#splat_quality_options");
-			elSplatQuality.selectgroup({title: "Splat Quality"});
+			elSplatQuality.selectgroup({title: i18n.t("appearance.splat_quality_title")});
 
 			elSplatQuality.find("input").click( (e) => {
 				if(e.target.value === "standard"){

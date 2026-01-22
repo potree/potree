@@ -95,9 +95,9 @@ export class PropertiesPanel{
 				<li>
 					<label for="optPointSizing" class="pv-select-label" data-i18n="appearance.point_size_type">Point Sizing </label>
 					<select id="optPointSizing" name="optPointSizing">
-						<option>FIXED</option>
-						<option>ATTENUATED</option>
-						<option>ADAPTIVE</option>
+						<option value="FIXED" data-i18n="appearance.point_size_type_options_fixed"></option>
+						<option value="ATTENUATED" data-i18n="appearance.point_size_type_options_attenuated"></option>
+						<option value="ADAPTIVE" data-i18n="appearance.point_size_type_options_adaptive"></option>
 					</select>
 				</li>
 
@@ -105,9 +105,9 @@ export class PropertiesPanel{
 				<li>
 					<label for="optShape" class="pv-select-label" data-i18n="appearance.point_shape"></label><br>
 					<select id="optShape" name="optShape">
-						<option>SQUARE</option>
-						<option>CIRCLE</option>
-						<option>PARABOLOID</option>
+						<option value="SQUARE" data-i18n="appearance.point_shape_options_square"></option>
+						<option value="CIRCLE" data-i18n="appearance.point_shape_options_circle"></option>
+						<option value="PARABOLOID" data-i18n="appearance.point_shape_options_paraboloid"></option>
 					</select>
 				</li>
 
@@ -119,7 +119,7 @@ export class PropertiesPanel{
 				<li><span data-i18n="appearance.point_opacity"></span>:<span id="lblOpacity"></span><div id="sldOpacity"></div></li>
 
 				<div class="divider">
-					<span>Attribute</span>
+					<span data-i18n="scene.attributes.title"></span>
 				</div>
 
 				<li>
@@ -128,44 +128,44 @@ export class PropertiesPanel{
 
 				<div id="materials.composite_weight_container">
 					<div class="divider">
-						<span>Attribute Weights</span>
+						<span data-i18n="scene.attributes.attribute_weights.title"></span>
 					</div>
 
-					<li>RGB: <span id="lblWeightRGB"></span> <div id="sldWeightRGB"></div>	</li>
-					<li>Intensity: <span id="lblWeightIntensity"></span> <div id="sldWeightIntensity"></div>	</li>
-					<li>Elevation: <span id="lblWeightElevation"></span> <div id="sldWeightElevation"></div>	</li>
-					<li>Classification: <span id="lblWeightClassification"></span> <div id="sldWeightClassification"></div>	</li>
-					<li>Return Number: <span id="lblWeightReturnNumber"></span> <div id="sldWeightReturnNumber"></div>	</li>
-					<li>Source ID: <span id="lblWeightSourceID"></span> <div id="sldWeightSourceID"></div>	</li>
+					<li><span data-i18n="scene.attributes.attribute_weights.option_rgb"></span> <span id="lblWeightRGB"></span> <div id="sldWeightRGB"></div>	</li>
+					<li><span data-i18n="scene.attributes.attribute_weights.option_intensity"></span><span id="lblWeightIntensity"></span> <div id="sldWeightIntensity"></div>	</li>
+					<li><span data-i18n="scene.attributes.attribute_weights.option_elevation"></span><span id="lblWeightElevation"></span> <div id="sldWeightElevation"></div>	</li>
+					<li><span data-i18n="scene.attributes.attribute_weights.option_classification"></span><span id="lblWeightClassification"></span> <div id="sldWeightClassification"></div>	</li>
+					<li><span data-i18n="scene.attributes.attribute_weights.option_return_number"></span><span id="lblWeightReturnNumber"></span> <div id="sldWeightReturnNumber"></div>	</li>
+					<li><span data-i18n="scene.attributes.attribute_weights.option_source_id"></span><span id="lblWeightSourceID"></span> <div id="sldWeightSourceID"></div>	</li>
 				</div>
 
 				<div id="materials.rgb_container">
 					<div class="divider">
-						<span>RGB</span>
+						<span data-i18n="scene.attributes.rgb.title"></span>
 					</div>
 
-					<li>Gamma: <span id="lblRGBGamma"></span> <div id="sldRGBGamma"></div>	</li>
-					<li>Brightness: <span id="lblRGBBrightness"></span> <div id="sldRGBBrightness"></div>	</li>
-					<li>Contrast: <span id="lblRGBContrast"></span> <div id="sldRGBContrast"></div>	</li>
+					<li><span data-i18n="scene.attributes.rgb.gamma"></span><span id="lblRGBGamma"></span> <div id="sldRGBGamma"></div>	</li>
+					<li><span data-i18n="scene.attributes.rgb.brightness"></span><span id="lblRGBBrightness"></span> <div id="sldRGBBrightness"></div>	</li>
+					<li><span data-i18n="scene.attributes.rgb.contrast"></span><span id="lblRGBContrast"></span> <div id="sldRGBContrast"></div>	</li>
 				</div>
 
 				<div id="materials.extra_container">
 					<div class="divider">
-						<span>Extra Attribute</span>
+						<span data-i18n="scene.attributes.extra.title"></span>
 					</div>
 
-					<li><span data-i18n="appearance.extra_range"></span>: <span id="lblExtraRange"></span> <div id="sldExtraRange"></div></li>
+					<li><span data-i18n="scene.attributes.extra.range"></span>: <span id="lblExtraRange"></span> <div id="sldExtraRange"></div></li>
 
 					<li>
 						<selectgroup id="extra_gradient_repeat_option">
-							<option id="extra_gradient_repeat_clamp" value="CLAMP">Clamp</option>
-							<option id="extra_gradient_repeat_repeat" value="REPEAT">Repeat</option>
-							<option id="extra_gradient_repeat_mirrored_repeat" value="MIRRORED_REPEAT">Mirrored Repeat</option>
+							<option id="extra_gradient_repeat_clamp" value="CLAMP" data-i18n="scene.attributes.extra.gradient_option_clamp"></option>
+							<option id="extra_gradient_repeat_repeat" value="REPEAT" data-i18n="scene.attributes.extra.gradient_option_repeat"></option>
+							<option id="extra_gradient_repeat_mirrored_repeat" value="MIRRORED_REPEAT" data-i18n="scene.attributes.extra.gradient_option_mirrored_repeat"></option>							
 						</selectgroup>
 					</li>
 
 					<li>
-						<span>Gradient Scheme:</span>
+						<span data-i18n="scene.attributes.extra.gradient_scheme_title"></span>
 						<div id="extra_gradient_scheme_selection" class="gradient_scheme" style="display: flex; padding: 1em 0em">
 						</div>
 					</li>
@@ -173,7 +173,7 @@ export class PropertiesPanel{
 				
 				<div id="materials.matcap_container">
 					<div class="divider">
-						<span>MATCAP</span>
+						<span data-i18n="scene.attributes.matcap.title"></span>
 					</div>
 
 					<li>
@@ -183,7 +183,7 @@ export class PropertiesPanel{
 
 				<div id="materials.color_container">
 					<div class="divider">
-						<span>Color</span>
+						<span data-i18n="scene.attributes.color.title"></span>
 					</div>
 
 					<input id="materials.color.picker" />
@@ -192,21 +192,21 @@ export class PropertiesPanel{
 
 				<div id="materials.elevation_container">
 					<div class="divider">
-						<span>Elevation</span>
+						<span data-i18n="scene.attributes.elevation.title"></span>
 					</div>
 
-					<li><span data-i18n="appearance.elevation_range"></span>: <span id="lblHeightRange"></span> <div id="sldHeightRange"></div>	</li>
+					<li><span data-i18n="scene.attributes.elevation.elevation_range"></span><span id="lblHeightRange"></span><div id="sldHeightRange"></div></li>
 
 					<li>
 						<selectgroup id="gradient_repeat_option">
-							<option id="gradient_repeat_clamp" value="CLAMP">Clamp</option>
-							<option id="gradient_repeat_repeat" value="REPEAT">Repeat</option>
-							<option id="gradient_repeat_mirrored_repeat" value="MIRRORED_REPEAT">Mirrored Repeat</option>
+							<option id="gradient_repeat_clamp" value="CLAMP" data-i18n="scene.attributes.elevation.gradient_option_clamp"></option>
+							<option id="gradient_repeat_repeat" value="REPEAT" data-i18n="scene.attributes.elevation.gradient_option_repeat"></option>
+							<option id="gradient_repeat_mirrored_repeat" value="MIRRORED_REPEAT" data-i18n="scene.attributes.elevation.gradient_option_mirrored_repeat"></option>
 						</selectgroup>
 					</li>
 
 					<li>
-						<span>Gradient Scheme:</span>
+						<span data-i18n="scene.attributes.elevation.gradient_scheme_title"></span>
 						<div id="elevation_gradient_scheme_selection" class="gradient_scheme" style="display: flex; padding: 1em 0em">
 						</div>
 					</li>
@@ -222,13 +222,13 @@ export class PropertiesPanel{
 
 				<div id="materials.intensity_container">
 					<div class="divider">
-						<span>Intensity</span>
+						<span data-i18n="scene.attributes.intensity.title"></span>
 					</div>
 
-					<li>Range: <span id="lblIntensityRange"></span> <div id="sldIntensityRange"></div>	</li>
-					<li>Gamma: <span id="lblIntensityGamma"></span> <div id="sldIntensityGamma"></div>	</li>
-					<li>Brightness: <span id="lblIntensityBrightness"></span> <div id="sldIntensityBrightness"></div>	</li>
-					<li>Contrast: <span id="lblIntensityContrast"></span> <div id="sldIntensityContrast"></div>	</li>
+					<li><span data-i18n="scene.attributes.intensity.range"></span> <span id="lblIntensityRange"></span> <div id="sldIntensityRange"></div>	</li>
+					<li><span data-i18n="scene.attributes.intensity.gamma"></span> <span id="lblIntensityGamma"></span> <div id="sldIntensityGamma"></div>	</li>
+					<li><span data-i18n="scene.attributes.intensity.brightness"></span> <span id="lblIntensityBrightness"></span> <div id="sldIntensityBrightness"></div>	</li>
+					<li><span data-i18n="scene.attributes.intensity.contrast"></span> <span id="lblIntensityContrast"></span> <div id="sldIntensityContrast"></div>	</li>
 				</div>
 
 				<div id="materials.gpstime_container">
@@ -240,7 +240,7 @@ export class PropertiesPanel{
 				
 				<div id="materials.index_container">
 					<div class="divider">
-						<span>Indices</span>
+						<span data-i18n="scene.attributes.indexes.title"></span>
 					</div>
 				</div>
 
@@ -774,7 +774,7 @@ export class PropertiesPanel{
 
 				let range = material.elevationRange;
 
-				panel.find('#lblHeightRange').html(`${range[0].toFixed(2)} to ${range[1].toFixed(2)}`);
+				panel.find('#lblHeightRange').html(`${range[0].toFixed(2)} ${i18n.t('scene.attributes.elevation.elevation_range_to')} ${range[1].toFixed(2)}`);
 				panel.find('#sldHeightRange').slider({min: bMin, max: bMax, values: range});
 			};
 
@@ -801,7 +801,7 @@ export class PropertiesPanel{
 				}
 
 				if(range){
-					let msg = `${range[0].toFixed(2)} to ${range[1].toFixed(2)}`;
+					let msg = `${range[0].toFixed(2)} ${i18n.t("scene.attributes.extra.range_to")} ${range[1].toFixed(2)}`;
 					panel.find('#lblExtraRange').html(msg);
 				}else{
 					panel.find("could not deduce range");
@@ -811,7 +811,7 @@ export class PropertiesPanel{
 			let updateIntensityRange = function () {
 				let range = material.intensityRange;
 
-				panel.find('#lblIntensityRange').html(`${parseInt(range[0])} to ${parseInt(range[1])}`);
+				panel.find('#lblIntensityRange').html(`${parseInt(range[0])} ${i18n.t("scene.attributes.intensity.range_to")} ${parseInt(range[1])}`);
 			};
 
 			{
@@ -822,7 +822,7 @@ export class PropertiesPanel{
 
 			{
 				let elGradientRepeat = panel.find("#gradient_repeat_option");
-				elGradientRepeat.selectgroup({title: "Gradient"});
+				elGradientRepeat.selectgroup({title: i18n.t("scene.attributes.elevation.gradient_title")});
 
 				elGradientRepeat.find("input").click( (e) => {
 					this.viewer.setElevationGradientRepeat(ElevationGradientRepeat[e.target.value]);
@@ -835,7 +835,7 @@ export class PropertiesPanel{
 
 			{
 				let elGradientRepeat = panel.find("#extra_gradient_repeat_option");
-				elGradientRepeat.selectgroup({title: "Gradient"});
+				elGradientRepeat.selectgroup({title: i18n.t("scene.attributes.extra.gradient_title")});
 
 				elGradientRepeat.find("input").click( (e) => {
 					this.viewer.setElevationGradientRepeat(ElevationGradientRepeat[e.target.value]);

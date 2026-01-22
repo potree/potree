@@ -27,6 +27,9 @@ export class HierarchicalSlider{
 		this.slide = params.slide != null ? params.slide : null;
 		this.step = params.step != null ? params.step : 0.0001;
 
+		this.range_label = params.range_label != null ? params.range_label : "Range:";
+		this.range_label_to = params.range_label_to != null ? params.range_label_to : "to";
+
 		let levels = params.levels != null ? params.levels : 1;
 
 		for(let level = 0; level < levels; level++){
@@ -75,7 +78,7 @@ export class HierarchicalSlider{
 
 	addLevel(){
 		const elLevel = document.createElement("li");
-		const elRange = document.createTextNode("Range: ");
+		const elRange = document.createTextNode(`${this.range_label} `);
 		const label = document.createElement("span");
 		const slider = document.createElement("div");
 
@@ -153,7 +156,7 @@ export class HierarchicalSlider{
 			let [min, max] = $(slider).slider("option", "values");
 			let strMin = format(min);
 			let strMax = format(max);
-			let strLabel = `${strMin} to ${strMax}`;
+			let strLabel = `${strMin} ${this.range_label_to} ${strMax}`;
 
 			label.innerHTML = strLabel;
 		}

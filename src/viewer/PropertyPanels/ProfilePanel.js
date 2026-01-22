@@ -12,19 +12,19 @@ export class ProfilePanel extends MeasurePanel{
 				<span class="coordinates_table_container"></span>
 				<br>
 				<span style="display:flex">
-					<span style="display:flex; align-items: center; padding-right: 10px">Width: </span>
+					<span style="display:flex; align-items: center; padding-right: 10px">${i18n.t("profile.width")}</span>
 					<input id="sldProfileWidth" name="sldProfileWidth" value="5.06" style="flex-grow: 1; width:100%">
 				</span>
 				<br>
 
 				<li style="margin-top: 10px">
-					<input name="download_profile" type="button" value="prepare download" style="width: 100%" />
+					<input name="download_profile" type="button" value="${i18n.t("profile.prepare_download")}" style="width: 100%" />
 					<div name="download_message"></div>
 				</li>
 
 				<br>
 
-				<input type="button" id="show_2d_profile" value="show 2d profile" style="width: 100%"/>
+				<input type="button" id="show_2d_profile" value="${i18n.t("profile.show_2d_profile")}" style="width: 100%"/>
 
 				<!-- ACTIONS -->
 				<div style="display: flex; margin-top: 12px">

@@ -1,0 +1,258 @@
+{
+    "tb": {
+        "navigation_opt": "Navegação",
+        "rendering_opt": "Aparência",
+        "tools_opt": "Ferramentas",
+        "measurments_opt": "Medições",
+        "clipping_opt": "Recorte",
+        "annotations_opt": "Anotações",
+        "materials_opt": "Materiais",
+        "scene_opt": "Cena",
+        "classification_filter_opt": "Filtro de classificação",
+        "filters_opt": "Filtros",
+        "parameters_opt": "Outras configurações",
+        "about_opt": "Sobre"
+    },
+    "tt": {
+        "angle_measurement": "Medição de ângulo",
+        "point_measurement": "Medição de ponto",
+        "distance_measurement": "Medição de distância",
+        "height_measurement": "Medição de altura",
+        "circle_measurement": "Medição de círculo",
+        "area_measurement": "Medição de área",
+        "volume_measurement": "Medição de volume",
+        "height_profile": "Perfil de Elevação",
+        "annotation": "Anotação",
+        "clip_volume": "Recorte de volume",
+        "clip_polygon": "Recorte de polígono",
+        "screen_clip_box": "Desenhe uma caixa de seleção. Requer que você esteja no modo de câmera ortográfica!",
+        "clip_plane_x": "Recorte no eixo x",
+        "clip_plane_y": "Recorte no eixo y",
+        "clip_plane_z": "Recorte no eixo z",
+        "remove_all_measurement": "Remover todas as medições",
+        "left_view_control": "Vista esquerda",
+        "right_view_control": "Vista direita",
+        "front_view_control": "Vista frontal",
+        "back_view_control": "Vista traseira",
+        "top_view_control": "Vista superior",
+        "bottom_view_control": "Vista inferior",
+        "focus_control": "Extensão total",
+        "orbit_control": "Controle de órbita",
+        "flight_control": "Controle de voo",
+        "heli_control": "Controle de helicóptero",
+        "earth_control": "Controle terrestre",
+        "perspective_camera_control": "Câmera perspectiva",
+        "orthographic_camera_control": "Câmera ortográfica",
+        "navigation_cube_control": "Cubo de navegação",
+        "remove_all_clipping_volumes": "Remover todos os volumes de recorte",
+        "compass": "Bússola",
+        "camera_animation": "Animação da câmera"
+    },
+    "appearance": {
+        "nb_max_pts": "Número máximo de pontos",
+        "point_size": "Tamanho do ponto",
+        "min_point_size": "Tamanho mínimo",
+        "point_opacity": "Opacidade",
+        "field_view": "Campo de visão",
+        "point_size_type": "Dimensionamento do ponto",
+        "point_size_type_options_fixed": "Fixo",
+        "point_size_type_options_attenuated": "Atenuado",
+        "point_size_type_options_adaptive": "Adaptativo",
+        "point_material": "Materiais",
+        "elevation_range": "Faixa de elevação",
+        "extra_range": "Faixa escalar",
+        "point_quality": "Qualidade",
+        "point_shape": "Forma",
+        "point_shape_options_square": "Quadrado",
+        "point_shape_options_circle": "Círculo",
+        "point_shape_options_paraboloid": "Parabolóide",
+        "edl_title": "Iluminação de Cúpula de Olho",
+        "edl_radius": "Raio",
+        "edl_strength": "Força",
+        "edl_opacity": "Opacidade",
+        "edl_enable": "Habilitar",
+        "background_title": "Plano de Fundo",
+        "background_options_skybox": "Céu",
+        "background_options_gradient": "Gradiente",
+        "background_options_black": "Preto",
+        "background_options_white": "Branco",
+        "background_options_none": "Nenhum",
+        "other_title": "Outros",
+        "splat_quality_title": "Qualidade de Pontilhado",
+        "splat_quality_options_standard": "Padrão",
+        "splat_quality_options_hq": "Alta Qualidade",
+        "min_node_size": "Tamanho mínimo do nó",
+        "clip_mode": "Modo de recorte",
+        "move_speed": "Velocidade",
+        "skybox": "Céu",
+        "bottom_lock": "Manter acima do solo",
+        "box": "Caixa",
+        "length_unit": "Unidade de comprimento",
+        "freeze": "Bloquear visualização",
+        "language": "Idioma",
+        "backface_culling": "Descarte de faces traseiras"
+    },
+    "measurements": {
+        "title": "Medições",
+        "label_options_title": "Mostrar/Esconder Rótulos",
+        "label_options_show": "Mostrar",
+        "label_options_hide": "Esconder",
+        "clip": "recorte",
+        "show": "mostrar volume"
+    },
+    "clipping": {
+        "title": "Recorte",
+        "clip_task_title": "Tipo de Recorte",
+        "cliptask_options_none": "Nenhum",
+        "cliptask_options_highlight": "Destacar",
+        "cliptask_options_show_inside": "Dentro",
+        "cliptask_options_show_outside": "Fora",
+        "clip_method_title": "Método de Recorte",
+        "clipmethod_options_any": "Dentro de Qualquer Um",
+        "clipmethod_options_all": "Dentro de Todos"
+    },
+    "navigation": {
+        "title": "Navegação",
+        "camera_projection_title": "Projeção da Câmera",
+        "camera_projection_options_perspective": "Perspectiva",
+        "camera_projection_options_orthographic": "Ortográfica"
+    },
+    "annotations": {
+        "show3D": "mostrar em 3D",
+        "showMap": "mostrar no mapa"
+    },
+    "profile": {
+        "nb_points": "Número de Pontos",
+        "title": "Perfil de Elevação",
+        "save_las": "Salvar LAS (3D)",
+        "save_ortho": "Salvar CSV (2D)",
+        "width": "Largura:",
+        "prepare_download": "preparar download",
+        "show_2d_profile": "mostrar perfil 2d"
+    },
+    "scene": {
+        "camera_position": "Posição da câmera",
+        "camera_target": "Alvo da câmera",
+        "export": {
+            "title": "Exportar:"
+        },
+        "objects": {
+            "title": "Objetos",
+            "type_pointcloud": "Nuvem de Pontos",
+            "type_measurements": "Medições",
+            "type_annotations": "Anotações",
+            "type_others": "Outros",
+            "type_vectors": "Vetores",
+            "type_images": "Imagens",
+            "type_others_camera": "Câmera"
+        },
+        "properties": {
+            "title": "Propriedades"
+        },
+        "attributes": {
+            "title": "Atributos",
+            "attribute_weights": {
+                "title": "Pesos dos Atributos",
+                "option_rgb": "RGB:",
+                "option_intensity": "Intensidade:",
+                "option_elevation": "Elevação:",
+                "option_classification": "Classificação:",
+                "option_return_number": "Número de Retorno:",
+                "option_source_id": "Source ID"
+            },
+            "rgb": {
+                "title": "RGB",
+                "gamma": "Gamma:",
+                "brightness": "Brilho:",
+                "contrast": "Contraste:"
+            },
+            "elevation": {
+                "title": "Elevação",
+                "elevation_range": "Faixa de elevação:",
+                "elevation_range_to": "até",
+                "gradient_title": "Gradiente",
+                "gradient_option_clamp": "Limitar",
+                "gradient_option_repeat": "Repetir",
+                "gradient_option_mirrored_repeat": "Repetir Espelhado",
+                "gradient_scheme_title": "Esquema de Gradiente:"
+            },
+            "color": {
+                "title": "Cor"
+            },
+            "matcap": {
+                "title": "Captura de Material"
+            },
+            "indexes": {
+                "title": "Índices"
+            },
+            "extra": {
+                "title": "Atributos Extra",
+                "range": "Faixa escalar",
+                "range_to": "até",
+                "gradient_title": "Gradiente",
+                "gradient_option_clamp": "Limitar",
+                "gradient_option_repeat": "Repetir",
+                "gradient_option_mirrored_repeat": "Repetir Espelhado",
+                "gradient_scheme_title": "Esquema de Gradiente:"
+            },
+            "intensity": {
+                "title": "Intensidade",
+                "range": "Faixa:",
+                "range_to": "até",
+                "gamma": "Gamma:",
+                "brightness": "Brilho:",
+                "contrast": "Contraste:"
+            }
+        }
+    },
+    "filters": {
+        "return_number": "Número de retorno",
+        "return_number_to": "até",
+        "number_of_returns": "Número de retornos",
+        "number_of_returns_to": "até",
+        "gps_min": "mín",
+        "gps_max": "máx",
+        "classification": {
+            "title": "Classificação",
+            "invert_button": "inverter",
+            "show_hide_all": "selecionar/deselecionar todos"
+        },
+        "returns": {
+            "title": "Retornos"
+        },
+        "point_source_id": {
+            "title": "Point Source ID",
+            "range": "Faixa:",
+            "range_to": "até"
+        },
+        "gps_time": {
+            "title": "Tempo GPS",
+            "time": "Tempo:",
+            "find": "pesquisar"
+        }
+    },
+    "settings": {
+        "language": "Idioma"
+    },
+    "about": {
+        "description": "é um visualizador para grandes conjuntos de dados de nuvens de pontos / LIDAR, desenvolvido na Universidade de Tecnologia de Viena.",
+        "author": "Autor:",
+        "license": "Licença:",
+        "license_type": "FreeBSD (2-cláusulas BSD)",
+        "dep_license": "Licenças das Dependências:",
+        "dep_license_see_github": "Veja no GitHub",
+        "funding": "Financiamento:",
+        "funding_text1": "O Potree é financiado por uma combinação de projetos de pesquisa, empresas, instituições e indivíduos. Se você está fazendo bom uso do Potree, considere financiar seu desenvolvimento futuro",
+        "funding_text2": "via Github Sponsors",
+        "funding_text3": "ou entrando em contato diretamente",
+        "funding_text4": "via e-mail",
+        "research": "Projetos de pesquisa cujo financiamento contribui para o Potree:",
+        "research_col1": "Nome do Projeto",
+        "research_col2": "Agência de Financiamento",
+        "thanks": "Obrigado a todas as empresas e instituições que financiam o Potree:",
+        "thanks_diamond": "Diamante",
+        "thanks_gold": "Ouro",
+        "thanks_silver": "Prata",
+        "thanks_bronze": "Bronze"
+    }
+}

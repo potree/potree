@@ -1268,9 +1268,10 @@ export class Viewer extends EventDispatcher{
 
 			i18n.init({
 				lng: 'en',
+				fallbackLng: ['en'],
 				resGetPath: Potree.resourcePath + '/lang/__lng__/__ns__.json',
-				preload: ['en', 'fr', 'de', 'jp', 'se', 'es', 'zh', 'it','ca'],
-				getAsync: true,
+				preload: ['en', 'fr', 'de', 'jp', 'se', 'es', 'zh', 'it','ca', 'pt-BR'],
+				getAsync: false,
 				debug: false
 			}, function (t) {
 				// Start translation once everything is loaded

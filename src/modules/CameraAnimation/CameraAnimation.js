@@ -439,7 +439,7 @@ export class CameraAnimation extends EventDispatcher{
 			if (this.selectedElement) {
 				evt.preventDefault();
 
-				const rect = viewer.renderer.domElement.getBoundingClientRect();
+				const rect = this.viewer.renderer.domElement.getBoundingClientRect();
 
 				const x = evt.clientX - rect.x;
 				const y = evt.clientY - rect.y;
@@ -508,8 +508,8 @@ export class CameraAnimation extends EventDispatcher{
 
 			const frame = this.at(t);
 
-			viewer.scene.view.position.copy(frame.position);
-			viewer.scene.view.lookAt(frame.target);
+			this.viewer.scene.view.position.copy(frame.position);
+			this.viewer.scene.view.lookAt(frame.target);
 
 
 			if(t > 1){

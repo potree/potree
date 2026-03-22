@@ -23,7 +23,9 @@ export class AnnotationTool extends EventDispatcher{
 		let annotation = new Annotation({
 			position: [589748.270, 231444.540, 753.675],
 			title: "Annotation Title",
-			description: `Annotation Description`
+			description: `Annotation Description`,
+			cameraPosition: [589748.270, 231444.540, 753.675-100],
+			cameraTarget: [589748.270, 231444.540, 753.675],
 		});
 		this.dispatchEvent({type: 'start_inserting_annotation', annotation: annotation});
 
@@ -37,6 +39,9 @@ export class AnnotationTool extends EventDispatcher{
 
 		let insertionCallback = (e) => {
 			if (e.button === THREE.MOUSE.LEFT) {
+				let camera = this.viewer.scene.getActiveCamera();
+				annotation.cameraPosition = camera.position.clone();
+				annotation.cameraTarget = this.viewer.scene.view.getPivot().clone();
 				callbacks.finish();
 			} else if (e.button === THREE.MOUSE.RIGHT) {
 				callbacks.cancel();
@@ -67,6 +72,10 @@ export class AnnotationTool extends EventDispatcher{
 				this.s.position.copy(I.location);
 
 				annotation.position.copy(I.location);
+
+				let camera = e.viewer.scene.getActiveCamera();
+				annotation.cameraPosition = camera.position.clone();
+				annotation.cameraTarget = e.viewer.scene.view.getPivot().clone();
 			}
 		};
 

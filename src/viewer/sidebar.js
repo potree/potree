@@ -458,6 +458,9 @@ export class Sidebar{
 				this.viewer.zoomTo(node, 1, 500);
 			}else if(object instanceof Measure){
 				let points = object.points.map(p => p.position);
+				if(points.length === 1){
+					points.push(new THREE.Vector3(points[0].x, points[0].y, points[0].z + 0.1));
+				}
 				let box = new THREE.Box3().setFromPoints(points);
 				if(box.getSize(new THREE.Vector3()).length() > 0){
 					let node = new THREE.Object3D();

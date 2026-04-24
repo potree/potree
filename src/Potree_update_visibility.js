@@ -175,11 +175,27 @@ export function updateVisibility(pointclouds, camera, renderer){
 		let insideFrustum = frustum.intersectsBox(box);
 		let maxLevel = pointcloud.maxLevel || Infinity;
 		let level = node.getLevel();
+
 		let visible = insideFrustum;
 		visible = visible && !(numVisiblePoints + node.getNumPoints() > Potree.pointBudget);
 		visible = visible && !(numVisiblePointsInPointclouds.get(pointcloud) + node.getNumPoints() > pointcloud.pointBudget);
 		visible = visible && level < maxLevel;
 		visible = visible || node.getLevel() <= 2;
+
+		let maxDisplayDistance = pointcloud.material.maxDisplayDistance;
+		if(maxDisplayDistance !== Infinity && visible){
+			let sphere = node.getBoundingSphere();
+			let center = sphere.center;
+			let dx = camObjPos.x - center.x;
+			let dy = camObjPos.y - center.y;
+			let dz = camObjPos.z - center.z;
+			let distanceSquared = dx * dx + dy * dy + dz * dz;
+			let maxDistanceSquared = maxDisplayDistance * maxDisplayDistance;
+			
+			if(distanceSquared - sphere.radius * sphere.radius > maxDistanceSquared){
+				visible = false;
+			}
+		}
 
 		let clipBoxes = pointcloud.material.clipBoxes;
 		if(true && clipBoxes.length > 0){

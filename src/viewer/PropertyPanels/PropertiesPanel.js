@@ -115,6 +115,13 @@ export class PropertiesPanel{
 				<label><input id="set_backface_culling" type="checkbox" /><span data-i18n="appearance.backface_culling"></span></label>
 				</li>
 				
+				<!-- MAX DISPLAY DISTANCE -->
+				<li>
+					<span>Max Display Distance:</span>&nbsp;<span id="lblMaxDisplayDistance"></span>
+					<br>
+					<input id="txtMaxDisplayDistance" type="text" style="width: 100%; margin-top: 4px;" placeholder="Enter distance or leave empty for unlimited" />
+				</li>
+
 				<!-- OPACITY -->
 				<li><span data-i18n="appearance.point_opacity"></span>:<span id="lblOpacity"></span><div id="sldOpacity"></div></li>
 
@@ -381,6 +388,47 @@ export class PropertiesPanel{
 				sldOpacity.slider({value: material.opacity});
 			};
 			this.addVolatileListener(material, "opacity_changed", update);
+
+			update();
+		}
+
+		{ // MAX DISPLAY DISTANCE
+			let txtMaxDisplayDistance = panel.find(`#txtMaxDisplayDistance`);
+			let lblMaxDisplayDistance = panel.find(`#lblMaxDisplayDistance`);
+
+			let update = (e) => {
+				let distance = material.maxDisplayDistance;
+				if(distance === Infinity){
+					lblMaxDisplayDistance.html("Unlimited");
+					txtMaxDisplayDistance.val("");
+				}else{
+					lblMaxDisplayDistance.html(distance.toFixed(2));
+					txtMaxDisplayDistance.val(distance.toFixed(2));
+				}
+			};
+
+			txtMaxDisplayDistance.on("input", (e) => {
+				let value = txtMaxDisplayDistance.val().trim();
+				if(value === "" || isNaN(parseFloat(value))){
+					material.maxDisplayDistance = Infinity;
+				}else{
+					let num = parseFloat(value);
+					if(num > 0){
+						material.maxDisplayDistance = num;
+					}else{
+						material.maxDisplayDistance = Infinity;
+					}
+				}
+				update();
+			});
+
+			txtMaxDisplayDistance.on("keypress", (e) => {
+				if(e.which === 13){
+					txtMaxDisplayDistance.blur();
+				}
+			});
+
+			this.addVolatileListener(material, "material_property_changed", update);
 
 			update();
 		}

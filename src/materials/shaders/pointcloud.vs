@@ -116,6 +116,7 @@ uniform sampler2D classificationLUT;
 uniform sampler2D matcapTextureUniform;
 #endif
 uniform bool backfaceCulling;
+uniform float uMaxDisplayDistance;
 
 #if defined(num_shadowmaps) && num_shadowmaps > 0
 uniform sampler2D uShadowMap[num_shadowmaps];
@@ -749,6 +750,15 @@ void doClipping(){
 	{
 		vec4 cl = getClassification(); 
 		if(cl.a == 0.0){
+			gl_Position = vec4(100.0, 100.0, 100.0, 0.0);
+			
+			return;
+		}
+	}
+
+	{
+		float distanceToCamera = length(vViewPosition);
+		if(uMaxDisplayDistance > 0.0 && distanceToCamera > uMaxDisplayDistance){
 			gl_Position = vec4(100.0, 100.0, 100.0, 0.0);
 			
 			return;

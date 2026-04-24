@@ -150,6 +150,7 @@ export class PointCloudMaterial extends THREE.RawShaderMaterial {
 			uFilterPointSourceIDClipRange:		{ type: "fv", value: [0, 65535]},
 			matcapTextureUniform: 	{ type: "t", value: this.matcapTexture },
 			backfaceCulling: { type: "b", value: false },
+			uMaxDisplayDistance: { type: "f", value: Infinity },
 		};
 
 		this.classification = ClassificationScheme.DEFAULT;
@@ -358,6 +359,17 @@ export class PointCloudMaterial extends THREE.RawShaderMaterial {
 		if(this.uniforms.backfaceCulling.value !== value){
 			this.uniforms.backfaceCulling.value = value;
 			this.dispatchEvent({type: 'backface_changed', target: this});
+		}
+	}
+
+	get maxDisplayDistance() {
+		return this.uniforms.uMaxDisplayDistance.value;
+	}
+
+	set maxDisplayDistance(value) {
+		if(this.uniforms.uMaxDisplayDistance.value !== value){
+			this.uniforms.uMaxDisplayDistance.value = value;
+			this.dispatchEvent({type: 'material_property_changed', target: this});
 		}
 	}
 

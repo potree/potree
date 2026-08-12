@@ -6,27 +6,224 @@ import {DXFProfileExporter} from "../exporter/DXFProfileExporter.js";
 import {CSVExporter} from "../exporter/CSVExporter.js";
 import {LASExporter} from "../exporter/LASExporter.js";
 import { EventDispatcher } from "../EventDispatcher.js";
-import {PointCloudTree} from "../PointCloudTree.js";
-import {Renderer} from "../PotreeRenderer.js";
-import {PointCloudMaterial} from "../materials/PointCloudMaterial.js";
-import {PointSizeType} from "../defines.js";
 
+const PROFILE_POINT_SIZE = 2;
+const PROFILE_TMP_COLOR = new THREE.Color();
 
-function copyMaterial(source, target){
-
-	for(let name of Object.keys(target.uniforms)){
-		target.uniforms[name].value = source.uniforms[name].value;
+function normalizeColorValue(value, buffer){
+	if(buffer instanceof Uint16Array){
+		return value > 255 ? value / 65535 : value / 255;
 	}
 
-	target.gradientTexture = source.gradientTexture;
-	target.visibleNodesTexture = source.visibleNodesTexture;
-	target.classificationTexture = source.classificationTexture;
-	target.matcapTexture = source.matcapTexture;
+	if(buffer instanceof Uint8Array || buffer instanceof Uint8ClampedArray){
+		return value / 255;
+	}
 
-	target.activeAttributeName = source.activeAttributeName;
-	target.ranges = source.ranges;
+	return value > 1 ? value / 255 : value;
+}
 
-	//target.updateShaderSource();
+function clamp01(value){
+	if(!Number.isFinite(value)){
+		return 0;
+	}
+
+	return Math.min(1, Math.max(0, value));
+}
+
+function getContrastFactor(contrast){
+	return (1.0158730158730156 * (contrast + 1.0)) / (1.0158730158730156 - contrast);
+}
+
+function applyGammaBrightnessContrast(value, gbc){
+	let gamma = gbc ? gbc[0] : 1;
+	let brightness = gbc ? gbc[1] : 0;
+	let contrast = gbc ? gbc[2] : 0;
+
+	let adjusted = Math.pow(clamp01(value), gamma);
+	adjusted = adjusted + brightness;
+	adjusted = (adjusted - 0.5) * getContrastFactor(contrast) + 0.5;
+
+	return clamp01(adjusted);
+}
+
+function sampleGradient(gradient, weight, target){
+	let w = clamp01(weight);
+	let stops = gradient || [];
+
+	if(stops.length === 0){
+		return target.setRGB(w, w, w);
+	}
+
+	if(w <= stops[0][0]){
+		return target.copy(stops[0][1]);
+	}
+
+	for(let i = 1; i < stops.length; i++){
+		let previous = stops[i - 1];
+		let next = stops[i];
+
+		if(w <= next[0]){
+			let span = next[0] - previous[0];
+			let t = span === 0 ? 0 : (w - previous[0]) / span;
+			return target.copy(previous[1]).lerp(next[1], t);
+		}
+	}
+
+	return target.copy(stops[stops.length - 1][1]);
+}
+
+function getScalarValue(pointSet, attributeName, index){
+	let source = pointSet.data[attributeName];
+
+	if(!source){
+		return null;
+	}
+
+	let itemSize = source.length / pointSet.numPoints;
+	return source[itemSize * index];
+}
+
+function getAttributeRange(material, attributeName, fallbackMin, fallbackMax){
+	let range = null;
+
+	if(attributeName === "elevation" || attributeName === "height"){
+		range = material.elevationRange;
+	}else if(attributeName === "intensity"){
+		range = material.intensityRange;
+	}else if(material.getRange){
+		range = material.getRange(attributeName);
+	}
+
+	if(!range || !Number.isFinite(range[0]) || !Number.isFinite(range[1]) || range[0] === range[1]){
+		range = [fallbackMin, fallbackMax];
+	}
+
+	if(!Number.isFinite(range[0]) || !Number.isFinite(range[1]) || range[0] === range[1]){
+		range = [0, 1];
+	}
+
+	return range;
+}
+
+function setProfilePointColor(pointSet, index, pointcloud, fallbackRange, target){
+	let material = pointcloud.material;
+	let attributeName = material.activeAttributeName || "rgba";
+	let normalizedName = attributeName.replace(/_/g, " ").toLowerCase();
+
+	if(normalizedName === "rgba" || normalizedName === "rgb"){
+		let rgba = pointSet.data.rgba || pointSet.data.color;
+
+		if(rgba){
+			let itemSize = rgba.length / pointSet.numPoints;
+			target.setRGB(
+				normalizeColorValue(rgba[itemSize * index + 0], rgba),
+				normalizeColorValue(rgba[itemSize * index + 1], rgba),
+				normalizeColorValue(rgba[itemSize * index + 2], rgba)
+			);
+
+			return;
+		}
+	}
+
+	if(normalizedName === "elevation" || normalizedName === "height"){
+		let z = pointSet.data.position[3 * index + 2] + pointcloud.position.z;
+		let range = getAttributeRange(material, "elevation", fallbackRange.min.z, fallbackRange.max.z);
+		let w = (z - range[0]) / (range[1] - range[0]);
+
+		sampleGradient(material.gradient, w, target);
+		return;
+	}
+
+	if(normalizedName === "intensity"){
+		let intensity = getScalarValue(pointSet, "intensity", index) || 0;
+		let range = getAttributeRange(material, "intensity", 0, 65535);
+		let w = (intensity - range[0]) / (range[1] - range[0]);
+		w = applyGammaBrightnessContrast(w, material.uniforms.intensity_gbc.value);
+
+		target.setRGB(w, w, w);
+		return;
+	}
+
+	if(normalizedName === "intensity gradient"){
+		let intensity = getScalarValue(pointSet, "intensity", index) || 0;
+		let range = getAttributeRange(material, "intensity", 0, 65535);
+		let w = (intensity - range[0]) / (range[1] - range[0]);
+		w = applyGammaBrightnessContrast(w, material.uniforms.intensity_gbc.value);
+
+		sampleGradient(material.gradient, w, target);
+		return;
+	}
+
+	if(normalizedName === "classification"){
+		let classID = getScalarValue(pointSet, "classification", index) || 0;
+		let classification = material.classification;
+		let classValue = classification[classID] || classification[classID % 32] || classification.DEFAULT;
+
+		if(classValue && classValue.color){
+			let color = classValue.color;
+			if(Array.isArray(color)){
+				target.setRGB(color[0], color[1], color[2]);
+			}else{
+				target.setRGB(color.x, color.y, color.z);
+			}
+		}else{
+			target.setRGB(1, 1, 1);
+		}
+
+		return;
+	}
+
+	if(normalizedName === "color"){
+		target.copy(material.color);
+		return;
+	}
+
+	if(normalizedName === "return number"){
+		let returnNumber = getScalarValue(pointSet, "return number", index) || getScalarValue(pointSet, "returnNumber", index) || 0;
+		let numberOfReturns = getScalarValue(pointSet, "number of returns", index) || getScalarValue(pointSet, "numberOfReturns", index) || 0;
+
+		if(numberOfReturns === 1){
+			target.setRGB(1, 1, 0);
+		}else if(returnNumber === 1){
+			target.setRGB(1, 0, 0);
+		}else if(returnNumber === numberOfReturns){
+			target.setRGB(0, 0, 1);
+		}else{
+			target.setRGB(0, 1, 0);
+		}
+
+		return;
+	}
+
+	if(normalizedName === "number of returns"){
+		let value = getScalarValue(pointSet, "number of returns", index) || getScalarValue(pointSet, "numberOfReturns", index) || 0;
+		sampleGradient(material.gradient, value / 6, target);
+		return;
+	}
+
+	if(normalizedName === "source id" || normalizedName === "point source id"){
+		let value = getScalarValue(pointSet, "source id", index) || getScalarValue(pointSet, "pointSourceID", index) || 0;
+		sampleGradient(material.gradient, (value % 10) / 10, target);
+		return;
+	}
+
+	if(normalizedName === "gps time" || normalizedName === "gps-time"){
+		let value = getScalarValue(pointSet, "gps-time", index) || 0;
+		let range = getAttributeRange(material, "gps-time", 0, 1);
+		let w = (value - range[0]) / (range[1] - range[0]);
+		sampleGradient(material.gradient, w, target);
+		return;
+	}
+
+	let source = pointSet.data[attributeName];
+	if(source){
+		let value = getScalarValue(pointSet, attributeName, index) || 0;
+		let range = getAttributeRange(material, attributeName, 0, 1);
+		let w = (value - range[0]) / (range[1] - range[0]);
+		sampleGradient(material.gradient, w, target);
+	}else{
+		target.setRGB(1, 1, 1);
+	}
 }
 
 
@@ -37,6 +234,7 @@ class Batch{
 		this.material = material;
 
 		this.sceneNode = new THREE.Points(geometry, material);
+		this.sceneNode.frustumCulled = false;
 
 		this.geometryNode = {
 			estimatedSpacing: 1.0,
@@ -50,7 +248,7 @@ class Batch{
 
 }
 
-class ProfileFakeOctree extends PointCloudTree{
+class ProfileFakeOctree extends THREE.Object3D{
 
 	constructor(octree){
 		super();
@@ -59,12 +257,13 @@ class ProfileFakeOctree extends PointCloudTree{
 		this.pcoGeometry = octree.pcoGeometry;
 		this.points = [];
 		this.visibleNodes = [];
-		
-		//this.material = this.trueOctree.material;
-		this.material = new PointCloudMaterial();
-		//this.material.copy(this.trueOctree.material);
-		copyMaterial(this.trueOctree.material, this.material);
-		this.material.pointSizeType = PointSizeType.FIXED;
+		this.material = new THREE.PointsMaterial({
+			size: PROFILE_POINT_SIZE,
+			sizeAttenuation: false,
+			vertexColors: THREE.VertexColors,
+			depthTest: false,
+			depthWrite: false
+		});
 
 		this.batchSize = 100 * 1000;
 		this.currentBatch = null
@@ -77,11 +276,48 @@ class ProfileFakeOctree extends PointCloudTree{
 	dispose(){
 		for(let node of this.visibleNodes){
 			node.geometry.dispose();
+			if(node.sceneNode.parent){
+				node.sceneNode.parent.remove(node.sceneNode);
+			}
 		}
 
+		this.material.dispose();
 		this.visibleNodes = [];
 		this.currentBatch = null;
 		this.points = [];
+	}
+
+	updateColors(){
+		let batchIndex = 0;
+		let indexInBatch = 0;
+		let fallbackRange = this.projectedBox && !this.projectedBox.isEmpty()
+			? this.projectedBox
+			: this.trueOctree.boundingBox || new THREE.Box3(new THREE.Vector3(0, 0, 0), new THREE.Vector3(1, 1, 1));
+
+		for(let pointSet of this.points){
+			for(let i = 0; i < pointSet.numPoints; i++){
+				if(indexInBatch >= this.batchSize){
+					batchIndex++;
+					indexInBatch = 0;
+				}
+
+				let batch = this.visibleNodes[batchIndex];
+				if(!batch){
+					return;
+				}
+
+				let color = batch.geometry.attributes.color;
+				setProfilePointColor(pointSet, i, this.trueOctree, fallbackRange, PROFILE_TMP_COLOR);
+				color.array[3 * indexInBatch + 0] = PROFILE_TMP_COLOR.r;
+				color.array[3 * indexInBatch + 1] = PROFILE_TMP_COLOR.g;
+				color.array[3 * indexInBatch + 2] = PROFILE_TMP_COLOR.b;
+				indexInBatch++;
+			}
+		}
+
+		for(let node of this.visibleNodes){
+			node.geometry.attributes.color.needsUpdate = true;
+		}
 	}
 
 	addPoints(data){
@@ -140,22 +376,20 @@ class ProfileFakeOctree extends PointCloudTree{
 			let index = updateRange.start + updateRange.count;
 			let geometry = this.currentBatch.geometry;
 
-			for(let attributeName of Object.keys(data.data)){
-				let source = data.data[attributeName];
-				let target = geometry.attributes[attributeName];
-				let numElements = target.itemSize;
-				
-				for(let item = 0; item < numElements; item++){
-					target.array[numElements * index + item] = source[numElements * i + item];
-				}
-			}
-
 			{
 				let position = geometry.attributes.position;
 
 				position.array[3 * index + 0] = x;
 				position.array[3 * index + 1] = y;
 				position.array[3 * index + 2] = z;
+			}
+
+			{
+				let color = geometry.attributes.color;
+				setProfilePointColor(data, i, this.trueOctree, projectedBox, PROFILE_TMP_COLOR);
+				color.array[3 * index + 0] = PROFILE_TMP_COLOR.r;
+				color.array[3 * index + 1] = PROFILE_TMP_COLOR.g;
+				color.array[3 * index + 2] = PROFILE_TMP_COLOR.b;
 			}
 
 			updateRange.count++;
@@ -177,36 +411,15 @@ class ProfileFakeOctree extends PointCloudTree{
 	createNewBatch(data){
 		let geometry = new THREE.BufferGeometry();
 
-		// create new batches with batch_size elements of the same type as the attribute
-		for(let attributeName of Object.keys(data.data)){
-			let buffer = data.data[attributeName];
-			let numElements = buffer.length / data.numPoints; // 3 for pos, 4 for col, 1 for scalars
-			let constructor = buffer.constructor;
-			let normalized = false;
-			
-			if(this.trueOctree.root.sceneNode){
-				if(this.trueOctree.root.sceneNode.geometry.attributes[attributeName]){
-					normalized = this.trueOctree.root.sceneNode.geometry.attributes[attributeName].normalized;
-				}
-			}
-			
-
-			let batchBuffer = new constructor(numElements * this.batchSize);
-
-			let bufferAttribute = new THREE.BufferAttribute(batchBuffer, numElements, normalized);
-			bufferAttribute.potree = {
-				range: [0, 1],
-			};
-
-			geometry.setAttribute(attributeName, bufferAttribute);
-		}
-
 		geometry.drawRange.start = 0;
 		geometry.drawRange.count = 0;
+		geometry.setAttribute("position", new THREE.BufferAttribute(new Float32Array(3 * this.batchSize), 3));
+		geometry.setAttribute("color", new THREE.BufferAttribute(new Float32Array(3 * this.batchSize), 3));
 
 		let batch = new Batch(geometry, this.material);
 
 		this.visibleNodes.push(batch);
+		this.add(batch.sceneNode);
 
 		return batch;
 	}
@@ -281,8 +494,6 @@ export class ProfileWindow extends EventDispatcher {
 		this.initTHREE();
 		this.initSVG();
 		this.initListeners();
-
-		this.pRenderer = new Renderer(this.renderer);
 
 		this.elRoot.i18n();
 	}
@@ -684,7 +895,6 @@ export class ProfileWindow extends EventDispatcher {
 	
 
 		this.scene = new THREE.Scene();
-		this.profileScene = new THREE.Scene();
 
 		let sg = new THREE.SphereGeometry(1, 16, 16);
 		let sm = new THREE.MeshNormalMaterial();
@@ -745,7 +955,7 @@ export class ProfileWindow extends EventDispatcher {
 		if(!entry){
 			entry = new ProfileFakeOctree(pointcloud);
 			this.pointclouds.set(pointcloud, entry);
-			this.profileScene.add(entry);
+			this.scene.add(entry);
 
 			let materialChanged = () => {
 				this.render();
@@ -802,6 +1012,7 @@ export class ProfileWindow extends EventDispatcher {
 
 		for(let [key, entry] of this.pointclouds){
 			entry.dispose();
+			this.scene.remove(entry);
 		}
 
 		this.pointclouds.clear();
@@ -819,8 +1030,10 @@ export class ProfileWindow extends EventDispatcher {
 	}
 
 	show () {
-		this.elRoot.fadeIn();
 		this.enabled = true;
+		this.elRoot.stop(true, true).show();
+		this.updateScales();
+		this.render();
 	}
 
 	hide () {
@@ -899,7 +1112,7 @@ export class ProfileWindow extends EventDispatcher {
 		let width = this.renderArea[0].clientWidth;
 		let height = this.renderArea[0].clientHeight;
 
-		let {renderer, pRenderer, camera, profileScene, scene} = this;
+		let {renderer, camera, scene} = this;
 		let {scaleX, pickSphere} = this;
 
 		renderer.setSize(width, height);
@@ -907,15 +1120,13 @@ export class ProfileWindow extends EventDispatcher {
 		renderer.setClearColor(0x000000, 0);
 		renderer.clear(true, true, false);
 
-		for(let pointcloud of this.pointclouds.keys()){
-			let source = pointcloud.material;
-			let target = this.pointclouds.get(pointcloud).material;
-			
-			copyMaterial(source, target);
-			target.size = 2;
+		for(let profileOctree of this.pointclouds.values()){
+			profileOctree.updateColors();
 		}
-		
-		pRenderer.render(profileScene, camera, null);
+
+		camera.updateMatrixWorld(true);
+		camera.matrixWorldInverse.copy(camera.matrixWorld).invert();
+		scene.updateMatrixWorld(true);
 
 		let radius = Math.abs(scaleX.invert(0) - scaleX.invert(5));
 

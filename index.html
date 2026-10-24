@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+	<meta charset="utf-8">
+	<meta name="description" content="">
+	<meta name="author" content="Klas Karlsson">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Potree Viewer</title>
+	<link rel="icon" type="image/x-icon" href="./resources/icons/icon.png"><!-- change to your own page logo -->
+	<link rel="stylesheet" type="text/css" href="./build/potree/potree.css">
+	<link rel="stylesheet" type="text/css" href="./libs/jquery-ui/jquery-ui.min.css">
+	<link rel="stylesheet" type="text/css" href="./libs/openlayers3/ol.css">
+	<link rel="stylesheet" type="text/css" href="./libs/spectrum/spectrum.css">
+	<link rel="stylesheet" type="text/css" href="./libs/jstree/themes/mixed/style.css">
+
+	<!--Additional style settings for the viewer-->
+	<style>
+		#logo_br {
+			max-height: 120px;
+			position: absolute;
+			right: 15px;
+			bottom: 10px;
+			z-index: 99999;
+			filter: drop-shadow(3px 3px 4px #0007);
+		}
+		button {
+			border: none;
+			border-radius: 4px;
+			color: white;
+			padding: 5px 16px;
+			text-align: center;
+			text-decoration: none;
+			display: inline-block;
+			font-size: 12px;
+			cursor: pointer;
+			transition-duration: 0.4s;
+		}
+		button:hover {
+			background-color: white;
+			color: black;
+		}
+		.backbutton {
+			background-color: rgb(45, 137, 160);
+		}
+		.normalbutton {
+			background-color: #4CAF50;
+		}
+		.pc_title {
+			font-family: Arial;
+			font-size: 18pt;
+			color: #bbb;
+			margin-bottom: 4px;
+		}
+
+		/* Drag-and-drop */
+		#drop_hint {
+			position: absolute;
+			left: 50%;
+			top: 50%;
+			transform: translate(-50%, -50%);
+			z-index: 99998;
+			padding: 32px 40px;
+			border: 2px dashed #888;
+			border-radius: 12px;
+			background: #000a;
+			color: #ddd;
+			font-family: Arial;
+			text-align: center;
+			max-width: 80%;
+		}
+		#drop_hint .big { font-size: 20pt; margin-bottom: 8px; }
+		#drop_hint .small { font-size: 11pt; color: #aaa; margin-bottom: 14px; }
+		#drop_hint #drop_msg { color: #ff9a9a; margin-top: 12px; min-height: 1em; font-size: 11pt; }
+		#drop_overlay {
+			display: none;
+			position: fixed;
+			inset: 0;
+			z-index: 100000;
+			background: #2d89a066;
+			border: 4px dashed #fff;
+			box-sizing: border-box;
+			pointer-events: none;
+			color: white;
+			font-family: Arial;
+			font-size: 28pt;
+			align-items: center;
+			justify-content: center;
+			text-shadow: 2px 2px 6px #000;
+		}
+		#drop_overlay.active { display: flex; }
+	</style>
+</head>
+
+<body>
+	<script src="./libs/jquery/jquery-3.1.1.min.js"></script>
+	<script src="./libs/spectrum/spectrum.js"></script>
+	<script src="./libs/jquery-ui/jquery-ui.min.js"></script>
+	<script src="./libs/other/BinaryHeap.js"></script>
+	<script src="./libs/tween/tween.min.js"></script>
+	<script src="./libs/d3/d3.js"></script>
+	<script src="./libs/proj4/proj4.js"></script>
+	<script src="./libs/openlayers3/ol.js"></script>
+	<script src="./libs/i18next/i18next.js"></script>
+	<script src="./libs/jstree/jstree.js"></script>
+	<script src="./libs/copc/index.js"></script>
+	<script src="./build/potree/potree.js"></script>
+	<script src="./libs/plasio/js/laslaz.js"></script>
+
+	<div class="potree_container" style="position: absolute; width: 100%; height: 100%; left: 0px; top: 0px; ">
+		<div id="potree_render_area" style="background-image: url('./resources/icons/logo_bg.png');"></div>
+		<div id="potree_sidebar_container"> </div>
+	</div>
+
+	<!-- Visas när inget punktmoln är inläst -->
+	<div id="drop_hint">
+		<div class="big">Släpp .copc.laz- eller .txt-filer här</div><!-- English: Drop .copc.laz- or .txt-files here -->
+		<div class="small">Filer läses lokalt eller via (http/https) sökvägar i en textfil.</div><!-- English: Files are read localy or as (http/https) url's in a text file. -->
+		<button class="normalbutton" id="pick_file">Välj filer...</button><!-- English: Select files ... -->
+		<input type="file" id="file_input" accept=".laz,.copc.laz,.txt" multiple style="display:none">
+		<div id="drop_msg"></div>
+		<div class="small"><i>Textfil kan även skickas med url med "?list=relativ-sökväg/filnamn.txt"</i></div><!-- English: Text file can be included as url with "?list=rel-path/file_name.txt" -->
+	</div>
+
+	<!-- Visas medan filer dras över fönstret -->
+	<div id="drop_overlay">Släpp filerna för att läsa in dem</div><!-- English: Drop files to add them to the viewer -->
+
+	<script type="module">
+
+	import * as THREE from "./libs/three.js/build/three.module.js";
+
+	async function main() {
+		const esc = (s) => String(s).replace(/[&<>"']/g, (c) => (
+			{ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]
+		));
+
+		let activeBlobs = [];
+		let loadedFiles = [];
+		let hasCloud = false;
+
+		// ---- Viewer ----
+		window.viewer = new Potree.Viewer(document.getElementById("potree_render_area"));
+		viewer.setEDLEnabled(true);
+		viewer.setFOV(60);
+		viewer.setPointBudget(2_000_000);
+		viewer.loadSettingsFromURL();
+		viewer.useHQ = false;
+
+		function setTitle(html) {
+			viewer.setDescription(html);
+		}
+
+		setTitle("");
+
+		let metaHtml = "";
+		function setMeta(html) {
+			metaHtml = html;
+			$("#meta_content").html(html);
+		}
+
+		viewer.loadGUI(() => {
+			viewer.setLanguage("en");
+			$("#menu_appearance").next().show();
+
+			let section = $(`
+				<h3 id="menu_meta" class="accordion-header ui-widget"><span>Loaded files</span></h3>
+				<div class="accordion-content ui-widget pv-menu-list"></div>
+			`);
+			let content = section.last();
+			content.html(`<div class="pv-menu-list" id="meta_content">` + metaHtml + `</div>`);
+			section.first().click(() => content.slideToggle());
+			section.insertBefore($("#menu_about"));
+		});
+
+		function updateTitleAndMeta() {
+			if (loadedFiles.length === 1) {
+				setTitle(`<div class="pc_title">${esc(loadedFiles[0].name)}</div>`);
+			} else {
+				setTitle(`<div class="pc_title">Potree Viewer</div>`);
+			}
+
+			let metaList = loadedFiles.map(f => {
+				let details = `<strong>${esc(f.name)}</strong><br>Path: ${esc(f.path)}`;
+				if (f.size) {
+					details += `<br>Size: ${f.size} MB`;
+				}
+				if (f.date) {
+					details += `<br>Changed: ${esc(f.date)}`;
+				}
+				return `<li>${details}</li>`;
+			}).join("<hr style='border:0; border-top:1px solid #444; margin:6px 0;'>");
+
+			setMeta("<ul>" + metaList + "</ul>");
+		}
+
+		// ---- Inläsning ----
+		function loadCloud(path, name) {
+			Potree.loadPointCloud(path, name, function (e) {
+				viewer.scene.addPointCloud(e.pointcloud);
+
+				let material = e.pointcloud.material;
+				material.size = 0.7;
+				material.minSize = 1;
+				material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
+
+				if (!hasCloud) {
+					viewer.fitToScreen(0.5);
+					hasCloud = true;
+				}
+				$("#drop_hint").hide();
+			});
+		}
+
+		function processTextContent(text) {
+			const lines = text.split(/\r?\n/);
+			for (let line of lines) {
+				line = line.trim();
+				if (line && !line.startsWith("#")) {
+					const fileName = line.split("/").pop().split("\\").pop();
+					loadedFiles.push({
+						name: fileName,
+						path: line
+						// size och date utelämnas avsiktligt för textfiler
+					});
+					loadCloud(line, fileName);
+				}
+			}
+			updateTitleAndMeta();
+		}
+
+		// ---- Kontrollera URL-parametrar vid start ----
+		const urlParams = new URLSearchParams(window.location.search);
+		if (urlParams.has("list")) {
+			const textFileUrl = urlParams.get("list");
+			try {
+				const res = await fetch(textFileUrl);
+				if (!res.ok) throw new Error("HTTP " + res.status);
+				const text = await res.text();
+				processTextContent(text);
+			} catch (err) {
+				console.error("Could not read text file by URL:", err);
+				showMsg("Could not read text file: " + textFileUrl);
+			}
+		}
+
+		// ---- Drag-and-drop & Filhantering ----
+		function showMsg(text) {
+			$("#drop_hint").show();
+			$("#drop_msg").text(text);
+		}
+
+		function handleFile(file) {
+			if (/\.txt$/i.test(file.name)) {
+				$("#drop_msg").text("");
+				const reader = new FileReader();
+				reader.onload = (e) => {
+					processTextContent(e.target.result);
+				};
+				reader.readAsText(file);
+			} else if (/\.copc\.laz$/i.test(file.name) || /\.laz$/i.test(file.name)) {
+				$("#drop_msg").text("");
+				const blobUrl = URL.createObjectURL(file);
+				activeBlobs.push(blobUrl);
+				const path = blobUrl + "#/" + encodeURIComponent(file.name);
+
+				const mb = (file.size / (1024 * 1024)).toFixed(1);
+				
+				loadedFiles.push({
+					name: file.name,
+					size: mb,
+					date: new Date(file.lastModified).toLocaleString("sv-SE"),
+					path: file.name
+				});
+
+				updateTitleAndMeta();
+				loadCloud(path, file.name);
+			} else {
+				showMsg("\"" + file.name + "\" is not a valid .copc.laz or .txt file.");
+			}
+		}
+
+		const overlay = document.getElementById("drop_overlay");
+		let dragDepth = 0;
+		const hasFiles = (e) => e.dataTransfer && Array.from(e.dataTransfer.types || []).includes("Files");
+
+		window.addEventListener("dragenter", (e) => {
+			if (!hasFiles(e)) return;
+			e.preventDefault();
+			dragDepth++;
+			overlay.classList.add("active");
+		});
+		window.addEventListener("dragover", (e) => {
+			if (!hasFiles(e)) return;
+			e.preventDefault();
+			e.dataTransfer.dropEffect = "copy";
+		});
+		window.addEventListener("dragleave", (e) => {
+			if (!hasFiles(e)) return;
+			dragDepth = Math.max(0, dragDepth - 1);
+			if (dragDepth === 0) overlay.classList.remove("active");
+		});
+		window.addEventListener("drop", (e) => {
+			if (!hasFiles(e)) return;
+			e.preventDefault();
+			dragDepth = 0;
+			overlay.classList.remove("active");
+			const files = e.dataTransfer.files;
+			for (let i = 0; i < files.length; i++) {
+				handleFile(files[i]);
+			}
+		});
+
+		// Filväljare som reserv
+		document.getElementById("pick_file").addEventListener("click", () => {
+			document.getElementById("file_input").click();
+		});
+		document.getElementById("file_input").addEventListener("change", (e) => {
+			if (e.target.files.length) {
+				for (let i = 0; i < e.target.files.length; i++) {
+					handleFile(e.target.files[i]);
+				}
+			}
+			e.target.value = "";
+		});
+	}
+
+	main();
+	</script>
+
+	<img id="logo_br" src="./resources/icons/logo.png"><!-- Add this file to get a logo in the lower right of the screen -->
+</body>
+</html>

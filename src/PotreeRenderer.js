@@ -857,6 +857,7 @@ export class Renderer {
 
 			const geometry = node.geometryNode.geometry;
 
+			if (!geometry) console.log('Missing geometry', node)
 			if(geometry.attributes["gps-time"]){
 				const bufferAttribute = geometry.attributes["gps-time"];
 				const attGPS = octree.getAttribute("gps-time");

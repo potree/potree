@@ -407,6 +407,10 @@ Research projects who's funding contributes to Potree:
 		<th>Funding Agency</th>
 	</tr>
 	<tr>
+		<td><a href="https://www.netidee.at/potree-next">Potree-Next</a></td>
+		<td><a href="https://www.netidee.at/">Netidee</a></td>
+	</tr>
+	<tr>
 		<td><a href="https://projekte.ffg.at/projekt/3851914">LargeClouds2BIM</a></td>
 		<td><a href="https://www.ffg.at/">FFG</a></td>
 	</tr>
@@ -464,6 +468,9 @@ We would like to thank our sponsors for their financial contributions that keep 
 			€ 5,000+
 		</th>
 		<td>
+			<a href="https://www.skyebrowse.com/">
+				<img src="docs/sponsors/SkyeBrowse.png" height="60"/> &nbsp;
+			</a>
 			<a href="https://biology.anu.edu.au/research/facilities/australian-plant-phenomics-facility-anu">
 				<img src="docs/sponsors/APPF full logo.png" height="70"/> &nbsp;
 			</a>
@@ -543,3 +550,22 @@ We would like to thank our sponsors for their financial contributions that keep 
 * Christian Boucheny (EDL developer) and Daniel Girardeau-Montaut ([CloudCompare](http://www.danielgm.net/cc/)). The EDL shader was adapted from the CloudCompare source code!
 * [Martin Isenburg](http://rapidlasso.com/), [Georepublic](http://georepublic.de/en/),
 [Veesus](http://veesus.com/), [Sigeom Sa](http://www.sigeom.ch/), [SITN](http://www.ne.ch/sitn), [LBI ArchPro](http://archpro.lbg.ac.at/),  [Pix4D](http://pix4d.com/) as well as all the contributers to potree and PotreeConverter and many more for their support.
+
+# Bibtex 
+
+```
+@article{SCHUETZ-2020-MPC,
+	title =      "Fast Out-of-Core Octree Generation for Massive Point Clouds",
+	author =     "Markus Schütz and Stefan Ohrhallinger and Michael Wimmer",
+	year =       "2020",
+	month =      nov,
+	journal =    "Computer Graphics Forum",
+	volume =     "39",
+	number =     "7",
+	doi =        "10.1111/cgf.14134",
+	pages =      "13",
+	publisher =  "John Wiley & Sons, Inc.",
+	pages =      "1--13",
+	keywords =   "point clouds, point-based rendering, level of detail",
+}
+```

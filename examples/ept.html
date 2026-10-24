@@ -25,6 +25,7 @@
 	<script src="../libs/openlayers3/ol.js"></script>
 	<script src="../libs/i18next/i18next.js"></script>
 	<script src="../libs/jstree/jstree.js"></script>
+	<script src="../libs/copc/index.js"></script>
 	<script src="../build/potree/potree.js"></script>
 	<script src="../libs/plasio/js/laslaz.js"></script>
 
@@ -72,12 +73,14 @@
             else path = "../pointclouds/" + name + "/ept.json";
         }
 
+		var c = getQueryParam('c');
 		Potree.loadPointCloud(path, name, function(e){
 			viewer.scene.addPointCloud(e.pointcloud);
 
 			let material = e.pointcloud.material;
 			material.size = 1;
 			material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
+			if (c) material.activeAttributeName = c;
 
 			viewer.fitToScreen(0.5);
 		});

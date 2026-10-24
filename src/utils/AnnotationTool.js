@@ -71,7 +71,7 @@ export class AnnotationTool extends EventDispatcher{
 		};
 
 		let drop = (e) => {
-			viewer.scene.scene.remove(this.s);
+			this.viewer.scene.scene.remove(this.s);
 			this.s.removeEventListener("drag", drag);
 			this.s.removeEventListener("drop", drop);
 		};

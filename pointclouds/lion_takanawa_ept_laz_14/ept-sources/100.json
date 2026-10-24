@@ -1,0 +1,7102 @@
+{
+	"r237.laz" : 
+	{
+		"bounds" : 
+		[
+			-4.2744375,
+			6.0133375,
+			-1.3165125,
+			-3.563475,
+			6.7243,
+			-0.60555
+		],
+		"metadata" : 
+		{
+			"comp_spatialreference" : "",
+			"compressed" : true,
+			"count" : 1838,
+			"creation_doy" : 363,
+			"creation_year" : 2014,
+			"dataformat_id" : 2,
+			"dataoffset" : 327,
+			"filesource_id" : 0,
+			"global_encoding" : 0,
+			"global_encoding_base64" : "AAA=",
+			"header_size" : 227,
+			"major_version" : 1,
+			"maxx" : -3.563475,
+			"maxy" : 6.7243,
+			"maxz" : -0.60555,
+			"minor_version" : 2,
+			"minx" : -4.2744375,
+			"miny" : 6.0133375,
+			"minz" : -1.3165125,
+			"offset_x" : 0,
+			"offset_y" : 0,
+			"offset_z" : 0,
+			"project_id" : "00000000-0000-0000-0000-000000000000",
+			"scale_x" : 0.001,
+			"scale_y" : 0.001,
+			"scale_z" : 0.001,
+			"software_id" : "libLAS 1.8.0",
+			"spatialreference" : "",
+			"srs" : 
+			{
+				"compoundwkt" : "",
+				"horizontal" : "",
+				"isgeocentric" : false,
+				"isgeographic" : false,
+				"prettycompoundwkt" : "",
+				"prettywkt" : "",
+				"proj4" : "",
+				"units" : 
+				{
+					"horizontal" : "unknown",
+					"vertical" : ""
+				},
+				"vertical" : "",
+				"wkt" : ""
+			},
+			"system_id" : "libLAS",
+			"vlr_0" : 
+			{
+				"data" : "AgAAAAICAAAAAAAAUMMAAP////////////////////8CAAYAFAACAAgABgACAA==",
+				"description" : "http://laszip.org",
+				"record_id" : 22204,
+				"user_id" : "laszip encoded"
+			}
+		},
+		"origin" : 100,
+		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r237.laz",
+		"points" : 1838
+	},
+	"r25.laz" : 
+	{
+		"bounds" : 
+		[
+			-3.563475,
+			3.88045,
+			-2.027475,
+			-2.14155,
+			5.302375,
+			-0.60555
+		],
+		"metadata" : 
+		{
+			"comp_spatialreference" : "",
+			"compressed" : true,
+			"count" : 6333,
+			"creation_doy" : 363,
+			"creation_year" : 2014,
+			"dataformat_id" : 2,
+			"dataoffset" : 327,
+			"filesource_id" : 0,
+			"global_encoding" : 0,
+			"global_encoding_base64" : "AAA=",
+			"header_size" : 227,
+			"major_version" : 1,
+			"maxx" : -2.14155,
+			"maxy" : 5.302375,
+			"maxz" : -0.60555,
+			"minor_version" : 2,
+			"minx" : -3.563475,
+			"miny" : 3.88045,
+			"minz" : -2.027475,
+			"offset_x" : 0,
+			"offset_y" : 0,
+			"offset_z" : 0,
+			"project_id" : "00000000-0000-0000-0000-000000000000",
+			"scale_x" : 0.001,
+			"scale_y" : 0.001,
+			"scale_z" : 0.001,
+			"software_id" : "libLAS 1.8.0",
+			"spatialreference" : "",
+			"srs" : 
+			{
+				"compoundwkt" : "",
+				"horizontal" : "",
+				"isgeocentric" : false,
+				"isgeographic" : false,
+				"prettycompoundwkt" : "",
+				"prettywkt" : "",
+				"proj4" : "",
+				"units" : 
+				{
+					"horizontal" : "unknown",
+					"vertical" : ""
+				},
+				"vertical" : "",
+				"wkt" : ""
+			},
+			"system_id" : "libLAS",
+			"vlr_0" : 
+			{
+				"data" : "AgAAAAICAAAAAAAAUMMAAP////////////////////8CAAYAFAACAAgABgACAA==",
+				"description" : "http://laszip.org",
+				"record_id" : 22204,
+				"user_id" : "laszip encoded"
+			}
+		},
+		"origin" : 101,
+		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r25.laz",
+		"points" : 6333
+	},
+	"r250.laz" : 
+	{
+		"bounds" : 
+		[
+			-3.563475,
+			3.88045,
+			-2.027475,
+			-2.8525125,
+			4.5914125,
+			-1.3165125
+		],
+		"metadata" : 
+		{
+			"comp_spatialreference" : "",
+			"compressed" : true,
+			"count" : 4504,
+			"creation_doy" : 363,
+			"creation_year" : 2014,
+			"dataformat_id" : 2,
+			"dataoffset" : 327,
+			"filesource_id" : 0,
+			"global_encoding" : 0,
+			"global_encoding_base64" : "AAA=",
+			"header_size" : 227,
+			"major_version" : 1,
+			"maxx" : -2.8525125,
+			"maxy" : 4.5914125,
+			"maxz" : -1.3165125,
+			"minor_version" : 2,
+			"minx" : -3.563475,
+			"miny" : 3.88045,
+			"minz" : -2.027475,
+			"offset_x" : 0,
+			"offset_y" : 0,
+			"offset_z" : 0,
+			"project_id" : "00000000-0000-0000-0000-000000000000",
+			"scale_x" : 0.001,
+			"scale_y" : 0.001,
+			"scale_z" : 0.001,
+			"software_id" : "libLAS 1.8.0",
+			"spatialreference" : "",
+			"srs" : 
+			{
+				"compoundwkt" : "",
+				"horizontal" : "",
+				"isgeocentric" : false,
+				"isgeographic" : false,
+				"prettycompoundwkt" : "",
+				"prettywkt" : "",
+				"proj4" : "",
+				"units" : 
+				{
+					"horizontal" : "unknown",
+					"vertical" : ""
+				},
+				"vertical" : "",
+				"wkt" : ""
+			},
+			"system_id" : "libLAS",
+			"vlr_0" : 
+			{
+				"data" : "AgAAAAICAAAAAAAAUMMAAP////////////////////8CAAYAFAACAAgABgACAA==",
+				"description" : "http://laszip.org",
+				"record_id" : 22204,
+				"user_id" : "laszip encoded"
+			}
+		},
+		"origin" : 102,
+		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r250.laz",
+		"points" : 4504
+	},
+	"r251.laz" : 
+	{
+		"bounds" : 
+		[
+			-3.563475,
+			3.88045,
+			-1.3165125,
+			-2.8525125,
+			4.5914125,
+			-0.60555
+		],
+		"metadata" : 
+		{
+			"comp_spatialreference" : "",
+			"compressed" : true,
+			"count" : 2,
+			"creation_doy" : 363,
+			"creation_year" : 2014,
+			"dataformat_id" : 2,
+			"dataoffset" : 327,
+			"filesource_id" : 0,
+			"global_encoding" : 0,
+			"global_encoding_base64" : "AAA=",
+			"header_size" : 227,
+			"major_version" : 1,
+			"maxx" : -2.8525125,
+			"maxy" : 4.5914125,
+			"maxz" : -0.60555,
+			"minor_version" : 2,
+			"minx" : -3.563475,
+			"miny" : 3.88045,
+			"minz" : -1.3165125,
+			"offset_x" : 0,
+			"offset_y" : 0,
+			"offset_z" : 0,
+			"project_id" : "00000000-0000-0000-0000-000000000000",
+			"scale_x" : 0.001,
+			"scale_y" : 0.001,
+			"scale_z" : 0.001,
+			"software_id" : "libLAS 1.8.0",
+			"spatialreference" : "",
+			"srs" : 
+			{
+				"compoundwkt" : "",
+				"horizontal" : "",
+				"isgeocentric" : false,
+				"isgeographic" : false,
+				"prettycompoundwkt" : "",
+				"prettywkt" : "",
+				"proj4" : "",
+				"units" : 
+				{
+					"horizontal" : "unknown",
+					"vertical" : ""
+				},
+				"vertical" : "",
+				"wkt" : ""
+			},
+			"system_id" : "libLAS",
+			"vlr_0" : 
+			{
+				"data" : "AgAAAAICAAAAAAAAUMMAAP////////////////////8CAAYAFAACAAgABgACAA==",
+				"description" : "http://laszip.org",
+				"record_id" : 22204,
+				"user_id" : "laszip encoded"
+			}
+		},
+		"origin" : 103,
+		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r251.laz",
+		"points" : 2
+	},
+	"r252.laz" : 
+	{
+		"bounds" : 
+		[
+			-3.563475,
+			4.5914125,
+			-2.027475,
+			-2.8525125,
+			5.302375,
+			-1.3165125
+		],
+		"metadata" : 
+		{
+			"comp_spatialreference" : "",
+			"compressed" : true,
+			"count" : 3107,
+			"creation_doy" : 363,
+			"creation_year" : 2014,
+			"dataformat_id" : 2,
+			"dataoffset" : 327,
+			"filesource_id" : 0,
+			"global_encoding" : 0,
+			"global_encoding_base64" : "AAA=",
+			"header_size" : 227,
+			"major_version" : 1,
+			"maxx" : -2.8525125,
+			"maxy" : 5.302375,
+			"maxz" : -1.3165125,
+			"minor_version" : 2,
+			"minx" : -3.563475,
+			"miny" : 4.5914125,
+			"minz" : -2.027475,
+			"offset_x" : 0,
+			"offset_y" : 0,
+			"offset_z" : 0,
+			"project_id" : "00000000-0000-0000-0000-000000000000",
+			"scale_x" : 0.001,
+			"scale_y" : 0.001,
+			"scale_z" : 0.001,
+			"software_id" : "libLAS 1.8.0",
+			"spatialreference" : "",
+			"srs" : 
+			{
+				"compoundwkt" : "",
+				"horizontal" : "",
+				"isgeocentric" : false,
+				"isgeographic" : false,
+				"prettycompoundwkt" : "",
+				"prettywkt" : "",
+				"proj4" : "",
+				"units" : 
+				{
+					"horizontal" : "unknown",
+					"vertical" : ""
+				},
+				"vertical" : "",
+				"wkt" : ""
+			},
+			"system_id" : "libLAS",
+			"vlr_0" : 
+			{
+				"data" : "AgAAAAICAAAAAAAAUMMAAP////////////////////8CAAYAFAACAAgABgACAA==",
+				"description" : "http://laszip.org",
+				"record_id" : 22204,
+				"user_id" : "laszip encoded"
+			}
+		},
+		"origin" : 104,
+		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r252.laz",
+		"points" : 3107
+	},
+	"r253.laz" : 
+	{
+		"bounds" : 
+		[
+			-3.563475,
+			4.5914125,
+			-1.3165125,
+			-2.8525125,
+			5.302375,
+			-0.60555
+		],
+		"metadata" : 
+		{
+			"comp_spatialreference" : "",
+			"compressed" : true,
+			"count" : 174,
+			"creation_doy" : 363,
+			"creation_year" : 2014,
+			"dataformat_id" : 2,
+			"dataoffset" : 327,
+			"filesource_id" : 0,
+			"global_encoding" : 0,
+			"global_encoding_base64" : "AAA=",
+			"header_size" : 227,
+			"major_version" : 1,
+			"maxx" : -2.8525125,
+			"maxy" : 5.302375,
+			"maxz" : -0.60555,
+			"minor_version" : 2,
+			"minx" : -3.563475,
+			"miny" : 4.5914125,
+			"minz" : -1.3165125,
+			"offset_x" : 0,
+			"offset_y" : 0,
+			"offset_z" : 0,
+			"project_id" : "00000000-0000-0000-0000-000000000000",
+			"scale_x" : 0.001,
+			"scale_y" : 0.001,
+			"scale_z" : 0.001,
+			"software_id" : "libLAS 1.8.0",
+			"spatialreference" : "",
+			"srs" : 
+			{
+				"compoundwkt" : "",
+				"horizontal" : "",
+				"isgeocentric" : false,
+				"isgeographic" : false,
+				"prettycompoundwkt" : "",
+				"prettywkt" : "",
+				"proj4" : "",
+				"units" : 
+				{
+					"horizontal" : "unknown",
+					"vertical" : ""
+				},
+				"vertical" : "",
+				"wkt" : ""
+			},
+			"system_id" : "libLAS",
+			"vlr_0" : 
+			{
+				"data" : "AgAAAAICAAAAAAAAUMMAAP////////////////////8CAAYAFAACAAgABgACAA==",
+				"description" : "http://laszip.org",
+				"record_id" : 22204,
+				"user_id" : "laszip encoded"
+			}
+		},
+		"origin" : 105,
+		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r253.laz",
+		"points" : 174
+	},
+	"r254.laz" : 
+	{
+		"bounds" : 
+		[
+			-2.8525125,
+			3.88045,
+			-2.027475,
+			-2.14155,
+			4.5914125,
+			-1.3165125
+		],
+		"metadata" : 
+		{
+			"comp_spatialreference" : "",
+			"compressed" : true,
+			"count" : 5054,
+			"creation_doy" : 363,
+			"creation_year" : 2014,
+			"dataformat_id" : 2,
+			"dataoffset" : 327,
+			"filesource_id" : 0,
+			"global_encoding" : 0,
+			"global_encoding_base64" : "AAA=",
+			"header_size" : 227,
+			"major_version" : 1,
+			"maxx" : -2.14155,
+			"maxy" : 4.5914125,
+			"maxz" : -1.3165125,
+			"minor_version" : 2,
+			"minx" : -2.8525125,
+			"miny" : 3.88045,
+			"minz" : -2.027475,
+			"offset_x" : 0,
+			"offset_y" : 0,
+			"offset_z" : 0,
+			"project_id" : "00000000-0000-0000-0000-000000000000",
+			"scale_x" : 0.001,
+			"scale_y" : 0.001,
+			"scale_z" : 0.001,
+			"software_id" : "libLAS 1.8.0",
+			"spatialreference" : "",
+			"srs" : 
+			{
+				"compoundwkt" : "",
+				"horizontal" : "",
+				"isgeocentric" : false,
+				"isgeographic" : false,
+				"prettycompoundwkt" : "",
+				"prettywkt" : "",
+				"proj4" : "",
+				"units" : 
+				{
+					"horizontal" : "unknown",
+					"vertical" : ""
+				},
+				"vertical" : "",
+				"wkt" : ""
+			},
+			"system_id" : "libLAS",
+			"vlr_0" : 
+			{
+				"data" : "AgAAAAICAAAAAAAAUMMAAP////////////////////8CAAYAFAACAAgABgACAA==",
+				"description" : "http://laszip.org",
+				"record_id" : 22204,
+				"user_id" : "laszip encoded"
+			}
+		},
+		"origin" : 106,
+		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r254.laz",
+		"points" : 5054
+	},
+	"r255.laz" : 
+	{
+		"bounds" : 
+		[
+			-2.8525125,
+			3.88045,
+			-1.3165125,
+			-2.14155,
+			4.5914125,
+			-0.60555
+		],
+		"metadata" : 
+		{
+			"comp_spatialreference" : "",
+			"compressed" : true,
+			"count" : 4173,
+			"creation_doy" : 363,
+			"creation_year" : 2014,
+			"dataformat_id" : 2,
+			"dataoffset" : 327,
+			"filesource_id" : 0,
+			"global_encoding" : 0,
+			"global_encoding_base64" : "AAA=",
+			"header_size" : 227,
+			"major_version" : 1,
+			"maxx" : -2.14155,
+			"maxy" : 4.5914125,
+			"maxz" : -0.60555,
+			"minor_version" : 2,
+			"minx" : -2.8525125,
+			"miny" : 3.88045,
+			"minz" : -1.3165125,
+			"offset_x" : 0,
+			"offset_y" : 0,
+			"offset_z" : 0,
+			"project_id" : "00000000-0000-0000-0000-000000000000",
+			"scale_x" : 0.001,
+			"scale_y" : 0.001,
+			"scale_z" : 0.001,
+			"software_id" : "libLAS 1.8.0",
+			"spatialreference" : "",
+			"srs" : 
+			{
+				"compoundwkt" : "",
+				"horizontal" : "",
+				"isgeocentric" : false,
+				"isgeographic" : false,
+				"prettycompoundwkt" : "",
+				"prettywkt" : "",
+				"proj4" : "",
+				"units" : 
+				{
+					"horizontal" : "unknown",
+					"vertical" : ""
+				},
+				"vertical" : "",
+				"wkt" : ""
+			},
+			"system_id" : "libLAS",
+			"vlr_0" : 
+			{
+				"data" : "AgAAAAICAAAAAAAAUMMAAP////////////////////8CAAYAFAACAAgABgACAA==",
+				"description" : "http://laszip.org",
+				"record_id" : 22204,
+				"user_id" : "laszip encoded"
+			}
+		},
+		"origin" : 107,
+		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r255.laz",
+		"points" : 4173
+	},
+	"r256.laz" : 
+	{
+		"bounds" : 
+		[
+			-2.8525125,
+			4.5914125,
+			-2.027475,
+			-2.14155,
+			5.302375,
+			-1.3165125
+		],
+		"metadata" : 
+		{
+			"comp_spatialreference" : "",
+			"compressed" : true,
+			"count" : 3374,
+			"creation_doy" : 363,
+			"creation_year" : 2014,
+			"dataformat_id" : 2,
+			"dataoffset" : 327,
+			"filesource_id" : 0,
+			"global_encoding" : 0,
+			"global_encoding_base64" : "AAA=",
+			"header_size" : 227,
+			"major_version" : 1,
+			"maxx" : -2.14155,
+			"maxy" : 5.302375,
+			"maxz" : -1.3165125,
+			"minor_version" : 2,
+			"minx" : -2.8525125,
+			"miny" : 4.5914125,
+			"minz" : -2.027475,
+			"offset_x" : 0,
+			"offset_y" : 0,
+			"offset_z" : 0,
+			"project_id" : "00000000-0000-0000-0000-000000000000",
+			"scale_x" : 0.001,
+			"scale_y" : 0.001,
+			"scale_z" : 0.001,
+			"software_id" : "libLAS 1.8.0",
+			"spatialreference" : "",
+			"srs" : 
+			{
+				"compoundwkt" : "",
+				"horizontal" : "",
+				"isgeocentric" : false,
+				"isgeographic" : false,
+				"prettycompoundwkt" : "",
+				"prettywkt" : "",
+				"proj4" : "",
+				"units" : 
+				{
+					"horizontal" : "unknown",
+					"vertical" : ""
+				},
+				"vertical" : "",
+				"wkt" : ""
+			},
+			"system_id" : "libLAS",
+			"vlr_0" : 
+			{
+				"data" : "AgAAAAICAAAAAAAAUMMAAP////////////////////8CAAYAFAACAAgABgACAA==",
+				"description" : "http://laszip.org",
+				"record_id" : 22204,
+				"user_id" : "laszip encoded"
+			}
+		},
+		"origin" : 108,
+		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r256.laz",
+		"points" : 3374
+	},
+	"r257.laz" : 
+	{
+		"bounds" : 
+		[
+			-2.8525125,
+			4.5914125,
+			-1.3165125,
+			-2.14155,
+			5.302375,
+			-0.60555
+		],
+		"metadata" : 
+		{
+			"comp_spatialreference" : "",
+			"compressed" : true,
+			"count" : 3301,
+			"creation_doy" : 363,
+			"creation_year" : 2014,
+			"dataformat_id" : 2,
+			"dataoffset" : 327,
+			"filesource_id" : 0,
+			"global_encoding" : 0,
+			"global_encoding_base64" : "AAA=",
+			"header_size" : 227,
+			"major_version" : 1,
+			"maxx" : -2.14155,
+			"maxy" : 5.302375,
+			"maxz" : -0.60555,
+			"minor_version" : 2,
+			"minx" : -2.8525125,
+			"miny" : 4.5914125,
+			"minz" : -1.3165125,
+			"offset_x" : 0,
+			"offset_y" : 0,
+			"offset_z" : 0,
+			"project_id" : "00000000-0000-0000-0000-000000000000",
+			"scale_x" : 0.001,
+			"scale_y" : 0.001,
+			"scale_z" : 0.001,
+			"software_id" : "libLAS 1.8.0",
+			"spatialreference" : "",
+			"srs" : 
+			{
+				"compoundwkt" : "",
+				"horizontal" : "",
+				"isgeocentric" : false,
+				"isgeographic" : false,
+				"prettycompoundwkt" : "",
+				"prettywkt" : "",
+				"proj4" : "",
+				"units" : 
+				{
+					"horizontal" : "unknown",
+					"vertical" : ""
+				},
+				"vertical" : "",
+				"wkt" : ""
+			},
+			"system_id" : "libLAS",
+			"vlr_0" : 
+			{
+				"data" : "AgAAAAICAAAAAAAAUMMAAP////////////////////8CAAYAFAACAAgABgACAA==",
+				"description" : "http://laszip.org",
+				"record_id" : 22204,
+				"user_id" : "laszip encoded"
+			}
+		},
+		"origin" : 109,
+		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r257.laz",
+		"points" : 3301
+	},
+	"r26.laz" : 
+	{
+		"bounds" : 
+		[
+			-3.563475,
+			5.302375,
+			-3.4494,
+			-2.14155,
+			6.7243,
+			-2.027475
+		],
+		"metadata" : 
+		{
+			"comp_spatialreference" : "",
+			"compressed" : true,
+			"count" : 1278,
+			"creation_doy" : 363,
+			"creation_year" : 2014,
+			"dataformat_id" : 2,
+			"dataoffset" : 327,
+			"filesource_id" : 0,
+			"global_encoding" : 0,
+			"global_encoding_base64" : "AAA=",
+			"header_size" : 227,
+			"major_version" : 1,
+			"maxx" : -2.14155,
+			"maxy" : 6.7243,
+			"maxz" : -2.027475,
+			"minor_version" : 2,
+			"minx" : -3.563475,
+			"miny" : 5.302375,
+			"minz" : -3.4494,
+			"offset_x" : 0,
+			"offset_y" : 0,
+			"offset_z" : 0,
+			"project_id" : "00000000-0000-0000-0000-000000000000",
+			"scale_x" : 0.001,
+			"scale_y" : 0.001,
+			"scale_z" : 0.001,
+			"software_id" : "libLAS 1.8.0",
+			"spatialreference" : "",
+			"srs" : 
+			{
+				"compoundwkt" : "",
+				"horizontal" : "",
+				"isgeocentric" : false,
+				"isgeographic" : false,
+				"prettycompoundwkt" : "",
+				"prettywkt" : "",
+				"proj4" : "",
+				"units" : 
+				{
+					"horizontal" : "unknown",
+					"vertical" : ""
+				},
+				"vertical" : "",
+				"wkt" : ""
+			},
+			"system_id" : "libLAS",
+			"vlr_0" : 
+			{
+				"data" : "AgAAAAICAAAAAAAAUMMAAP////////////////////8CAAYAFAACAAgABgACAA==",
+				"description" : "http://laszip.org",
+				"record_id" : 22204,
+				"user_id" : "laszip encoded"
+			}
+		},
+		"origin" : 110,
+		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r26.laz",
+		"points" : 1278
+	},
+	"r260.laz" : 
+	{
+		"bounds" : 
+		[
+			-3.563475,
+			5.302375,
+			-3.4494,
+			-2.8525125,
+			6.0133375,
+			-2.7384375
+		],
+		"metadata" : 
+		{
+			"comp_spatialreference" : "",
+			"compressed" : true,
+			"count" : 38,
+			"creation_doy" : 363,
+			"creation_year" : 2014,
+			"dataformat_id" : 2,
+			"dataoffset" : 327,
+			"filesource_id" : 0,
+			"global_encoding" : 0,
+			"global_encoding_base64" : "AAA=",
+			"header_size" : 227,
+			"major_version" : 1,
+			"maxx" : -2.8525125,
+			"maxy" : 6.0133375,
+			"maxz" : -2.7384375,
+			"minor_version" : 2,
+			"minx" : -3.563475,
+			"miny" : 5.302375,
+			"minz" : -3.4494,
+			"offset_x" : 0,
+			"offset_y" : 0,
+			"offset_z" : 0,
+			"project_id" : "00000000-0000-0000-0000-000000000000",
+			"scale_x" : 0.001,
+			"scale_y" : 0.001,
+			"scale_z" : 0.001,
+			"software_id" : "libLAS 1.8.0",
+			"spatialreference" : "",
+			"srs" : 
+			{
+				"compoundwkt" : "",
+				"horizontal" : "",
+				"isgeocentric" : false,
+				"isgeographic" : false,
+				"prettycompoundwkt" : "",
+				"prettywkt" : "",
+				"proj4" : "",
+				"units" : 
+				{
+					"horizontal" : "unknown",
+					"vertical" : ""
+				},
+				"vertical" : "",
+				"wkt" : ""
+			},
+			"system_id" : "libLAS",
+			"vlr_0" : 
+			{
+				"data" : "AgAAAAICAAAAAAAAUMMAAP////////////////////8CAAYAFAACAAgABgACAA==",
+				"description" : "http://laszip.org",
+				"record_id" : 22204,
+				"user_id" : "laszip encoded"
+			}
+		},
+		"origin" : 111,
+		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r260.laz",
+		"points" : 38
+	},
+	"r261.laz" : 
+	{
+		"bounds" : 
+		[
+			-3.563475,
+			5.302375,
+			-2.7384375,
+			-2.8525125,
+			6.0133375,
+			-2.027475
+		],
+		"metadata" : 
+		{
+			"comp_spatialreference" : "",
+			"compressed" : true,
+			"count" : 1030,
+			"creation_doy" : 363,
+			"creation_year" : 2014,
+			"dataformat_id" : 2,
+			"dataoffset" : 327,
+			"filesource_id" : 0,
+			"global_encoding" : 0,
+			"global_encoding_base64" : "AAA=",
+			"header_size" : 227,
+			"major_version" : 1,
+			"maxx" : -2.8525125,
+			"maxy" : 6.0133375,
+			"maxz" : -2.027475,
+			"minor_version" : 2,
+			"minx" : -3.563475,
+			"miny" : 5.302375,
+			"minz" : -2.7384375,
+			"offset_x" : 0,
+			"offset_y" : 0,
+			"offset_z" : 0,
+			"project_id" : "00000000-0000-0000-0000-000000000000",
+			"scale_x" : 0.001,
+			"scale_y" : 0.001,
+			"scale_z" : 0.001,
+			"software_id" : "libLAS 1.8.0",
+			"spatialreference" : "",
+			"srs" : 
+			{
+				"compoundwkt" : "",
+				"horizontal" : "",
+				"isgeocentric" : false,
+				"isgeographic" : false,
+				"prettycompoundwkt" : "",
+				"prettywkt" : "",
+				"proj4" : "",
+				"units" : 
+				{
+					"horizontal" : "unknown",
+					"vertical" : ""
+				},
+				"vertical" : "",
+				"wkt" : ""
+			},
+			"system_id" : "libLAS",
+			"vlr_0" : 
+			{
+				"data" : "AgAAAAICAAAAAAAAUMMAAP////////////////////8CAAYAFAACAAgABgACAA==",
+				"description" : "http://laszip.org",
+				"record_id" : 22204,
+				"user_id" : "laszip encoded"
+			}
+		},
+		"origin" : 112,
+		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r261.laz",
+		"points" : 1030
+	},
+	"r262.laz" : 
+	{
+		"bounds" : 
+		[
+			-3.563475,
+			6.0133375,
+			-3.4494,
+			-2.8525125,
+			6.7243,
+			-2.7384375
+		],
+		"metadata" : 
+		{
+			"comp_spatialreference" : "",
+			"compressed" : true,
+			"count" : 4,
+			"creation_doy" : 363,
+			"creation_year" : 2014,
+			"dataformat_id" : 2,
+			"dataoffset" : 327,
+			"filesource_id" : 0,
+			"global_encoding" : 0,
+			"global_encoding_base64" : "AAA=",
+			"header_size" : 227,
+			"major_version" : 1,
+			"maxx" : -2.8525125,
+			"maxy" : 6.7243,
+			"maxz" : -2.7384375,
+			"minor_version" : 2,
+			"minx" : -3.563475,
+			"miny" : 6.0133375,
+			"minz" : -3.4494,
+			"offset_x" : 0,
+			"offset_y" : 0,
+			"offset_z" : 0,
+			"project_id" : "00000000-0000-0000-0000-000000000000",
+			"scale_x" : 0.001,
+			"scale_y" : 0.001,
+			"scale_z" : 0.001,
+			"software_id" : "libLAS 1.8.0",
+			"spatialreference" : "",
+			"srs" : 
+			{
+				"compoundwkt" : "",
+				"horizontal" : "",
+				"isgeocentric" : false,
+				"isgeographic" : false,
+				"prettycompoundwkt" : "",
+				"prettywkt" : "",
+				"proj4" : "",
+				"units" : 
+				{
+					"horizontal" : "unknown",
+					"vertical" : ""
+				},
+				"vertical" : "",
+				"wkt" : ""
+			},
+			"system_id" : "libLAS",
+			"vlr_0" : 
+			{
+				"data" : "AgAAAAICAAAAAAAAUMMAAP////////////////////8CAAYAFAACAAgABgACAA==",
+				"description" : "http://laszip.org",
+				"record_id" : 22204,
+				"user_id" : "laszip encoded"
+			}
+		},
+		"origin" : 113,
+		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r262.laz",
+		"points" : 4
+	},
+	"r263.laz" : 
+	{
+		"bounds" : 
+		[
+			-3.563475,
+			6.0133375,
+			-2.7384375,
+			-2.8525125,
+			6.7243,
+			-2.027475
+		],
+		"metadata" : 
+		{
+			"comp_spatialreference" : "",
+			"compressed" : true,
+			"count" : 4,
+			"creation_doy" : 363,
+			"creation_year" : 2014,
+			"dataformat_id" : 2,
+			"dataoffset" : 327,
+			"filesource_id" : 0,
+			"global_encoding" : 0,
+			"global_encoding_base64" : "AAA=",
+			"header_size" : 227,
+			"major_version" : 1,
+			"maxx" : -2.8525125,
+			"maxy" : 6.7243,
+			"maxz" : -2.027475,
+			"minor_version" : 2,
+			"minx" : -3.563475,
+			"miny" : 6.0133375,
+			"minz" : -2.7384375,
+			"offset_x" : 0,
+			"offset_y" : 0,
+			"offset_z" : 0,
+			"project_id" : "00000000-0000-0000-0000-000000000000",
+			"scale_x" : 0.001,
+			"scale_y" : 0.001,
+			"scale_z" : 0.001,
+			"software_id" : "libLAS 1.8.0",
+			"spatialreference" : "",
+			"srs" : 
+			{
+				"compoundwkt" : "",
+				"horizontal" : "",
+				"isgeocentric" : false,
+				"isgeographic" : false,
+				"prettycompoundwkt" : "",
+				"prettywkt" : "",
+				"proj4" : "",
+				"units" : 
+				{
+					"horizontal" : "unknown",
+					"vertical" : ""
+				},
+				"vertical" : "",
+				"wkt" : ""
+			},
+			"system_id" : "libLAS",
+			"vlr_0" : 
+			{
+				"data" : "AgAAAAICAAAAAAAAUMMAAP////////////////////8CAAYAFAACAAgABgACAA==",
+				"description" : "http://laszip.org",
+				"record_id" : 22204,
+				"user_id" : "laszip encoded"
+			}
+		},
+		"origin" : 114,
+		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r263.laz",
+		"points" : 4
+	},
+	"r265.laz" : 
+	{
+		"bounds" : 
+		[
+			-2.8525125,
+			5.302375,
+			-2.7384375,
+			-2.14155,
+			6.0133375,
+			-2.027475
+		],
+		"metadata" : 
+		{
+			"comp_spatialreference" : "",
+			"compressed" : true,
+			"count" : 2113,
+			"creation_doy" : 363,
+			"creation_year" : 2014,
+			"dataformat_id" : 2,
+			"dataoffset" : 327,
+			"filesource_id" : 0,
+			"global_encoding" : 0,
+			"global_encoding_base64" : "AAA=",
+			"header_size" : 227,
+			"major_version" : 1,
+			"maxx" : -2.14155,
+			"maxy" : 6.0133375,
+			"maxz" : -2.027475,
+			"minor_version" : 2,
+			"minx" : -2.8525125,
+			"miny" : 5.302375,
+			"minz" : -2.7384375,
+			"offset_x" : 0,
+			"offset_y" : 0,
+			"offset_z" : 0,
+			"project_id" : "00000000-0000-0000-0000-000000000000",
+			"scale_x" : 0.001,
+			"scale_y" : 0.001,
+			"scale_z" : 0.001,
+			"software_id" : "libLAS 1.8.0",
+			"spatialreference" : "",
+			"srs" : 
+			{
+				"compoundwkt" : "",
+				"horizontal" : "",
+				"isgeocentric" : false,
+				"isgeographic" : false,
+				"prettycompoundwkt" : "",
+				"prettywkt" : "",
+				"proj4" : "",
+				"units" : 
+				{
+					"horizontal" : "unknown",
+					"vertical" : ""
+				},
+				"vertical" : "",
+				"wkt" : ""
+			},
+			"system_id" : "libLAS",
+			"vlr_0" : 
+			{
+				"data" : "AgAAAAICAAAAAAAAUMMAAP////////////////////8CAAYAFAACAAgABgACAA==",
+				"description" : "http://laszip.org",
+				"record_id" : 22204,
+				"user_id" : "laszip encoded"
+			}
+		},
+		"origin" : 115,
+		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r265.laz",
+		"points" : 2113
+	},
+	"r266.laz" : 
+	{
+		"bounds" : 
+		[
+			-2.8525125,
+			6.0133375,
+			-3.4494,
+			-2.14155,
+			6.7243,
+			-2.7384375
+		],
+		"metadata" : 
+		{
+			"comp_spatialreference" : "",
+			"compressed" : true,
+			"count" : 5,
+			"creation_doy" : 363,
+			"creation_year" : 2014,
+			"dataformat_id" : 2,
+			"dataoffset" : 327,
+			"filesource_id" : 0,
+			"global_encoding" : 0,
+			"global_encoding_base64" : "AAA=",
+			"header_size" : 227,
+			"major_version" : 1,
+			"maxx" : -2.14155,
+			"maxy" : 6.7243,
+			"maxz" : -2.7384375,
+			"minor_version" : 2,
+			"minx" : -2.8525125,
+			"miny" : 6.0133375,
+			"minz" : -3.4494,
+			"offset_x" : 0,
+			"offset_y" : 0,
+			"offset_z" : 0,
+			"project_id" : "00000000-0000-0000-0000-000000000000",
+			"scale_x" : 0.001,
+			"scale_y" : 0.001,
+			"scale_z" : 0.001,
+			"software_id" : "libLAS 1.8.0",
+			"spatialreference" : "",
+			"srs" : 
+			{
+				"compoundwkt" : "",
+				"horizontal" : "",
+				"isgeocentric" : false,
+				"isgeographic" : false,
+				"prettycompoundwkt" : "",
+				"prettywkt" : "",
+				"proj4" : "",
+				"units" : 
+				{
+					"horizontal" : "unknown",
+					"vertical" : ""
+				},
+				"vertical" : "",
+				"wkt" : ""
+			},
+			"system_id" : "libLAS",
+			"vlr_0" : 
+			{
+				"data" : "AgAAAAICAAAAAAAAUMMAAP////////////////////8CAAYAFAACAAgABgACAA==",
+				"description" : "http://laszip.org",
+				"record_id" : 22204,
+				"user_id" : "laszip encoded"
+			}
+		},
+		"origin" : 116,
+		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r266.laz",
+		"points" : 5
+	},
+	"r267.laz" : 
+	{
+		"bounds" : 
+		[
+			-2.8525125,
+			6.0133375,
+			-2.7384375,
+			-2.14155,
+			6.7243,
+			-2.027475
+		],
+		"metadata" : 
+		{
+			"comp_spatialreference" : "",
+			"compressed" : true,
+			"count" : 955,
+			"creation_doy" : 363,
+			"creation_year" : 2014,
+			"dataformat_id" : 2,
+			"dataoffset" : 327,
+			"filesource_id" : 0,
+			"global_encoding" : 0,
+			"global_encoding_base64" : "AAA=",
+			"header_size" : 227,
+			"major_version" : 1,
+			"maxx" : -2.14155,
+			"maxy" : 6.7243,
+			"maxz" : -2.027475,
+			"minor_version" : 2,
+			"minx" : -2.8525125,
+			"miny" : 6.0133375,
+			"minz" : -2.7384375,
+			"offset_x" : 0,
+			"offset_y" : 0,
+			"offset_z" : 0,
+			"project_id" : "00000000-0000-0000-0000-000000000000",
+			"scale_x" : 0.001,
+			"scale_y" : 0.001,
+			"scale_z" : 0.001,
+			"software_id" : "libLAS 1.8.0",
+			"spatialreference" : "",
+			"srs" : 
+			{
+				"compoundwkt" : "",
+				"horizontal" : "",
+				"isgeocentric" : false,
+				"isgeographic" : false,
+				"prettycompoundwkt" : "",
+				"prettywkt" : "",
+				"proj4" : "",
+				"units" : 
+				{
+					"horizontal" : "unknown",
+					"vertical" : ""
+				},
+				"vertical" : "",
+				"wkt" : ""
+			},
+			"system_id" : "libLAS",
+			"vlr_0" : 
+			{
+				"data" : "AgAAAAICAAAAAAAAUMMAAP////////////////////8CAAYAFAACAAgABgACAA==",
+				"description" : "http://laszip.org",
+				"record_id" : 22204,
+				"user_id" : "laszip encoded"
+			}
+		},
+		"origin" : 117,
+		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r267.laz",
+		"points" : 955
+	},
+	"r27.laz" : 
+	{
+		"bounds" : 
+		[
+			-3.563475,
+			5.302375,
+			-2.027475,
+			-2.14155,
+			6.7243,
+			-0.60555
+		],
+		"metadata" : 
+		{
+			"comp_spatialreference" : "",
+			"compressed" : true,
+			"count" : 3520,
+			"creation_doy" : 363,
+			"creation_year" : 2014,
+			"dataformat_id" : 2,
+			"dataoffset" : 327,
+			"filesource_id" : 0,
+			"global_encoding" : 0,
+			"global_encoding_base64" : "AAA=",
+			"header_size" : 227,
+			"major_version" : 1,
+			"maxx" : -2.14155,
+			"maxy" : 6.7243,
+			"maxz" : -0.60555,
+			"minor_version" : 2,
+			"minx" : -3.563475,
+			"miny" : 5.302375,
+			"minz" : -2.027475,
+			"offset_x" : 0,
+			"offset_y" : 0,
+			"offset_z" : 0,
+			"project_id" : "00000000-0000-0000-0000-000000000000",
+			"scale_x" : 0.001,
+			"scale_y" : 0.001,
+			"scale_z" : 0.001,
+			"software_id" : "libLAS 1.8.0",
+			"spatialreference" : "",
+			"srs" : 
+			{
+				"compoundwkt" : "",
+				"horizontal" : "",
+				"isgeocentric" : false,
+				"isgeographic" : false,
+				"prettycompoundwkt" : "",
+				"prettywkt" : "",
+				"proj4" : "",
+				"units" : 
+				{
+					"horizontal" : "unknown",
+					"vertical" : ""
+				},
+				"vertical" : "",
+				"wkt" : ""
+			},
+			"system_id" : "libLAS",
+			"vlr_0" : 
+			{
+				"data" : "AgAAAAICAAAAAAAAUMMAAP////////////////////8CAAYAFAACAAgABgACAA==",
+				"description" : "http://laszip.org",
+				"record_id" : 22204,
+				"user_id" : "laszip encoded"
+			}
+		},
+		"origin" : 118,
+		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r27.laz",
+		"points" : 3520
+	},
+	"r270.laz" : 
+	{
+		"bounds" : 
+		[
+			-3.563475,
+			5.302375,
+			-2.027475,
+			-2.8525125,
+			6.0133375,
+			-1.3165125
+		],
+		"metadata" : 
+		{
+			"comp_spatialreference" : "",
+			"compressed" : true,
+			"count" : 15,
+			"creation_doy" : 363,
+			"creation_year" : 2014,
+			"dataformat_id" : 2,
+			"dataoffset" : 327,
+			"filesource_id" : 0,
+			"global_encoding" : 0,
+			"global_encoding_base64" : "AAA=",
+			"header_size" : 227,
+			"major_version" : 1,
+			"maxx" : -2.8525125,
+			"maxy" : 6.0133375,
+			"maxz" : -1.3165125,
+			"minor_version" : 2,
+			"minx" : -3.563475,
+			"miny" : 5.302375,
+			"minz" : -2.027475,
+			"offset_x" : 0,
+			"offset_y" : 0,
+			"offset_z" : 0,
+			"project_id" : "00000000-0000-0000-0000-000000000000",
+			"scale_x" : 0.001,
+			"scale_y" : 0.001,
+			"scale_z" : 0.001,
+			"software_id" : "libLAS 1.8.0",
+			"spatialreference" : "",
+			"srs" : 
+			{
+				"compoundwkt" : "",
+				"horizontal" : "",
+				"isgeocentric" : false,
+				"isgeographic" : false,
+				"prettycompoundwkt" : "",
+				"prettywkt" : "",
+				"proj4" : "",
+				"units" : 
+				{
+					"horizontal" : "unknown",
+					"vertical" : ""
+				},
+				"vertical" : "",
+				"wkt" : ""
+			},
+			"system_id" : "libLAS",
+			"vlr_0" : 
+			{
+				"data" : "AgAAAAICAAAAAAAAUMMAAP////////////////////8CAAYAFAACAAgABgACAA==",
+				"description" : "http://laszip.org",
+				"record_id" : 22204,
+				"user_id" : "laszip encoded"
+			}
+		},
+		"origin" : 119,
+		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r270.laz",
+		"points" : 15
+	},
+	"r271.laz" : 
+	{
+		"bounds" : 
+		[
+			-3.563475,
+			5.302375,
+			-1.3165125,
+			-2.8525125,
+			6.0133375,
+			-0.60555
+		],
+		"metadata" : 
+		{
+			"comp_spatialreference" : "",
+			"compressed" : true,
+			"count" : 192,
+			"creation_doy" : 363,
+			"creation_year" : 2014,
+			"dataformat_id" : 2,
+			"dataoffset" : 327,
+			"filesource_id" : 0,
+			"global_encoding" : 0,
+			"global_encoding_base64" : "AAA=",
+			"header_size" : 227,
+			"major_version" : 1,
+			"maxx" : -2.8525125,
+			"maxy" : 6.0133375,
+			"maxz" : -0.60555,
+			"minor_version" : 2,
+			"minx" : -3.563475,
+			"miny" : 5.302375,
+			"minz" : -1.3165125,
+			"offset_x" : 0,
+			"offset_y" : 0,
+			"offset_z" : 0,
+			"project_id" : "00000000-0000-0000-0000-000000000000",
+			"scale_x" : 0.001,
+			"scale_y" : 0.001,
+			"scale_z" : 0.001,
+			"software_id" : "libLAS 1.8.0",
+			"spatialreference" : "",
+			"srs" : 
+			{
+				"compoundwkt" : "",
+				"horizontal" : "",
+				"isgeocentric" : false,
+				"isgeographic" : false,
+				"prettycompoundwkt" : "",
+				"prettywkt" : "",
+				"proj4" : "",
+				"units" : 
+				{
+					"horizontal" : "unknown",
+					"vertical" : ""
+				},
+				"vertical" : "",
+				"wkt" : ""
+			},
+			"system_id" : "libLAS",
+			"vlr_0" : 
+			{
+				"data" : "AgAAAAICAAAAAAAAUMMAAP////////////////////8CAAYAFAACAAgABgACAA==",
+				"description" : "http://laszip.org",
+				"record_id" : 22204,
+				"user_id" : "laszip encoded"
+			}
+		},
+		"origin" : 120,
+		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r271.laz",
+		"points" : 192
+	},
+	"r272.laz" : 
+	{
+		"bounds" : 
+		[
+			-3.563475,
+			6.0133375,
+			-2.027475,
+			-2.8525125,
+			6.7243,
+			-1.3165125
+		],
+		"metadata" : 
+		{
+			"comp_spatialreference" : "",
+			"compressed" : true,
+			"count" : 11,
+			"creation_doy" : 363,
+			"creation_year" : 2014,
+			"dataformat_id" : 2,
+			"dataoffset" : 327,
+			"filesource_id" : 0,
+			"global_encoding" : 0,
+			"global_encoding_base64" : "AAA=",
+			"header_size" : 227,
+			"major_version" : 1,
+			"maxx" : -2.8525125,
+			"maxy" : 6.7243,
+			"maxz" : -1.3165125,
+			"minor_version" : 2,
+			"minx" : -3.563475,
+			"miny" : 6.0133375,
+			"minz" : -2.027475,
+			"offset_x" : 0,
+			"offset_y" : 0,
+			"offset_z" : 0,
+			"project_id" : "00000000-0000-0000-0000-000000000000",
+			"scale_x" : 0.001,
+			"scale_y" : 0.001,
+			"scale_z" : 0.001,
+			"software_id" : "libLAS 1.8.0",
+			"spatialreference" : "",
+			"srs" : 
+			{
+				"compoundwkt" : "",
+				"horizontal" : "",
+				"isgeocentric" : false,
+				"isgeographic" : false,
+				"prettycompoundwkt" : "",
+				"prettywkt" : "",
+				"proj4" : "",
+				"units" : 
+				{
+					"horizontal" : "unknown",
+					"vertical" : ""
+				},
+				"vertical" : "",
+				"wkt" : ""
+			},
+			"system_id" : "libLAS",
+			"vlr_0" : 
+			{
+				"data" : "AgAAAAICAAAAAAAAUMMAAP////////////////////8CAAYAFAACAAgABgACAA==",
+				"description" : "http://laszip.org",
+				"record_id" : 22204,
+				"user_id" : "laszip encoded"
+			}
+		},
+		"origin" : 121,
+		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r272.laz",
+		"points" : 11
+	},
+	"r273.laz" : 
+	{
+		"bounds" : 
+		[
+			-3.563475,
+			6.0133375,
+			-1.3165125,
+			-2.8525125,
+			6.7243,
+			-0.60555
+		],
+		"metadata" : 
+		{
+			"comp_spatialreference" : "",
+			"compressed" : true,
+			"count" : 2292,
+			"creation_doy" : 363,
+			"creation_year" : 2014,
+			"dataformat_id" : 2,
+			"dataoffset" : 327,
+			"filesource_id" : 0,
+			"global_encoding" : 0,
+			"global_encoding_base64" : "AAA=",
+			"header_size" : 227,
+			"major_version" : 1,
+			"maxx" : -2.8525125,
+			"maxy" : 6.7243,
+			"maxz" : -0.60555,
+			"minor_version" : 2,
+			"minx" : -3.563475,
+			"miny" : 6.0133375,
+			"minz" : -1.3165125,
+			"offset_x" : 0,
+			"offset_y" : 0,
+			"offset_z" : 0,
+			"project_id" : "00000000-0000-0000-0000-000000000000",
+			"scale_x" : 0.001,
+			"scale_y" : 0.001,
+			"scale_z" : 0.001,
+			"software_id" : "libLAS 1.8.0",
+			"spatialreference" : "",
+			"srs" : 
+			{
+				"compoundwkt" : "",
+				"horizontal" : "",
+				"isgeocentric" : false,
+				"isgeographic" : false,
+				"prettycompoundwkt" : "",
+				"prettywkt" : "",
+				"proj4" : "",
+				"units" : 
+				{
+					"horizontal" : "unknown",
+					"vertical" : ""
+				},
+				"vertical" : "",
+				"wkt" : ""
+			},
+			"system_id" : "libLAS",
+			"vlr_0" : 
+			{
+				"data" : "AgAAAAICAAAAAAAAUMMAAP////////////////////8CAAYAFAACAAgABgACAA==",
+				"description" : "http://laszip.org",
+				"record_id" : 22204,
+				"user_id" : "laszip encoded"
+			}
+		},
+		"origin" : 122,
+		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r273.laz",
+		"points" : 2292
+	},
+	"r274.laz" : 
+	{
+		"bounds" : 
+		[
+			-2.8525125,
+			5.302375,
+			-2.027475,
+			-2.14155,
+			6.0133375,
+			-1.3165125
+		],
+		"metadata" : 
+		{
+			"comp_spatialreference" : "",
+			"compressed" : true,
+			"count" : 2567,
+			"creation_doy" : 363,
+			"creation_year" : 2014,
+			"dataformat_id" : 2,
+			"dataoffset" : 327,
+			"filesource_id" : 0,
+			"global_encoding" : 0,
+			"global_encoding_base64" : "AAA=",
+			"header_size" : 227,
+			"major_version" : 1,
+			"maxx" : -2.14155,
+			"maxy" : 6.0133375,
+			"maxz" : -1.3165125,
+			"minor_version" : 2,
+			"minx" : -2.8525125,
+			"miny" : 5.302375,
+			"minz" : -2.027475,
+			"offset_x" : 0,
+			"offset_y" : 0,
+			"offset_z" : 0,
+			"project_id" : "00000000-0000-0000-0000-000000000000",
+			"scale_x" : 0.001,
+			"scale_y" : 0.001,
+			"scale_z" : 0.001,
+			"software_id" : "libLAS 1.8.0",
+			"spatialreference" : "",
+			"srs" : 
+			{
+				"compoundwkt" : "",
+				"horizontal" : "",
+				"isgeocentric" : false,
+				"isgeographic" : false,
+				"prettycompoundwkt" : "",
+				"prettywkt" : "",
+				"proj4" : "",
+				"units" : 
+				{
+					"horizontal" : "unknown",
+					"vertical" : ""
+				},
+				"vertical" : "",
+				"wkt" : ""
+			},
+			"system_id" : "libLAS",
+			"vlr_0" : 
+			{
+				"data" : "AgAAAAICAAAAAAAAUMMAAP////////////////////8CAAYAFAACAAgABgACAA==",
+				"description" : "http://laszip.org",
+				"record_id" : 22204,
+				"user_id" : "laszip encoded"
+			}
+		},
+		"origin" : 123,
+		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r274.laz",
+		"points" : 2567
+	},
+	"r275.laz" : 
+	{
+		"bounds" : 
+		[
+			-2.8525125,
+			5.302375,
+			-1.3165125,
+			-2.14155,
+			6.0133375,
+			-0.60555
+		],
+		"metadata" : 
+		{
+			"comp_spatialreference" : "",
+			"compressed" : true,
+			"count" : 3273,
+			"creation_doy" : 363,
+			"creation_year" : 2014,
+			"dataformat_id" : 2,
+			"dataoffset" : 327,
+			"filesource_id" : 0,
+			"global_encoding" : 0,
+			"global_encoding_base64" : "AAA=",
+			"header_size" : 227,
+			"major_version" : 1,
+			"maxx" : -2.14155,
+			"maxy" : 6.0133375,
+			"maxz" : -0.60555,
+			"minor_version" : 2,
+			"minx" : -2.8525125,
+			"miny" : 5.302375,
+			"minz" : -1.3165125,
+			"offset_x" : 0,
+			"offset_y" : 0,
+			"offset_z" : 0,
+			"project_id" : "00000000-0000-0000-0000-000000000000",
+			"scale_x" : 0.001,
+			"scale_y" : 0.001,
+			"scale_z" : 0.001,
+			"software_id" : "libLAS 1.8.0",
+			"spatialreference" : "",
+			"srs" : 
+			{
+				"compoundwkt" : "",
+				"horizontal" : "",
+				"isgeocentric" : false,
+				"isgeographic" : false,
+				"prettycompoundwkt" : "",
+				"prettywkt" : "",
+				"proj4" : "",
+				"units" : 
+				{
+					"horizontal" : "unknown",
+					"vertical" : ""
+				},
+				"vertical" : "",
+				"wkt" : ""
+			},
+			"system_id" : "libLAS",
+			"vlr_0" : 
+			{
+				"data" : "AgAAAAICAAAAAAAAUMMAAP////////////////////8CAAYAFAACAAgABgACAA==",
+				"description" : "http://laszip.org",
+				"record_id" : 22204,
+				"user_id" : "laszip encoded"
+			}
+		},
+		"origin" : 124,
+		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r275.laz",
+		"points" : 3273
+	},
+	"r276.laz" : 
+	{
+		"bounds" : 
+		[
+			-2.8525125,
+			6.0133375,
+			-2.027475,
+			-2.14155,
+			6.7243,
+			-1.3165125
+		],
+		"metadata" : 
+		{
+			"comp_spatialreference" : "",
+			"compressed" : true,
+			"count" : 1538,
+			"creation_doy" : 363,
+			"creation_year" : 2014,
+			"dataformat_id" : 2,
+			"dataoffset" : 327,
+			"filesource_id" : 0,
+			"global_encoding" : 0,
+			"global_encoding_base64" : "AAA=",
+			"header_size" : 227,
+			"major_version" : 1,
+			"maxx" : -2.14155,
+			"maxy" : 6.7243,
+			"maxz" : -1.3165125,
+			"minor_version" : 2,
+			"minx" : -2.8525125,
+			"miny" : 6.0133375,
+			"minz" : -2.027475,
+			"offset_x" : 0,
+			"offset_y" : 0,
+			"offset_z" : 0,
+			"project_id" : "00000000-0000-0000-0000-000000000000",
+			"scale_x" : 0.001,
+			"scale_y" : 0.001,
+			"scale_z" : 0.001,
+			"software_id" : "libLAS 1.8.0",
+			"spatialreference" : "",
+			"srs" : 
+			{
+				"compoundwkt" : "",
+				"horizontal" : "",
+				"isgeocentric" : false,
+				"isgeographic" : false,
+				"prettycompoundwkt" : "",
+				"prettywkt" : "",
+				"proj4" : "",
+				"units" : 
+				{
+					"horizontal" : "unknown",
+					"vertical" : ""
+				},
+				"vertical" : "",
+				"wkt" : ""
+			},
+			"system_id" : "libLAS",
+			"vlr_0" : 
+			{
+				"data" : "AgAAAAICAAAAAAAAUMMAAP////////////////////8CAAYAFAACAAgABgACAA==",
+				"description" : "http://laszip.org",
+				"record_id" : 22204,
+				"user_id" : "laszip encoded"
+			}
+		},
+		"origin" : 125,
+		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r276.laz",
+		"points" : 1538
+	},
+	"r277.laz" : 
+	{
+		"bounds" : 
+		[
+			-2.8525125,
+			6.0133375,
+			-1.3165125,
+			-2.14155,
+			6.7243,
+			-0.60555
+		],
+		"metadata" : 
+		{
+			"comp_spatialreference" : "",
+			"compressed" : true,
+			"count" : 1056,
+			"creation_doy" : 363,
+			"creation_year" : 2014,
+			"dataformat_id" : 2,
+			"dataoffset" : 327,
+			"filesource_id" : 0,
+			"global_encoding" : 0,
+			"global_encoding_base64" : "AAA=",
+			"header_size" : 227,
+			"major_version" : 1,
+			"maxx" : -2.14155,
+			"maxy" : 6.7243,
+			"maxz" : -0.60555,
+			"minor_version" : 2,
+			"minx" : -2.8525125,
+			"miny" : 6.0133375,
+			"minz" : -1.3165125,
+			"offset_x" : 0,
+			"offset_y" : 0,
+			"offset_z" : 0,
+			"project_id" : "00000000-0000-0000-0000-000000000000",
+			"scale_x" : 0.001,
+			"scale_y" : 0.001,
+			"scale_z" : 0.001,
+			"software_id" : "libLAS 1.8.0",
+			"spatialreference" : "",
+			"srs" : 
+			{
+				"compoundwkt" : "",
+				"horizontal" : "",
+				"isgeocentric" : false,
+				"isgeographic" : false,
+				"prettycompoundwkt" : "",
+				"prettywkt" : "",
+				"proj4" : "",
+				"units" : 
+				{
+					"horizontal" : "unknown",
+					"vertical" : ""
+				},
+				"vertical" : "",
+				"wkt" : ""
+			},
+			"system_id" : "libLAS",
+			"vlr_0" : 
+			{
+				"data" : "AgAAAAICAAAAAAAAUMMAAP////////////////////8CAAYAFAACAAgABgACAA==",
+				"description" : "http://laszip.org",
+				"record_id" : 22204,
+				"user_id" : "laszip encoded"
+			}
+		},
+		"origin" : 126,
+		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r277.laz",
+		"points" : 1056
+	},
+	"r3.laz" : 
+	{
+		"bounds" : 
+		[
+			-4.9854,
+			3.88045,
+			-0.60555,
+			-2.14155,
+			6.7243,
+			2.2383
+		],
+		"metadata" : 
+		{
+			"comp_spatialreference" : "",
+			"compressed" : true,
+			"count" : 1350,
+			"creation_doy" : 363,
+			"creation_year" : 2014,
+			"dataformat_id" : 2,
+			"dataoffset" : 327,
+			"filesource_id" : 0,
+			"global_encoding" : 0,
+			"global_encoding_base64" : "AAA=",
+			"header_size" : 227,
+			"major_version" : 1,
+			"maxx" : -2.14155,
+			"maxy" : 6.7243,
+			"maxz" : 2.2383,
+			"minor_version" : 2,
+			"minx" : -4.9854,
+			"miny" : 3.88045,
+			"minz" : -0.60555,
+			"offset_x" : 0,
+			"offset_y" : 0,
+			"offset_z" : 0,
+			"project_id" : "00000000-0000-0000-0000-000000000000",
+			"scale_x" : 0.001,
+			"scale_y" : 0.001,
+			"scale_z" : 0.001,
+			"software_id" : "libLAS 1.8.0",
+			"spatialreference" : "",
+			"srs" : 
+			{
+				"compoundwkt" : "",
+				"horizontal" : "",
+				"isgeocentric" : false,
+				"isgeographic" : false,
+				"prettycompoundwkt" : "",
+				"prettywkt" : "",
+				"proj4" : "",
+				"units" : 
+				{
+					"horizontal" : "unknown",
+					"vertical" : ""
+				},
+				"vertical" : "",
+				"wkt" : ""
+			},
+			"system_id" : "libLAS",
+			"vlr_0" : 
+			{
+				"data" : "AgAAAAICAAAAAAAAUMMAAP////////////////////8CAAYAFAACAAgABgACAA==",
+				"description" : "http://laszip.org",
+				"record_id" : 22204,
+				"user_id" : "laszip encoded"
+			}
+		},
+		"origin" : 127,
+		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r3.laz",
+		"points" : 1350
+	},
+	"r30.laz" : 
+	{
+		"bounds" : 
+		[
+			-4.9854,
+			3.88045,
+			-0.60555,
+			-3.563475,
+			5.302375,
+			0.816375
+		],
+		"metadata" : 
+		{
+			"comp_spatialreference" : "",
+			"compressed" : true,
+			"count" : 14,
+			"creation_doy" : 363,
+			"creation_year" : 2014,
+			"dataformat_id" : 2,
+			"dataoffset" : 327,
+			"filesource_id" : 0,
+			"global_encoding" : 0,
+			"global_encoding_base64" : "AAA=",
+			"header_size" : 227,
+			"major_version" : 1,
+			"maxx" : -3.563475,
+			"maxy" : 5.302375,
+			"maxz" : 0.816375,
+			"minor_version" : 2,
+			"minx" : -4.9854,
+			"miny" : 3.88045,
+			"minz" : -0.60555,
+			"offset_x" : 0,
+			"offset_y" : 0,
+			"offset_z" : 0,
+			"project_id" : "00000000-0000-0000-0000-000000000000",
+			"scale_x" : 0.001,
+			"scale_y" : 0.001,
+			"scale_z" : 0.001,
+			"software_id" : "libLAS 1.8.0",
+			"spatialreference" : "",
+			"srs" : 
+			{
+				"compoundwkt" : "",
+				"horizontal" : "",
+				"isgeocentric" : false,
+				"isgeographic" : false,
+				"prettycompoundwkt" : "",
+				"prettywkt" : "",
+				"proj4" : "",
+				"units" : 
+				{
+					"horizontal" : "unknown",
+					"vertical" : ""
+				},
+				"vertical" : "",
+				"wkt" : ""
+			},
+			"system_id" : "libLAS",
+			"vlr_0" : 
+			{
+				"data" : "AgAAAAICAAAAAAAAUMMAAP////////////////////8CAAYAFAACAAgABgACAA==",
+				"description" : "http://laszip.org",
+				"record_id" : 22204,
+				"user_id" : "laszip encoded"
+			}
+		},
+		"origin" : 128,
+		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r30.laz",
+		"points" : 14
+	},
+	"r304.laz" : 
+	{
+		"bounds" : 
+		[
+			-4.2744375,
+			3.88045,
+			-0.60555,
+			-3.563475,
+			4.5914125,
+			0.1054125
+		],
+		"metadata" : 
+		{
+			"comp_spatialreference" : "",
+			"compressed" : true,
+			"count" : 9,
+			"creation_doy" : 363,
+			"creation_year" : 2014,
+			"dataformat_id" : 2,
+			"dataoffset" : 327,
+			"filesource_id" : 0,
+			"global_encoding" : 0,
+			"global_encoding_base64" : "AAA=",
+			"header_size" : 227,
+			"major_version" : 1,
+			"maxx" : -3.563475,
+			"maxy" : 4.5914125,
+			"maxz" : 0.1054125,
+			"minor_version" : 2,
+			"minx" : -4.2744375,
+			"miny" : 3.88045,
+			"minz" : -0.60555,
+			"offset_x" : 0,
+			"offset_y" : 0,
+			"offset_z" : 0,
+			"project_id" : "00000000-0000-0000-0000-000000000000",
+			"scale_x" : 0.001,
+			"scale_y" : 0.001,
+			"scale_z" : 0.001,
+			"software_id" : "libLAS 1.8.0",
+			"spatialreference" : "",
+			"srs" : 
+			{
+				"compoundwkt" : "",
+				"horizontal" : "",
+				"isgeocentric" : false,
+				"isgeographic" : false,
+				"prettycompoundwkt" : "",
+				"prettywkt" : "",
+				"proj4" : "",
+				"units" : 
+				{
+					"horizontal" : "unknown",
+					"vertical" : ""
+				},
+				"vertical" : "",
+				"wkt" : ""
+			},
+			"system_id" : "libLAS",
+			"vlr_0" : 
+			{
+				"data" : "AgAAAAICAAAAAAAAUMMAAP////////////////////8CAAYAFAACAAgABgACAA==",
+				"description" : "http://laszip.org",
+				"record_id" : 22204,
+				"user_id" : "laszip encoded"
+			}
+		},
+		"origin" : 129,
+		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r304.laz",
+		"points" : 9
+	},
+	"r305.laz" : 
+	{
+		"bounds" : 
+		[
+			-4.2744375,
+			3.88045,
+			0.1054125,
+			-3.563475,
+			4.5914125,
+			0.816375
+		],
+		"metadata" : 
+		{
+			"comp_spatialreference" : "",
+			"compressed" : true,
+			"count" : 15,
+			"creation_doy" : 363,
+			"creation_year" : 2014,
+			"dataformat_id" : 2,
+			"dataoffset" : 327,
+			"filesource_id" : 0,
+			"global_encoding" : 0,
+			"global_encoding_base64" : "AAA=",
+			"header_size" : 227,
+			"major_version" : 1,
+			"maxx" : -3.563475,
+			"maxy" : 4.5914125,
+			"maxz" : 0.816375,
+			"minor_version" : 2,
+			"minx" : -4.2744375,
+			"miny" : 3.88045,
+			"minz" : 0.1054125,
+			"offset_x" : 0,
+			"offset_y" : 0,
+			"offset_z" : 0,
+			"project_id" : "00000000-0000-0000-0000-000000000000",
+			"scale_x" : 0.001,
+			"scale_y" : 0.001,
+			"scale_z" : 0.001,
+			"software_id" : "libLAS 1.8.0",
+			"spatialreference" : "",
+			"srs" : 
+			{
+				"compoundwkt" : "",
+				"horizontal" : "",
+				"isgeocentric" : false,
+				"isgeographic" : false,
+				"prettycompoundwkt" : "",
+				"prettywkt" : "",
+				"proj4" : "",
+				"units" : 
+				{
+					"horizontal" : "unknown",
+					"vertical" : ""
+				},
+				"vertical" : "",
+				"wkt" : ""
+			},
+			"system_id" : "libLAS",
+			"vlr_0" : 
+			{
+				"data" : "AgAAAAICAAAAAAAAUMMAAP////////////////////8CAAYAFAACAAgABgACAA==",
+				"description" : "http://laszip.org",
+				"record_id" : 22204,
+				"user_id" : "laszip encoded"
+			}
+		},
+		"origin" : 130,
+		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r305.laz",
+		"points" : 15
+	},
+	"r32.laz" : 
+	{
+		"bounds" : 
+		[
+			-4.9854,
+			5.302375,
+			-0.60555,
+			-3.563475,
+			6.7243,
+			0.816375
+		],
+		"metadata" : 
+		{
+			"comp_spatialreference" : "",
+			"compressed" : true,
+			"count" : 538,
+			"creation_doy" : 363,
+			"creation_year" : 2014,
+			"dataformat_id" : 2,
+			"dataoffset" : 327,
+			"filesource_id" : 0,
+			"global_encoding" : 0,
+			"global_encoding_base64" : "AAA=",
+			"header_size" : 227,
+			"major_version" : 1,
+			"maxx" : -3.563475,
+			"maxy" : 6.7243,
+			"maxz" : 0.816375,
+			"minor_version" : 2,
+			"minx" : -4.9854,
+			"miny" : 5.302375,
+			"minz" : -0.60555,
+			"offset_x" : 0,
+			"offset_y" : 0,
+			"offset_z" : 0,
+			"project_id" : "00000000-0000-0000-0000-000000000000",
+			"scale_x" : 0.001,
+			"scale_y" : 0.001,
+			"scale_z" : 0.001,
+			"software_id" : "libLAS 1.8.0",
+			"spatialreference" : "",
+			"srs" : 
+			{
+				"compoundwkt" : "",
+				"horizontal" : "",
+				"isgeocentric" : false,
+				"isgeographic" : false,
+				"prettycompoundwkt" : "",
+				"prettywkt" : "",
+				"proj4" : "",
+				"units" : 
+				{
+					"horizontal" : "unknown",
+					"vertical" : ""
+				},
+				"vertical" : "",
+				"wkt" : ""
+			},
+			"system_id" : "libLAS",
+			"vlr_0" : 
+			{
+				"data" : "AgAAAAICAAAAAAAAUMMAAP////////////////////8CAAYAFAACAAgABgACAA==",
+				"description" : "http://laszip.org",
+				"record_id" : 22204,
+				"user_id" : "laszip encoded"
+			}
+		},
+		"origin" : 131,
+		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r32.laz",
+		"points" : 538
+	},
+	"r320.laz" : 
+	{
+		"bounds" : 
+		[
+			-4.9854,
+			5.302375,
+			-0.60555,
+			-4.2744375,
+			6.0133375,
+			0.1054125
+		],
+		"metadata" : 
+		{
+			"comp_spatialreference" : "",
+			"compressed" : true,
+			"count" : 659,
+			"creation_doy" : 363,
+			"creation_year" : 2014,
+			"dataformat_id" : 2,
+			"dataoffset" : 327,
+			"filesource_id" : 0,
+			"global_encoding" : 0,
+			"global_encoding_base64" : "AAA=",
+			"header_size" : 227,
+			"major_version" : 1,
+			"maxx" : -4.2744375,
+			"maxy" : 6.0133375,
+			"maxz" : 0.1054125,
+			"minor_version" : 2,
+			"minx" : -4.9854,
+			"miny" : 5.302375,
+			"minz" : -0.60555,
+			"offset_x" : 0,
+			"offset_y" : 0,
+			"offset_z" : 0,
+			"project_id" : "00000000-0000-0000-0000-000000000000",
+			"scale_x" : 0.001,
+			"scale_y" : 0.001,
+			"scale_z" : 0.001,
+			"software_id" : "libLAS 1.8.0",
+			"spatialreference" : "",
+			"srs" : 
+			{
+				"compoundwkt" : "",
+				"horizontal" : "",
+				"isgeocentric" : false,
+				"isgeographic" : false,
+				"prettycompoundwkt" : "",
+				"prettywkt" : "",
+				"proj4" : "",
+				"units" : 
+				{
+					"horizontal" : "unknown",
+					"vertical" : ""
+				},
+				"vertical" : "",
+				"wkt" : ""
+			},
+			"system_id" : "libLAS",
+			"vlr_0" : 
+			{
+				"data" : "AgAAAAICAAAAAAAAUMMAAP////////////////////8CAAYAFAACAAgABgACAA==",
+				"description" : "http://laszip.org",
+				"record_id" : 22204,
+				"user_id" : "laszip encoded"
+			}
+		},
+		"origin" : 132,
+		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r320.laz",
+		"points" : 659
+	},
+	"r322.laz" : 
+	{
+		"bounds" : 
+		[
+			-4.9854,
+			6.0133375,
+			-0.60555,
+			-4.2744375,
+			6.7243,
+			0.1054125
+		],
+		"metadata" : 
+		{
+			"comp_spatialreference" : "",
+			"compressed" : true,
+			"count" : 765,
+			"creation_doy" : 363,
+			"creation_year" : 2014,
+			"dataformat_id" : 2,
+			"dataoffset" : 327,
+			"filesource_id" : 0,
+			"global_encoding" : 0,
+			"global_encoding_base64" : "AAA=",
+			"header_size" : 227,
+			"major_version" : 1,
+			"maxx" : -4.2744375,
+			"maxy" : 6.7243,
+			"maxz" : 0.1054125,
+			"minor_version" : 2,
+			"minx" : -4.9854,
+			"miny" : 6.0133375,
+			"minz" : -0.60555,
+			"offset_x" : 0,
+			"offset_y" : 0,
+			"offset_z" : 0,
+			"project_id" : "00000000-0000-0000-0000-000000000000",
+			"scale_x" : 0.001,
+			"scale_y" : 0.001,
+			"scale_z" : 0.001,
+			"software_id" : "libLAS 1.8.0",
+			"spatialreference" : "",
+			"srs" : 
+			{
+				"compoundwkt" : "",
+				"horizontal" : "",
+				"isgeocentric" : false,
+				"isgeographic" : false,
+				"prettycompoundwkt" : "",
+				"prettywkt" : "",
+				"proj4" : "",
+				"units" : 
+				{
+					"horizontal" : "unknown",
+					"vertical" : ""
+				},
+				"vertical" : "",
+				"wkt" : ""
+			},
+			"system_id" : "libLAS",
+			"vlr_0" : 
+			{
+				"data" : "AgAAAAICAAAAAAAAUMMAAP////////////////////8CAAYAFAACAAgABgACAA==",
+				"description" : "http://laszip.org",
+				"record_id" : 22204,
+				"user_id" : "laszip encoded"
+			}
+		},
+		"origin" : 133,
+		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r322.laz",
+		"points" : 765
+	},
+	"r326.laz" : 
+	{
+		"bounds" : 
+		[
+			-4.2744375,
+			6.0133375,
+			-0.60555,
+			-3.563475,
+			6.7243,
+			0.1054125
+		],
+		"metadata" : 
+		{
+			"comp_spatialreference" : "",
+			"compressed" : true,
+			"count" : 15,
+			"creation_doy" : 363,
+			"creation_year" : 2014,
+			"dataformat_id" : 2,
+			"dataoffset" : 327,
+			"filesource_id" : 0,
+			"global_encoding" : 0,
+			"global_encoding_base64" : "AAA=",
+			"header_size" : 227,
+			"major_version" : 1,
+			"maxx" : -3.563475,
+			"maxy" : 6.7243,
+			"maxz" : 0.1054125,
+			"minor_version" : 2,
+			"minx" : -4.2744375,
+			"miny" : 6.0133375,
+			"minz" : -0.60555,
+			"offset_x" : 0,
+			"offset_y" : 0,
+			"offset_z" : 0,
+			"project_id" : "00000000-0000-0000-0000-000000000000",
+			"scale_x" : 0.001,
+			"scale_y" : 0.001,
+			"scale_z" : 0.001,
+			"software_id" : "libLAS 1.8.0",
+			"spatialreference" : "",
+			"srs" : 
+			{
+				"compoundwkt" : "",
+				"horizontal" : "",
+				"isgeocentric" : false,
+				"isgeographic" : false,
+				"prettycompoundwkt" : "",
+				"prettywkt" : "",
+				"proj4" : "",
+				"units" : 
+				{
+					"horizontal" : "unknown",
+					"vertical" : ""
+				},
+				"vertical" : "",
+				"wkt" : ""
+			},
+			"system_id" : "libLAS",
+			"vlr_0" : 
+			{
+				"data" : "AgAAAAICAAAAAAAAUMMAAP////////////////////8CAAYAFAACAAgABgACAA==",
+				"description" : "http://laszip.org",
+				"record_id" : 22204,
+				"user_id" : "laszip encoded"
+			}
+		},
+		"origin" : 134,
+		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r326.laz",
+		"points" : 15
+	},
+	"r34.laz" : 
+	{
+		"bounds" : 
+		[
+			-3.563475,
+			3.88045,
+			-0.60555,
+			-2.14155,
+			5.302375,
+			0.816375
+		],
+		"metadata" : 
+		{
+			"comp_spatialreference" : "",
+			"compressed" : true,
+			"count" : 3861,
+			"creation_doy" : 363,
+			"creation_year" : 2014,
+			"dataformat_id" : 2,
+			"dataoffset" : 327,
+			"filesource_id" : 0,
+			"global_encoding" : 0,
+			"global_encoding_base64" : "AAA=",
+			"header_size" : 227,
+			"major_version" : 1,
+			"maxx" : -2.14155,
+			"maxy" : 5.302375,
+			"maxz" : 0.816375,
+			"minor_version" : 2,
+			"minx" : -3.563475,
+			"miny" : 3.88045,
+			"minz" : -0.60555,
+			"offset_x" : 0,
+			"offset_y" : 0,
+			"offset_z" : 0,
+			"project_id" : "00000000-0000-0000-0000-000000000000",
+			"scale_x" : 0.001,
+			"scale_y" : 0.001,
+			"scale_z" : 0.001,
+			"software_id" : "libLAS 1.8.0",
+			"spatialreference" : "",
+			"srs" : 
+			{
+				"compoundwkt" : "",
+				"horizontal" : "",
+				"isgeocentric" : false,
+				"isgeographic" : false,
+				"prettycompoundwkt" : "",
+				"prettywkt" : "",
+				"proj4" : "",
+				"units" : 
+				{
+					"horizontal" : "unknown",
+					"vertical" : ""
+				},
+				"vertical" : "",
+				"wkt" : ""
+			},
+			"system_id" : "libLAS",
+			"vlr_0" : 
+			{
+				"data" : "AgAAAAICAAAAAAAAUMMAAP////////////////////8CAAYAFAACAAgABgACAA==",
+				"description" : "http://laszip.org",
+				"record_id" : 22204,
+				"user_id" : "laszip encoded"
+			}
+		},
+		"origin" : 135,
+		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r34.laz",
+		"points" : 3861
+	},
+	"r340.laz" : 
+	{
+		"bounds" : 
+		[
+			-3.563475,
+			3.88045,
+			-0.60555,
+			-2.8525125,
+			4.5914125,
+			0.1054125
+		],
+		"metadata" : 
+		{
+			"comp_spatialreference" : "",
+			"compressed" : true,
+			"count" : 253,
+			"creation_doy" : 363,
+			"creation_year" : 2014,
+			"dataformat_id" : 2,
+			"dataoffset" : 327,
+			"filesource_id" : 0,
+			"global_encoding" : 0,
+			"global_encoding_base64" : "AAA=",
+			"header_size" : 227,
+			"major_version" : 1,
+			"maxx" : -2.8525125,
+			"maxy" : 4.5914125,
+			"maxz" : 0.1054125,
+			"minor_version" : 2,
+			"minx" : -3.563475,
+			"miny" : 3.88045,
+			"minz" : -0.60555,
+			"offset_x" : 0,
+			"offset_y" : 0,
+			"offset_z" : 0,
+			"project_id" : "00000000-0000-0000-0000-000000000000",
+			"scale_x" : 0.001,
+			"scale_y" : 0.001,
+			"scale_z" : 0.001,
+			"software_id" : "libLAS 1.8.0",
+			"spatialreference" : "",
+			"srs" : 
+			{
+				"compoundwkt" : "",
+				"horizontal" : "",
+				"isgeocentric" : false,
+				"isgeographic" : false,
+				"prettycompoundwkt" : "",
+				"prettywkt" : "",
+				"proj4" : "",
+				"units" : 
+				{
+					"horizontal" : "unknown",
+					"vertical" : ""
+				},
+				"vertical" : "",
+				"wkt" : ""
+			},
+			"system_id" : "libLAS",
+			"vlr_0" : 
+			{
+				"data" : "AgAAAAICAAAAAAAAUMMAAP////////////////////8CAAYAFAACAAgABgACAA==",
+				"description" : "http://laszip.org",
+				"record_id" : 22204,
+				"user_id" : "laszip encoded"
+			}
+		},
+		"origin" : 136,
+		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r340.laz",
+		"points" : 253
+	},
+	"r341.laz" : 
+	{
+		"bounds" : 
+		[
+			-3.563475,
+			3.88045,
+			0.1054125,
+			-2.8525125,
+			4.5914125,
+			0.816375
+		],
+		"metadata" : 
+		{
+			"comp_spatialreference" : "",
+			"compressed" : true,
+			"count" : 1201,
+			"creation_doy" : 363,
+			"creation_year" : 2014,
+			"dataformat_id" : 2,
+			"dataoffset" : 327,
+			"filesource_id" : 0,
+			"global_encoding" : 0,
+			"global_encoding_base64" : "AAA=",
+			"header_size" : 227,
+			"major_version" : 1,
+			"maxx" : -2.8525125,
+			"maxy" : 4.5914125,
+			"maxz" : 0.816375,
+			"minor_version" : 2,
+			"minx" : -3.563475,
+			"miny" : 3.88045,
+			"minz" : 0.1054125,
+			"offset_x" : 0,
+			"offset_y" : 0,
+			"offset_z" : 0,
+			"project_id" : "00000000-0000-0000-0000-000000000000",
+			"scale_x" : 0.001,
+			"scale_y" : 0.001,
+			"scale_z" : 0.001,
+			"software_id" : "libLAS 1.8.0",
+			"spatialreference" : "",
+			"srs" : 
+			{
+				"compoundwkt" : "",
+				"horizontal" : "",
+				"isgeocentric" : false,
+				"isgeographic" : false,
+				"prettycompoundwkt" : "",
+				"prettywkt" : "",
+				"proj4" : "",
+				"units" : 
+				{
+					"horizontal" : "unknown",
+					"vertical" : ""
+				},
+				"vertical" : "",
+				"wkt" : ""
+			},
+			"system_id" : "libLAS",
+			"vlr_0" : 
+			{
+				"data" : "AgAAAAICAAAAAAAAUMMAAP////////////////////8CAAYAFAACAAgABgACAA==",
+				"description" : "http://laszip.org",
+				"record_id" : 22204,
+				"user_id" : "laszip encoded"
+			}
+		},
+		"origin" : 137,
+		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r341.laz",
+		"points" : 1201
+	},
+	"r342.laz" : 
+	{
+		"bounds" : 
+		[
+			-3.563475,
+			4.5914125,
+			-0.60555,
+			-2.8525125,
+			5.302375,
+			0.1054125
+		],
+		"metadata" : 
+		{
+			"comp_spatialreference" : "",
+			"compressed" : true,
+			"count" : 256,
+			"creation_doy" : 363,
+			"creation_year" : 2014,
+			"dataformat_id" : 2,
+			"dataoffset" : 327,
+			"filesource_id" : 0,
+			"global_encoding" : 0,
+			"global_encoding_base64" : "AAA=",
+			"header_size" : 227,
+			"major_version" : 1,
+			"maxx" : -2.8525125,
+			"maxy" : 5.302375,
+			"maxz" : 0.1054125,
+			"minor_version" : 2,
+			"minx" : -3.563475,
+			"miny" : 4.5914125,
+			"minz" : -0.60555,
+			"offset_x" : 0,
+			"offset_y" : 0,
+			"offset_z" : 0,
+			"project_id" : "00000000-0000-0000-0000-000000000000",
+			"scale_x" : 0.001,
+			"scale_y" : 0.001,
+			"scale_z" : 0.001,
+			"software_id" : "libLAS 1.8.0",
+			"spatialreference" : "",
+			"srs" : 
+			{
+				"compoundwkt" : "",
+				"horizontal" : "",
+				"isgeocentric" : false,
+				"isgeographic" : false,
+				"prettycompoundwkt" : "",
+				"prettywkt" : "",
+				"proj4" : "",
+				"units" : 
+				{
+					"horizontal" : "unknown",
+					"vertical" : ""
+				},
+				"vertical" : "",
+				"wkt" : ""
+			},
+			"system_id" : "libLAS",
+			"vlr_0" : 
+			{
+				"data" : "AgAAAAICAAAAAAAAUMMAAP////////////////////8CAAYAFAACAAgABgACAA==",
+				"description" : "http://laszip.org",
+				"record_id" : 22204,
+				"user_id" : "laszip encoded"
+			}
+		},
+		"origin" : 138,
+		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r342.laz",
+		"points" : 256
+	},
+	"r344.laz" : 
+	{
+		"bounds" : 
+		[
+			-2.8525125,
+			3.88045,
+			-0.60555,
+			-2.14155,
+			4.5914125,
+			0.1054125
+		],
+		"metadata" : 
+		{
+			"comp_spatialreference" : "",
+			"compressed" : true,
+			"count" : 4436,
+			"creation_doy" : 363,
+			"creation_year" : 2014,
+			"dataformat_id" : 2,
+			"dataoffset" : 327,
+			"filesource_id" : 0,
+			"global_encoding" : 0,
+			"global_encoding_base64" : "AAA=",
+			"header_size" : 227,
+			"major_version" : 1,
+			"maxx" : -2.14155,
+			"maxy" : 4.5914125,
+			"maxz" : 0.1054125,
+			"minor_version" : 2,
+			"minx" : -2.8525125,
+			"miny" : 3.88045,
+			"minz" : -0.60555,
+			"offset_x" : 0,
+			"offset_y" : 0,
+			"offset_z" : 0,
+			"project_id" : "00000000-0000-0000-0000-000000000000",
+			"scale_x" : 0.001,
+			"scale_y" : 0.001,
+			"scale_z" : 0.001,
+			"software_id" : "libLAS 1.8.0",
+			"spatialreference" : "",
+			"srs" : 
+			{
+				"compoundwkt" : "",
+				"horizontal" : "",
+				"isgeocentric" : false,
+				"isgeographic" : false,
+				"prettycompoundwkt" : "",
+				"prettywkt" : "",
+				"proj4" : "",
+				"units" : 
+				{
+					"horizontal" : "unknown",
+					"vertical" : ""
+				},
+				"vertical" : "",
+				"wkt" : ""
+			},
+			"system_id" : "libLAS",
+			"vlr_0" : 
+			{
+				"data" : "AgAAAAICAAAAAAAAUMMAAP////////////////////8CAAYAFAACAAgABgACAA==",
+				"description" : "http://laszip.org",
+				"record_id" : 22204,
+				"user_id" : "laszip encoded"
+			}
+		},
+		"origin" : 139,
+		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r344.laz",
+		"points" : 4436
+	},
+	"r345.laz" : 
+	{
+		"bounds" : 
+		[
+			-2.8525125,
+			3.88045,
+			0.1054125,
+			-2.14155,
+			4.5914125,
+			0.816375
+		],
+		"metadata" : 
+		{
+			"comp_spatialreference" : "",
+			"compressed" : true,
+			"count" : 4585,
+			"creation_doy" : 363,
+			"creation_year" : 2014,
+			"dataformat_id" : 2,
+			"dataoffset" : 327,
+			"filesource_id" : 0,
+			"global_encoding" : 0,
+			"global_encoding_base64" : "AAA=",
+			"header_size" : 227,
+			"major_version" : 1,
+			"maxx" : -2.14155,
+			"maxy" : 4.5914125,
+			"maxz" : 0.816375,
+			"minor_version" : 2,
+			"minx" : -2.8525125,
+			"miny" : 3.88045,
+			"minz" : 0.1054125,
+			"offset_x" : 0,
+			"offset_y" : 0,
+			"offset_z" : 0,
+			"project_id" : "00000000-0000-0000-0000-000000000000",
+			"scale_x" : 0.001,
+			"scale_y" : 0.001,
+			"scale_z" : 0.001,
+			"software_id" : "libLAS 1.8.0",
+			"spatialreference" : "",
+			"srs" : 
+			{
+				"compoundwkt" : "",
+				"horizontal" : "",
+				"isgeocentric" : false,
+				"isgeographic" : false,
+				"prettycompoundwkt" : "",
+				"prettywkt" : "",
+				"proj4" : "",
+				"units" : 
+				{
+					"horizontal" : "unknown",
+					"vertical" : ""
+				},
+				"vertical" : "",
+				"wkt" : ""
+			},
+			"system_id" : "libLAS",
+			"vlr_0" : 
+			{
+				"data" : "AgAAAAICAAAAAAAAUMMAAP////////////////////8CAAYAFAACAAgABgACAA==",
+				"description" : "http://laszip.org",
+				"record_id" : 22204,
+				"user_id" : "laszip encoded"
+			}
+		},
+		"origin" : 140,
+		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r345.laz",
+		"points" : 4585
+	},
+	"r346.laz" : 
+	{
+		"bounds" : 
+		[
+			-2.8525125,
+			4.5914125,
+			-0.60555,
+			-2.14155,
+			5.302375,
+			0.1054125
+		],
+		"metadata" : 
+		{
+			"comp_spatialreference" : "",
+			"compressed" : true,
+			"count" : 3465,
+			"creation_doy" : 363,
+			"creation_year" : 2014,
+			"dataformat_id" : 2,
+			"dataoffset" : 327,
+			"filesource_id" : 0,
+			"global_encoding" : 0,
+			"global_encoding_base64" : "AAA=",
+			"header_size" : 227,
+			"major_version" : 1,
+			"maxx" : -2.14155,
+			"maxy" : 5.302375,
+			"maxz" : 0.1054125,
+			"minor_version" : 2,
+			"minx" : -2.8525125,
+			"miny" : 4.5914125,
+			"minz" : -0.60555,
+			"offset_x" : 0,
+			"offset_y" : 0,
+			"offset_z" : 0,
+			"project_id" : "00000000-0000-0000-0000-000000000000",
+			"scale_x" : 0.001,
+			"scale_y" : 0.001,
+			"scale_z" : 0.001,
+			"software_id" : "libLAS 1.8.0",
+			"spatialreference" : "",
+			"srs" : 
+			{
+				"compoundwkt" : "",
+				"horizontal" : "",
+				"isgeocentric" : false,
+				"isgeographic" : false,
+				"prettycompoundwkt" : "",
+				"prettywkt" : "",
+				"proj4" : "",
+				"units" : 
+				{
+					"horizontal" : "unknown",
+					"vertical" : ""
+				},
+				"vertical" : "",
+				"wkt" : ""
+			},
+			"system_id" : "libLAS",
+			"vlr_0" : 
+			{
+				"data" : "AgAAAAICAAAAAAAAUMMAAP////////////////////8CAAYAFAACAAgABgACAA==",
+				"description" : "http://laszip.org",
+				"record_id" : 22204,
+				"user_id" : "laszip encoded"
+			}
+		},
+		"origin" : 141,
+		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r346.laz",
+		"points" : 3465
+	},
+	"r35.laz" : 
+	{
+		"bounds" : 
+		[
+			-3.563475,
+			3.88045,
+			0.816375,
+			-2.14155,
+			5.302375,
+			2.2383
+		],
+		"metadata" : 
+		{
+			"comp_spatialreference" : "",
+			"compressed" : true,
+			"count" : 312,
+			"creation_doy" : 363,
+			"creation_year" : 2014,
+			"dataformat_id" : 2,
+			"dataoffset" : 327,
+			"filesource_id" : 0,
+			"global_encoding" : 0,
+			"global_encoding_base64" : "AAA=",
+			"header_size" : 227,
+			"major_version" : 1,
+			"maxx" : -2.14155,
+			"maxy" : 5.302375,
+			"maxz" : 2.2383,
+			"minor_version" : 2,
+			"minx" : -3.563475,
+			"miny" : 3.88045,
+			"minz" : 0.816375,
+			"offset_x" : 0,
+			"offset_y" : 0,
+			"offset_z" : 0,
+			"project_id" : "00000000-0000-0000-0000-000000000000",
+			"scale_x" : 0.001,
+			"scale_y" : 0.001,
+			"scale_z" : 0.001,
+			"software_id" : "libLAS 1.8.0",
+			"spatialreference" : "",
+			"srs" : 
+			{
+				"compoundwkt" : "",
+				"horizontal" : "",
+				"isgeocentric" : false,
+				"isgeographic" : false,
+				"prettycompoundwkt" : "",
+				"prettywkt" : "",
+				"proj4" : "",
+				"units" : 
+				{
+					"horizontal" : "unknown",
+					"vertical" : ""
+				},
+				"vertical" : "",
+				"wkt" : ""
+			},
+			"system_id" : "libLAS",
+			"vlr_0" : 
+			{
+				"data" : "AgAAAAICAAAAAAAAUMMAAP////////////////////8CAAYAFAACAAgABgACAA==",
+				"description" : "http://laszip.org",
+				"record_id" : 22204,
+				"user_id" : "laszip encoded"
+			}
+		},
+		"origin" : 142,
+		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r35.laz",
+		"points" : 312
+	},
+	"r350.laz" : 
+	{
+		"bounds" : 
+		[
+			-3.563475,
+			3.88045,
+			0.816375,
+			-2.8525125,
+			4.5914125,
+			1.5273375
+		],
+		"metadata" : 
+		{
+			"comp_spatialreference" : "",
+			"compressed" : true,
+			"count" : 304,
+			"creation_doy" : 363,
+			"creation_year" : 2014,
+			"dataformat_id" : 2,
+			"dataoffset" : 327,
+			"filesource_id" : 0,
+			"global_encoding" : 0,
+			"global_encoding_base64" : "AAA=",
+			"header_size" : 227,
+			"major_version" : 1,
+			"maxx" : -2.8525125,
+			"maxy" : 4.5914125,
+			"maxz" : 1.5273375,
+			"minor_version" : 2,
+			"minx" : -3.563475,
+			"miny" : 3.88045,
+			"minz" : 0.816375,
+			"offset_x" : 0,
+			"offset_y" : 0,
+			"offset_z" : 0,
+			"project_id" : "00000000-0000-0000-0000-000000000000",
+			"scale_x" : 0.001,
+			"scale_y" : 0.001,
+			"scale_z" : 0.001,
+			"software_id" : "libLAS 1.8.0",
+			"spatialreference" : "",
+			"srs" : 
+			{
+				"compoundwkt" : "",
+				"horizontal" : "",
+				"isgeocentric" : false,
+				"isgeographic" : false,
+				"prettycompoundwkt" : "",
+				"prettywkt" : "",
+				"proj4" : "",
+				"units" : 
+				{
+					"horizontal" : "unknown",
+					"vertical" : ""
+				},
+				"vertical" : "",
+				"wkt" : ""
+			},
+			"system_id" : "libLAS",
+			"vlr_0" : 
+			{
+				"data" : "AgAAAAICAAAAAAAAUMMAAP////////////////////8CAAYAFAACAAgABgACAA==",
+				"description" : "http://laszip.org",
+				"record_id" : 22204,
+				"user_id" : "laszip encoded"
+			}
+		},
+		"origin" : 143,
+		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r350.laz",
+		"points" : 304
+	},
+	"r354.laz" : 
+	{
+		"bounds" : 
+		[
+			-2.8525125,
+			3.88045,
+			0.816375,
+			-2.14155,
+			4.5914125,
+			1.5273375
+		],
+		"metadata" : 
+		{
+			"comp_spatialreference" : "",
+			"compressed" : true,
+			"count" : 705,
+			"creation_doy" : 363,
+			"creation_year" : 2014,
+			"dataformat_id" : 2,
+			"dataoffset" : 327,
+			"filesource_id" : 0,
+			"global_encoding" : 0,
+			"global_encoding_base64" : "AAA=",
+			"header_size" : 227,
+			"major_version" : 1,
+			"maxx" : -2.14155,
+			"maxy" : 4.5914125,
+			"maxz" : 1.5273375,
+			"minor_version" : 2,
+			"minx" : -2.8525125,
+			"miny" : 3.88045,
+			"minz" : 0.816375,
+			"offset_x" : 0,
+			"offset_y" : 0,
+			"offset_z" : 0,
+			"project_id" : "00000000-0000-0000-0000-000000000000",
+			"scale_x" : 0.001,
+			"scale_y" : 0.001,
+			"scale_z" : 0.001,
+			"software_id" : "libLAS 1.8.0",
+			"spatialreference" : "",
+			"srs" : 
+			{
+				"compoundwkt" : "",
+				"horizontal" : "",
+				"isgeocentric" : false,
+				"isgeographic" : false,
+				"prettycompoundwkt" : "",
+				"prettywkt" : "",
+				"proj4" : "",
+				"units" : 
+				{
+					"horizontal" : "unknown",
+					"vertical" : ""
+				},
+				"vertical" : "",
+				"wkt" : ""
+			},
+			"system_id" : "libLAS",
+			"vlr_0" : 
+			{
+				"data" : "AgAAAAICAAAAAAAAUMMAAP////////////////////8CAAYAFAACAAgABgACAA==",
+				"description" : "http://laszip.org",
+				"record_id" : 22204,
+				"user_id" : "laszip encoded"
+			}
+		},
+		"origin" : 144,
+		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r354.laz",
+		"points" : 705
+	},
+	"r36.laz" : 
+	{
+		"bounds" : 
+		[
+			-3.563475,
+			5.302375,
+			-0.60555,
+			-2.14155,
+			6.7243,
+			0.816375
+		],
+		"metadata" : 
+		{
+			"comp_spatialreference" : "",
+			"compressed" : true,
+			"count" : 53,
+			"creation_doy" : 363,
+			"creation_year" : 2014,
+			"dataformat_id" : 2,
+			"dataoffset" : 327,
+			"filesource_id" : 0,
+			"global_encoding" : 0,
+			"global_encoding_base64" : "AAA=",
+			"header_size" : 227,
+			"major_version" : 1,
+			"maxx" : -2.14155,
+			"maxy" : 6.7243,
+			"maxz" : 0.816375,
+			"minor_version" : 2,
+			"minx" : -3.563475,
+			"miny" : 5.302375,
+			"minz" : -0.60555,
+			"offset_x" : 0,
+			"offset_y" : 0,
+			"offset_z" : 0,
+			"project_id" : "00000000-0000-0000-0000-000000000000",
+			"scale_x" : 0.001,
+			"scale_y" : 0.001,
+			"scale_z" : 0.001,
+			"software_id" : "libLAS 1.8.0",
+			"spatialreference" : "",
+			"srs" : 
+			{
+				"compoundwkt" : "",
+				"horizontal" : "",
+				"isgeocentric" : false,
+				"isgeographic" : false,
+				"prettycompoundwkt" : "",
+				"prettywkt" : "",
+				"proj4" : "",
+				"units" : 
+				{
+					"horizontal" : "unknown",
+					"vertical" : ""
+				},
+				"vertical" : "",
+				"wkt" : ""
+			},
+			"system_id" : "libLAS",
+			"vlr_0" : 
+			{
+				"data" : "AgAAAAICAAAAAAAAUMMAAP////////////////////8CAAYAFAACAAgABgACAA==",
+				"description" : "http://laszip.org",
+				"record_id" : 22204,
+				"user_id" : "laszip encoded"
+			}
+		},
+		"origin" : 145,
+		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r36.laz",
+		"points" : 53
+	},
+	"r360.laz" : 
+	{
+		"bounds" : 
+		[
+			-3.563475,
+			5.302375,
+			-0.60555,
+			-2.8525125,
+			6.0133375,
+			0.1054125
+		],
+		"metadata" : 
+		{
+			"comp_spatialreference" : "",
+			"compressed" : true,
+			"count" : 21,
+			"creation_doy" : 363,
+			"creation_year" : 2014,
+			"dataformat_id" : 2,
+			"dataoffset" : 327,
+			"filesource_id" : 0,
+			"global_encoding" : 0,
+			"global_encoding_base64" : "AAA=",
+			"header_size" : 227,
+			"major_version" : 1,
+			"maxx" : -2.8525125,
+			"maxy" : 6.0133375,
+			"maxz" : 0.1054125,
+			"minor_version" : 2,
+			"minx" : -3.563475,
+			"miny" : 5.302375,
+			"minz" : -0.60555,
+			"offset_x" : 0,
+			"offset_y" : 0,
+			"offset_z" : 0,
+			"project_id" : "00000000-0000-0000-0000-000000000000",
+			"scale_x" : 0.001,
+			"scale_y" : 0.001,
+			"scale_z" : 0.001,
+			"software_id" : "libLAS 1.8.0",
+			"spatialreference" : "",
+			"srs" : 
+			{
+				"compoundwkt" : "",
+				"horizontal" : "",
+				"isgeocentric" : false,
+				"isgeographic" : false,
+				"prettycompoundwkt" : "",
+				"prettywkt" : "",
+				"proj4" : "",
+				"units" : 
+				{
+					"horizontal" : "unknown",
+					"vertical" : ""
+				},
+				"vertical" : "",
+				"wkt" : ""
+			},
+			"system_id" : "libLAS",
+			"vlr_0" : 
+			{
+				"data" : "AgAAAAICAAAAAAAAUMMAAP////////////////////8CAAYAFAACAAgABgACAA==",
+				"description" : "http://laszip.org",
+				"record_id" : 22204,
+				"user_id" : "laszip encoded"
+			}
+		},
+		"origin" : 146,
+		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r360.laz",
+		"points" : 21
+	},
+	"r361.laz" : 
+	{
+		"bounds" : 
+		[
+			-3.563475,
+			5.302375,
+			0.1054125,
+			-2.8525125,
+			6.0133375,
+			0.816375
+		],
+		"metadata" : 
+		{
+			"comp_spatialreference" : "",
+			"compressed" : true,
+			"count" : 3,
+			"creation_doy" : 363,
+			"creation_year" : 2014,
+			"dataformat_id" : 2,
+			"dataoffset" : 327,
+			"filesource_id" : 0,
+			"global_encoding" : 0,
+			"global_encoding_base64" : "AAA=",
+			"header_size" : 227,
+			"major_version" : 1,
+			"maxx" : -2.8525125,
+			"maxy" : 6.0133375,
+			"maxz" : 0.816375,
+			"minor_version" : 2,
+			"minx" : -3.563475,
+			"miny" : 5.302375,
+			"minz" : 0.1054125,
+			"offset_x" : 0,
+			"offset_y" : 0,
+			"offset_z" : 0,
+			"project_id" : "00000000-0000-0000-0000-000000000000",
+			"scale_x" : 0.001,
+			"scale_y" : 0.001,
+			"scale_z" : 0.001,
+			"software_id" : "libLAS 1.8.0",
+			"spatialreference" : "",
+			"srs" : 
+			{
+				"compoundwkt" : "",
+				"horizontal" : "",
+				"isgeocentric" : false,
+				"isgeographic" : false,
+				"prettycompoundwkt" : "",
+				"prettywkt" : "",
+				"proj4" : "",
+				"units" : 
+				{
+					"horizontal" : "unknown",
+					"vertical" : ""
+				},
+				"vertical" : "",
+				"wkt" : ""
+			},
+			"system_id" : "libLAS",
+			"vlr_0" : 
+			{
+				"data" : "AgAAAAICAAAAAAAAUMMAAP////////////////////8CAAYAFAACAAgABgACAA==",
+				"description" : "http://laszip.org",
+				"record_id" : 22204,
+				"user_id" : "laszip encoded"
+			}
+		},
+		"origin" : 147,
+		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r361.laz",
+		"points" : 3
+	},
+	"r364.laz" : 
+	{
+		"bounds" : 
+		[
+			-2.8525125,
+			5.302375,
+			-0.60555,
+			-2.14155,
+			6.0133375,
+			0.1054125
+		],
+		"metadata" : 
+		{
+			"comp_spatialreference" : "",
+			"compressed" : true,
+			"count" : 158,
+			"creation_doy" : 363,
+			"creation_year" : 2014,
+			"dataformat_id" : 2,
+			"dataoffset" : 327,
+			"filesource_id" : 0,
+			"global_encoding" : 0,
+			"global_encoding_base64" : "AAA=",
+			"header_size" : 227,
+			"major_version" : 1,
+			"maxx" : -2.14155,
+			"maxy" : 6.0133375,
+			"maxz" : 0.1054125,
+			"minor_version" : 2,
+			"minx" : -2.8525125,
+			"miny" : 5.302375,
+			"minz" : -0.60555,
+			"offset_x" : 0,
+			"offset_y" : 0,
+			"offset_z" : 0,
+			"project_id" : "00000000-0000-0000-0000-000000000000",
+			"scale_x" : 0.001,
+			"scale_y" : 0.001,
+			"scale_z" : 0.001,
+			"software_id" : "libLAS 1.8.0",
+			"spatialreference" : "",
+			"srs" : 
+			{
+				"compoundwkt" : "",
+				"horizontal" : "",
+				"isgeocentric" : false,
+				"isgeographic" : false,
+				"prettycompoundwkt" : "",
+				"prettywkt" : "",
+				"proj4" : "",
+				"units" : 
+				{
+					"horizontal" : "unknown",
+					"vertical" : ""
+				},
+				"vertical" : "",
+				"wkt" : ""
+			},
+			"system_id" : "libLAS",
+			"vlr_0" : 
+			{
+				"data" : "AgAAAAICAAAAAAAAUMMAAP////////////////////8CAAYAFAACAAgABgACAA==",
+				"description" : "http://laszip.org",
+				"record_id" : 22204,
+				"user_id" : "laszip encoded"
+			}
+		},
+		"origin" : 148,
+		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r364.laz",
+		"points" : 158
+	},
+	"r37.laz" : 
+	{
+		"bounds" : 
+		[
+			-3.563475,
+			5.302375,
+			0.816375,
+			-2.14155,
+			6.7243,
+			2.2383
+		],
+		"metadata" : 
+		{
+			"comp_spatialreference" : "",
+			"compressed" : true,
+			"count" : 1,
+			"creation_doy" : 363,
+			"creation_year" : 2014,
+			"dataformat_id" : 2,
+			"dataoffset" : 327,
+			"filesource_id" : 0,
+			"global_encoding" : 0,
+			"global_encoding_base64" : "AAA=",
+			"header_size" : 227,
+			"major_version" : 1,
+			"maxx" : -2.14155,
+			"maxy" : 6.7243,
+			"maxz" : 2.2383,
+			"minor_version" : 2,
+			"minx" : -3.563475,
+			"miny" : 5.302375,
+			"minz" : 0.816375,
+			"offset_x" : 0,
+			"offset_y" : 0,
+			"offset_z" : 0,
+			"project_id" : "00000000-0000-0000-0000-000000000000",
+			"scale_x" : 0.001,
+			"scale_y" : 0.001,
+			"scale_z" : 0.001,
+			"software_id" : "libLAS 1.8.0",
+			"spatialreference" : "",
+			"srs" : 
+			{
+				"compoundwkt" : "",
+				"horizontal" : "",
+				"isgeocentric" : false,
+				"isgeographic" : false,
+				"prettycompoundwkt" : "",
+				"prettywkt" : "",
+				"proj4" : "",
+				"units" : 
+				{
+					"horizontal" : "unknown",
+					"vertical" : ""
+				},
+				"vertical" : "",
+				"wkt" : ""
+			},
+			"system_id" : "libLAS",
+			"vlr_0" : 
+			{
+				"data" : "AgAAAAICAAAAAAAAUMMAAP////////////////////8CAAYAFAACAAgABgACAA==",
+				"description" : "http://laszip.org",
+				"record_id" : 22204,
+				"user_id" : "laszip encoded"
+			}
+		},
+		"origin" : 149,
+		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r37.laz",
+		"points" : 1
+	},
+	"r370.laz" : 
+	{
+		"bounds" : 
+		[
+			-3.563475,
+			5.302375,
+			0.816375,
+			-2.8525125,
+			6.0133375,
+			1.5273375
+		],
+		"metadata" : 
+		{
+			"comp_spatialreference" : "",
+			"compressed" : true,
+			"count" : 1,
+			"creation_doy" : 363,
+			"creation_year" : 2014,
+			"dataformat_id" : 2,
+			"dataoffset" : 327,
+			"filesource_id" : 0,
+			"global_encoding" : 0,
+			"global_encoding_base64" : "AAA=",
+			"header_size" : 227,
+			"major_version" : 1,
+			"maxx" : -2.8525125,
+			"maxy" : 6.0133375,
+			"maxz" : 1.5273375,
+			"minor_version" : 2,
+			"minx" : -3.563475,
+			"miny" : 5.302375,
+			"minz" : 0.816375,
+			"offset_x" : 0,
+			"offset_y" : 0,
+			"offset_z" : 0,
+			"project_id" : "00000000-0000-0000-0000-000000000000",
+			"scale_x" : 0.001,
+			"scale_y" : 0.001,
+			"scale_z" : 0.001,
+			"software_id" : "libLAS 1.8.0",
+			"spatialreference" : "",
+			"srs" : 
+			{
+				"compoundwkt" : "",
+				"horizontal" : "",
+				"isgeocentric" : false,
+				"isgeographic" : false,
+				"prettycompoundwkt" : "",
+				"prettywkt" : "",
+				"proj4" : "",
+				"units" : 
+				{
+					"horizontal" : "unknown",
+					"vertical" : ""
+				},
+				"vertical" : "",
+				"wkt" : ""
+			},
+			"system_id" : "libLAS",
+			"vlr_0" : 
+			{
+				"data" : "AgAAAAICAAAAAAAAUMMAAP////////////////////8CAAYAFAACAAgABgACAA==",
+				"description" : "http://laszip.org",
+				"record_id" : 22204,
+				"user_id" : "laszip encoded"
+			}
+		},
+		"origin" : 150,
+		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r370.laz",
+		"points" : 1
+	},
+	"r4.laz" : 
+	{
+		"bounds" : 
+		[
+			-2.14155,
+			1.0366,
+			-3.4494,
+			0.7023,
+			3.88045,
+			-0.60555
+		],
+		"metadata" : 
+		{
+			"comp_spatialreference" : "",
+			"compressed" : true,
+			"count" : 2169,
+			"creation_doy" : 363,
+			"creation_year" : 2014,
+			"dataformat_id" : 2,
+			"dataoffset" : 327,
+			"filesource_id" : 0,
+			"global_encoding" : 0,
+			"global_encoding_base64" : "AAA=",
+			"header_size" : 227,
+			"major_version" : 1,
+			"maxx" : 0.7023,
+			"maxy" : 3.88045,
+			"maxz" : -0.60555,
+			"minor_version" : 2,
+			"minx" : -2.14155,
+			"miny" : 1.0366,
+			"minz" : -3.4494,
+			"offset_x" : 0,
+			"offset_y" : 0,
+			"offset_z" : 0,
+			"project_id" : "00000000-0000-0000-0000-000000000000",
+			"scale_x" : 0.001,
+			"scale_y" : 0.001,
+			"scale_z" : 0.001,
+			"software_id" : "libLAS 1.8.0",
+			"spatialreference" : "",
+			"srs" : 
+			{
+				"compoundwkt" : "",
+				"horizontal" : "",
+				"isgeocentric" : false,
+				"isgeographic" : false,
+				"prettycompoundwkt" : "",
+				"prettywkt" : "",
+				"proj4" : "",
+				"units" : 
+				{
+					"horizontal" : "unknown",
+					"vertical" : ""
+				},
+				"vertical" : "",
+				"wkt" : ""
+			},
+			"system_id" : "libLAS",
+			"vlr_0" : 
+			{
+				"data" : "AgAAAAICAAAAAAAAUMMAAP////////////////////8CAAYAFAACAAgABgACAA==",
+				"description" : "http://laszip.org",
+				"record_id" : 22204,
+				"user_id" : "laszip encoded"
+			}
+		},
+		"origin" : 151,
+		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r4.laz",
+		"points" : 2169
+	},
+	"r40.laz" : 
+	{
+		"bounds" : 
+		[
+			-2.14155,
+			1.0366,
+			-3.4494,
+			-0.719625,
+			2.458525,
+			-2.027475
+		],
+		"metadata" : 
+		{
+			"comp_spatialreference" : "",
+			"compressed" : true,
+			"count" : 484,
+			"creation_doy" : 363,
+			"creation_year" : 2014,
+			"dataformat_id" : 2,
+			"dataoffset" : 327,
+			"filesource_id" : 0,
+			"global_encoding" : 0,
+			"global_encoding_base64" : "AAA=",
+			"header_size" : 227,
+			"major_version" : 1,
+			"maxx" : -0.719625,
+			"maxy" : 2.458525,
+			"maxz" : -2.027475,
+			"minor_version" : 2,
+			"minx" : -2.14155,
+			"miny" : 1.0366,
+			"minz" : -3.4494,
+			"offset_x" : 0,
+			"offset_y" : 0,
+			"offset_z" : 0,
+			"project_id" : "00000000-0000-0000-0000-000000000000",
+			"scale_x" : 0.001,
+			"scale_y" : 0.001,
+			"scale_z" : 0.001,
+			"software_id" : "libLAS 1.8.0",
+			"spatialreference" : "",
+			"srs" : 
+			{
+				"compoundwkt" : "",
+				"horizontal" : "",
+				"isgeocentric" : false,
+				"isgeographic" : false,
+				"prettycompoundwkt" : "",
+				"prettywkt" : "",
+				"proj4" : "",
+				"units" : 
+				{
+					"horizontal" : "unknown",
+					"vertical" : ""
+				},
+				"vertical" : "",
+				"wkt" : ""
+			},
+			"system_id" : "libLAS",
+			"vlr_0" : 
+			{
+				"data" : "AgAAAAICAAAAAAAAUMMAAP////////////////////8CAAYAFAACAAgABgACAA==",
+				"description" : "http://laszip.org",
+				"record_id" : 22204,
+				"user_id" : "laszip encoded"
+			}
+		},
+		"origin" : 152,
+		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r40.laz",
+		"points" : 484
+	},
+	"r400.laz" : 
+	{
+		"bounds" : 
+		[
+			-2.14155,
+			1.0366,
+			-3.4494,
+			-1.4305875,
+			1.7475625,
+			-2.7384375
+		],
+		"metadata" : 
+		{
+			"comp_spatialreference" : "",
+			"compressed" : true,
+			"count" : 279,
+			"creation_doy" : 363,
+			"creation_year" : 2014,
+			"dataformat_id" : 2,
+			"dataoffset" : 327,
+			"filesource_id" : 0,
+			"global_encoding" : 0,
+			"global_encoding_base64" : "AAA=",
+			"header_size" : 227,
+			"major_version" : 1,
+			"maxx" : -1.4305875,
+			"maxy" : 1.7475625,
+			"maxz" : -2.7384375,
+			"minor_version" : 2,
+			"minx" : -2.14155,
+			"miny" : 1.0366,
+			"minz" : -3.4494,
+			"offset_x" : 0,
+			"offset_y" : 0,
+			"offset_z" : 0,
+			"project_id" : "00000000-0000-0000-0000-000000000000",
+			"scale_x" : 0.001,
+			"scale_y" : 0.001,
+			"scale_z" : 0.001,
+			"software_id" : "libLAS 1.8.0",
+			"spatialreference" : "",
+			"srs" : 
+			{
+				"compoundwkt" : "",
+				"horizontal" : "",
+				"isgeocentric" : false,
+				"isgeographic" : false,
+				"prettycompoundwkt" : "",
+				"prettywkt" : "",
+				"proj4" : "",
+				"units" : 
+				{
+					"horizontal" : "unknown",
+					"vertical" : ""
+				},
+				"vertical" : "",
+				"wkt" : ""
+			},
+			"system_id" : "libLAS",
+			"vlr_0" : 
+			{
+				"data" : "AgAAAAICAAAAAAAAUMMAAP////////////////////8CAAYAFAACAAgABgACAA==",
+				"description" : "http://laszip.org",
+				"record_id" : 22204,
+				"user_id" : "laszip encoded"
+			}
+		},
+		"origin" : 153,
+		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r400.laz",
+		"points" : 279
+	},
+	"r402.laz" : 
+	{
+		"bounds" : 
+		[
+			-2.14155,
+			1.7475625,
+			-3.4494,
+			-1.4305875,
+			2.458525,
+			-2.7384375
+		],
+		"metadata" : 
+		{
+			"comp_spatialreference" : "",
+			"compressed" : true,
+			"count" : 1305,
+			"creation_doy" : 363,
+			"creation_year" : 2014,
+			"dataformat_id" : 2,
+			"dataoffset" : 327,
+			"filesource_id" : 0,
+			"global_encoding" : 0,
+			"global_encoding_base64" : "AAA=",
+			"header_size" : 227,
+			"major_version" : 1,
+			"maxx" : -1.4305875,
+			"maxy" : 2.458525,
+			"maxz" : -2.7384375,
+			"minor_version" : 2,
+			"minx" : -2.14155,
+			"miny" : 1.7475625,
+			"minz" : -3.4494,
+			"offset_x" : 0,
+			"offset_y" : 0,
+			"offset_z" : 0,
+			"project_id" : "00000000-0000-0000-0000-000000000000",
+			"scale_x" : 0.001,
+			"scale_y" : 0.001,
+			"scale_z" : 0.001,
+			"software_id" : "libLAS 1.8.0",
+			"spatialreference" : "",
+			"srs" : 
+			{
+				"compoundwkt" : "",
+				"horizontal" : "",
+				"isgeocentric" : false,
+				"isgeographic" : false,
+				"prettycompoundwkt" : "",
+				"prettywkt" : "",
+				"proj4" : "",
+				"units" : 
+				{
+					"horizontal" : "unknown",
+					"vertical" : ""
+				},
+				"vertical" : "",
+				"wkt" : ""
+			},
+			"system_id" : "libLAS",
+			"vlr_0" : 
+			{
+				"data" : "AgAAAAICAAAAAAAAUMMAAP////////////////////8CAAYAFAACAAgABgACAA==",
+				"description" : "http://laszip.org",
+				"record_id" : 22204,
+				"user_id" : "laszip encoded"
+			}
+		},
+		"origin" : 154,
+		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r402.laz",
+		"points" : 1305
+	},
+	"r42.laz" : 
+	{
+		"bounds" : 
+		[
+			-2.14155,
+			2.458525,
+			-3.4494,
+			-0.719625,
+			3.88045,
+			-2.027475
+		],
+		"metadata" : 
+		{
+			"comp_spatialreference" : "",
+			"compressed" : true,
+			"count" : 4803,
+			"creation_doy" : 363,
+			"creation_year" : 2014,
+			"dataformat_id" : 2,
+			"dataoffset" : 327,
+			"filesource_id" : 0,
+			"global_encoding" : 0,
+			"global_encoding_base64" : "AAA=",
+			"header_size" : 227,
+			"major_version" : 1,
+			"maxx" : -0.719625,
+			"maxy" : 3.88045,
+			"maxz" : -2.027475,
+			"minor_version" : 2,
+			"minx" : -2.14155,
+			"miny" : 2.458525,
+			"minz" : -3.4494,
+			"offset_x" : 0,
+			"offset_y" : 0,
+			"offset_z" : 0,
+			"project_id" : "00000000-0000-0000-0000-000000000000",
+			"scale_x" : 0.001,
+			"scale_y" : 0.001,
+			"scale_z" : 0.001,
+			"software_id" : "libLAS 1.8.0",
+			"spatialreference" : "",
+			"srs" : 
+			{
+				"compoundwkt" : "",
+				"horizontal" : "",
+				"isgeocentric" : false,
+				"isgeographic" : false,
+				"prettycompoundwkt" : "",
+				"prettywkt" : "",
+				"proj4" : "",
+				"units" : 
+				{
+					"horizontal" : "unknown",
+					"vertical" : ""
+				},
+				"vertical" : "",
+				"wkt" : ""
+			},
+			"system_id" : "libLAS",
+			"vlr_0" : 
+			{
+				"data" : "AgAAAAICAAAAAAAAUMMAAP////////////////////8CAAYAFAACAAgABgACAA==",
+				"description" : "http://laszip.org",
+				"record_id" : 22204,
+				"user_id" : "laszip encoded"
+			}
+		},
+		"origin" : 155,
+		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r42.laz",
+		"points" : 4803
+	},
+	"r420.laz" : 
+	{
+		"bounds" : 
+		[
+			-2.14155,
+			2.458525,
+			-3.4494,
+			-1.4305875,
+			3.1694875,
+			-2.7384375
+		],
+		"metadata" : 
+		{
+			"comp_spatialreference" : "",
+			"compressed" : true,
+			"count" : 4637,
+			"creation_doy" : 363,
+			"creation_year" : 2014,
+			"dataformat_id" : 2,
+			"dataoffset" : 327,
+			"filesource_id" : 0,
+			"global_encoding" : 0,
+			"global_encoding_base64" : "AAA=",
+			"header_size" : 227,
+			"major_version" : 1,
+			"maxx" : -1.4305875,
+			"maxy" : 3.1694875,
+			"maxz" : -2.7384375,
+			"minor_version" : 2,
+			"minx" : -2.14155,
+			"miny" : 2.458525,
+			"minz" : -3.4494,
+			"offset_x" : 0,
+			"offset_y" : 0,
+			"offset_z" : 0,
+			"project_id" : "00000000-0000-0000-0000-000000000000",
+			"scale_x" : 0.001,
+			"scale_y" : 0.001,
+			"scale_z" : 0.001,
+			"software_id" : "libLAS 1.8.0",
+			"spatialreference" : "",
+			"srs" : 
+			{
+				"compoundwkt" : "",
+				"horizontal" : "",
+				"isgeocentric" : false,
+				"isgeographic" : false,
+				"prettycompoundwkt" : "",
+				"prettywkt" : "",
+				"proj4" : "",
+				"units" : 
+				{
+					"horizontal" : "unknown",
+					"vertical" : ""
+				},
+				"vertical" : "",
+				"wkt" : ""
+			},
+			"system_id" : "libLAS",
+			"vlr_0" : 
+			{
+				"data" : "AgAAAAICAAAAAAAAUMMAAP////////////////////8CAAYAFAACAAgABgACAA==",
+				"description" : "http://laszip.org",
+				"record_id" : 22204,
+				"user_id" : "laszip encoded"
+			}
+		},
+		"origin" : 156,
+		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r420.laz",
+		"points" : 4637
+	},
+	"r421.laz" : 
+	{
+		"bounds" : 
+		[
+			-2.14155,
+			2.458525,
+			-2.7384375,
+			-1.4305875,
+			3.1694875,
+			-2.027475
+		],
+		"metadata" : 
+		{
+			"comp_spatialreference" : "",
+			"compressed" : true,
+			"count" : 3235,
+			"creation_doy" : 363,
+			"creation_year" : 2014,
+			"dataformat_id" : 2,
+			"dataoffset" : 327,
+			"filesource_id" : 0,
+			"global_encoding" : 0,
+			"global_encoding_base64" : "AAA=",
+			"header_size" : 227,
+			"major_version" : 1,
+			"maxx" : -1.4305875,
+			"maxy" : 3.1694875,
+			"maxz" : -2.027475,
+			"minor_version" : 2,
+			"minx" : -2.14155,
+			"miny" : 2.458525,
+			"minz" : -2.7384375,
+			"offset_x" : 0,
+			"offset_y" : 0,
+			"offset_z" : 0,
+			"project_id" : "00000000-0000-0000-0000-000000000000",
+			"scale_x" : 0.001,
+			"scale_y" : 0.001,
+			"scale_z" : 0.001,
+			"software_id" : "libLAS 1.8.0",
+			"spatialreference" : "",
+			"srs" : 
+			{
+				"compoundwkt" : "",
+				"horizontal" : "",
+				"isgeocentric" : false,
+				"isgeographic" : false,
+				"prettycompoundwkt" : "",
+				"prettywkt" : "",
+				"proj4" : "",
+				"units" : 
+				{
+					"horizontal" : "unknown",
+					"vertical" : ""
+				},
+				"vertical" : "",
+				"wkt" : ""
+			},
+			"system_id" : "libLAS",
+			"vlr_0" : 
+			{
+				"data" : "AgAAAAICAAAAAAAAUMMAAP////////////////////8CAAYAFAACAAgABgACAA==",
+				"description" : "http://laszip.org",
+				"record_id" : 22204,
+				"user_id" : "laszip encoded"
+			}
+		},
+		"origin" : 157,
+		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r421.laz",
+		"points" : 3235
+	},
+	"r422.laz" : 
+	{
+		"bounds" : 
+		[
+			-2.14155,
+			3.1694875,
+			-3.4494,
+			-1.4305875,
+			3.88045,
+			-2.7384375
+		],
+		"metadata" : 
+		{
+			"comp_spatialreference" : "",
+			"compressed" : true,
+			"count" : 4110,
+			"creation_doy" : 363,
+			"creation_year" : 2014,
+			"dataformat_id" : 2,
+			"dataoffset" : 327,
+			"filesource_id" : 0,
+			"global_encoding" : 0,
+			"global_encoding_base64" : "AAA=",
+			"header_size" : 227,
+			"major_version" : 1,
+			"maxx" : -1.4305875,
+			"maxy" : 3.88045,
+			"maxz" : -2.7384375,
+			"minor_version" : 2,
+			"minx" : -2.14155,
+			"miny" : 3.1694875,
+			"minz" : -3.4494,
+			"offset_x" : 0,
+			"offset_y" : 0,
+			"offset_z" : 0,
+			"project_id" : "00000000-0000-0000-0000-000000000000",
+			"scale_x" : 0.001,
+			"scale_y" : 0.001,
+			"scale_z" : 0.001,
+			"software_id" : "libLAS 1.8.0",
+			"spatialreference" : "",
+			"srs" : 
+			{
+				"compoundwkt" : "",
+				"horizontal" : "",
+				"isgeocentric" : false,
+				"isgeographic" : false,
+				"prettycompoundwkt" : "",
+				"prettywkt" : "",
+				"proj4" : "",
+				"units" : 
+				{
+					"horizontal" : "unknown",
+					"vertical" : ""
+				},
+				"vertical" : "",
+				"wkt" : ""
+			},
+			"system_id" : "libLAS",
+			"vlr_0" : 
+			{
+				"data" : "AgAAAAICAAAAAAAAUMMAAP////////////////////8CAAYAFAACAAgABgACAA==",
+				"description" : "http://laszip.org",
+				"record_id" : 22204,
+				"user_id" : "laszip encoded"
+			}
+		},
+		"origin" : 158,
+		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r422.laz",
+		"points" : 4110
+	},
+	"r423.laz" : 
+	{
+		"bounds" : 
+		[
+			-2.14155,
+			3.1694875,
+			-2.7384375,
+			-1.4305875,
+			3.88045,
+			-2.027475
+		],
+		"metadata" : 
+		{
+			"comp_spatialreference" : "",
+			"compressed" : true,
+			"count" : 3724,
+			"creation_doy" : 363,
+			"creation_year" : 2014,
+			"dataformat_id" : 2,
+			"dataoffset" : 327,
+			"filesource_id" : 0,
+			"global_encoding" : 0,
+			"global_encoding_base64" : "AAA=",
+			"header_size" : 227,
+			"major_version" : 1,
+			"maxx" : -1.4305875,
+			"maxy" : 3.88045,
+			"maxz" : -2.027475,
+			"minor_version" : 2,
+			"minx" : -2.14155,
+			"miny" : 3.1694875,
+			"minz" : -2.7384375,
+			"offset_x" : 0,
+			"offset_y" : 0,
+			"offset_z" : 0,
+			"project_id" : "00000000-0000-0000-0000-000000000000",
+			"scale_x" : 0.001,
+			"scale_y" : 0.001,
+			"scale_z" : 0.001,
+			"software_id" : "libLAS 1.8.0",
+			"spatialreference" : "",
+			"srs" : 
+			{
+				"compoundwkt" : "",
+				"horizontal" : "",
+				"isgeocentric" : false,
+				"isgeographic" : false,
+				"prettycompoundwkt" : "",
+				"prettywkt" : "",
+				"proj4" : "",
+				"units" : 
+				{
+					"horizontal" : "unknown",
+					"vertical" : ""
+				},
+				"vertical" : "",
+				"wkt" : ""
+			},
+			"system_id" : "libLAS",
+			"vlr_0" : 
+			{
+				"data" : "AgAAAAICAAAAAAAAUMMAAP////////////////////8CAAYAFAACAAgABgACAA==",
+				"description" : "http://laszip.org",
+				"record_id" : 22204,
+				"user_id" : "laszip encoded"
+			}
+		},
+		"origin" : 159,
+		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r423.laz",
+		"points" : 3724
+	},
+	"r424.laz" : 
+	{
+		"bounds" : 
+		[
+			-1.4305875,
+			2.458525,
+			-3.4494,
+			-0.719625,
+			3.1694875,
+			-2.7384375
+		],
+		"metadata" : 
+		{
+			"comp_spatialreference" : "",
+			"compressed" : true,
+			"count" : 488,
+			"creation_doy" : 363,
+			"creation_year" : 2014,
+			"dataformat_id" : 2,
+			"dataoffset" : 327,
+			"filesource_id" : 0,
+			"global_encoding" : 0,
+			"global_encoding_base64" : "AAA=",
+			"header_size" : 227,
+			"major_version" : 1,
+			"maxx" : -0.719625,
+			"maxy" : 3.1694875,
+			"maxz" : -2.7384375,
+			"minor_version" : 2,
+			"minx" : -1.4305875,
+			"miny" : 2.458525,
+			"minz" : -3.4494,
+			"offset_x" : 0,
+			"offset_y" : 0,
+			"offset_z" : 0,
+			"project_id" : "00000000-0000-0000-0000-000000000000",
+			"scale_x" : 0.001,
+			"scale_y" : 0.001,
+			"scale_z" : 0.001,
+			"software_id" : "libLAS 1.8.0",
+			"spatialreference" : "",
+			"srs" : 
+			{
+				"compoundwkt" : "",
+				"horizontal" : "",
+				"isgeocentric" : false,
+				"isgeographic" : false,
+				"prettycompoundwkt" : "",
+				"prettywkt" : "",
+				"proj4" : "",
+				"units" : 
+				{
+					"horizontal" : "unknown",
+					"vertical" : ""
+				},
+				"vertical" : "",
+				"wkt" : ""
+			},
+			"system_id" : "libLAS",
+			"vlr_0" : 
+			{
+				"data" : "AgAAAAICAAAAAAAAUMMAAP////////////////////8CAAYAFAACAAgABgACAA==",
+				"description" : "http://laszip.org",
+				"record_id" : 22204,
+				"user_id" : "laszip encoded"
+			}
+		},
+		"origin" : 160,
+		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r424.laz",
+		"points" : 488
+	},
+	"r426.laz" : 
+	{
+		"bounds" : 
+		[
+			-1.4305875,
+			3.1694875,
+			-3.4494,
+			-0.719625,
+			3.88045,
+			-2.7384375
+		],
+		"metadata" : 
+		{
+			"comp_spatialreference" : "",
+			"compressed" : true,
+			"count" : 1478,
+			"creation_doy" : 363,
+			"creation_year" : 2014,
+			"dataformat_id" : 2,
+			"dataoffset" : 327,
+			"filesource_id" : 0,
+			"global_encoding" : 0,
+			"global_encoding_base64" : "AAA=",
+			"header_size" : 227,
+			"major_version" : 1,
+			"maxx" : -0.719625,
+			"maxy" : 3.88045,
+			"maxz" : -2.7384375,
+			"minor_version" : 2,
+			"minx" : -1.4305875,
+			"miny" : 3.1694875,
+			"minz" : -3.4494,
+			"offset_x" : 0,
+			"offset_y" : 0,
+			"offset_z" : 0,
+			"project_id" : "00000000-0000-0000-0000-000000000000",
+			"scale_x" : 0.001,
+			"scale_y" : 0.001,
+			"scale_z" : 0.001,
+			"software_id" : "libLAS 1.8.0",
+			"spatialreference" : "",
+			"srs" : 
+			{
+				"compoundwkt" : "",
+				"horizontal" : "",
+				"isgeocentric" : false,
+				"isgeographic" : false,
+				"prettycompoundwkt" : "",
+				"prettywkt" : "",
+				"proj4" : "",
+				"units" : 
+				{
+					"horizontal" : "unknown",
+					"vertical" : ""
+				},
+				"vertical" : "",
+				"wkt" : ""
+			},
+			"system_id" : "libLAS",
+			"vlr_0" : 
+			{
+				"data" : "AgAAAAICAAAAAAAAUMMAAP////////////////////8CAAYAFAACAAgABgACAA==",
+				"description" : "http://laszip.org",
+				"record_id" : 22204,
+				"user_id" : "laszip encoded"
+			}
+		},
+		"origin" : 161,
+		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r426.laz",
+		"points" : 1478
+	},
+	"r43.laz" : 
+	{
+		"bounds" : 
+		[
+			-2.14155,
+			2.458525,
+			-2.027475,
+			-0.719625,
+			3.88045,
+			-0.60555
+		],
+		"metadata" : 
+		{
+			"comp_spatialreference" : "",
+			"compressed" : true,
+			"count" : 2884,
+			"creation_doy" : 363,
+			"creation_year" : 2014,
+			"dataformat_id" : 2,
+			"dataoffset" : 327,
+			"filesource_id" : 0,
+			"global_encoding" : 0,
+			"global_encoding_base64" : "AAA=",
+			"header_size" : 227,
+			"major_version" : 1,
+			"maxx" : -0.719625,
+			"maxy" : 3.88045,
+			"maxz" : -0.60555,
+			"minor_version" : 2,
+			"minx" : -2.14155,
+			"miny" : 2.458525,
+			"minz" : -2.027475,
+			"offset_x" : 0,
+			"offset_y" : 0,
+			"offset_z" : 0,
+			"project_id" : "00000000-0000-0000-0000-000000000000",
+			"scale_x" : 0.001,
+			"scale_y" : 0.001,
+			"scale_z" : 0.001,
+			"software_id" : "libLAS 1.8.0",
+			"spatialreference" : "",
+			"srs" : 
+			{
+				"compoundwkt" : "",
+				"horizontal" : "",
+				"isgeocentric" : false,
+				"isgeographic" : false,
+				"prettycompoundwkt" : "",
+				"prettywkt" : "",
+				"proj4" : "",
+				"units" : 
+				{
+					"horizontal" : "unknown",
+					"vertical" : ""
+				},
+				"vertical" : "",
+				"wkt" : ""
+			},
+			"system_id" : "libLAS",
+			"vlr_0" : 
+			{
+				"data" : "AgAAAAICAAAAAAAAUMMAAP////////////////////8CAAYAFAACAAgABgACAA==",
+				"description" : "http://laszip.org",
+				"record_id" : 22204,
+				"user_id" : "laszip encoded"
+			}
+		},
+		"origin" : 162,
+		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r43.laz",
+		"points" : 2884
+	},
+	"r430.laz" : 
+	{
+		"bounds" : 
+		[
+			-2.14155,
+			2.458525,
+			-2.027475,
+			-1.4305875,
+			3.1694875,
+			-1.3165125
+		],
+		"metadata" : 
+		{
+			"comp_spatialreference" : "",
+			"compressed" : true,
+			"count" : 3365,
+			"creation_doy" : 363,
+			"creation_year" : 2014,
+			"dataformat_id" : 2,
+			"dataoffset" : 327,
+			"filesource_id" : 0,
+			"global_encoding" : 0,
+			"global_encoding_base64" : "AAA=",
+			"header_size" : 227,
+			"major_version" : 1,
+			"maxx" : -1.4305875,
+			"maxy" : 3.1694875,
+			"maxz" : -1.3165125,
+			"minor_version" : 2,
+			"minx" : -2.14155,
+			"miny" : 2.458525,
+			"minz" : -2.027475,
+			"offset_x" : 0,
+			"offset_y" : 0,
+			"offset_z" : 0,
+			"project_id" : "00000000-0000-0000-0000-000000000000",
+			"scale_x" : 0.001,
+			"scale_y" : 0.001,
+			"scale_z" : 0.001,
+			"software_id" : "libLAS 1.8.0",
+			"spatialreference" : "",
+			"srs" : 
+			{
+				"compoundwkt" : "",
+				"horizontal" : "",
+				"isgeocentric" : false,
+				"isgeographic" : false,
+				"prettycompoundwkt" : "",
+				"prettywkt" : "",
+				"proj4" : "",
+				"units" : 
+				{
+					"horizontal" : "unknown",
+					"vertical" : ""
+				},
+				"vertical" : "",
+				"wkt" : ""
+			},
+			"system_id" : "libLAS",
+			"vlr_0" : 
+			{
+				"data" : "AgAAAAICAAAAAAAAUMMAAP////////////////////8CAAYAFAACAAgABgACAA==",
+				"description" : "http://laszip.org",
+				"record_id" : 22204,
+				"user_id" : "laszip encoded"
+			}
+		},
+		"origin" : 163,
+		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r430.laz",
+		"points" : 3365
+	},
+	"r431.laz" : 
+	{
+		"bounds" : 
+		[
+			-2.14155,
+			2.458525,
+			-1.3165125,
+			-1.4305875,
+			3.1694875,
+			-0.60555
+		],
+		"metadata" : 
+		{
+			"comp_spatialreference" : "",
+			"compressed" : true,
+			"count" : 259,
+			"creation_doy" : 363,
+			"creation_year" : 2014,
+			"dataformat_id" : 2,
+			"dataoffset" : 327,
+			"filesource_id" : 0,
+			"global_encoding" : 0,
+			"global_encoding_base64" : "AAA=",
+			"header_size" : 227,
+			"major_version" : 1,
+			"maxx" : -1.4305875,
+			"maxy" : 3.1694875,
+			"maxz" : -0.60555,
+			"minor_version" : 2,
+			"minx" : -2.14155,
+			"miny" : 2.458525,
+			"minz" : -1.3165125,
+			"offset_x" : 0,
+			"offset_y" : 0,
+			"offset_z" : 0,
+			"project_id" : "00000000-0000-0000-0000-000000000000",
+			"scale_x" : 0.001,
+			"scale_y" : 0.001,
+			"scale_z" : 0.001,
+			"software_id" : "libLAS 1.8.0",
+			"spatialreference" : "",
+			"srs" : 
+			{
+				"compoundwkt" : "",
+				"horizontal" : "",
+				"isgeocentric" : false,
+				"isgeographic" : false,
+				"prettycompoundwkt" : "",
+				"prettywkt" : "",
+				"proj4" : "",
+				"units" : 
+				{
+					"horizontal" : "unknown",
+					"vertical" : ""
+				},
+				"vertical" : "",
+				"wkt" : ""
+			},
+			"system_id" : "libLAS",
+			"vlr_0" : 
+			{
+				"data" : "AgAAAAICAAAAAAAAUMMAAP////////////////////8CAAYAFAACAAgABgACAA==",
+				"description" : "http://laszip.org",
+				"record_id" : 22204,
+				"user_id" : "laszip encoded"
+			}
+		},
+		"origin" : 164,
+		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r431.laz",
+		"points" : 259
+	},
+	"r432.laz" : 
+	{
+		"bounds" : 
+		[
+			-2.14155,
+			3.1694875,
+			-2.027475,
+			-1.4305875,
+			3.88045,
+			-1.3165125
+		],
+		"metadata" : 
+		{
+			"comp_spatialreference" : "",
+			"compressed" : true,
+			"count" : 4349,
+			"creation_doy" : 363,
+			"creation_year" : 2014,
+			"dataformat_id" : 2,
+			"dataoffset" : 327,
+			"filesource_id" : 0,
+			"global_encoding" : 0,
+			"global_encoding_base64" : "AAA=",
+			"header_size" : 227,
+			"major_version" : 1,
+			"maxx" : -1.4305875,
+			"maxy" : 3.88045,
+			"maxz" : -1.3165125,
+			"minor_version" : 2,
+			"minx" : -2.14155,
+			"miny" : 3.1694875,
+			"minz" : -2.027475,
+			"offset_x" : 0,
+			"offset_y" : 0,
+			"offset_z" : 0,
+			"project_id" : "00000000-0000-0000-0000-000000000000",
+			"scale_x" : 0.001,
+			"scale_y" : 0.001,
+			"scale_z" : 0.001,
+			"software_id" : "libLAS 1.8.0",
+			"spatialreference" : "",
+			"srs" : 
+			{
+				"compoundwkt" : "",
+				"horizontal" : "",
+				"isgeocentric" : false,
+				"isgeographic" : false,
+				"prettycompoundwkt" : "",
+				"prettywkt" : "",
+				"proj4" : "",
+				"units" : 
+				{
+					"horizontal" : "unknown",
+					"vertical" : ""
+				},
+				"vertical" : "",
+				"wkt" : ""
+			},
+			"system_id" : "libLAS",
+			"vlr_0" : 
+			{
+				"data" : "AgAAAAICAAAAAAAAUMMAAP////////////////////8CAAYAFAACAAgABgACAA==",
+				"description" : "http://laszip.org",
+				"record_id" : 22204,
+				"user_id" : "laszip encoded"
+			}
+		},
+		"origin" : 165,
+		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r432.laz",
+		"points" : 4349
+	},
+	"r433.laz" : 
+	{
+		"bounds" : 
+		[
+			-2.14155,
+			3.1694875,
+			-1.3165125,
+			-1.4305875,
+			3.88045,
+			-0.60555
+		],
+		"metadata" : 
+		{
+			"comp_spatialreference" : "",
+			"compressed" : true,
+			"count" : 2825,
+			"creation_doy" : 363,
+			"creation_year" : 2014,
+			"dataformat_id" : 2,
+			"dataoffset" : 327,
+			"filesource_id" : 0,
+			"global_encoding" : 0,
+			"global_encoding_base64" : "AAA=",
+			"header_size" : 227,
+			"major_version" : 1,
+			"maxx" : -1.4305875,
+			"maxy" : 3.88045,
+			"maxz" : -0.60555,
+			"minor_version" : 2,
+			"minx" : -2.14155,
+			"miny" : 3.1694875,
+			"minz" : -1.3165125,
+			"offset_x" : 0,
+			"offset_y" : 0,
+			"offset_z" : 0,
+			"project_id" : "00000000-0000-0000-0000-000000000000",
+			"scale_x" : 0.001,
+			"scale_y" : 0.001,
+			"scale_z" : 0.001,
+			"software_id" : "libLAS 1.8.0",
+			"spatialreference" : "",
+			"srs" : 
+			{
+				"compoundwkt" : "",
+				"horizontal" : "",
+				"isgeocentric" : false,
+				"isgeographic" : false,
+				"prettycompoundwkt" : "",
+				"prettywkt" : "",
+				"proj4" : "",
+				"units" : 
+				{
+					"horizontal" : "unknown",
+					"vertical" : ""
+				},
+				"vertical" : "",
+				"wkt" : ""
+			},
+			"system_id" : "libLAS",
+			"vlr_0" : 
+			{
+				"data" : "AgAAAAICAAAAAAAAUMMAAP////////////////////8CAAYAFAACAAgABgACAA==",
+				"description" : "http://laszip.org",
+				"record_id" : 22204,
+				"user_id" : "laszip encoded"
+			}
+		},
+		"origin" : 166,
+		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r433.laz",
+		"points" : 2825
+	},
+	"r5.laz" : 
+	{
+		"bounds" : 
+		[
+			-2.14155,
+			1.0366,
+			-0.60555,
+			0.7023,
+			3.88045,
+			2.2383
+		],
+		"metadata" : 
+		{
+			"comp_spatialreference" : "",
+			"compressed" : true,
+			"count" : 124,
+			"creation_doy" : 363,
+			"creation_year" : 2014,
+			"dataformat_id" : 2,
+			"dataoffset" : 327,
+			"filesource_id" : 0,
+			"global_encoding" : 0,
+			"global_encoding_base64" : "AAA=",
+			"header_size" : 227,
+			"major_version" : 1,
+			"maxx" : 0.7023,
+			"maxy" : 3.88045,
+			"maxz" : 2.2383,
+			"minor_version" : 2,
+			"minx" : -2.14155,
+			"miny" : 1.0366,
+			"minz" : -0.60555,
+			"offset_x" : 0,
+			"offset_y" : 0,
+			"offset_z" : 0,
+			"project_id" : "00000000-0000-0000-0000-000000000000",
+			"scale_x" : 0.001,
+			"scale_y" : 0.001,
+			"scale_z" : 0.001,
+			"software_id" : "libLAS 1.8.0",
+			"spatialreference" : "",
+			"srs" : 
+			{
+				"compoundwkt" : "",
+				"horizontal" : "",
+				"isgeocentric" : false,
+				"isgeographic" : false,
+				"prettycompoundwkt" : "",
+				"prettywkt" : "",
+				"proj4" : "",
+				"units" : 
+				{
+					"horizontal" : "unknown",
+					"vertical" : ""
+				},
+				"vertical" : "",
+				"wkt" : ""
+			},
+			"system_id" : "libLAS",
+			"vlr_0" : 
+			{
+				"data" : "AgAAAAICAAAAAAAAUMMAAP////////////////////8CAAYAFAACAAgABgACAA==",
+				"description" : "http://laszip.org",
+				"record_id" : 22204,
+				"user_id" : "laszip encoded"
+			}
+		},
+		"origin" : 167,
+		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r5.laz",
+		"points" : 124
+	},
+	"r52.laz" : 
+	{
+		"bounds" : 
+		[
+			-2.14155,
+			2.458525,
+			-0.60555,
+			-0.719625,
+			3.88045,
+			0.816375
+		],
+		"metadata" : 
+		{
+			"comp_spatialreference" : "",
+			"compressed" : true,
+			"count" : 444,
+			"creation_doy" : 363,
+			"creation_year" : 2014,
+			"dataformat_id" : 2,
+			"dataoffset" : 327,
+			"filesource_id" : 0,
+			"global_encoding" : 0,
+			"global_encoding_base64" : "AAA=",
+			"header_size" : 227,
+			"major_version" : 1,
+			"maxx" : -0.719625,
+			"maxy" : 3.88045,
+			"maxz" : 0.816375,
+			"minor_version" : 2,
+			"minx" : -2.14155,
+			"miny" : 2.458525,
+			"minz" : -0.60555,
+			"offset_x" : 0,
+			"offset_y" : 0,
+			"offset_z" : 0,
+			"project_id" : "00000000-0000-0000-0000-000000000000",
+			"scale_x" : 0.001,
+			"scale_y" : 0.001,
+			"scale_z" : 0.001,
+			"software_id" : "libLAS 1.8.0",
+			"spatialreference" : "",
+			"srs" : 
+			{
+				"compoundwkt" : "",
+				"horizontal" : "",
+				"isgeocentric" : false,
+				"isgeographic" : false,
+				"prettycompoundwkt" : "",
+				"prettywkt" : "",
+				"proj4" : "",
+				"units" : 
+				{
+					"horizontal" : "unknown",
+					"vertical" : ""
+				},
+				"vertical" : "",
+				"wkt" : ""
+			},
+			"system_id" : "libLAS",
+			"vlr_0" : 
+			{
+				"data" : "AgAAAAICAAAAAAAAUMMAAP////////////////////8CAAYAFAACAAgABgACAA==",
+				"description" : "http://laszip.org",
+				"record_id" : 22204,
+				"user_id" : "laszip encoded"
+			}
+		},
+		"origin" : 168,
+		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r52.laz",
+		"points" : 444
+	},
+	"r522.laz" : 
+	{
+		"bounds" : 
+		[
+			-2.14155,
+			3.1694875,
+			-0.60555,
+			-1.4305875,
+			3.88045,
+			0.1054125
+		],
+		"metadata" : 
+		{
+			"comp_spatialreference" : "",
+			"compressed" : true,
+			"count" : 1682,
+			"creation_doy" : 363,
+			"creation_year" : 2014,
+			"dataformat_id" : 2,
+			"dataoffset" : 327,
+			"filesource_id" : 0,
+			"global_encoding" : 0,
+			"global_encoding_base64" : "AAA=",
+			"header_size" : 227,
+			"major_version" : 1,
+			"maxx" : -1.4305875,
+			"maxy" : 3.88045,
+			"maxz" : 0.1054125,
+			"minor_version" : 2,
+			"minx" : -2.14155,
+			"miny" : 3.1694875,
+			"minz" : -0.60555,
+			"offset_x" : 0,
+			"offset_y" : 0,
+			"offset_z" : 0,
+			"project_id" : "00000000-0000-0000-0000-000000000000",
+			"scale_x" : 0.001,
+			"scale_y" : 0.001,
+			"scale_z" : 0.001,
+			"software_id" : "libLAS 1.8.0",
+			"spatialreference" : "",
+			"srs" : 
+			{
+				"compoundwkt" : "",
+				"horizontal" : "",
+				"isgeocentric" : false,
+				"isgeographic" : false,
+				"prettycompoundwkt" : "",
+				"prettywkt" : "",
+				"proj4" : "",
+				"units" : 
+				{
+					"horizontal" : "unknown",
+					"vertical" : ""
+				},
+				"vertical" : "",
+				"wkt" : ""
+			},
+			"system_id" : "libLAS",
+			"vlr_0" : 
+			{
+				"data" : "AgAAAAICAAAAAAAAUMMAAP////////////////////8CAAYAFAACAAgABgACAA==",
+				"description" : "http://laszip.org",
+				"record_id" : 22204,
+				"user_id" : "laszip encoded"
+			}
+		},
+		"origin" : 169,
+		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r522.laz",
+		"points" : 1682
+	},
+	"r6.laz" : 
+	{
+		"bounds" : 
+		[
+			-2.14155,
+			3.88045,
+			-3.4494,
+			0.7023,
+			6.7243,
+			-0.60555
+		],
+		"metadata" : 
+		{
+			"comp_spatialreference" : "",
+			"compressed" : true,
+			"count" : 3682,
+			"creation_doy" : 363,
+			"creation_year" : 2014,
+			"dataformat_id" : 2,
+			"dataoffset" : 327,
+			"filesource_id" : 0,
+			"global_encoding" : 0,
+			"global_encoding_base64" : "AAA=",
+			"header_size" : 227,
+			"major_version" : 1,
+			"maxx" : 0.7023,
+			"maxy" : 6.7243,
+			"maxz" : -0.60555,
+			"minor_version" : 2,
+			"minx" : -2.14155,
+			"miny" : 3.88045,
+			"minz" : -3.4494,
+			"offset_x" : 0,
+			"offset_y" : 0,
+			"offset_z" : 0,
+			"project_id" : "00000000-0000-0000-0000-000000000000",
+			"scale_x" : 0.001,
+			"scale_y" : 0.001,
+			"scale_z" : 0.001,
+			"software_id" : "libLAS 1.8.0",
+			"spatialreference" : "",
+			"srs" : 
+			{
+				"compoundwkt" : "",
+				"horizontal" : "",
+				"isgeocentric" : false,
+				"isgeographic" : false,
+				"prettycompoundwkt" : "",
+				"prettywkt" : "",
+				"proj4" : "",
+				"units" : 
+				{
+					"horizontal" : "unknown",
+					"vertical" : ""
+				},
+				"vertical" : "",
+				"wkt" : ""
+			},
+			"system_id" : "libLAS",
+			"vlr_0" : 
+			{
+				"data" : "AgAAAAICAAAAAAAAUMMAAP////////////////////8CAAYAFAACAAgABgACAA==",
+				"description" : "http://laszip.org",
+				"record_id" : 22204,
+				"user_id" : "laszip encoded"
+			}
+		},
+		"origin" : 170,
+		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r6.laz",
+		"points" : 3682
+	},
+	"r60.laz" : 
+	{
+		"bounds" : 
+		[
+			-2.14155,
+			3.88045,
+			-3.4494,
+			-0.719625,
+			5.302375,
+			-2.027475
+		],
+		"metadata" : 
+		{
+			"comp_spatialreference" : "",
+			"compressed" : true,
+			"count" : 5605,
+			"creation_doy" : 363,
+			"creation_year" : 2014,
+			"dataformat_id" : 2,
+			"dataoffset" : 327,
+			"filesource_id" : 0,
+			"global_encoding" : 0,
+			"global_encoding_base64" : "AAA=",
+			"header_size" : 227,
+			"major_version" : 1,
+			"maxx" : -0.719625,
+			"maxy" : 5.302375,
+			"maxz" : -2.027475,
+			"minor_version" : 2,
+			"minx" : -2.14155,
+			"miny" : 3.88045,
+			"minz" : -3.4494,
+			"offset_x" : 0,
+			"offset_y" : 0,
+			"offset_z" : 0,
+			"project_id" : "00000000-0000-0000-0000-000000000000",
+			"scale_x" : 0.001,
+			"scale_y" : 0.001,
+			"scale_z" : 0.001,
+			"software_id" : "libLAS 1.8.0",
+			"spatialreference" : "",
+			"srs" : 
+			{
+				"compoundwkt" : "",
+				"horizontal" : "",
+				"isgeocentric" : false,
+				"isgeographic" : false,
+				"prettycompoundwkt" : "",
+				"prettywkt" : "",
+				"proj4" : "",
+				"units" : 
+				{
+					"horizontal" : "unknown",
+					"vertical" : ""
+				},
+				"vertical" : "",
+				"wkt" : ""
+			},
+			"system_id" : "libLAS",
+			"vlr_0" : 
+			{
+				"data" : "AgAAAAICAAAAAAAAUMMAAP////////////////////8CAAYAFAACAAgABgACAA==",
+				"description" : "http://laszip.org",
+				"record_id" : 22204,
+				"user_id" : "laszip encoded"
+			}
+		},
+		"origin" : 171,
+		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r60.laz",
+		"points" : 5605
+	},
+	"r600.laz" : 
+	{
+		"bounds" : 
+		[
+			-2.14155,
+			3.88045,
+			-3.4494,
+			-1.4305875,
+			4.5914125,
+			-2.7384375
+		],
+		"metadata" : 
+		{
+			"comp_spatialreference" : "",
+			"compressed" : true,
+			"count" : 4013,
+			"creation_doy" : 363,
+			"creation_year" : 2014,
+			"dataformat_id" : 2,
+			"dataoffset" : 327,
+			"filesource_id" : 0,
+			"global_encoding" : 0,
+			"global_encoding_base64" : "AAA=",
+			"header_size" : 227,
+			"major_version" : 1,
+			"maxx" : -1.4305875,
+			"maxy" : 4.5914125,
+			"maxz" : -2.7384375,
+			"minor_version" : 2,
+			"minx" : -2.14155,
+			"miny" : 3.88045,
+			"minz" : -3.4494,
+			"offset_x" : 0,
+			"offset_y" : 0,
+			"offset_z" : 0,
+			"project_id" : "00000000-0000-0000-0000-000000000000",
+			"scale_x" : 0.001,
+			"scale_y" : 0.001,
+			"scale_z" : 0.001,
+			"software_id" : "libLAS 1.8.0",
+			"spatialreference" : "",
+			"srs" : 
+			{
+				"compoundwkt" : "",
+				"horizontal" : "",
+				"isgeocentric" : false,
+				"isgeographic" : false,
+				"prettycompoundwkt" : "",
+				"prettywkt" : "",
+				"proj4" : "",
+				"units" : 
+				{
+					"horizontal" : "unknown",
+					"vertical" : ""
+				},
+				"vertical" : "",
+				"wkt" : ""
+			},
+			"system_id" : "libLAS",
+			"vlr_0" : 
+			{
+				"data" : "AgAAAAICAAAAAAAAUMMAAP////////////////////8CAAYAFAACAAgABgACAA==",
+				"description" : "http://laszip.org",
+				"record_id" : 22204,
+				"user_id" : "laszip encoded"
+			}
+		},
+		"origin" : 172,
+		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r600.laz",
+		"points" : 4013
+	},
+	"r601.laz" : 
+	{
+		"bounds" : 
+		[
+			-2.14155,
+			3.88045,
+			-2.7384375,
+			-1.4305875,
+			4.5914125,
+			-2.027475
+		],
+		"metadata" : 
+		{
+			"comp_spatialreference" : "",
+			"compressed" : true,
+			"count" : 4349,
+			"creation_doy" : 363,
+			"creation_year" : 2014,
+			"dataformat_id" : 2,
+			"dataoffset" : 327,
+			"filesource_id" : 0,
+			"global_encoding" : 0,
+			"global_encoding_base64" : "AAA=",
+			"header_size" : 227,
+			"major_version" : 1,
+			"maxx" : -1.4305875,
+			"maxy" : 4.5914125,
+			"maxz" : -2.027475,
+			"minor_version" : 2,
+			"minx" : -2.14155,
+			"miny" : 3.88045,
+			"minz" : -2.7384375,
+			"offset_x" : 0,
+			"offset_y" : 0,
+			"offset_z" : 0,
+			"project_id" : "00000000-0000-0000-0000-000000000000",
+			"scale_x" : 0.001,
+			"scale_y" : 0.001,
+			"scale_z" : 0.001,
+			"software_id" : "libLAS 1.8.0",
+			"spatialreference" : "",
+			"srs" : 
+			{
+				"compoundwkt" : "",
+				"horizontal" : "",
+				"isgeocentric" : false,
+				"isgeographic" : false,
+				"prettycompoundwkt" : "",
+				"prettywkt" : "",
+				"proj4" : "",
+				"units" : 
+				{
+					"horizontal" : "unknown",
+					"vertical" : ""
+				},
+				"vertical" : "",
+				"wkt" : ""
+			},
+			"system_id" : "libLAS",
+			"vlr_0" : 
+			{
+				"data" : "AgAAAAICAAAAAAAAUMMAAP////////////////////8CAAYAFAACAAgABgACAA==",
+				"description" : "http://laszip.org",
+				"record_id" : 22204,
+				"user_id" : "laszip encoded"
+			}
+		},
+		"origin" : 173,
+		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r601.laz",
+		"points" : 4349
+	},
+	"r602.laz" : 
+	{
+		"bounds" : 
+		[
+			-2.14155,
+			4.5914125,
+			-3.4494,
+			-1.4305875,
+			5.302375,
+			-2.7384375
+		],
+		"metadata" : 
+		{
+			"comp_spatialreference" : "",
+			"compressed" : true,
+			"count" : 2331,
+			"creation_doy" : 363,
+			"creation_year" : 2014,
+			"dataformat_id" : 2,
+			"dataoffset" : 327,
+			"filesource_id" : 0,
+			"global_encoding" : 0,
+			"global_encoding_base64" : "AAA=",
+			"header_size" : 227,
+			"major_version" : 1,
+			"maxx" : -1.4305875,
+			"maxy" : 5.302375,
+			"maxz" : -2.7384375,
+			"minor_version" : 2,
+			"minx" : -2.14155,
+			"miny" : 4.5914125,
+			"minz" : -3.4494,
+			"offset_x" : 0,
+			"offset_y" : 0,
+			"offset_z" : 0,
+			"project_id" : "00000000-0000-0000-0000-000000000000",
+			"scale_x" : 0.001,
+			"scale_y" : 0.001,
+			"scale_z" : 0.001,
+			"software_id" : "libLAS 1.8.0",
+			"spatialreference" : "",
+			"srs" : 
+			{
+				"compoundwkt" : "",
+				"horizontal" : "",
+				"isgeocentric" : false,
+				"isgeographic" : false,
+				"prettycompoundwkt" : "",
+				"prettywkt" : "",
+				"proj4" : "",
+				"units" : 
+				{
+					"horizontal" : "unknown",
+					"vertical" : ""
+				},
+				"vertical" : "",
+				"wkt" : ""
+			},
+			"system_id" : "libLAS",
+			"vlr_0" : 
+			{
+				"data" : "AgAAAAICAAAAAAAAUMMAAP////////////////////8CAAYAFAACAAgABgACAA==",
+				"description" : "http://laszip.org",
+				"record_id" : 22204,
+				"user_id" : "laszip encoded"
+			}
+		},
+		"origin" : 174,
+		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r602.laz",
+		"points" : 2331
+	},
+	"r603.laz" : 
+	{
+		"bounds" : 
+		[
+			-2.14155,
+			4.5914125,
+			-2.7384375,
+			-1.4305875,
+			5.302375,
+			-2.027475
+		],
+		"metadata" : 
+		{
+			"comp_spatialreference" : "",
+			"compressed" : true,
+			"count" : 6069,
+			"creation_doy" : 363,
+			"creation_year" : 2014,
+			"dataformat_id" : 2,
+			"dataoffset" : 327,
+			"filesource_id" : 0,
+			"global_encoding" : 0,
+			"global_encoding_base64" : "AAA=",
+			"header_size" : 227,
+			"major_version" : 1,
+			"maxx" : -1.4305875,
+			"maxy" : 5.302375,
+			"maxz" : -2.027475,
+			"minor_version" : 2,
+			"minx" : -2.14155,
+			"miny" : 4.5914125,
+			"minz" : -2.7384375,
+			"offset_x" : 0,
+			"offset_y" : 0,
+			"offset_z" : 0,
+			"project_id" : "00000000-0000-0000-0000-000000000000",
+			"scale_x" : 0.001,
+			"scale_y" : 0.001,
+			"scale_z" : 0.001,
+			"software_id" : "libLAS 1.8.0",
+			"spatialreference" : "",
+			"srs" : 
+			{
+				"compoundwkt" : "",
+				"horizontal" : "",
+				"isgeocentric" : false,
+				"isgeographic" : false,
+				"prettycompoundwkt" : "",
+				"prettywkt" : "",
+				"proj4" : "",
+				"units" : 
+				{
+					"horizontal" : "unknown",
+					"vertical" : ""
+				},
+				"vertical" : "",
+				"wkt" : ""
+			},
+			"system_id" : "libLAS",
+			"vlr_0" : 
+			{
+				"data" : "AgAAAAICAAAAAAAAUMMAAP////////////////////8CAAYAFAACAAgABgACAA==",
+				"description" : "http://laszip.org",
+				"record_id" : 22204,
+				"user_id" : "laszip encoded"
+			}
+		},
+		"origin" : 175,
+		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r603.laz",
+		"points" : 6069
+	},
+	"r604.laz" : 
+	{
+		"bounds" : 
+		[
+			-1.4305875,
+			3.88045,
+			-3.4494,
+			-0.719625,
+			4.5914125,
+			-2.7384375
+		],
+		"metadata" : 
+		{
+			"comp_spatialreference" : "",
+			"compressed" : true,
+			"count" : 1634,
+			"creation_doy" : 363,
+			"creation_year" : 2014,
+			"dataformat_id" : 2,
+			"dataoffset" : 327,
+			"filesource_id" : 0,
+			"global_encoding" : 0,
+			"global_encoding_base64" : "AAA=",
+			"header_size" : 227,
+			"major_version" : 1,
+			"maxx" : -0.719625,
+			"maxy" : 4.5914125,
+			"maxz" : -2.7384375,
+			"minor_version" : 2,
+			"minx" : -1.4305875,
+			"miny" : 3.88045,
+			"minz" : -3.4494,
+			"offset_x" : 0,
+			"offset_y" : 0,
+			"offset_z" : 0,
+			"project_id" : "00000000-0000-0000-0000-000000000000",
+			"scale_x" : 0.001,
+			"scale_y" : 0.001,
+			"scale_z" : 0.001,
+			"software_id" : "libLAS 1.8.0",
+			"spatialreference" : "",
+			"srs" : 
+			{
+				"compoundwkt" : "",
+				"horizontal" : "",
+				"isgeocentric" : false,
+				"isgeographic" : false,
+				"prettycompoundwkt" : "",
+				"prettywkt" : "",
+				"proj4" : "",
+				"units" : 
+				{
+					"horizontal" : "unknown",
+					"vertical" : ""
+				},
+				"vertical" : "",
+				"wkt" : ""
+			},
+			"system_id" : "libLAS",
+			"vlr_0" : 
+			{
+				"data" : "AgAAAAICAAAAAAAAUMMAAP////////////////////8CAAYAFAACAAgABgACAA==",
+				"description" : "http://laszip.org",
+				"record_id" : 22204,
+				"user_id" : "laszip encoded"
+			}
+		},
+		"origin" : 176,
+		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r604.laz",
+		"points" : 1634
+	},
+	"r606.laz" : 
+	{
+		"bounds" : 
+		[
+			-1.4305875,
+			4.5914125,
+			-3.4494,
+			-0.719625,
+			5.302375,
+			-2.7384375
+		],
+		"metadata" : 
+		{
+			"comp_spatialreference" : "",
+			"compressed" : true,
+			"count" : 2681,
+			"creation_doy" : 363,
+			"creation_year" : 2014,
+			"dataformat_id" : 2,
+			"dataoffset" : 327,
+			"filesource_id" : 0,
+			"global_encoding" : 0,
+			"global_encoding_base64" : "AAA=",
+			"header_size" : 227,
+			"major_version" : 1,
+			"maxx" : -0.719625,
+			"maxy" : 5.302375,
+			"maxz" : -2.7384375,
+			"minor_version" : 2,
+			"minx" : -1.4305875,
+			"miny" : 4.5914125,
+			"minz" : -3.4494,
+			"offset_x" : 0,
+			"offset_y" : 0,
+			"offset_z" : 0,
+			"project_id" : "00000000-0000-0000-0000-000000000000",
+			"scale_x" : 0.001,
+			"scale_y" : 0.001,
+			"scale_z" : 0.001,
+			"software_id" : "libLAS 1.8.0",
+			"spatialreference" : "",
+			"srs" : 
+			{
+				"compoundwkt" : "",
+				"horizontal" : "",
+				"isgeocentric" : false,
+				"isgeographic" : false,
+				"prettycompoundwkt" : "",
+				"prettywkt" : "",
+				"proj4" : "",
+				"units" : 
+				{
+					"horizontal" : "unknown",
+					"vertical" : ""
+				},
+				"vertical" : "",
+				"wkt" : ""
+			},
+			"system_id" : "libLAS",
+			"vlr_0" : 
+			{
+				"data" : "AgAAAAICAAAAAAAAUMMAAP////////////////////8CAAYAFAACAAgABgACAA==",
+				"description" : "http://laszip.org",
+				"record_id" : 22204,
+				"user_id" : "laszip encoded"
+			}
+		},
+		"origin" : 177,
+		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r606.laz",
+		"points" : 2681
+	},
+	"r61.laz" : 
+	{
+		"bounds" : 
+		[
+			-2.14155,
+			3.88045,
+			-2.027475,
+			-0.719625,
+			5.302375,
+			-0.60555
+		],
+		"metadata" : 
+		{
+			"comp_spatialreference" : "",
+			"compressed" : true,
+			"count" : 2357,
+			"creation_doy" : 363,
+			"creation_year" : 2014,
+			"dataformat_id" : 2,
+			"dataoffset" : 327,
+			"filesource_id" : 0,
+			"global_encoding" : 0,
+			"global_encoding_base64" : "AAA=",
+			"header_size" : 227,
+			"major_version" : 1,
+			"maxx" : -0.719625,
+			"maxy" : 5.302375,
+			"maxz" : -0.60555,
+			"minor_version" : 2,
+			"minx" : -2.14155,
+			"miny" : 3.88045,
+			"minz" : -2.027475,
+			"offset_x" : 0,
+			"offset_y" : 0,
+			"offset_z" : 0,
+			"project_id" : "00000000-0000-0000-0000-000000000000",
+			"scale_x" : 0.001,
+			"scale_y" : 0.001,
+			"scale_z" : 0.001,
+			"software_id" : "libLAS 1.8.0",
+			"spatialreference" : "",
+			"srs" : 
+			{
+				"compoundwkt" : "",
+				"horizontal" : "",
+				"isgeocentric" : false,
+				"isgeographic" : false,
+				"prettycompoundwkt" : "",
+				"prettywkt" : "",
+				"proj4" : "",
+				"units" : 
+				{
+					"horizontal" : "unknown",
+					"vertical" : ""
+				},
+				"vertical" : "",
+				"wkt" : ""
+			},
+			"system_id" : "libLAS",
+			"vlr_0" : 
+			{
+				"data" : "AgAAAAICAAAAAAAAUMMAAP////////////////////8CAAYAFAACAAgABgACAA==",
+				"description" : "http://laszip.org",
+				"record_id" : 22204,
+				"user_id" : "laszip encoded"
+			}
+		},
+		"origin" : 178,
+		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r61.laz",
+		"points" : 2357
+	},
+	"r610.laz" : 
+	{
+		"bounds" : 
+		[
+			-2.14155,
+			3.88045,
+			-2.027475,
+			-1.4305875,
+			4.5914125,
+			-1.3165125
+		],
+		"metadata" : 
+		{
+			"comp_spatialreference" : "",
+			"compressed" : true,
+			"count" : 1750,
+			"creation_doy" : 363,
+			"creation_year" : 2014,
+			"dataformat_id" : 2,
+			"dataoffset" : 327,
+			"filesource_id" : 0,
+			"global_encoding" : 0,
+			"global_encoding_base64" : "AAA=",
+			"header_size" : 227,
+			"major_version" : 1,
+			"maxx" : -1.4305875,
+			"maxy" : 4.5914125,
+			"maxz" : -1.3165125,
+			"minor_version" : 2,
+			"minx" : -2.14155,
+			"miny" : 3.88045,
+			"minz" : -2.027475,
+			"offset_x" : 0,
+			"offset_y" : 0,
+			"offset_z" : 0,
+			"project_id" : "00000000-0000-0000-0000-000000000000",
+			"scale_x" : 0.001,
+			"scale_y" : 0.001,
+			"scale_z" : 0.001,
+			"software_id" : "libLAS 1.8.0",
+			"spatialreference" : "",
+			"srs" : 
+			{
+				"compoundwkt" : "",
+				"horizontal" : "",
+				"isgeocentric" : false,
+				"isgeographic" : false,
+				"prettycompoundwkt" : "",
+				"prettywkt" : "",
+				"proj4" : "",
+				"units" : 
+				{
+					"horizontal" : "unknown",
+					"vertical" : ""
+				},
+				"vertical" : "",
+				"wkt" : ""
+			},
+			"system_id" : "libLAS",
+			"vlr_0" : 
+			{
+				"data" : "AgAAAAICAAAAAAAAUMMAAP////////////////////8CAAYAFAACAAgABgACAA==",
+				"description" : "http://laszip.org",
+				"record_id" : 22204,
+				"user_id" : "laszip encoded"
+			}
+		},
+		"origin" : 179,
+		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r610.laz",
+		"points" : 1750
+	},
+	"r611.laz" : 
+	{
+		"bounds" : 
+		[
+			-2.14155,
+			3.88045,
+			-1.3165125,
+			-1.4305875,
+			4.5914125,
+			-0.60555
+		],
+		"metadata" : 
+		{
+			"comp_spatialreference" : "",
+			"compressed" : true,
+			"count" : 328,
+			"creation_doy" : 363,
+			"creation_year" : 2014,
+			"dataformat_id" : 2,
+			"dataoffset" : 327,
+			"filesource_id" : 0,
+			"global_encoding" : 0,
+			"global_encoding_base64" : "AAA=",
+			"header_size" : 227,
+			"major_version" : 1,
+			"maxx" : -1.4305875,
+			"maxy" : 4.5914125,
+			"maxz" : -0.60555,
+			"minor_version" : 2,
+			"minx" : -2.14155,
+			"miny" : 3.88045,
+			"minz" : -1.3165125,
+			"offset_x" : 0,
+			"offset_y" : 0,
+			"offset_z" : 0,
+			"project_id" : "00000000-0000-0000-0000-000000000000",
+			"scale_x" : 0.001,
+			"scale_y" : 0.001,
+			"scale_z" : 0.001,
+			"software_id" : "libLAS 1.8.0",
+			"spatialreference" : "",
+			"srs" : 
+			{
+				"compoundwkt" : "",
+				"horizontal" : "",
+				"isgeocentric" : false,
+				"isgeographic" : false,
+				"prettycompoundwkt" : "",
+				"prettywkt" : "",
+				"proj4" : "",
+				"units" : 
+				{
+					"horizontal" : "unknown",
+					"vertical" : ""
+				},
+				"vertical" : "",
+				"wkt" : ""
+			},
+			"system_id" : "libLAS",
+			"vlr_0" : 
+			{
+				"data" : "AgAAAAICAAAAAAAAUMMAAP////////////////////8CAAYAFAACAAgABgACAA==",
+				"description" : "http://laszip.org",
+				"record_id" : 22204,
+				"user_id" : "laszip encoded"
+			}
+		},
+		"origin" : 180,
+		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r611.laz",
+		"points" : 328
+	},
+	"r612.laz" : 
+	{
+		"bounds" : 
+		[
+			-2.14155,
+			4.5914125,
+			-2.027475,
+			-1.4305875,
+			5.302375,
+			-1.3165125
+		],
+		"metadata" : 
+		{
+			"comp_spatialreference" : "",
+			"compressed" : true,
+			"count" : 4252,
+			"creation_doy" : 363,
+			"creation_year" : 2014,
+			"dataformat_id" : 2,
+			"dataoffset" : 327,
+			"filesource_id" : 0,
+			"global_encoding" : 0,
+			"global_encoding_base64" : "AAA=",
+			"header_size" : 227,
+			"major_version" : 1,
+			"maxx" : -1.4305875,
+			"maxy" : 5.302375,
+			"maxz" : -1.3165125,
+			"minor_version" : 2,
+			"minx" : -2.14155,
+			"miny" : 4.5914125,
+			"minz" : -2.027475,
+			"offset_x" : 0,
+			"offset_y" : 0,
+			"offset_z" : 0,
+			"project_id" : "00000000-0000-0000-0000-000000000000",
+			"scale_x" : 0.001,
+			"scale_y" : 0.001,
+			"scale_z" : 0.001,
+			"software_id" : "libLAS 1.8.0",
+			"spatialreference" : "",
+			"srs" : 
+			{
+				"compoundwkt" : "",
+				"horizontal" : "",
+				"isgeocentric" : false,
+				"isgeographic" : false,
+				"prettycompoundwkt" : "",
+				"prettywkt" : "",
+				"proj4" : "",
+				"units" : 
+				{
+					"horizontal" : "unknown",
+					"vertical" : ""
+				},
+				"vertical" : "",
+				"wkt" : ""
+			},
+			"system_id" : "libLAS",
+			"vlr_0" : 
+			{
+				"data" : "AgAAAAICAAAAAAAAUMMAAP////////////////////8CAAYAFAACAAgABgACAA==",
+				"description" : "http://laszip.org",
+				"record_id" : 22204,
+				"user_id" : "laszip encoded"
+			}
+		},
+		"origin" : 181,
+		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r612.laz",
+		"points" : 4252
+	},
+	"r613.laz" : 
+	{
+		"bounds" : 
+		[
+			-2.14155,
+			4.5914125,
+			-1.3165125,
+			-1.4305875,
+			5.302375,
+			-0.60555
+		],
+		"metadata" : 
+		{
+			"comp_spatialreference" : "",
+			"compressed" : true,
+			"count" : 2495,
+			"creation_doy" : 363,
+			"creation_year" : 2014,
+			"dataformat_id" : 2,
+			"dataoffset" : 327,
+			"filesource_id" : 0,
+			"global_encoding" : 0,
+			"global_encoding_base64" : "AAA=",
+			"header_size" : 227,
+			"major_version" : 1,
+			"maxx" : -1.4305875,
+			"maxy" : 5.302375,
+			"maxz" : -0.60555,
+			"minor_version" : 2,
+			"minx" : -2.14155,
+			"miny" : 4.5914125,
+			"minz" : -1.3165125,
+			"offset_x" : 0,
+			"offset_y" : 0,
+			"offset_z" : 0,
+			"project_id" : "00000000-0000-0000-0000-000000000000",
+			"scale_x" : 0.001,
+			"scale_y" : 0.001,
+			"scale_z" : 0.001,
+			"software_id" : "libLAS 1.8.0",
+			"spatialreference" : "",
+			"srs" : 
+			{
+				"compoundwkt" : "",
+				"horizontal" : "",
+				"isgeocentric" : false,
+				"isgeographic" : false,
+				"prettycompoundwkt" : "",
+				"prettywkt" : "",
+				"proj4" : "",
+				"units" : 
+				{
+					"horizontal" : "unknown",
+					"vertical" : ""
+				},
+				"vertical" : "",
+				"wkt" : ""
+			},
+			"system_id" : "libLAS",
+			"vlr_0" : 
+			{
+				"data" : "AgAAAAICAAAAAAAAUMMAAP////////////////////8CAAYAFAACAAgABgACAA==",
+				"description" : "http://laszip.org",
+				"record_id" : 22204,
+				"user_id" : "laszip encoded"
+			}
+		},
+		"origin" : 182,
+		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r613.laz",
+		"points" : 2495
+	},
+	"r62.laz" : 
+	{
+		"bounds" : 
+		[
+			-2.14155,
+			5.302375,
+			-3.4494,
+			-0.719625,
+			6.7243,
+			-2.027475
+		],
+		"metadata" : 
+		{
+			"comp_spatialreference" : "",
+			"compressed" : true,
+			"count" : 3782,
+			"creation_doy" : 363,
+			"creation_year" : 2014,
+			"dataformat_id" : 2,
+			"dataoffset" : 327,
+			"filesource_id" : 0,
+			"global_encoding" : 0,
+			"global_encoding_base64" : "AAA=",
+			"header_size" : 227,
+			"major_version" : 1,
+			"maxx" : -0.719625,
+			"maxy" : 6.7243,
+			"maxz" : -2.027475,
+			"minor_version" : 2,
+			"minx" : -2.14155,
+			"miny" : 5.302375,
+			"minz" : -3.4494,
+			"offset_x" : 0,
+			"offset_y" : 0,
+			"offset_z" : 0,
+			"project_id" : "00000000-0000-0000-0000-000000000000",
+			"scale_x" : 0.001,
+			"scale_y" : 0.001,
+			"scale_z" : 0.001,
+			"software_id" : "libLAS 1.8.0",
+			"spatialreference" : "",
+			"srs" : 
+			{
+				"compoundwkt" : "",
+				"horizontal" : "",
+				"isgeocentric" : false,
+				"isgeographic" : false,
+				"prettycompoundwkt" : "",
+				"prettywkt" : "",
+				"proj4" : "",
+				"units" : 
+				{
+					"horizontal" : "unknown",
+					"vertical" : ""
+				},
+				"vertical" : "",
+				"wkt" : ""
+			},
+			"system_id" : "libLAS",
+			"vlr_0" : 
+			{
+				"data" : "AgAAAAICAAAAAAAAUMMAAP////////////////////8CAAYAFAACAAgABgACAA==",
+				"description" : "http://laszip.org",
+				"record_id" : 22204,
+				"user_id" : "laszip encoded"
+			}
+		},
+		"origin" : 183,
+		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r62.laz",
+		"points" : 3782
+	},
+	"r620.laz" : 
+	{
+		"bounds" : 
+		[
+			-2.14155,
+			5.302375,
+			-3.4494,
+			-1.4305875,
+			6.0133375,
+			-2.7384375
+		],
+		"metadata" : 
+		{
+			"comp_spatialreference" : "",
+			"compressed" : true,
+			"count" : 1082,
+			"creation_doy" : 363,
+			"creation_year" : 2014,
+			"dataformat_id" : 2,
+			"dataoffset" : 327,
+			"filesource_id" : 0,
+			"global_encoding" : 0,
+			"global_encoding_base64" : "AAA=",
+			"header_size" : 227,
+			"major_version" : 1,
+			"maxx" : -1.4305875,
+			"maxy" : 6.0133375,
+			"maxz" : -2.7384375,
+			"minor_version" : 2,
+			"minx" : -2.14155,
+			"miny" : 5.302375,
+			"minz" : -3.4494,
+			"offset_x" : 0,
+			"offset_y" : 0,
+			"offset_z" : 0,
+			"project_id" : "00000000-0000-0000-0000-000000000000",
+			"scale_x" : 0.001,
+			"scale_y" : 0.001,
+			"scale_z" : 0.001,
+			"software_id" : "libLAS 1.8.0",
+			"spatialreference" : "",
+			"srs" : 
+			{
+				"compoundwkt" : "",
+				"horizontal" : "",
+				"isgeocentric" : false,
+				"isgeographic" : false,
+				"prettycompoundwkt" : "",
+				"prettywkt" : "",
+				"proj4" : "",
+				"units" : 
+				{
+					"horizontal" : "unknown",
+					"vertical" : ""
+				},
+				"vertical" : "",
+				"wkt" : ""
+			},
+			"system_id" : "libLAS",
+			"vlr_0" : 
+			{
+				"data" : "AgAAAAICAAAAAAAAUMMAAP////////////////////8CAAYAFAACAAgABgACAA==",
+				"description" : "http://laszip.org",
+				"record_id" : 22204,
+				"user_id" : "laszip encoded"
+			}
+		},
+		"origin" : 184,
+		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r620.laz",
+		"points" : 1082
+	},
+	"r621.laz" : 
+	{
+		"bounds" : 
+		[
+			-2.14155,
+			5.302375,
+			-2.7384375,
+			-1.4305875,
+			6.0133375,
+			-2.027475
+		],
+		"metadata" : 
+		{
+			"comp_spatialreference" : "",
+			"compressed" : true,
+			"count" : 5146,
+			"creation_doy" : 363,
+			"creation_year" : 2014,
+			"dataformat_id" : 2,
+			"dataoffset" : 327,
+			"filesource_id" : 0,
+			"global_encoding" : 0,
+			"global_encoding_base64" : "AAA=",
+			"header_size" : 227,
+			"major_version" : 1,
+			"maxx" : -1.4305875,
+			"maxy" : 6.0133375,
+			"maxz" : -2.027475,
+			"minor_version" : 2,
+			"minx" : -2.14155,
+			"miny" : 5.302375,
+			"minz" : -2.7384375,
+			"offset_x" : 0,
+			"offset_y" : 0,
+			"offset_z" : 0,
+			"project_id" : "00000000-0000-0000-0000-000000000000",
+			"scale_x" : 0.001,
+			"scale_y" : 0.001,
+			"scale_z" : 0.001,
+			"software_id" : "libLAS 1.8.0",
+			"spatialreference" : "",
+			"srs" : 
+			{
+				"compoundwkt" : "",
+				"horizontal" : "",
+				"isgeocentric" : false,
+				"isgeographic" : false,
+				"prettycompoundwkt" : "",
+				"prettywkt" : "",
+				"proj4" : "",
+				"units" : 
+				{
+					"horizontal" : "unknown",
+					"vertical" : ""
+				},
+				"vertical" : "",
+				"wkt" : ""
+			},
+			"system_id" : "libLAS",
+			"vlr_0" : 
+			{
+				"data" : "AgAAAAICAAAAAAAAUMMAAP////////////////////8CAAYAFAACAAgABgACAA==",
+				"description" : "http://laszip.org",
+				"record_id" : 22204,
+				"user_id" : "laszip encoded"
+			}
+		},
+		"origin" : 185,
+		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r621.laz",
+		"points" : 5146
+	},
+	"r623.laz" : 
+	{
+		"bounds" : 
+		[
+			-2.14155,
+			6.0133375,
+			-2.7384375,
+			-1.4305875,
+			6.7243,
+			-2.027475
+		],
+		"metadata" : 
+		{
+			"comp_spatialreference" : "",
+			"compressed" : true,
+			"count" : 1531,
+			"creation_doy" : 363,
+			"creation_year" : 2014,
+			"dataformat_id" : 2,
+			"dataoffset" : 327,
+			"filesource_id" : 0,
+			"global_encoding" : 0,
+			"global_encoding_base64" : "AAA=",
+			"header_size" : 227,
+			"major_version" : 1,
+			"maxx" : -1.4305875,
+			"maxy" : 6.7243,
+			"maxz" : -2.027475,
+			"minor_version" : 2,
+			"minx" : -2.14155,
+			"miny" : 6.0133375,
+			"minz" : -2.7384375,
+			"offset_x" : 0,
+			"offset_y" : 0,
+			"offset_z" : 0,
+			"project_id" : "00000000-0000-0000-0000-000000000000",
+			"scale_x" : 0.001,
+			"scale_y" : 0.001,
+			"scale_z" : 0.001,
+			"software_id" : "libLAS 1.8.0",
+			"spatialreference" : "",
+			"srs" : 
+			{
+				"compoundwkt" : "",
+				"horizontal" : "",
+				"isgeocentric" : false,
+				"isgeographic" : false,
+				"prettycompoundwkt" : "",
+				"prettywkt" : "",
+				"proj4" : "",
+				"units" : 
+				{
+					"horizontal" : "unknown",
+					"vertical" : ""
+				},
+				"vertical" : "",
+				"wkt" : ""
+			},
+			"system_id" : "libLAS",
+			"vlr_0" : 
+			{
+				"data" : "AgAAAAICAAAAAAAAUMMAAP////////////////////8CAAYAFAACAAgABgACAA==",
+				"description" : "http://laszip.org",
+				"record_id" : 22204,
+				"user_id" : "laszip encoded"
+			}
+		},
+		"origin" : 186,
+		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r623.laz",
+		"points" : 1531
+	},
+	"r624.laz" : 
+	{
+		"bounds" : 
+		[
+			-1.4305875,
+			5.302375,
+			-3.4494,
+			-0.719625,
+			6.0133375,
+			-2.7384375
+		],
+		"metadata" : 
+		{
+			"comp_spatialreference" : "",
+			"compressed" : true,
+			"count" : 2873,
+			"creation_doy" : 363,
+			"creation_year" : 2014,
+			"dataformat_id" : 2,
+			"dataoffset" : 327,
+			"filesource_id" : 0,
+			"global_encoding" : 0,
+			"global_encoding_base64" : "AAA=",
+			"header_size" : 227,
+			"major_version" : 1,
+			"maxx" : -0.719625,
+			"maxy" : 6.0133375,
+			"maxz" : -2.7384375,
+			"minor_version" : 2,
+			"minx" : -1.4305875,
+			"miny" : 5.302375,
+			"minz" : -3.4494,
+			"offset_x" : 0,
+			"offset_y" : 0,
+			"offset_z" : 0,
+			"project_id" : "00000000-0000-0000-0000-000000000000",
+			"scale_x" : 0.001,
+			"scale_y" : 0.001,
+			"scale_z" : 0.001,
+			"software_id" : "libLAS 1.8.0",
+			"spatialreference" : "",
+			"srs" : 
+			{
+				"compoundwkt" : "",
+				"horizontal" : "",
+				"isgeocentric" : false,
+				"isgeographic" : false,
+				"prettycompoundwkt" : "",
+				"prettywkt" : "",
+				"proj4" : "",
+				"units" : 
+				{
+					"horizontal" : "unknown",
+					"vertical" : ""
+				},
+				"vertical" : "",
+				"wkt" : ""
+			},
+			"system_id" : "libLAS",
+			"vlr_0" : 
+			{
+				"data" : "AgAAAAICAAAAAAAAUMMAAP////////////////////8CAAYAFAACAAgABgACAA==",
+				"description" : "http://laszip.org",
+				"record_id" : 22204,
+				"user_id" : "laszip encoded"
+			}
+		},
+		"origin" : 187,
+		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r624.laz",
+		"points" : 2873
+	},
+	"r625.laz" : 
+	{
+		"bounds" : 
+		[
+			-1.4305875,
+			5.302375,
+			-2.7384375,
+			-0.719625,
+			6.0133375,
+			-2.027475
+		],
+		"metadata" : 
+		{
+			"comp_spatialreference" : "",
+			"compressed" : true,
+			"count" : 3,
+			"creation_doy" : 363,
+			"creation_year" : 2014,
+			"dataformat_id" : 2,
+			"dataoffset" : 327,
+			"filesource_id" : 0,
+			"global_encoding" : 0,
+			"global_encoding_base64" : "AAA=",
+			"header_size" : 227,
+			"major_version" : 1,
+			"maxx" : -0.719625,
+			"maxy" : 6.0133375,
+			"maxz" : -2.027475,
+			"minor_version" : 2,
+			"minx" : -1.4305875,
+			"miny" : 5.302375,
+			"minz" : -2.7384375,
+			"offset_x" : 0,
+			"offset_y" : 0,
+			"offset_z" : 0,
+			"project_id" : "00000000-0000-0000-0000-000000000000",
+			"scale_x" : 0.001,
+			"scale_y" : 0.001,
+			"scale_z" : 0.001,
+			"software_id" : "libLAS 1.8.0",
+			"spatialreference" : "",
+			"srs" : 
+			{
+				"compoundwkt" : "",
+				"horizontal" : "",
+				"isgeocentric" : false,
+				"isgeographic" : false,
+				"prettycompoundwkt" : "",
+				"prettywkt" : "",
+				"proj4" : "",
+				"units" : 
+				{
+					"horizontal" : "unknown",
+					"vertical" : ""
+				},
+				"vertical" : "",
+				"wkt" : ""
+			},
+			"system_id" : "libLAS",
+			"vlr_0" : 
+			{
+				"data" : "AgAAAAICAAAAAAAAUMMAAP////////////////////8CAAYAFAACAAgABgACAA==",
+				"description" : "http://laszip.org",
+				"record_id" : 22204,
+				"user_id" : "laszip encoded"
+			}
+		},
+		"origin" : 188,
+		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r625.laz",
+		"points" : 3
+	},
+	"r626.laz" : 
+	{
+		"bounds" : 
+		[
+			-1.4305875,
+			6.0133375,
+			-3.4494,
+			-0.719625,
+			6.7243,
+			-2.7384375
+		],
+		"metadata" : 
+		{
+			"comp_spatialreference" : "",
+			"compressed" : true,
+			"count" : 2086,
+			"creation_doy" : 363,
+			"creation_year" : 2014,
+			"dataformat_id" : 2,
+			"dataoffset" : 327,
+			"filesource_id" : 0,
+			"global_encoding" : 0,
+			"global_encoding_base64" : "AAA=",
+			"header_size" : 227,
+			"major_version" : 1,
+			"maxx" : -0.719625,
+			"maxy" : 6.7243,
+			"maxz" : -2.7384375,
+			"minor_version" : 2,
+			"minx" : -1.4305875,
+			"miny" : 6.0133375,
+			"minz" : -3.4494,
+			"offset_x" : 0,
+			"offset_y" : 0,
+			"offset_z" : 0,
+			"project_id" : "00000000-0000-0000-0000-000000000000",
+			"scale_x" : 0.001,
+			"scale_y" : 0.001,
+			"scale_z" : 0.001,
+			"software_id" : "libLAS 1.8.0",
+			"spatialreference" : "",
+			"srs" : 
+			{
+				"compoundwkt" : "",
+				"horizontal" : "",
+				"isgeocentric" : false,
+				"isgeographic" : false,
+				"prettycompoundwkt" : "",
+				"prettywkt" : "",
+				"proj4" : "",
+				"units" : 
+				{
+					"horizontal" : "unknown",
+					"vertical" : ""
+				},
+				"vertical" : "",
+				"wkt" : ""
+			},
+			"system_id" : "libLAS",
+			"vlr_0" : 
+			{
+				"data" : "AgAAAAICAAAAAAAAUMMAAP////////////////////8CAAYAFAACAAgABgACAA==",
+				"description" : "http://laszip.org",
+				"record_id" : 22204,
+				"user_id" : "laszip encoded"
+			}
+		},
+		"origin" : 189,
+		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r626.laz",
+		"points" : 2086
+	},
+	"r627.laz" : 
+	{
+		"bounds" : 
+		[
+			-1.4305875,
+			6.0133375,
+			-2.7384375,
+			-0.719625,
+			6.7243,
+			-2.027475
+		],
+		"metadata" : 
+		{
+			"comp_spatialreference" : "",
+			"compressed" : true,
+			"count" : 341,
+			"creation_doy" : 363,
+			"creation_year" : 2014,
+			"dataformat_id" : 2,
+			"dataoffset" : 327,
+			"filesource_id" : 0,
+			"global_encoding" : 0,
+			"global_encoding_base64" : "AAA=",
+			"header_size" : 227,
+			"major_version" : 1,
+			"maxx" : -0.719625,
+			"maxy" : 6.7243,
+			"maxz" : -2.027475,
+			"minor_version" : 2,
+			"minx" : -1.4305875,
+			"miny" : 6.0133375,
+			"minz" : -2.7384375,
+			"offset_x" : 0,
+			"offset_y" : 0,
+			"offset_z" : 0,
+			"project_id" : "00000000-0000-0000-0000-000000000000",
+			"scale_x" : 0.001,
+			"scale_y" : 0.001,
+			"scale_z" : 0.001,
+			"software_id" : "libLAS 1.8.0",
+			"spatialreference" : "",
+			"srs" : 
+			{
+				"compoundwkt" : "",
+				"horizontal" : "",
+				"isgeocentric" : false,
+				"isgeographic" : false,
+				"prettycompoundwkt" : "",
+				"prettywkt" : "",
+				"proj4" : "",
+				"units" : 
+				{
+					"horizontal" : "unknown",
+					"vertical" : ""
+				},
+				"vertical" : "",
+				"wkt" : ""
+			},
+			"system_id" : "libLAS",
+			"vlr_0" : 
+			{
+				"data" : "AgAAAAICAAAAAAAAUMMAAP////////////////////8CAAYAFAACAAgABgACAA==",
+				"description" : "http://laszip.org",
+				"record_id" : 22204,
+				"user_id" : "laszip encoded"
+			}
+		},
+		"origin" : 190,
+		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r627.laz",
+		"points" : 341
+	},
+	"r63.laz" : 
+	{
+		"bounds" : 
+		[
+			-2.14155,
+			5.302375,
+			-2.027475,
+			-0.719625,
+			6.7243,
+			-0.60555
+		],
+		"metadata" : 
+		{
+			"comp_spatialreference" : "",
+			"compressed" : true,
+			"count" : 1949,
+			"creation_doy" : 363,
+			"creation_year" : 2014,
+			"dataformat_id" : 2,
+			"dataoffset" : 327,
+			"filesource_id" : 0,
+			"global_encoding" : 0,
+			"global_encoding_base64" : "AAA=",
+			"header_size" : 227,
+			"major_version" : 1,
+			"maxx" : -0.719625,
+			"maxy" : 6.7243,
+			"maxz" : -0.60555,
+			"minor_version" : 2,
+			"minx" : -2.14155,
+			"miny" : 5.302375,
+			"minz" : -2.027475,
+			"offset_x" : 0,
+			"offset_y" : 0,
+			"offset_z" : 0,
+			"project_id" : "00000000-0000-0000-0000-000000000000",
+			"scale_x" : 0.001,
+			"scale_y" : 0.001,
+			"scale_z" : 0.001,
+			"software_id" : "libLAS 1.8.0",
+			"spatialreference" : "",
+			"srs" : 
+			{
+				"compoundwkt" : "",
+				"horizontal" : "",
+				"isgeocentric" : false,
+				"isgeographic" : false,
+				"prettycompoundwkt" : "",
+				"prettywkt" : "",
+				"proj4" : "",
+				"units" : 
+				{
+					"horizontal" : "unknown",
+					"vertical" : ""
+				},
+				"vertical" : "",
+				"wkt" : ""
+			},
+			"system_id" : "libLAS",
+			"vlr_0" : 
+			{
+				"data" : "AgAAAAICAAAAAAAAUMMAAP////////////////////8CAAYAFAACAAgABgACAA==",
+				"description" : "http://laszip.org",
+				"record_id" : 22204,
+				"user_id" : "laszip encoded"
+			}
+		},
+		"origin" : 191,
+		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r63.laz",
+		"points" : 1949
+	},
+	"r630.laz" : 
+	{
+		"bounds" : 
+		[
+			-2.14155,
+			5.302375,
+			-2.027475,
+			-1.4305875,
+			6.0133375,
+			-1.3165125
+		],
+		"metadata" : 
+		{
+			"comp_spatialreference" : "",
+			"compressed" : true,
+			"count" : 1768,
+			"creation_doy" : 363,
+			"creation_year" : 2014,
+			"dataformat_id" : 2,
+			"dataoffset" : 327,
+			"filesource_id" : 0,
+			"global_encoding" : 0,
+			"global_encoding_base64" : "AAA=",
+			"header_size" : 227,
+			"major_version" : 1,
+			"maxx" : -1.4305875,
+			"maxy" : 6.0133375,
+			"maxz" : -1.3165125,
+			"minor_version" : 2,
+			"minx" : -2.14155,
+			"miny" : 5.302375,
+			"minz" : -2.027475,
+			"offset_x" : 0,
+			"offset_y" : 0,
+			"offset_z" : 0,
+			"project_id" : "00000000-0000-0000-0000-000000000000",
+			"scale_x" : 0.001,
+			"scale_y" : 0.001,
+			"scale_z" : 0.001,
+			"software_id" : "libLAS 1.8.0",
+			"spatialreference" : "",
+			"srs" : 
+			{
+				"compoundwkt" : "",
+				"horizontal" : "",
+				"isgeocentric" : false,
+				"isgeographic" : false,
+				"prettycompoundwkt" : "",
+				"prettywkt" : "",
+				"proj4" : "",
+				"units" : 
+				{
+					"horizontal" : "unknown",
+					"vertical" : ""
+				},
+				"vertical" : "",
+				"wkt" : ""
+			},
+			"system_id" : "libLAS",
+			"vlr_0" : 
+			{
+				"data" : "AgAAAAICAAAAAAAAUMMAAP////////////////////8CAAYAFAACAAgABgACAA==",
+				"description" : "http://laszip.org",
+				"record_id" : 22204,
+				"user_id" : "laszip encoded"
+			}
+		},
+		"origin" : 192,
+		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r630.laz",
+		"points" : 1768
+	},
+	"r631.laz" : 
+	{
+		"bounds" : 
+		[
+			-2.14155,
+			5.302375,
+			-1.3165125,
+			-1.4305875,
+			6.0133375,
+			-0.60555
+		],
+		"metadata" : 
+		{
+			"comp_spatialreference" : "",
+			"compressed" : true,
+			"count" : 160,
+			"creation_doy" : 363,
+			"creation_year" : 2014,
+			"dataformat_id" : 2,
+			"dataoffset" : 327,
+			"filesource_id" : 0,
+			"global_encoding" : 0,
+			"global_encoding_base64" : "AAA=",
+			"header_size" : 227,
+			"major_version" : 1,
+			"maxx" : -1.4305875,
+			"maxy" : 6.0133375,
+			"maxz" : -0.60555,
+			"minor_version" : 2,
+			"minx" : -2.14155,
+			"miny" : 5.302375,
+			"minz" : -1.3165125,
+			"offset_x" : 0,
+			"offset_y" : 0,
+			"offset_z" : 0,
+			"project_id" : "00000000-0000-0000-0000-000000000000",
+			"scale_x" : 0.001,
+			"scale_y" : 0.001,
+			"scale_z" : 0.001,
+			"software_id" : "libLAS 1.8.0",
+			"spatialreference" : "",
+			"srs" : 
+			{
+				"compoundwkt" : "",
+				"horizontal" : "",
+				"isgeocentric" : false,
+				"isgeographic" : false,
+				"prettycompoundwkt" : "",
+				"prettywkt" : "",
+				"proj4" : "",
+				"units" : 
+				{
+					"horizontal" : "unknown",
+					"vertical" : ""
+				},
+				"vertical" : "",
+				"wkt" : ""
+			},
+			"system_id" : "libLAS",
+			"vlr_0" : 
+			{
+				"data" : "AgAAAAICAAAAAAAAUMMAAP////////////////////8CAAYAFAACAAgABgACAA==",
+				"description" : "http://laszip.org",
+				"record_id" : 22204,
+				"user_id" : "laszip encoded"
+			}
+		},
+		"origin" : 193,
+		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r631.laz",
+		"points" : 160
+	},
+	"r632.laz" : 
+	{
+		"bounds" : 
+		[
+			-2.14155,
+			6.0133375,
+			-2.027475,
+			-1.4305875,
+			6.7243,
+			-1.3165125
+		],
+		"metadata" : 
+		{
+			"comp_spatialreference" : "",
+			"compressed" : true,
+			"count" : 3491,
+			"creation_doy" : 363,
+			"creation_year" : 2014,
+			"dataformat_id" : 2,
+			"dataoffset" : 327,
+			"filesource_id" : 0,
+			"global_encoding" : 0,
+			"global_encoding_base64" : "AAA=",
+			"header_size" : 227,
+			"major_version" : 1,
+			"maxx" : -1.4305875,
+			"maxy" : 6.7243,
+			"maxz" : -1.3165125,
+			"minor_version" : 2,
+			"minx" : -2.14155,
+			"miny" : 6.0133375,
+			"minz" : -2.027475,
+			"offset_x" : 0,
+			"offset_y" : 0,
+			"offset_z" : 0,
+			"project_id" : "00000000-0000-0000-0000-000000000000",
+			"scale_x" : 0.001,
+			"scale_y" : 0.001,
+			"scale_z" : 0.001,
+			"software_id" : "libLAS 1.8.0",
+			"spatialreference" : "",
+			"srs" : 
+			{
+				"compoundwkt" : "",
+				"horizontal" : "",
+				"isgeocentric" : false,
+				"isgeographic" : false,
+				"prettycompoundwkt" : "",
+				"prettywkt" : "",
+				"proj4" : "",
+				"units" : 
+				{
+					"horizontal" : "unknown",
+					"vertical" : ""
+				},
+				"vertical" : "",
+				"wkt" : ""
+			},
+			"system_id" : "libLAS",
+			"vlr_0" : 
+			{
+				"data" : "AgAAAAICAAAAAAAAUMMAAP////////////////////8CAAYAFAACAAgABgACAA==",
+				"description" : "http://laszip.org",
+				"record_id" : 22204,
+				"user_id" : "laszip encoded"
+			}
+		},
+		"origin" : 194,
+		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r632.laz",
+		"points" : 3491
+	},
+	"r633.laz" : 
+	{
+		"bounds" : 
+		[
+			-2.14155,
+			6.0133375,
+			-1.3165125,
+			-1.4305875,
+			6.7243,
+			-0.60555
+		],
+		"metadata" : 
+		{
+			"comp_spatialreference" : "",
+			"compressed" : true,
+			"count" : 29,
+			"creation_doy" : 363,
+			"creation_year" : 2014,
+			"dataformat_id" : 2,
+			"dataoffset" : 327,
+			"filesource_id" : 0,
+			"global_encoding" : 0,
+			"global_encoding_base64" : "AAA=",
+			"header_size" : 227,
+			"major_version" : 1,
+			"maxx" : -1.4305875,
+			"maxy" : 6.7243,
+			"maxz" : -0.60555,
+			"minor_version" : 2,
+			"minx" : -2.14155,
+			"miny" : 6.0133375,
+			"minz" : -1.3165125,
+			"offset_x" : 0,
+			"offset_y" : 0,
+			"offset_z" : 0,
+			"project_id" : "00000000-0000-0000-0000-000000000000",
+			"scale_x" : 0.001,
+			"scale_y" : 0.001,
+			"scale_z" : 0.001,
+			"software_id" : "libLAS 1.8.0",
+			"spatialreference" : "",
+			"srs" : 
+			{
+				"compoundwkt" : "",
+				"horizontal" : "",
+				"isgeocentric" : false,
+				"isgeographic" : false,
+				"prettycompoundwkt" : "",
+				"prettywkt" : "",
+				"proj4" : "",
+				"units" : 
+				{
+					"horizontal" : "unknown",
+					"vertical" : ""
+				},
+				"vertical" : "",
+				"wkt" : ""
+			},
+			"system_id" : "libLAS",
+			"vlr_0" : 
+			{
+				"data" : "AgAAAAICAAAAAAAAUMMAAP////////////////////8CAAYAFAACAAgABgACAA==",
+				"description" : "http://laszip.org",
+				"record_id" : 22204,
+				"user_id" : "laszip encoded"
+			}
+		},
+		"origin" : 195,
+		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r633.laz",
+		"points" : 29
+	},
+	"r636.laz" : 
+	{
+		"bounds" : 
+		[
+			-1.4305875,
+			6.0133375,
+			-2.027475,
+			-0.719625,
+			6.7243,
+			-1.3165125
+		],
+		"metadata" : 
+		{
+			"comp_spatialreference" : "",
+			"compressed" : true,
+			"count" : 789,
+			"creation_doy" : 363,
+			"creation_year" : 2014,
+			"dataformat_id" : 2,
+			"dataoffset" : 327,
+			"filesource_id" : 0,
+			"global_encoding" : 0,
+			"global_encoding_base64" : "AAA=",
+			"header_size" : 227,
+			"major_version" : 1,
+			"maxx" : -0.719625,
+			"maxy" : 6.7243,
+			"maxz" : -1.3165125,
+			"minor_version" : 2,
+			"minx" : -1.4305875,
+			"miny" : 6.0133375,
+			"minz" : -2.027475,
+			"offset_x" : 0,
+			"offset_y" : 0,
+			"offset_z" : 0,
+			"project_id" : "00000000-0000-0000-0000-000000000000",
+			"scale_x" : 0.001,
+			"scale_y" : 0.001,
+			"scale_z" : 0.001,
+			"software_id" : "libLAS 1.8.0",
+			"spatialreference" : "",
+			"srs" : 
+			{
+				"compoundwkt" : "",
+				"horizontal" : "",
+				"isgeocentric" : false,
+				"isgeographic" : false,
+				"prettycompoundwkt" : "",
+				"prettywkt" : "",
+				"proj4" : "",
+				"units" : 
+				{
+					"horizontal" : "unknown",
+					"vertical" : ""
+				},
+				"vertical" : "",
+				"wkt" : ""
+			},
+			"system_id" : "libLAS",
+			"vlr_0" : 
+			{
+				"data" : "AgAAAAICAAAAAAAAUMMAAP////////////////////8CAAYAFAACAAgABgACAA==",
+				"description" : "http://laszip.org",
+				"record_id" : 22204,
+				"user_id" : "laszip encoded"
+			}
+		},
+		"origin" : 196,
+		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r636.laz",
+		"points" : 789
+	},
+	"r7.laz" : 
+	{
+		"bounds" : 
+		[
+			-2.14155,
+			3.88045,
+			-0.60555,
+			0.7023,
+			6.7243,
+			2.2383
+		],
+		"metadata" : 
+		{
+			"comp_spatialreference" : "",
+			"compressed" : true,
+			"count" : 36,
+			"creation_doy" : 363,
+			"creation_year" : 2014,
+			"dataformat_id" : 2,
+			"dataoffset" : 327,
+			"filesource_id" : 0,
+			"global_encoding" : 0,
+			"global_encoding_base64" : "AAA=",
+			"header_size" : 227,
+			"major_version" : 1,
+			"maxx" : 0.7023,
+			"maxy" : 6.7243,
+			"maxz" : 2.2383,
+			"minor_version" : 2,
+			"minx" : -2.14155,
+			"miny" : 3.88045,
+			"minz" : -0.60555,
+			"offset_x" : 0,
+			"offset_y" : 0,
+			"offset_z" : 0,
+			"project_id" : "00000000-0000-0000-0000-000000000000",
+			"scale_x" : 0.001,
+			"scale_y" : 0.001,
+			"scale_z" : 0.001,
+			"software_id" : "libLAS 1.8.0",
+			"spatialreference" : "",
+			"srs" : 
+			{
+				"compoundwkt" : "",
+				"horizontal" : "",
+				"isgeocentric" : false,
+				"isgeographic" : false,
+				"prettycompoundwkt" : "",
+				"prettywkt" : "",
+				"proj4" : "",
+				"units" : 
+				{
+					"horizontal" : "unknown",
+					"vertical" : ""
+				},
+				"vertical" : "",
+				"wkt" : ""
+			},
+			"system_id" : "libLAS",
+			"vlr_0" : 
+			{
+				"data" : "AgAAAAICAAAAAAAAUMMAAP////////////////////8CAAYAFAACAAgABgACAA==",
+				"description" : "http://laszip.org",
+				"record_id" : 22204,
+				"user_id" : "laszip encoded"
+			}
+		},
+		"origin" : 197,
+		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r7.laz",
+		"points" : 36
+	},
+	"r70.laz" : 
+	{
+		"bounds" : 
+		[
+			-2.14155,
+			3.88045,
+			-0.60555,
+			-0.719625,
+			5.302375,
+			0.816375
+		],
+		"metadata" : 
+		{
+			"comp_spatialreference" : "",
+			"compressed" : true,
+			"count" : 111,
+			"creation_doy" : 363,
+			"creation_year" : 2014,
+			"dataformat_id" : 2,
+			"dataoffset" : 327,
+			"filesource_id" : 0,
+			"global_encoding" : 0,
+			"global_encoding_base64" : "AAA=",
+			"header_size" : 227,
+			"major_version" : 1,
+			"maxx" : -0.719625,
+			"maxy" : 5.302375,
+			"maxz" : 0.816375,
+			"minor_version" : 2,
+			"minx" : -2.14155,
+			"miny" : 3.88045,
+			"minz" : -0.60555,
+			"offset_x" : 0,
+			"offset_y" : 0,
+			"offset_z" : 0,
+			"project_id" : "00000000-0000-0000-0000-000000000000",
+			"scale_x" : 0.001,
+			"scale_y" : 0.001,
+			"scale_z" : 0.001,
+			"software_id" : "libLAS 1.8.0",
+			"spatialreference" : "",
+			"srs" : 
+			{
+				"compoundwkt" : "",
+				"horizontal" : "",
+				"isgeocentric" : false,
+				"isgeographic" : false,
+				"prettycompoundwkt" : "",
+				"prettywkt" : "",
+				"proj4" : "",
+				"units" : 
+				{
+					"horizontal" : "unknown",
+					"vertical" : ""
+				},
+				"vertical" : "",
+				"wkt" : ""
+			},
+			"system_id" : "libLAS",
+			"vlr_0" : 
+			{
+				"data" : "AgAAAAICAAAAAAAAUMMAAP////////////////////8CAAYAFAACAAgABgACAA==",
+				"description" : "http://laszip.org",
+				"record_id" : 22204,
+				"user_id" : "laszip encoded"
+			}
+		},
+		"origin" : 198,
+		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r70.laz",
+		"points" : 111
+	},
+	"r700.laz" : 
+	{
+		"bounds" : 
+		[
+			-2.14155,
+			3.88045,
+			-0.60555,
+			-1.4305875,
+			4.5914125,
+			0.1054125
+		],
+		"metadata" : 
+		{
+			"comp_spatialreference" : "",
+			"compressed" : true,
+			"count" : 417,
+			"creation_doy" : 363,
+			"creation_year" : 2014,
+			"dataformat_id" : 2,
+			"dataoffset" : 327,
+			"filesource_id" : 0,
+			"global_encoding" : 0,
+			"global_encoding_base64" : "AAA=",
+			"header_size" : 227,
+			"major_version" : 1,
+			"maxx" : -1.4305875,
+			"maxy" : 4.5914125,
+			"maxz" : 0.1054125,
+			"minor_version" : 2,
+			"minx" : -2.14155,
+			"miny" : 3.88045,
+			"minz" : -0.60555,
+			"offset_x" : 0,
+			"offset_y" : 0,
+			"offset_z" : 0,
+			"project_id" : "00000000-0000-0000-0000-000000000000",
+			"scale_x" : 0.001,
+			"scale_y" : 0.001,
+			"scale_z" : 0.001,
+			"software_id" : "libLAS 1.8.0",
+			"spatialreference" : "",
+			"srs" : 
+			{
+				"compoundwkt" : "",
+				"horizontal" : "",
+				"isgeocentric" : false,
+				"isgeographic" : false,
+				"prettycompoundwkt" : "",
+				"prettywkt" : "",
+				"proj4" : "",
+				"units" : 
+				{
+					"horizontal" : "unknown",
+					"vertical" : ""
+				},
+				"vertical" : "",
+				"wkt" : ""
+			},
+			"system_id" : "libLAS",
+			"vlr_0" : 
+			{
+				"data" : "AgAAAAICAAAAAAAAUMMAAP////////////////////8CAAYAFAACAAgABgACAA==",
+				"description" : "http://laszip.org",
+				"record_id" : 22204,
+				"user_id" : "laszip encoded"
+			}
+		},
+		"origin" : 199,
+		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r700.laz",
+		"points" : 417
+	}
+}

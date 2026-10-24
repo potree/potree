@@ -20,187 +20,175 @@ class U {
 	static sphereFrom(b) {
 		return b.getBoundingSphere(new THREE.Sphere());
 	}
+
+	static toPotreeName([d, x, y, z]) {
+		var name = 'r';
+
+		for (var i = 0; i < d; ++i) {
+			var shift = d - i - 1;
+			var mask = 1 << shift;
+			var step = 0;
+
+			if (x & mask) step += 4;
+			if (y & mask) step += 2;
+			if (z & mask) step += 1;
+
+			name += step;
+		}
+
+		return name;
+	}
+
+	static maybeSrs(srs) {
+		try { 
+			proj4(srs) 
+			return srs
+		} catch (e) {}
+	}
 };
 
-export class PointCloudEptGeometry {
-	constructor(url, info) {
-		let version = info.version;
-		let schema = info.schema;
-		let bounds = info.bounds;
-		let boundsConforming = info.boundsConforming;
+class BaseGeometry {
+	constructor({ 
+		cube,
+		boundsConforming,
+		spacing,
+		srs,
+	}) {
+		this.cube = cube;
 
-		let xyz = [
-			U.findDim(schema, 'X'),
-			U.findDim(schema, 'Y'),
-			U.findDim(schema, 'Z')
-		];
-		let scale = xyz.map((d) => d.scale || 1);
-		let offset = xyz.map((d) => d.offset || 0);
-		this.eptScale = U.toVector3(scale);
-		this.eptOffset = U.toVector3(offset);
-
-		this.url = url;
-		this.info = info;
-		this.type = 'ept';
-
-		this.schema = schema;
-		this.span = info.span || info.ticks;
-		this.boundingBox = U.toBox3(bounds);
+		this.boundingBox = U.toBox3(cube);
 		this.tightBoundingBox = U.toBox3(boundsConforming);
-		this.offset = U.toVector3([0, 0, 0]);
 		this.boundingSphere = U.sphereFrom(this.boundingBox);
 		this.tightBoundingSphere = U.sphereFrom(this.tightBoundingBox);
+		this.offset = U.toVector3([0, 0, 0]);
 		this.version = new Potree.Version('1.7');
 
-		this.projection = null;
-		this.fallbackProjection = null;
+		this.loader = new Potree.CopcLaszipLoader();
 
-		if (info.srs && info.srs.horizontal) {
-			this.projection = info.srs.authority + ':' + info.srs.horizontal;
+		this.spacing = spacing;
+		this.projection = srs || null;
+		try {
+			proj4(this.projection);
+		} catch(e) {
+			this.projection = null;
 		}
 
-		if (info.srs && info.srs.wkt) {
-			if (!this.projection) this.projection = info.srs.wkt;
-			else this.fallbackProjection = info.srs.wkt;
-		}
-
-		{ 
-			// TODO [mschuetz]: named projections that proj4 can't handle seem to cause problems.
-			// remove them for now
-
-			try{
-				proj4(this.projection);
-			}catch(e){
-				this.projection = null;
-			}
-
-		
-
-		}
-
-		
-		{
-			const attributes = new PointAttributes();
-
-			attributes.add(PointAttribute.POSITION_CARTESIAN);
-			attributes.add(new PointAttribute("rgba", PointAttributeTypes.DATA_TYPE_UINT8, 4));
-			attributes.add(new PointAttribute("intensity", PointAttributeTypes.DATA_TYPE_UINT16, 1));
-			attributes.add(new PointAttribute("classification", PointAttributeTypes.DATA_TYPE_UINT8, 1));
-			attributes.add(new PointAttribute("gps-time", PointAttributeTypes.DATA_TYPE_DOUBLE, 1));
-			attributes.add(new PointAttribute("returnNumber", PointAttributeTypes.DATA_TYPE_UINT8, 1));
-			attributes.add(new PointAttribute("number of returns", PointAttributeTypes.DATA_TYPE_UINT8, 1));
-			attributes.add(new PointAttribute("return number", PointAttributeTypes.DATA_TYPE_UINT8, 1));
-			attributes.add(new PointAttribute("source id", PointAttributeTypes.DATA_TYPE_UINT16, 1));
-
-			this.pointAttributes = attributes;
-		}
-
-
-
-		this.spacing =
-			(this.boundingBox.max.x - this.boundingBox.min.x) / this.span;
-
-		let hierarchyType = info.hierarchyType || 'json';
-
-		const dataType = info.dataType;
-		if (dataType == 'laszip') {
-			this.loader = new Potree.EptLaszipLoader();
-		}
-		else if (dataType == 'binary') {
-			this.loader = new Potree.EptBinaryLoader();
-		}
-		else if (dataType == 'zstandard') {
-			this.loader = new Potree.EptZstandardLoader();
-		}
-		else {
-			throw new Error('Could not read data type: ' + dataType);
-		}
-	}
-};
-
-export class EptKey {
-	constructor(ept, b, d, x, y, z) {
-		this.ept = ept;
-		this.b = b;
-		this.d = d;
-		this.x = x || 0;
-		this.y = y || 0;
-		this.z = z || 0;
-	}
-
-	name() {
-		return this.d + '-' + this.x + '-' + this.y + '-' + this.z;
-	}
-
-	step(a, b, c) {
-		let min = this.b.min.clone();
-		let max = this.b.max.clone();
-		let dst = new THREE.Vector3().subVectors(max, min);
-
-		if (a)	min.x += dst.x / 2;
-		else	max.x -= dst.x / 2;
-
-		if (b)	min.y += dst.y / 2;
-		else	max.y -= dst.y / 2;
-
-		if (c)	min.z += dst.z / 2;
-		else	max.z -= dst.z / 2;
-
-		return new Potree.EptKey(
-				this.ept,
-				new THREE.Box3(min, max),
-				this.d + 1,
-				this.x * 2 + a,
-				this.y * 2 + b,
-				this.z * 2 + c);
-	}
-
-	children() {
-		var result = [];
-		for (var a = 0; a < 2; ++a) {
-			for (var b = 0; b < 2; ++b) {
-				for (var c = 0; c < 2; ++c) {
-					var add = this.step(a, b, c).name();
-					if (!result.includes(add)) result = result.concat(add);
-				}
-			}
-		}
-		return result;
+		const attributes = new PointAttributes();
+		attributes.add(PointAttribute.POSITION_CARTESIAN);
+		attributes.add(new PointAttribute("rgba", PointAttributeTypes.DATA_TYPE_UINT8, 4));
+		attributes.add(new PointAttribute("intensity", PointAttributeTypes.DATA_TYPE_UINT16, 1));
+		attributes.add(new PointAttribute("classification", PointAttributeTypes.DATA_TYPE_UINT8, 1));
+		attributes.add(new PointAttribute("gps-time", PointAttributeTypes.DATA_TYPE_FLOAT, 1));
+		attributes.add(new PointAttribute("returnNumber", PointAttributeTypes.DATA_TYPE_UINT8, 1));
+		attributes.add(new PointAttribute("number of returns", PointAttributeTypes.DATA_TYPE_UINT8, 1));
+		attributes.add(new PointAttribute("return number", PointAttributeTypes.DATA_TYPE_UINT8, 1));
+		attributes.add(new PointAttribute("source id", PointAttributeTypes.DATA_TYPE_UINT16, 1));
+		this.pointAttributes = attributes;
 	}
 }
 
-export class PointCloudEptGeometryNode extends PointCloudTreeNode {
-	constructor(ept, b, d, x, y, z) {
+export class PointCloudCopcGeometry extends BaseGeometry {
+	static parse({ header, info, wkt }) {
+		return {
+			cube: info.cube,
+			boundsConforming: [...header.min, ...header.max],
+			spacing: info.spacing,
+			srs: wkt,
+		}
+	}
+
+	constructor(getter, copc) {
+		super(PointCloudCopcGeometry.parse(copc))
+
+		this.type = 'copc';
+		this.getter = getter
+		this.copc = copc;
+		this.pages = { '0-0-0-0': copc.info.rootHierarchyPage }
+
+		this.loader = new Potree.CopcLaszipLoader();
+	}
+
+	async loadHierarchyPage(key) {
+		const { Copc, Key } = window.Copc
+		const page = this.pages[Key.toString(key)]
+		return Copc.loadHierarchyPage(this.getter, page)
+	}
+};
+
+export class PointCloudEptGeometry extends BaseGeometry {
+	static parse(ept) {
+		const { bounds: cube, boundsConforming, span, srs: filesrs } = ept
+
+		const spacing = (cube[3] - cube[0]) / span
+
+		let srs
+		if (filesrs) {
+			const { authority, horizontal, wkt } = filesrs
+			if (authority && horizontal) {
+				srs = U.maybeSrs(`${authority}:${horizontal}`)
+			}
+			if (!srs && wkt) srs = U.maybeSrs(wkt)
+		}
+
+		return { cube, boundsConforming, spacing, srs }
+	}
+
+	constructor(base, ept) {
+		super(PointCloudEptGeometry.parse(ept))
+
+		this.type = 'ept';
+		this.base = base;
+		this.ept = ept;
+
+		this.loader = (() => {
+			switch (ept.dataType) {
+				case 'laszip': return new Potree.EptLaszipLoader()
+				case 'binary': return new Potree.EptBinaryLoader()
+				case 'zstandard': return new Potree.EptZstandardLoader()
+				default: throw new Error('Invalid data type: ' + ept.dataType)
+			}
+		})()
+	}
+
+	async loadHierarchyPage(key) {
+		const { Ept, Key } = window.Copc
+
+		const filename = `${this.base}/ept-hierarchy/${Key.toString(key)}.json`
+		const response = await fetch(filename);
+		const json = await response.json();
+		return Ept.Hierarchy.parse(json)
+	}
+}
+
+export class PointCloudCopcGeometryNode extends PointCloudTreeNode {
+	constructor(owner, key, bounds) {
 		super();
 
-		this.ept = ept;
-		this.key = new Potree.EptKey(
-				this.ept,
-				b || this.ept.boundingBox,
-				d || 0,
-				x,
-				y,
-				z);
+		const { Key } = Copc
 
-		this.id = PointCloudEptGeometryNode.IDCount++;
+		this.owner = owner
+		this.key = key || Key.create(0, 0, 0, 0)
+		this.bounds = bounds || owner.cube
+
+		this.id = PointCloudCopcGeometryNode.IDCount++;
 		this.geometry = null;
-		this.boundingBox = this.key.b;
+		this.boundingBox = U.toBox3(this.bounds)
 		this.tightBoundingBox = this.boundingBox;
-		this.spacing = this.ept.spacing / Math.pow(2, this.key.d);
+		this.spacing = this.owner.spacing / Math.pow(2, Key.depth(this.key));
 		this.boundingSphere = U.sphereFrom(this.boundingBox);
 
 		// These are set during hierarchy loading.
 		this.hasChildren = false;
 		this.children = { };
+		this.nodeinfo = undefined
 		this.numPoints = -1;
 
-		this.level = this.key.d;
+		this.level = Key.depth(this.key);
 		this.loaded = false;
 		this.loading = false;
 		this.oneTimeDisposeHandlers = [];
 
-		let k = this.key;
-		this.name = this.toPotreeName(k.d, k.x, k.y, k.z);
+		this.name = U.toPotreeName(this.key);
 		this.index = parseInt(this.name.charAt(this.name.length - 1));
 	}
 
@@ -210,10 +198,9 @@ export class PointCloudEptGeometryNode extends PointCloudTreeNode {
 	isLoaded() { return this.loaded; }
 	getBoundingSphere() { return this.boundingSphere; }
 	getBoundingBox() { return this.boundingBox; }
-	url() { return this.ept.url + 'ept-data/' + this.filename(); }
-	getNumPoints() { return this.numPoints; }
-
-	filename() { return this.key.name(); }
+	getNumPoints() { 
+		return this.nodeinfo ? this.nodeinfo.pointCount : -1; 
+	}
 
 	getChildren() {
 		let children = [];
@@ -232,70 +219,74 @@ export class PointCloudEptGeometryNode extends PointCloudTreeNode {
 		child.parent = this;
 	}
 
-	load() {
+	async load() {
 		if (this.loaded || this.loading) return;
 		if (Potree.numNodesLoading >= Potree.maxNodesLoading) return;
 
 		this.loading = true;
 		++Potree.numNodesLoading;
 
-		if (this.numPoints == -1) this.loadHierarchy();
+		if (!this.nodeinfo) await this.loadHierarchy();
 		this.loadPoints();
 	}
 
 	loadPoints(){
-		this.ept.loader.load(this);
+		this.owner.loader.load(this);
 	}
 
 	async loadHierarchy() {
-		let nodes = { };
-		nodes[this.filename()] = this;
+		const { Bounds, Key } = window.Copc
+		const ourkeyname = Key.toString(this.key)
+
+		let nodemap = { };
+		nodemap[ourkeyname] = this;
 		this.hasChildren = false;
 
-		let eptHierarchyFile =
-			`${this.ept.url}ept-hierarchy/${this.filename()}.json`;
+		const { nodes, pages } = await this.owner.loadHierarchyPage(this.key)
 
-		let response = await fetch(eptHierarchyFile);
-		let hier = await response.json();
+		// Since we want to traverse top-down, and 10 comes lexicographically 
+		// before 9 (for example), do a deep sort.
+		const keys = Object.keys({ ...nodes, ...pages })
+			.map(Key.create)
+			.sort(Key.compare)
 
-		// Since we want to traverse top-down, and 10 comes
-		// lexicographically before 9 (for example), do a deep sort.
-		var keys = Object.keys(hier).sort((a, b) => {
-			let [da, xa, ya, za] = a.split('-').map((n) => parseInt(n, 10));
-			let [db, xb, yb, zb] = b.split('-').map((n) => parseInt(n, 10));
-			if (da < db) return -1; if (da > db) return 1;
-			if (xa < xb) return -1; if (xa > xb) return 1;
-			if (ya < yb) return -1; if (ya > yb) return 1;
-			if (za < zb) return -1; if (za > zb) return 1;
-			return 0;
-		});
+		keys.forEach((key) => {
+			const keyname = Key.toString(key)
+			if (keyname === ourkeyname) {
+				this.nodeinfo = nodes[keyname]
+				return;
+			}
 
-		keys.forEach((v) => {
-			let [d, x, y, z] = v.split('-').map((n) => parseInt(n, 10));
-			let a = x & 1, b = y & 1, c = z & 1;
-			let parentName =
-				(d - 1) + '-' + (x >> 1) + '-' + (y >> 1) + '-' + (z >> 1);
+			const [_d, x, y, z] = key
+			const step = [x & 1, y & 1, z & 1]
 
-			let parentNode = nodes[parentName];
+			let parentName = Key.toString(Key.up(key))
+			let parentNode = nodemap[parentName];
 			if (!parentNode) return;
 			parentNode.hasChildren = true;
 
-			let key = parentNode.key.step(a, b, c);
-
-			let node = new Potree.PointCloudEptGeometryNode(
-					this.ept,
-					key.b,
-					key.d,
-					key.x,
-					key.y,
-					key.z);
-
-			node.level = d;
-			node.numPoints = hier[v];
-
+			const bounds = Bounds.step(parentNode.bounds, step)
+			const node = new Potree.PointCloudCopcGeometryNode(
+				this.owner,
+				key, 
+				bounds);
 			parentNode.addChild(node);
-			nodes[key.name()] = node;
-		});
+			nodemap[keyname] = node;
+
+			// For data nodes, add their point data offset/point counts.
+			const nodeinfo = nodes[keyname]
+			if (nodeinfo) node.nodeinfo = nodeinfo
+
+			// And for leaf nodes whose data is in a different hierarchy page, 
+			// store the info for the hierarchy page in our page map.  This is
+			// only applicable for COPC data since we need hierarchy page 
+			// ranges to fetch them - EPT data on the other hand we just need
+			// the node key to fetch the file.
+			const pageinfo = pages[keyname]
+			if (this.owner.pages && pageinfo) {
+				this.owner.pages[keyname] = pageinfo
+			}
+		})
 	}
 
 	doneLoading(bufferGeometry, tightBoundingBox, np, mean) {
@@ -309,26 +300,8 @@ export class PointCloudEptGeometryNode extends PointCloudTreeNode {
 		--Potree.numNodesLoading;
 	}
 
-	toPotreeName(d, x, y, z) {
-		var name = 'r';
-
-		for (var i = 0; i < d; ++i) {
-			var shift = d - i - 1;
-			var mask = 1 << shift;
-			var step = 0;
-
-			if (x & mask) step += 4;
-			if (y & mask) step += 2;
-			if (z & mask) step += 1;
-
-			name += step;
-		}
-
-		return name;
-	}
-
 	dispose() {
-		if (this.geometry && this.parent != null) {
+		if (this.geometry && this.parent) {
 			this.geometry.dispose();
 			this.geometry = null;
 			this.loaded = false;
@@ -343,5 +316,4 @@ export class PointCloudEptGeometryNode extends PointCloudTreeNode {
 	}
 }
 
-PointCloudEptGeometryNode.IDCount = 0;
-
+PointCloudCopcGeometryNode.IDCount = 0;

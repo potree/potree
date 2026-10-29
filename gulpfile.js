@@ -1,7 +1,7 @@
 
 const path = require('path');
 const gulp = require('gulp');
-const exec = require('child_process').exec;
+const {spawnSync} = require('child_process');
 
 const fs = require("fs");
 const fsp = fs.promises;
@@ -178,11 +178,78 @@ gulp.task('build',
 );
 
 gulp.task("pack", async function(){
-	exec('rollup -c', function (err, stdout, stderr) {
-		console.log(stdout);
-		console.log(stderr);
-	});
+	const {stdout, stderr} = spawnSync('rollup -c', {encoding: 'utf8', shell: true});
+	console.log(stdout);
+	console.log(stderr);
 });
+
+function getDistVersion(){
+	const packageJsonVersion = require('./package.json').version;
+	const envVersion = process.env.POTREE_DIST_VERSION;
+	let gitTagVersion = null;
+
+	try {
+		// Use the version tag on the current commit (wihtout the "v" prefix), if available
+		const {stdout, status} = spawnSync('git describe --tags --exact-match', {encoding: 'utf8', shell: true});
+		if (status == 0) {
+			gitTagVersion = stdout.trim().replace(/^v/, '');
+		}
+
+	} catch (e) {}
+
+	return {packageJsonVersion, envVersion, gitTagVersion};
+}
+
+// Create the source for the "potree-dist" package in "build/dist",
+// with the same layout as the original GitHub release ZIP.
+// The README and LICENSE get copied from the base repo,
+// and "package.json" gets generated.
+gulp.task('dist', gulp.series(
+	'build',
+	'pack',
+	async function(done){
+		const {packageJsonVersion, envVersion, gitTagVersion} = getDistVersion();
+		if ((gitTagVersion && gitTagVersion != packageJsonVersion) || (envVersion && envVersion != packageJsonVersion)) {
+			console.log(
+				`Several set sources for the version disagree with each other:
+				environment: ${envVersion || "unset"}
+				git tag: ${gitTagVersion || "unset"}
+				package.json: ${packageJsonVersion}`
+			);
+			done(new Error("The version number sources disagree"));
+			return
+		}
+    const version = envVersion || gitTagVersion || packageJsonVersion;
+
+		const distDir = 'build/dist';
+		fs.rmSync(distDir, {recursive: true, force: true});
+		fs.mkdirSync(distDir, {recursive: true});
+
+		fs.cpSync('build/potree', path.join(distDir, 'build/potree'), {recursive: true});
+		fs.cpSync('libs', path.join(distDir, 'libs'), {recursive: true});
+
+		fs.copyFileSync('LICENSE', path.join(distDir, 'LICENSE'));
+		fs.copyFileSync('README.md', path.join(distDir, 'README.md'));
+
+		const pkg = {
+			name: '@potree/potree-dist',
+			publishConfig: {access: 'public'},
+			version: version,
+			description: 'Prebuilt Potree WebGL point cloud viewer.',
+			keywords: ['point', 'cloud', 'pointcloud', 'octree', 'entwine', 'viewer', 'threejs', 'webgl', 'browser', 'tool'],
+			main: './build/potree/potree.js',
+			license: 'BSD-2-CLAUSE',
+			repository: {type: 'git', url: 'git+https://github.com/potree/potree.git'},
+			author: 'Markus Schütz',
+			files: ['build', 'libs', 'LICENSE', 'README.md'],
+			scripts: {},
+		};
+
+		fs.writeFileSync(path.join(distDir, 'package.json'), JSON.stringify(pkg, null, '\t') + '\n');
+
+		done();
+	}
+));
 
 gulp.task('watch', gulp.parallel("build", "pack", "webserver", async function() {
 

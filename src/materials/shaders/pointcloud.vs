@@ -109,6 +109,14 @@ uniform float uExtraOffset;
 uniform vec3 uShadowColor;
 
 uniform sampler2D visibleNodes;
+
+// Visible-nodes texture is VN_TEX_WIDTH x VN_TEX_HEIGHT texels (one texel per visible node),
+// addressed row-major so that more than 2048 visible nodes can be encoded.
+#define VN_TEX_WIDTH 2048.0
+#define VN_TEX_HEIGHT 8.0
+vec2 vnUV(float o){
+	return vec2((mod(o, VN_TEX_WIDTH) + 0.5) / VN_TEX_WIDTH, (floor(o / VN_TEX_WIDTH) + 0.5) / VN_TEX_HEIGHT);
+}
 uniform sampler2D gradient;
 uniform sampler2D classificationLUT;
 
@@ -225,7 +233,7 @@ float getLOD(){
 		index3d = floor(index3d + 0.5);
 		int index = int(round(4.0 * index3d.x + 2.0 * index3d.y + index3d.z));
 		
-		vec4 value = texture2D(visibleNodes, vec2(float(iOffset) / 2048.0, 0.0));
+		vec4 value = texture2D(visibleNodes, vnUV(float(iOffset)));
 		int mask = int(round(value.r * 255.0));
 
 		if(isBitSet(mask, index)){
@@ -265,7 +273,7 @@ float getSpacing(){
 		index3d = floor(index3d + 0.5);
 		int index = int(round(4.0 * index3d.x + 2.0 * index3d.y + index3d.z));
 		
-		vec4 value = texture2D(visibleNodes, vec2(float(iOffset) / 2048.0, 0.0));
+		vec4 value = texture2D(visibleNodes, vnUV(float(iOffset)));
 		int mask = int(round(value.r * 255.0));
 		float spacingFactor = value.a;
 
@@ -323,7 +331,7 @@ float getLOD(){
 		
 	for(float i = 0.0; i <= 1000.0; i++){
 		
-		vec4 value = texture2D(visibleNodes, vec2(iOffset / 2048.0, 0.0));
+		vec4 value = texture2D(visibleNodes, vnUV(iOffset));
 		
 		int children = int(value.r * 255.0);
 		float next = value.g * 255.0;

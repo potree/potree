@@ -126,8 +126,10 @@ export function updateVisibility(pointclouds, camera, renderer){
 
 	// check if pointcloud has been transformed
 	// some code will only be executed if changes have been detected
+	// WeakMap: must not keep removed point clouds alive (a Map here retained every
+	// point cloud ever rendered, with all its visible nodes and their geometry).
 	if(!Potree._pointcloudTransformVersion){
-		Potree._pointcloudTransformVersion = new Map();
+		Potree._pointcloudTransformVersion = new WeakMap();
 	}
 	let pointcloudTransformVersion = Potree._pointcloudTransformVersion;
 	for(let pointcloud of pointclouds){

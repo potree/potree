@@ -324,7 +324,7 @@ export class ProfileRequest {
 				for(let attributeName of relevantAttributes){
 
 					let attribute = geometry.attributes[attributeName];
-					let numElements = attribute.array.length / numPoints;
+					let numElements = attribute.itemSize;
 
 					if(numElements !== parseInt(numElements)){
 						debugger;

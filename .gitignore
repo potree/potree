@@ -31,3 +31,9 @@ libs/CesiumUnminified
 /pointclouds/morro_bay_converted
 /pointclouds/helimap_epalinges
 pointclouds/F
+
+
+# projekt data (fraunhofer,large files)
+pointclouds/fokus*/
+*.las
+*.laz

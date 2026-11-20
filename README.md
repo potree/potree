@@ -1,3 +1,21 @@
+# Potree VR (Fraunhofer FOKUS / DCAITI Project, WiSe 2026/27)
+
+VR environment for exploring LIDAR point clouds of the Fraunhofer FOKUS building
+on the Meta Quest 3, based on [Potree](https://github.com/potree/potree).
+
+**Team:** Karan, Ersin · **Supervisors:** Manuel Schiewe, Bernd Schäufele
+
+## Goals
+- PoTree in VR on the Meta Quest 3 (PC-VR streaming; standalone optional)
+- Display the Fraunhofer FOKUS building dataset
+- Locomotion with the Quest 3 controllers
+- Live demo
+
+## Quick start
+See [docs/SETUP.md](docs/SETUP.md).
+
+---
+*Original Potree README below.*
 
 
 # About

@@ -17,7 +17,10 @@ export class PointCloudMaterial extends THREE.RawShaderMaterial {
 	constructor (parameters = {}) {
 		super();
 
-		this.visibleNodesTexture = Utils.generateDataTexture(2048, 1, new THREE.Color(0xffffff));
+		// 2048 x 8 texels = up to 16384 visible nodes (previously 2048 x 1; more visible nodes threw
+		// "RangeError: offset is out of bounds" in Renderer.renderOctree, see #1394).
+		// The width is unchanged (2048); only 8 rows are added, so no new texture-size requirement.
+		this.visibleNodesTexture = Utils.generateDataTexture(2048, 8, new THREE.Color(0xffffff));
 		this.visibleNodesTexture.minFilter = THREE.NearestFilter;
 		this.visibleNodesTexture.magFilter = THREE.NearestFilter;
 

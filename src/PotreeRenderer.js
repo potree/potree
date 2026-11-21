@@ -1073,7 +1073,17 @@ export class Renderer {
 
 				const vnt = material.visibleNodesTexture;
 				const data = vnt.image.data;
-				data.set(visibilityTextureData.data);
+				let vnData = visibilityTextureData.data;
+				if (vnData.length > data.length) {
+					// More visible nodes than texels: truncate instead of throwing (#1394).
+					// Nodes beyond the texture capacity fall back to a coarser LOD estimate.
+					if (!this.warnedVisibleNodesOverflow) {
+						console.warn(`Potree: ${vnData.length / 4} visible nodes exceed the visible-nodes texture capacity (${data.length / 4}); adaptive point size may be approximate. Consider lowering the point budget.`);
+						this.warnedVisibleNodesOverflow = true;
+					}
+					vnData = vnData.subarray(0, data.length);
+				}
+				data.set(vnData);
 				vnt.needsUpdate = true;
 
 			}

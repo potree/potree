@@ -546,9 +546,11 @@ export class Renderer {
 		this.threeRenderer = threeRenderer;
 		this.gl = this.threeRenderer.getContext();
 
-		this.buffers = new Map();
-		this.shaders = new Map();
-		this.textures = new Map();
+		// Weak maps: entries must not outlive the geometries, materials and textures of
+		// removed point clouds (WebGL objects are reclaimed once their wrappers are collected).
+		this.buffers = new WeakMap();
+		this.shaders = new WeakMap();
+		this.textures = new WeakMap();
 
 		this.glTypeMapping = new Map();
 		this.glTypeMapping.set(Float32Array, this.gl.FLOAT);

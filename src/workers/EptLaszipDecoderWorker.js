@@ -27,7 +27,7 @@ async function readUsingDataView(event) {
 
 	const buffers = {
 		position: new ArrayBuffer(pointCount * 3 * 4),
-		color: new ArrayBuffer(pointCount * 3 * 2),
+		color: new ArrayBuffer(pointCount * 4),
 		intensity: new ArrayBuffer(pointCount * 4),
 		classification: new ArrayBuffer(pointCount),
 		returnNumber: new ArrayBuffer(pointCount),

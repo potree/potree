@@ -64,6 +64,7 @@ export class ProfileRequest {
 	}
 
 	initialize () {
+		this.queued = new Set([this.pointcloud.pcoGeometry.root]);
 		this.priorityQueue.push({node: this.pointcloud.pcoGeometry.root, weight: Infinity});
 	};
 
@@ -81,7 +82,10 @@ export class ProfileRequest {
 			let node = stack.pop();
 			let weight = node.boundingSphere.radius;
 
-			this.priorityQueue.push({node: node, weight: weight});
+			if (!this.queued.has(node)) {
+				this.queued.add(node);
+				this.priorityQueue.push({node: node, weight: node.boundingSphere.radius});
+			}
 
 			// add children that intersect the cutting plane
 			if (node.level < this.maxDepth) {
@@ -324,7 +328,7 @@ export class ProfileRequest {
 				for(let attributeName of relevantAttributes){
 
 					let attribute = geometry.attributes[attributeName];
-					let numElements = attribute.array.length / numPoints;
+					let numElements = attribute.itemSize;
 
 					if(numElements !== parseInt(numElements)){
 						debugger;

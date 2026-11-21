@@ -27,7 +27,7 @@ async function readUsingDataView(event) {
 
 	const buffers = {
 		position: new ArrayBuffer(pointCount * 3 * 4),
-		color: new ArrayBuffer(pointCount * 3 * 2),
+		color: new ArrayBuffer(pointCount * 4),
 		intensity: new ArrayBuffer(pointCount * 4),
 		classification: new ArrayBuffer(pointCount),
 		returnNumber: new ArrayBuffer(pointCount),
@@ -159,6 +159,7 @@ async function readUsingDataView(event) {
 		views.color8[4 * i + 0] = normalizeColor(views.color16[3 * i + 0]);
 		views.color8[4 * i + 1] = normalizeColor(views.color16[3 * i + 1]);
 		views.color8[4 * i + 2] = normalizeColor(views.color16[3 * i + 2]);
+		views.color8[4 * i + 3] = 255;
 		views.gpsTime32[i] = views.gpsTime64[i] - ranges.gpsTime[0]
 	}
 
